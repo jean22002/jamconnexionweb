@@ -843,6 +843,400 @@ class JamConnexionAPITester:
             self.log_test("Participation After Leaving", False, f"Error: {str(e)}")
             return False
 
+    # ============= BROADCAST NOTIFICATIONS TESTS =============
+
+    def test_broadcast_notification_without_auth(self):
+        """Test broadcast notification without authentication (should fail)"""
+        try:
+            notification_data = {"message": "Test notification"}
+            response = requests.post(f"{self.base_url}/venues/me/broadcast-notification", json=notification_data, timeout=10)
+            success = response.status_code == 401
+            
+            if success:
+                details = "Correctly rejected unauthenticated request"
+            else:
+                details = f"Unexpected status: {response.status_code}, Expected: 401"
+            
+            self.log_test("Broadcast Notification Without Auth", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Broadcast Notification Without Auth", False, f"Error: {str(e)}")
+            return False
+
+    def test_broadcast_notification_as_musician(self):
+        """Test broadcast notification as musician (should fail)"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            notification_data = {"message": "Test notification"}
+            response = requests.post(f"{self.base_url}/venues/me/broadcast-notification", json=notification_data, headers=headers, timeout=10)
+            success = response.status_code == 403
+            
+            if success:
+                details = "Correctly rejected musician request (only venues allowed)"
+            else:
+                details = f"Unexpected status: {response.status_code}, Expected: 403"
+            
+            self.log_test("Broadcast Notification as Musician", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Broadcast Notification as Musician", False, f"Error: {str(e)}")
+            return False
+
+    def test_broadcast_notification_venue_subscribed(self):
+        """Test broadcast notification with subscribed venue (should succeed)"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            notification_data = {"message": "🎵 Jam session ce soir à 20h! Venez nombreux avec vos instruments!"}
+            response = requests.post(f"{self.base_url}/venues/me/broadcast-notification", json=notification_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                broadcast_response = response.json()
+                self.broadcast_id = broadcast_response.get('broadcast_id')
+                details = f"Broadcast sent successfully, ID: {self.broadcast_id}, Musicians notified: {broadcast_response.get('musicians_notified', 0)}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Broadcast Notification (Venue Subscribed)", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Broadcast Notification (Venue Subscribed)", False, f"Error: {str(e)}")
+            return False
+
+    def test_get_broadcast_history(self):
+        """Test retrieving broadcast notification history"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            response = requests.get(f"{self.base_url}/venues/me/broadcast-history", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                history = response.json()
+                details = f"Retrieved {len(history)} broadcast notifications"
+                if history:
+                    latest = history[0]
+                    details += f", Latest: '{latest.get('message', '')[:50]}...'"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Get Broadcast History", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get Broadcast History", False, f"Error: {str(e)}")
+            return False
+
+    def test_get_nearby_musicians_count(self):
+        """Test getting count of nearby musicians"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            response = requests.get(f"{self.base_url}/venues/me/nearby-musicians-count", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                count_data = response.json()
+                details = f"Found {count_data.get('count', 0)} musicians within 100km radius"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Get Nearby Musicians Count", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get Nearby Musicians Count", False, f"Error: {str(e)}")
+            return False
+
+    # ============= REVIEW SYSTEM TESTS =============
+
+    def test_create_review_without_participation(self):
+        """Test creating review without having participated (should fail)"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            review_data = {
+                "venue_id": self.venue_profile_id,
+                "rating": 5,
+                "comment": "Great venue but I never participated in an event here"
+            }
+            response = requests.post(f"{self.base_url}/reviews", json=review_data, headers=headers, timeout=10)
+            success = response.status_code == 403
+            
+            if success:
+                details = "Correctly rejected review without participation"
+            else:
+                details = f"Unexpected status: {response.status_code}, Expected: 403"
+            
+            self.log_test("Create Review Without Participation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Create Review Without Participation", False, f"Error: {str(e)}")
+            return False
+
+    def test_create_participation_for_review(self):
+        """Create a participation to enable review creation"""
+        try:
+            # First, create an active jam and participate
+            venue_headers = {'Authorization': f'Bearer {self.venue_token}'}
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            start_time = (now - timedelta(minutes=5)).strftime("%H:%M")
+            end_time = (now + timedelta(hours=1)).strftime("%H:%M")
+            today = now.strftime("%Y-%m-%d")
+            
+            jam_data = {
+                "date": today,
+                "start_time": start_time,
+                "end_time": end_time,
+                "music_styles": ["Jazz"],
+                "rules": "Test jam for review"
+            }
+            
+            jam_response = requests.post(f"{self.base_url}/jams", json=jam_data, headers=venue_headers, timeout=10)
+            if jam_response.status_code == 200:
+                review_jam = jam_response.json()
+                self.review_jam_id = review_jam.get('id')
+                
+                # Join the event
+                musician_headers = {'Authorization': f'Bearer {self.musician_token}'}
+                join_response = requests.post(f"{self.base_url}/events/{self.review_jam_id}/join?event_type=jam", headers=musician_headers, timeout=10)
+                
+                if join_response.status_code == 200:
+                    # Leave the event to complete participation
+                    leave_response = requests.post(f"{self.base_url}/events/{self.review_jam_id}/leave", headers=musician_headers, timeout=10)
+                    success = leave_response.status_code == 200
+                    details = "Created participation for review testing"
+                else:
+                    success = False
+                    details = f"Failed to join event: {join_response.status_code}"
+            else:
+                success = False
+                details = f"Failed to create jam: {jam_response.status_code}"
+            
+            self.log_test("Create Participation for Review", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Create Participation for Review", False, f"Error: {str(e)}")
+            return False
+
+    def test_create_review_with_participation(self):
+        """Test creating review after having participated"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            review_data = {
+                "venue_id": self.venue_profile_id,
+                "rating": 4,
+                "comment": "Super ambiance, équipe sympa et bonne acoustique! Recommande vivement pour les jam sessions."
+            }
+            response = requests.post(f"{self.base_url}/reviews", json=review_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                review_response = response.json()
+                self.review_id = review_response.get('id')
+                details = f"Review created successfully, ID: {self.review_id}, Rating: {review_response.get('rating')}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Create Review With Participation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Create Review With Participation", False, f"Error: {str(e)}")
+            return False
+
+    def test_create_duplicate_review(self):
+        """Test creating duplicate review (should fail)"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            review_data = {
+                "venue_id": self.venue_profile_id,
+                "rating": 3,
+                "comment": "Trying to create duplicate review"
+            }
+            response = requests.post(f"{self.base_url}/reviews", json=review_data, headers=headers, timeout=10)
+            success = response.status_code == 400
+            
+            if success:
+                details = "Correctly prevented duplicate review"
+            else:
+                details = f"Unexpected status: {response.status_code}, Expected: 400"
+            
+            self.log_test("Create Duplicate Review", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Create Duplicate Review", False, f"Error: {str(e)}")
+            return False
+
+    def test_invalid_rating_review(self):
+        """Test creating review with invalid rating (should fail)"""
+        try:
+            # Create another musician for this test
+            test_data = {
+                "email": f"musician_rating_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Rating Test Musician",
+                "role": "musician"
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/register", json=test_data, timeout=10)
+            if response.status_code == 200:
+                rating_musician_data = response.json()
+                rating_musician_token = rating_musician_data.get('token')
+                
+                headers = {'Authorization': f'Bearer {rating_musician_token}'}
+                review_data = {
+                    "venue_id": self.venue_profile_id,
+                    "rating": 6,  # Invalid rating (should be 1-5)
+                    "comment": "Invalid rating test"
+                }
+                response = requests.post(f"{self.base_url}/reviews", json=review_data, headers=headers, timeout=10)
+                success = response.status_code == 422  # Validation error
+                
+                if success:
+                    details = "Correctly rejected invalid rating (6/5)"
+                else:
+                    details = f"Unexpected status: {response.status_code}, Expected: 422"
+            else:
+                success = False
+                details = "Failed to create test musician"
+            
+            self.log_test("Invalid Rating Review", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Invalid Rating Review", False, f"Error: {str(e)}")
+            return False
+
+    def test_get_venue_reviews(self):
+        """Test retrieving venue reviews"""
+        try:
+            response = requests.get(f"{self.base_url}/venues/{self.venue_profile_id}/reviews", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                reviews = response.json()
+                details = f"Retrieved {len(reviews)} reviews"
+                if reviews:
+                    review = reviews[0]
+                    details += f", First review: {review.get('rating')}/5 stars"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Get Venue Reviews", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get Venue Reviews", False, f"Error: {str(e)}")
+            return False
+
+    def test_get_venue_average_rating(self):
+        """Test retrieving venue average rating"""
+        try:
+            response = requests.get(f"{self.base_url}/venues/{self.venue_profile_id}/average-rating", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                rating_data = response.json()
+                details = f"Average rating: {rating_data.get('average_rating', 0):.1f}/5, Total reviews: {rating_data.get('total_reviews', 0)}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Get Venue Average Rating", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get Venue Average Rating", False, f"Error: {str(e)}")
+            return False
+
+    def test_venue_respond_to_review(self):
+        """Test venue responding to a review"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            response_data = {"response": "Merci beaucoup pour votre avis! Nous sommes ravis que vous ayez apprécié votre expérience chez nous."}
+            response = requests.post(f"{self.base_url}/reviews/{self.review_id}/respond", json=response_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                details = "Venue response added successfully"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Venue Respond to Review", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Venue Respond to Review", False, f"Error: {str(e)}")
+            return False
+
+    def test_report_review(self):
+        """Test reporting a review"""
+        try:
+            headers = {'Authorization': f'Bearer {self.friend_musician_token}'}
+            response = requests.post(f"{self.base_url}/reviews/{self.review_id}/report", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                details = "Review reported successfully"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Report Review", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Report Review", False, f"Error: {str(e)}")
+            return False
+
+    def test_toggle_reviews_visibility(self):
+        """Test toggling reviews visibility"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Turn off reviews visibility
+            response = requests.put(f"{self.base_url}/venues/me/reviews-visibility?show_reviews=false", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                details = "Reviews visibility turned off"
+                
+                # Check that public reviews are now empty
+                response = requests.get(f"{self.base_url}/venues/{self.venue_profile_id}/reviews", timeout=10)
+                if response.status_code == 200:
+                    reviews = response.json()
+                    if len(reviews) == 0:
+                        details += ", Public reviews correctly hidden"
+                    else:
+                        details += f", WARNING: {len(reviews)} reviews still visible"
+                        success = False
+                
+                # Turn reviews visibility back on
+                response = requests.put(f"{self.base_url}/venues/me/reviews-visibility?show_reviews=true", headers=headers, timeout=10)
+                if response.status_code == 200:
+                    details += ", Reviews visibility restored"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Toggle Reviews Visibility", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Toggle Reviews Visibility", False, f"Error: {str(e)}")
+            return False
+
+    def test_get_venue_my_reviews(self):
+        """Test venue getting their received reviews"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            response = requests.get(f"{self.base_url}/venues/me/reviews", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                reviews = response.json()
+                details = f"Retrieved {len(reviews)} reviews for venue"
+                if reviews:
+                    review = reviews[0]
+                    details += f", First review: {review.get('rating')}/5"
+                    if review.get('is_reported'):
+                        details += " (REPORTED)"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Get Venue My Reviews", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get Venue My Reviews", False, f"Error: {str(e)}")
+            return False
+
     def test_list_venues(self):
         """Test listing venues"""
         try:

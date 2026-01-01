@@ -1,57 +1,84 @@
 import { useState, useEffect, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { Switch } from "../components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { Calendar } from "../components/ui/calendar";
 import { 
-  Music, LogOut, MapPin, Globe, Instagram, Facebook, 
-  Phone, Edit, Save, Loader2, CreditCard, Check, Clock, AlertCircle, X
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter
+} from "../components/ui/dialog";
+import { 
+  Music, LogOut, MapPin, Globe, Instagram, Facebook, Phone, Edit, Save, 
+  Loader2, CreditCard, Check, Clock, AlertCircle, X, Plus, CalendarIcon, 
+  Users, Bell, Trash2, Eye, FileText
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function VenueDashboard() {
   const { user, token, logout, refreshUser } = useAuth();
-  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile");
+  
+  // Events
+  const [jams, setJams] = useState([]);
+  const [concerts, setConcerts] = useState([]);
+  const [planningSlots, setPlanningSlots] = useState([]);
+  const [applications, setApplications] = useState({});
+  const [musicians, setMusicians] = useState([]);
+  
+  // Dialogs
+  const [showJamDialog, setShowJamDialog] = useState(false);
+  const [showConcertDialog, setShowConcertDialog] = useState(false);
+  const [showPlanningDialog, setShowPlanningDialog] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [viewingApplications, setViewingApplications] = useState(null);
   
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    address: "",
-    city: "",
-    postal_code: "",
-    latitude: 0,
-    longitude: 0,
-    phone: "",
-    website: "",
-    facebook: "",
-    instagram: "",
-    has_stage: false,
-    has_sound_engineer: false,
-    equipment: [],
-    music_styles: [],
-    jam_days: [],
-    opening_hours: ""
+    name: "", description: "", profile_image: "", cover_image: "",
+    address: "", city: "", postal_code: "", latitude: 0, longitude: 0,
+    phone: "", website: "", facebook: "", instagram: "",
+    has_stage: false, has_sound_engineer: false, has_pa_system: false,
+    equipment: [], music_styles: [], opening_hours: ""
   });
+
+  const [jamForm, setJamForm] = useState({
+    date: "", start_time: "", end_time: "", music_styles: [],
+    rules: "", has_instruments: false, has_pa_system: false,
+    instruments_available: [], additional_info: ""
+  });
+
+  const [concertForm, setConcertForm] = useState({
+    date: "", start_time: "", title: "", description: "",
+    bands: [], price: ""
+  });
+
+  const [planningForm, setPlanningForm] = useState({
+    date: "", music_styles: [], description: ""
+  });
+
+  const [newBand, setNewBand] = useState({ name: "", musician_id: "", photo: "", facebook: "", instagram: "" });
 
   const fetchProfile = useCallback(async () => {
     try {
-      const response = await axios.get(`${API}/venues/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(`${API}/venues/me`, { headers: { Authorization: `Bearer ${token}` } });
       setProfile(response.data);
       setFormData({
         name: response.data.name || "",
         description: response.data.description || "",
+        profile_image: response.data.profile_image || "",
+        cover_image: response.data.cover_image || "",
         address: response.data.address || "",
         city: response.data.city || "",
         postal_code: response.data.postal_code || "",
@@ -63,39 +90,62 @@ export default function VenueDashboard() {
         instagram: response.data.instagram || "",
         has_stage: response.data.has_stage || false,
         has_sound_engineer: response.data.has_sound_engineer || false,
+        has_pa_system: response.data.has_pa_system || false,
         equipment: response.data.equipment || [],
         music_styles: response.data.music_styles || [],
-        jam_days: response.data.jam_days || [],
         opening_hours: response.data.opening_hours || ""
       });
     } catch (error) {
-      if (error.response?.status === 404) {
-        setEditing(true); // Force editing mode for new profiles
-      }
+      if (error.response?.status === 404) setEditing(true);
     } finally {
       setLoading(false);
     }
   }, [token]);
 
+  const fetchEvents = useCallback(async () => {
+    if (!profile) return;
+    try {
+      const [jamsRes, concertsRes, planningRes] = await Promise.all([
+        axios.get(`${API}/venues/${profile.id}/jams`),
+        axios.get(`${API}/venues/${profile.id}/concerts`),
+        axios.get(`${API}/venues/${profile.id}/planning`)
+      ]);
+      setJams(jamsRes.data);
+      setConcerts(concertsRes.data);
+      setPlanningSlots(planningRes.data);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }, [profile]);
+
+  const fetchMusicians = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/musicians`);
+      setMusicians(response.data);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }, []);
+
   useEffect(() => {
     fetchProfile();
-  }, [fetchProfile]);
+    fetchMusicians();
+  }, [fetchProfile, fetchMusicians]);
+
+  useEffect(() => {
+    if (profile) fetchEvents();
+  }, [profile, fetchEvents]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      const endpoint = profile ? `${API}/venues` : `${API}/venues`;
       const method = profile ? "put" : "post";
-      
-      await axios[method](endpoint, formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
+      await axios[method](`${API}/venues`, formData, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Profil sauvegardé!");
       setEditing(false);
       fetchProfile();
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Erreur lors de la sauvegarde");
+      toast.error(error.response?.data?.detail || "Erreur");
     } finally {
       setSaving(false);
     }
@@ -103,74 +153,148 @@ export default function VenueDashboard() {
 
   const handleSubscribe = async () => {
     try {
-      const response = await axios.post(`${API}/payments/checkout`, {
-        origin_url: window.location.origin
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
+      const response = await axios.post(`${API}/payments/checkout`, { origin_url: window.location.origin }, { headers: { Authorization: `Bearer ${token}` } });
       window.location.href = response.data.url;
     } catch (error) {
-      toast.error("Erreur lors de la création du paiement");
+      toast.error("Erreur lors du paiement");
     }
   };
 
   const geocodeAddress = async () => {
     if (!formData.address || !formData.city) {
-      toast.error("Veuillez entrer une adresse et une ville");
+      toast.error("Entrez une adresse et une ville");
       return;
     }
-    
     try {
       const query = `${formData.address}, ${formData.postal_code} ${formData.city}, France`;
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
-      );
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
       const data = await response.json();
-      
       if (data.length > 0) {
-        setFormData({
-          ...formData,
-          latitude: parseFloat(data[0].lat),
-          longitude: parseFloat(data[0].lon)
-        });
+        setFormData({ ...formData, latitude: parseFloat(data[0].lat), longitude: parseFloat(data[0].lon) });
         toast.success("Coordonnées trouvées!");
       } else {
         toast.error("Adresse non trouvée");
       }
     } catch (error) {
-      toast.error("Erreur lors de la géolocalisation");
+      toast.error("Erreur géolocalisation");
     }
   };
 
-  const addToList = (field, value) => {
-    if (value && !formData[field].includes(value)) {
-      setFormData({
-        ...formData,
-        [field]: [...formData[field], value]
-      });
+  // Create Jam
+  const createJam = async () => {
+    try {
+      await axios.post(`${API}/jams`, jamForm, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Boeuf musical créé!");
+      setShowJamDialog(false);
+      setJamForm({ date: "", start_time: "", end_time: "", music_styles: [], rules: "", has_instruments: false, has_pa_system: false, instruments_available: [], additional_info: "" });
+      fetchEvents();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur");
     }
   };
 
-  const removeFromList = (field, value) => {
-    setFormData({
-      ...formData,
-      [field]: formData[field].filter(item => item !== value)
-    });
+  // Create Concert
+  const createConcert = async () => {
+    try {
+      await axios.post(`${API}/concerts`, concertForm, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Concert créé!");
+      setShowConcertDialog(false);
+      setConcertForm({ date: "", start_time: "", title: "", description: "", bands: [], price: "" });
+      fetchEvents();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur");
+    }
+  };
+
+  // Create Planning Slot
+  const createPlanningSlot = async () => {
+    try {
+      await axios.post(`${API}/planning`, planningForm, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Date disponible publiée!");
+      setShowPlanningDialog(false);
+      setPlanningForm({ date: "", music_styles: [], description: "" });
+      fetchEvents();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur");
+    }
+  };
+
+  // Delete events
+  const deleteJam = async (id) => {
+    try {
+      await axios.delete(`${API}/jams/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Supprimé");
+      fetchEvents();
+    } catch (error) {
+      toast.error("Erreur");
+    }
+  };
+
+  const deleteConcert = async (id) => {
+    try {
+      await axios.delete(`${API}/concerts/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Supprimé");
+      fetchEvents();
+    } catch (error) {
+      toast.error("Erreur");
+    }
+  };
+
+  const deletePlanningSlot = async (id) => {
+    try {
+      await axios.delete(`${API}/planning/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Supprimé");
+      fetchEvents();
+    } catch (error) {
+      toast.error("Erreur");
+    }
+  };
+
+  // View applications
+  const viewApplications = async (slotId) => {
+    try {
+      const response = await axios.get(`${API}/planning/${slotId}/applications`, { headers: { Authorization: `Bearer ${token}` } });
+      setApplications({ ...applications, [slotId]: response.data });
+      setViewingApplications(slotId);
+    } catch (error) {
+      toast.error("Erreur");
+    }
+  };
+
+  const handleApplication = async (appId, action) => {
+    try {
+      await axios.post(`${API}/applications/${appId}/${action}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success(action === "accept" ? "Candidature acceptée!" : "Candidature refusée");
+      if (viewingApplications) viewApplications(viewingApplications);
+      fetchEvents();
+    } catch (error) {
+      toast.error("Erreur");
+    }
+  };
+
+  const addBandToConcert = () => {
+    if (newBand.name) {
+      setConcertForm({ ...concertForm, bands: [...concertForm.bands, { ...newBand }] });
+      setNewBand({ name: "", musician_id: "", photo: "", facebook: "", instagram: "" });
+    }
+  };
+
+  const addToList = (field, value, form, setForm) => {
+    if (value && !form[field].includes(value)) {
+      setForm({ ...form, [field]: [...form[field], value] });
+    }
+  };
+
+  const removeFromList = (field, value, form, setForm) => {
+    setForm({ ...form, [field]: form[field].filter(item => item !== value) });
   };
 
   const getSubscriptionStatus = () => {
-    if (user?.subscription_status === "active") {
-      return { label: "Actif", color: "text-green-400", icon: Check };
-    }
+    if (user?.subscription_status === "active") return { label: "Actif", color: "text-green-400", icon: Check };
     if (user?.subscription_status === "trial") {
       const trialEnd = user?.trial_end ? new Date(user.trial_end) : null;
       const daysLeft = trialEnd ? Math.ceil((trialEnd - new Date()) / (1000 * 60 * 60 * 24)) : 0;
-      return { 
-        label: `Essai (${daysLeft}j restants)`, 
-        color: "text-secondary", 
-        icon: Clock 
-      };
+      return { label: `Essai (${daysLeft}j)`, color: "text-secondary", icon: Clock };
     }
     return { label: "Inactif", color: "text-destructive", icon: AlertCircle };
   };
@@ -179,11 +303,7 @@ export default function VenueDashboard() {
   const StatusIcon = status.icon;
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
+    return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   }
 
   return (
@@ -204,13 +324,13 @@ export default function VenueDashboard() {
                 <StatusIcon className="w-4 h-4" />
                 <span className="text-sm font-medium">{status.label}</span>
               </div>
-              
-              <Button 
-                variant="ghost" 
-                onClick={logout}
-                className="text-destructive hover:text-destructive/80"
-                data-testid="logout-btn"
-              >
+              {profile && (
+                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-muted/50 text-muted-foreground">
+                  <Users className="w-4 h-4" />
+                  <span className="text-sm">{profile.subscribers_count} abonnés</span>
+                </div>
+              )}
+              <Button variant="ghost" onClick={logout} className="text-destructive hover:text-destructive/80" data-testid="logout-btn">
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
@@ -218,13 +338,12 @@ export default function VenueDashboard() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="font-heading font-bold text-3xl mb-2">
             Bienvenue, <span className="text-gradient">{user?.name}</span>!
           </h1>
-          <p className="text-muted-foreground">Gérez votre profil d'établissement</p>
+          <p className="text-muted-foreground">Gérez votre établissement et vos événements</p>
         </div>
 
         {/* Subscription Card */}
@@ -233,336 +352,398 @@ export default function VenueDashboard() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h3 className="font-heading font-semibold text-lg mb-1">
-                  {user?.subscription_status === "trial" 
-                    ? "Votre période d'essai" 
-                    : "Abonnez-vous pour être visible"
-                  }
+                  {user?.subscription_status === "trial" ? "Période d'essai" : "Abonnez-vous"}
                 </h3>
-                <p className="text-muted-foreground text-sm">
-                  {user?.subscription_status === "trial" 
-                    ? "Profitez de toutes les fonctionnalités pendant 2 mois"
-                    : "10€/mois pour apparaître sur la carte et attirer des musiciens"
-                  }
-                </p>
+                <p className="text-muted-foreground text-sm">10€/mois pour être visible</p>
               </div>
-              
               {user?.subscription_status !== "trial" && (
-                <Button 
-                  onClick={handleSubscribe}
-                  className="bg-primary hover:bg-primary/90 rounded-full px-6 gap-2"
-                  data-testid="subscribe-btn"
-                >
-                  <CreditCard className="w-4 h-4" />
-                  S'abonner - 10€/mois
+                <Button onClick={handleSubscribe} className="bg-primary hover:bg-primary/90 rounded-full px-6 gap-2" data-testid="subscribe-btn">
+                  <CreditCard className="w-4 h-4" /> S'abonner
                 </Button>
               )}
             </div>
           </div>
         )}
 
-        {/* Profile Form */}
-        <div className="glassmorphism rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-heading font-semibold text-xl">Profil de l'établissement</h2>
-            
-            {!editing ? (
-              <Button 
-                variant="ghost" 
-                onClick={() => setEditing(true)}
-                className="gap-2"
-                data-testid="edit-profile-btn"
-              >
-                <Edit className="w-4 h-4" />
-                Modifier
-              </Button>
-            ) : (
-              <Button 
-                onClick={handleSave}
-                disabled={saving}
-                className="bg-primary hover:bg-primary/90 rounded-full gap-2"
-                data-testid="save-profile-btn"
-              >
-                {saving ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 bg-muted/50 rounded-full p-1 mb-6">
+            <TabsTrigger value="profile" className="rounded-full">Profil</TabsTrigger>
+            <TabsTrigger value="jams" className="rounded-full">Boeufs</TabsTrigger>
+            <TabsTrigger value="concerts" className="rounded-full">Concerts</TabsTrigger>
+            <TabsTrigger value="planning" className="rounded-full">Planning</TabsTrigger>
+          </TabsList>
+
+          {/* Profile Tab */}
+          <TabsContent value="profile">
+            <div className="glassmorphism rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-heading font-semibold text-xl">Profil de l'établissement</h2>
+                {!editing ? (
+                  <Button variant="ghost" onClick={() => setEditing(true)} className="gap-2" data-testid="edit-profile-btn">
+                    <Edit className="w-4 h-4" /> Modifier
+                  </Button>
                 ) : (
-                  <Save className="w-4 h-4" />
-                )}
-                Sauvegarder
-              </Button>
-            )}
-          </div>
-
-          <div className="space-y-6">
-            {/* Basic Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Nom de l'établissement</Label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  disabled={!editing}
-                  className="bg-black/20 border-white/10 disabled:opacity-70"
-                  data-testid="venue-name"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Téléphone</Label>
-                <Input
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  disabled={!editing}
-                  className="bg-black/20 border-white/10 disabled:opacity-70"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Description</Label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                disabled={!editing}
-                rows={3}
-                className="bg-black/20 border-white/10 disabled:opacity-70"
-              />
-            </div>
-
-            {/* Address */}
-            <div className="space-y-4">
-              <Label className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-primary" />
-                Adresse
-              </Label>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2 space-y-2">
-                  <Input
-                    placeholder="Adresse"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    disabled={!editing}
-                    className="bg-black/20 border-white/10 disabled:opacity-70"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Input
-                    placeholder="Code postal"
-                    value={formData.postal_code}
-                    onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })}
-                    disabled={!editing}
-                    className="bg-black/20 border-white/10 disabled:opacity-70"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  placeholder="Ville"
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  disabled={!editing}
-                  className="bg-black/20 border-white/10 disabled:opacity-70"
-                  data-testid="venue-city"
-                />
-                
-                {editing && (
-                  <Button 
-                    type="button"
-                    onClick={geocodeAddress}
-                    variant="outline"
-                    className="border-white/20"
-                  >
-                    <MapPin className="w-4 h-4 mr-2" />
-                    Géolocaliser
+                  <Button onClick={handleSave} disabled={saving} className="bg-primary hover:bg-primary/90 rounded-full gap-2" data-testid="save-profile-btn">
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Sauvegarder
                   </Button>
                 )}
               </div>
-              
-              {(formData.latitude !== 0 || formData.longitude !== 0) && (
-                <p className="text-sm text-muted-foreground">
-                  Coordonnées: {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}
-                </p>
-              )}
-            </div>
 
-            {/* Social Links */}
-            <div className="space-y-4">
-              <Label className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-primary" />
-                Réseaux & Liens
-              </Label>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-muted-foreground" />
-                    <Label className="text-sm">Site web</Label>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Nom</Label>
+                    <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" data-testid="venue-name" />
                   </div>
-                  <Input
-                    placeholder="https://..."
-                    value={formData.website}
-                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                    disabled={!editing}
-                    className="bg-black/20 border-white/10 disabled:opacity-70"
-                  />
+                  <div className="space-y-2">
+                    <Label>Téléphone</Label>
+                    <Input value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
+                  </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Facebook className="w-4 h-4 text-muted-foreground" />
-                    <Label className="text-sm">Facebook</Label>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Photo de profil (URL)</Label>
+                    <Input value={formData.profile_image} onChange={(e) => setFormData({ ...formData, profile_image: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
                   </div>
-                  <Input
-                    placeholder="URL Facebook"
-                    value={formData.facebook}
-                    onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
-                    disabled={!editing}
-                    className="bg-black/20 border-white/10 disabled:opacity-70"
-                  />
+                  <div className="space-y-2">
+                    <Label>Photo de couverture (URL)</Label>
+                    <Input value={formData.cover_image} onChange={(e) => setFormData({ ...formData, cover_image: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
+                  </div>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Instagram className="w-4 h-4 text-muted-foreground" />
-                    <Label className="text-sm">Instagram</Label>
+                  <Label>Description</Label>
+                  <Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} disabled={!editing} rows={3} className="bg-black/20 border-white/10 disabled:opacity-70" />
+                </div>
+
+                <div className="space-y-4">
+                  <Label className="flex items-center gap-2"><MapPin className="w-4 h-4 text-primary" /> Adresse</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Input placeholder="Adresse" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} disabled={!editing} className="md:col-span-2 bg-black/20 border-white/10 disabled:opacity-70" />
+                    <Input placeholder="Code postal" value={formData.postal_code} onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
                   </div>
-                  <Input
-                    placeholder="@votre_compte"
-                    value={formData.instagram}
-                    onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
-                    disabled={!editing}
-                    className="bg-black/20 border-white/10 disabled:opacity-70"
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input placeholder="Ville" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" data-testid="venue-city" />
+                    {editing && <Button type="button" onClick={geocodeAddress} variant="outline" className="border-white/20"><MapPin className="w-4 h-4 mr-2" /> Géolocaliser</Button>}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <Label className="flex items-center gap-2"><Globe className="w-4 h-4 text-primary" /> Liens</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input placeholder="Site web" value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
+                    <Input placeholder="Facebook" value={formData.facebook} onChange={(e) => setFormData({ ...formData, facebook: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
+                    <Input placeholder="Instagram" value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <Label>Équipements & Services</Label>
+                  <div className="flex flex-wrap gap-6">
+                    <div className="flex items-center gap-2"><Switch checked={formData.has_stage} onCheckedChange={(c) => setFormData({ ...formData, has_stage: c })} disabled={!editing} /><Label>Scène</Label></div>
+                    <div className="flex items-center gap-2"><Switch checked={formData.has_sound_engineer} onCheckedChange={(c) => setFormData({ ...formData, has_sound_engineer: c })} disabled={!editing} /><Label>Ingé son</Label></div>
+                    <div className="flex items-center gap-2"><Switch checked={formData.has_pa_system} onCheckedChange={(c) => setFormData({ ...formData, has_pa_system: c })} disabled={!editing} /><Label>Sono</Label></div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Styles musicaux</Label>
+                  {editing && <Input placeholder="Appuyez Entrée" onKeyPress={(e) => { if (e.key === 'Enter') { addToList('music_styles', e.target.value, formData, setFormData); e.target.value = ''; } }} className="bg-black/20 border-white/10" />}
+                  <div className="flex flex-wrap gap-2">
+                    {formData.music_styles.map((style, i) => (
+                      <span key={i} className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm flex items-center gap-1">
+                        {style}
+                        {editing && <button onClick={() => removeFromList('music_styles', style, formData, setFormData)}><X className="w-3 h-3" /></button>}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
+          </TabsContent>
 
-            {/* Equipment & Services */}
+          {/* Jams Tab */}
+          <TabsContent value="jams">
             <div className="space-y-4">
-              <Label>Équipements & Services</Label>
-              
-              <div className="flex flex-wrap gap-6">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    checked={formData.has_stage}
-                    onCheckedChange={(checked) => setFormData({ ...formData, has_stage: checked })}
-                    disabled={!editing}
-                  />
-                  <Label>Scène</Label>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Switch
-                    checked={formData.has_sound_engineer}
-                    onCheckedChange={(checked) => setFormData({ ...formData, has_sound_engineer: checked })}
-                    disabled={!editing}
-                  />
-                  <Label>Ingénieur son</Label>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label className="text-sm">Matériel disponible</Label>
-                {editing && (
-                  <Input
-                    placeholder="Ajouter (ex: Sono, Micros, Batterie...)"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        addToList('equipment', e.target.value);
-                        e.target.value = '';
-                      }
-                    }}
-                    className="bg-black/20 border-white/10"
-                  />
-                )}
-                <div className="flex flex-wrap gap-2">
-                  {formData.equipment.map((item, i) => (
-                    <span key={i} className="px-3 py-1 bg-muted rounded-full text-sm flex items-center gap-1">
-                      {item}
-                      {editing && (
-                        <button onClick={() => removeFromList('equipment', item)}>
-                          <X className="w-3 h-3" />
-                        </button>
+              <div className="flex items-center justify-between">
+                <h2 className="font-heading font-semibold text-xl">Boeufs Musicaux</h2>
+                <Dialog open={showJamDialog} onOpenChange={setShowJamDialog}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-primary hover:bg-primary/90 rounded-full gap-2"><Plus className="w-4 h-4" /> Nouveau boeuf</Button>
+                  </DialogTrigger>
+                  <DialogContent className="glassmorphism border-white/10 max-w-lg max-h-[90vh] overflow-y-auto">
+                    <DialogHeader><DialogTitle>Créer un boeuf musical</DialogTitle></DialogHeader>
+                    <div className="space-y-4 mt-4">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label>Date</Label>
+                          <Input type="date" value={jamForm.date} onChange={(e) => setJamForm({ ...jamForm, date: e.target.value })} className="bg-black/20 border-white/10" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Début</Label>
+                          <Input type="time" value={jamForm.start_time} onChange={(e) => setJamForm({ ...jamForm, start_time: e.target.value })} className="bg-black/20 border-white/10" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Fin</Label>
+                          <Input type="time" value={jamForm.end_time} onChange={(e) => setJamForm({ ...jamForm, end_time: e.target.value })} className="bg-black/20 border-white/10" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Styles musicaux</Label>
+                        <Input placeholder="Entrée pour ajouter" onKeyPress={(e) => { if (e.key === 'Enter') { addToList('music_styles', e.target.value, jamForm, setJamForm); e.target.value = ''; } }} className="bg-black/20 border-white/10" />
+                        <div className="flex flex-wrap gap-2">
+                          {jamForm.music_styles.map((s, i) => (
+                            <span key={i} className="px-2 py-1 bg-primary/20 text-primary rounded-full text-xs flex items-center gap-1">{s}<button onClick={() => removeFromList('music_styles', s, jamForm, setJamForm)}><X className="w-3 h-3" /></button></span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Règlement</Label>
+                        <Textarea value={jamForm.rules} onChange={(e) => setJamForm({ ...jamForm, rules: e.target.value })} className="bg-black/20 border-white/10" rows={2} />
+                      </div>
+                      <div className="flex flex-wrap gap-4">
+                        <div className="flex items-center gap-2"><Switch checked={jamForm.has_instruments} onCheckedChange={(c) => setJamForm({ ...jamForm, has_instruments: c })} /><Label>Instruments dispo</Label></div>
+                        <div className="flex items-center gap-2"><Switch checked={jamForm.has_pa_system} onCheckedChange={(c) => setJamForm({ ...jamForm, has_pa_system: c })} /><Label>Sono dispo</Label></div>
+                      </div>
+                      {jamForm.has_instruments && (
+                        <div className="space-y-2">
+                          <Label>Instruments disponibles</Label>
+                          <Input placeholder="Entrée pour ajouter" onKeyPress={(e) => { if (e.key === 'Enter') { addToList('instruments_available', e.target.value, jamForm, setJamForm); e.target.value = ''; } }} className="bg-black/20 border-white/10" />
+                          <div className="flex flex-wrap gap-2">
+                            {jamForm.instruments_available.map((s, i) => (
+                              <span key={i} className="px-2 py-1 bg-secondary/20 text-secondary rounded-full text-xs flex items-center gap-1">{s}<button onClick={() => removeFromList('instruments_available', s, jamForm, setJamForm)}><X className="w-3 h-3" /></button></span>
+                            ))}
+                          </div>
+                        </div>
                       )}
-                    </span>
+                      <div className="space-y-2">
+                        <Label>Infos complémentaires</Label>
+                        <Textarea value={jamForm.additional_info} onChange={(e) => setJamForm({ ...jamForm, additional_info: e.target.value })} className="bg-black/20 border-white/10" rows={2} />
+                      </div>
+                      <Button onClick={createJam} className="w-full bg-primary hover:bg-primary/90 rounded-full">Créer</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {jams.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground glassmorphism rounded-2xl">
+                  <CalendarIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Aucun boeuf musical planifié</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {jams.map((jam) => (
+                    <div key={jam.id} className="glassmorphism rounded-xl p-5">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-heading font-semibold text-lg">{jam.date}</p>
+                          <p className="text-muted-foreground">{jam.start_time} - {jam.end_time}</p>
+                        </div>
+                        <Button variant="ghost" size="sm" onClick={() => deleteJam(jam.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {jam.music_styles.map((s, i) => <span key={i} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">{s}</span>)}
+                      </div>
+                      {jam.has_instruments && <p className="text-sm text-secondary mt-2">Instruments sur place</p>}
+                      {jam.has_pa_system && <p className="text-sm text-secondary">Sono disponible</p>}
+                    </div>
                   ))}
                 </div>
-              </div>
-            </div>
-
-            {/* Music Styles */}
-            <div className="space-y-2">
-              <Label>Styles musicaux</Label>
-              {editing && (
-                <Input
-                  placeholder="Ajouter un style (Jazz, Blues, Rock...)"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      addToList('music_styles', e.target.value);
-                      e.target.value = '';
-                    }
-                  }}
-                  className="bg-black/20 border-white/10"
-                />
               )}
-              <div className="flex flex-wrap gap-2">
-                {formData.music_styles.map((style, i) => (
-                  <span key={i} className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm flex items-center gap-1">
-                    {style}
-                    {editing && (
-                      <button onClick={() => removeFromList('music_styles', style)}>
-                        <X className="w-3 h-3" />
-                      </button>
-                    )}
-                  </span>
-                ))}
-              </div>
             </div>
+          </TabsContent>
 
-            {/* Jam Days */}
-            <div className="space-y-2">
-              <Label>Jours de Jam</Label>
-              {editing && (
-                <Input
-                  placeholder="Ajouter un jour (Lundi, Mardi...)"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      addToList('jam_days', e.target.value);
-                      e.target.value = '';
-                    }
-                  }}
-                  className="bg-black/20 border-white/10"
-                />
+          {/* Concerts Tab */}
+          <TabsContent value="concerts">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-heading font-semibold text-xl">Concerts</h2>
+                <Dialog open={showConcertDialog} onOpenChange={setShowConcertDialog}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-primary hover:bg-primary/90 rounded-full gap-2"><Plus className="w-4 h-4" /> Nouveau concert</Button>
+                  </DialogTrigger>
+                  <DialogContent className="glassmorphism border-white/10 max-w-lg max-h-[90vh] overflow-y-auto">
+                    <DialogHeader><DialogTitle>Créer un concert</DialogTitle></DialogHeader>
+                    <div className="space-y-4 mt-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Date</Label>
+                          <Input type="date" value={concertForm.date} onChange={(e) => setConcertForm({ ...concertForm, date: e.target.value })} className="bg-black/20 border-white/10" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Heure</Label>
+                          <Input type="time" value={concertForm.start_time} onChange={(e) => setConcertForm({ ...concertForm, start_time: e.target.value })} className="bg-black/20 border-white/10" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Titre</Label>
+                        <Input value={concertForm.title} onChange={(e) => setConcertForm({ ...concertForm, title: e.target.value })} className="bg-black/20 border-white/10" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Prix</Label>
+                        <Input value={concertForm.price} onChange={(e) => setConcertForm({ ...concertForm, price: e.target.value })} placeholder="Ex: Gratuit, 10€, PAF" className="bg-black/20 border-white/10" />
+                      </div>
+                      
+                      {/* Bands */}
+                      <div className="space-y-2">
+                        <Label>Groupes / Artistes</Label>
+                        <div className="p-4 border border-white/10 rounded-xl space-y-3">
+                          <Input placeholder="Nom du groupe" value={newBand.name} onChange={(e) => setNewBand({ ...newBand, name: e.target.value })} className="bg-black/20 border-white/10" />
+                          <select value={newBand.musician_id} onChange={(e) => setNewBand({ ...newBand, musician_id: e.target.value })} className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white">
+                            <option value="">Lier à un musicien (optionnel)</option>
+                            {musicians.map(m => <option key={m.id} value={m.id}>{m.pseudo}</option>)}
+                          </select>
+                          <Button type="button" onClick={addBandToConcert} variant="outline" className="w-full border-white/20">Ajouter le groupe</Button>
+                        </div>
+                        <div className="space-y-2">
+                          {concertForm.bands.map((band, i) => (
+                            <div key={i} className="flex items-center justify-between p-2 bg-muted/30 rounded-lg">
+                              <span>{band.name}</span>
+                              <Button variant="ghost" size="sm" onClick={() => setConcertForm({ ...concertForm, bands: concertForm.bands.filter((_, idx) => idx !== i) })}><X className="w-4 h-4" /></Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Description</Label>
+                        <Textarea value={concertForm.description} onChange={(e) => setConcertForm({ ...concertForm, description: e.target.value })} className="bg-black/20 border-white/10" rows={2} />
+                      </div>
+                      <Button onClick={createConcert} className="w-full bg-primary hover:bg-primary/90 rounded-full">Créer</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {concerts.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground glassmorphism rounded-2xl">
+                  <Music className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Aucun concert planifié</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {concerts.map((concert) => (
+                    <div key={concert.id} className="glassmorphism rounded-xl p-5">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-heading font-semibold text-lg">{concert.title || "Concert"}</p>
+                          <p className="text-muted-foreground">{concert.date} à {concert.start_time}</p>
+                        </div>
+                        <Button variant="ghost" size="sm" onClick={() => deleteConcert(concert.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                      </div>
+                      {concert.bands?.length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-sm text-muted-foreground mb-1">Artistes:</p>
+                          {concert.bands.map((b, i) => <p key={i} className="text-white">{b.name}</p>)}
+                        </div>
+                      )}
+                      {concert.price && <p className="text-sm text-secondary mt-2">{concert.price}</p>}
+                    </div>
+                  ))}
+                </div>
               )}
-              <div className="flex flex-wrap gap-2">
-                {formData.jam_days.map((day, i) => (
-                  <span key={i} className="px-3 py-1 bg-secondary/20 text-secondary rounded-full text-sm flex items-center gap-1">
-                    {day}
-                    {editing && (
-                      <button onClick={() => removeFromList('jam_days', day)}>
-                        <X className="w-3 h-3" />
-                      </button>
-                    )}
-                  </span>
-                ))}
-              </div>
             </div>
+          </TabsContent>
 
-            {/* Opening Hours */}
-            <div className="space-y-2">
-              <Label>Horaires d'ouverture</Label>
-              <Textarea
-                placeholder="Ex: Lun-Ven: 18h-02h, Sam-Dim: 15h-03h"
-                value={formData.opening_hours}
-                onChange={(e) => setFormData({ ...formData, opening_hours: e.target.value })}
-                disabled={!editing}
-                rows={2}
-                className="bg-black/20 border-white/10 disabled:opacity-70"
-              />
+          {/* Planning Tab */}
+          <TabsContent value="planning">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-heading font-semibold text-xl">Dates ouvertes aux candidatures</h2>
+                <Dialog open={showPlanningDialog} onOpenChange={setShowPlanningDialog}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-secondary hover:bg-secondary/90 rounded-full gap-2"><Plus className="w-4 h-4" /> Nouvelle date</Button>
+                  </DialogTrigger>
+                  <DialogContent className="glassmorphism border-white/10">
+                    <DialogHeader><DialogTitle>Proposer une date</DialogTitle></DialogHeader>
+                    <div className="space-y-4 mt-4">
+                      <div className="space-y-2">
+                        <Label>Date</Label>
+                        <Input type="date" value={planningForm.date} onChange={(e) => setPlanningForm({ ...planningForm, date: e.target.value })} className="bg-black/20 border-white/10" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Styles recherchés</Label>
+                        <Input placeholder="Entrée pour ajouter" onKeyPress={(e) => { if (e.key === 'Enter') { addToList('music_styles', e.target.value, planningForm, setPlanningForm); e.target.value = ''; } }} className="bg-black/20 border-white/10" />
+                        <div className="flex flex-wrap gap-2">
+                          {planningForm.music_styles.map((s, i) => (
+                            <span key={i} className="px-2 py-1 bg-secondary/20 text-secondary rounded-full text-xs flex items-center gap-1">{s}<button onClick={() => removeFromList('music_styles', s, planningForm, setPlanningForm)}><X className="w-3 h-3" /></button></span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Description</Label>
+                        <Textarea value={planningForm.description} onChange={(e) => setPlanningForm({ ...planningForm, description: e.target.value })} className="bg-black/20 border-white/10" rows={2} />
+                      </div>
+                      <Button onClick={createPlanningSlot} className="w-full bg-secondary hover:bg-secondary/90 rounded-full">Publier</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {planningSlots.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground glassmorphism rounded-2xl">
+                  <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Aucune date ouverte aux candidatures</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {planningSlots.map((slot) => (
+                    <div key={slot.id} className="glassmorphism rounded-xl p-5">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-heading font-semibold text-lg">{slot.date}</p>
+                          <p className="text-muted-foreground">{slot.applications_count} candidature(s)</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => viewApplications(slot.id)}><Eye className="w-4 h-4" /></Button>
+                          <Button variant="ghost" size="sm" onClick={() => deletePlanningSlot(slot.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {slot.music_styles.map((s, i) => <span key={i} className="px-2 py-1 bg-secondary/20 text-secondary text-xs rounded-full">{s}</span>)}
+                      </div>
+                      {!slot.is_open && <p className="text-sm text-primary mt-2">Date pourvue</p>}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Applications Dialog */}
+              <Dialog open={!!viewingApplications} onOpenChange={() => setViewingApplications(null)}>
+                <DialogContent className="glassmorphism border-white/10 max-w-lg max-h-[80vh] overflow-y-auto">
+                  <DialogHeader><DialogTitle>Candidatures</DialogTitle></DialogHeader>
+                  <div className="space-y-4 mt-4">
+                    {(!applications[viewingApplications] || applications[viewingApplications].length === 0) ? (
+                      <p className="text-muted-foreground text-center py-4">Aucune candidature</p>
+                    ) : applications[viewingApplications].map((app) => (
+                      <div key={app.id} className="p-4 border border-white/10 rounded-xl">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="font-heading font-semibold">{app.band_name}</p>
+                            <p className="text-sm text-muted-foreground">{app.music_style}</p>
+                          </div>
+                          <span className={`px-2 py-1 rounded-full text-xs ${app.status === 'accepted' ? 'bg-green-500/20 text-green-400' : app.status === 'rejected' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                            {app.status === 'accepted' ? 'Accepté' : app.status === 'rejected' ? 'Refusé' : 'En attente'}
+                          </span>
+                        </div>
+                        {app.description && <p className="text-sm mt-2">{app.description}</p>}
+                        {app.status === 'pending' && (
+                          <div className="flex gap-2 mt-4">
+                            <Button onClick={() => handleApplication(app.id, 'accept')} className="flex-1 bg-green-500 hover:bg-green-600 rounded-full">Accepter</Button>
+                            <Button onClick={() => handleApplication(app.id, 'reject')} variant="outline" className="flex-1 border-destructive text-destructive rounded-full">Refuser</Button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

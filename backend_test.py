@@ -1248,7 +1248,27 @@ class JamConnexionAPITester:
     def test_report_review(self):
         """Test reporting a review"""
         try:
-            headers = {'Authorization': f'Bearer {self.friend_musician_token}'}
+            # Use the friend musician token if available, otherwise create a new musician
+            if hasattr(self, 'friend_musician_token') and self.friend_musician_token:
+                headers = {'Authorization': f'Bearer {self.friend_musician_token}'}
+            else:
+                # Create a new musician for reporting
+                test_data = {
+                    "email": f"musician_reporter_{datetime.now().strftime('%H%M%S')}@test.com",
+                    "password": "TestPass123!",
+                    "name": "Reporter Musician",
+                    "role": "musician"
+                }
+                
+                response = requests.post(f"{self.base_url}/auth/register", json=test_data, timeout=10)
+                if response.status_code == 200:
+                    reporter_data = response.json()
+                    reporter_token = reporter_data.get('token')
+                    headers = {'Authorization': f'Bearer {reporter_token}'}
+                else:
+                    self.log_test("Report Review", False, "Failed to create reporter musician")
+                    return False
+            
             response = requests.post(f"{self.base_url}/reviews/{self.review_id}/report", headers=headers, timeout=10)
             success = response.status_code == 200
             

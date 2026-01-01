@@ -102,6 +102,35 @@ html {
     @apply bg-card;
 }
 
+/* Leaflet tooltip customization */
+.leaflet-tooltip.venue-name-tooltip {
+  background-color: rgba(0, 0, 0, 0.85) !important;
+  border: 1px solid rgba(168, 85, 247, 0.5) !important;
+  border-radius: 8px !important;
+  padding: 4px 8px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: white !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(10px);
+}
+
+.leaflet-tooltip.venue-name-tooltip::before {
+  border-right-color: rgba(0, 0, 0, 0.85) !important;
+}
+
+/* Venue guitar marker */
+.venue-guitar-marker {
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: transform 0.2s ease;
+}
+
+.venue-guitar-marker:hover {
+  transform: scale(1.15);
+}
+
 /* User pulse marker */
 .user-pulse-marker {
     background: transparent !important;

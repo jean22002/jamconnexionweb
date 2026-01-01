@@ -131,15 +131,18 @@ backend:
 
   - task: "Event Participation System - Backend"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Vient d'être implémenté. Backend endpoints créés: /api/venues/{venue_id}/active-events, /api/events/{event_id}/join, /api/events/{event_id}/leave, /api/musicians/me/current-participation, /api/musicians/{musician_id}/current-participation, /api/events/{event_id}/participants"
+      - working: true
+        agent: "testing"
+        comment: "✅ BACKEND TESTS COMPLETS - Tous les endpoints de participation fonctionnent parfaitement. Tests réalisés: 1) Création d'événement actif (jam en cours), 2) Récupération événements actifs (/api/venues/{venue_id}/active-events), 3) Authentification requise pour participation, 4) Participation musicien (/api/events/{event_id}/join), 5) Prévention double participation, 6) Récupération participation active (/api/musicians/me/current-participation), 7) Vue publique participation (/api/musicians/{musician_id}/current-participation), 8) Liste participants (/api/events/{event_id}/participants), 9) Notifications aux amis lors de participation, 10) Quitter événement (/api/events/{event_id}/leave), 11) Vérification désactivation participation. Fonction is_event_active() fonctionne correctement avec buffer de 30min. Système de notifications aux amis opérationnel."
 
   - task: "Friend System"
     implemented: true

@@ -68,7 +68,7 @@ export default function Landing() {
               
               <h1 className="font-heading font-bold text-5xl md:text-7xl tracking-tight leading-none animate-fade-up">
                 Connectez les
-                <span className="block text-gradient">Musiciens & Cafés</span>
+                <span className="block text-gradient">Musiciens & Scènes locales</span>
               </h1>
               
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-lg animate-fade-up animation-delay-100">

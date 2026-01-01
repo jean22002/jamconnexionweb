@@ -6,6 +6,7 @@ import Auth from "./pages/Auth";
 import MusicianDashboard from "./pages/MusicianDashboard";
 import VenueDashboard from "./pages/VenueDashboard";
 import VenueDetail from "./pages/VenueDetail";
+import MusicianDetail from "./pages/MusicianDetail";
 import Pricing from "./pages/Pricing";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import "./App.css";
@@ -65,6 +66,7 @@ function App() {
           <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/venue/:id" element={<VenueDetail />} />
+          <Route path="/musician/:id" element={<MusicianDetail />} />
           <Route 
             path="/musician" 
             element={

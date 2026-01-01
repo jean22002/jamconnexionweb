@@ -1,0 +1,70 @@
+{
+  "summary": {
+    "total_tests": 10,
+    "passed_tests": 10,
+    "success_rate": 100.0,
+    "timestamp": "2026-01-01T17:49:32.430217"
+  },
+  "test_results": [
+    {
+      "test": "Health Check",
+      "success": true,
+      "details": "Status: 200, Response: healthy",
+      "timestamp": "2026-01-01T17:49:31.272369"
+    },
+    {
+      "test": "Register Musician",
+      "success": true,
+      "details": "User ID: 6f062350-adf6-4575-9a1d-99c45594fa9c, Role: musician",
+      "timestamp": "2026-01-01T17:49:31.564776"
+    },
+    {
+      "test": "Register Venue",
+      "success": true,
+      "details": "User ID: 4f2d8171-0ede-4fec-b93f-76cf9512a19a, Trial: trial",
+      "timestamp": "2026-01-01T17:49:31.826991"
+    },
+    {
+      "test": "Login",
+      "success": true,
+      "details": "Login successful for musician",
+      "timestamp": "2026-01-01T17:49:32.089380"
+    },
+    {
+      "test": "Auth Me",
+      "success": true,
+      "details": "User: Test Musician, Role: musician",
+      "timestamp": "2026-01-01T17:49:32.126438"
+    },
+    {
+      "test": "Create Venue Profile",
+      "success": true,
+      "details": "Venue ID: 0f3240cb-da62-4b2b-9002-658fd282ba90, Name: Test Jazz Club",
+      "timestamp": "2026-01-01T17:49:32.180786"
+    },
+    {
+      "test": "Create Musician Profile",
+      "success": true,
+      "details": "Musician ID: 206fd4d2-0e32-42c8-afbf-d8c24e664266, Name: John Doe",
+      "timestamp": "2026-01-01T17:49:32.269442"
+    },
+    {
+      "test": "List Venues",
+      "success": true,
+      "details": "Found 1 venues",
+      "timestamp": "2026-01-01T17:49:32.310077"
+    },
+    {
+      "test": "Nearby Venues Search",
+      "success": true,
+      "details": "Found 1 nearby venues",
+      "timestamp": "2026-01-01T17:49:32.385116"
+    },
+    {
+      "test": "Get Venue Profile",
+      "success": true,
+      "details": "Venue: Test Jazz Club, City: Paris",
+      "timestamp": "2026-01-01T17:49:32.429294"
+    }
+  ]
+}

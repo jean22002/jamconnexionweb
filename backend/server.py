@@ -1772,6 +1772,203 @@ async def get_nearby_musicians_count(current_user: dict = Depends(get_current_us
         "radius_km": 100
     }
 
+# ============= REVIEW SYSTEM =============
+
+@api_router.post("/reviews", response_model=ReviewResponse)
+async def create_review(data: ReviewCreate, current_user: dict = Depends(get_current_user)):
+    """Create a review for a venue (only musicians who attended an event can review)"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can leave reviews")
+    
+    # Validate rating
+    if data.rating < 1 or data.rating > 5:
+        raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
+    
+    # Get musician profile
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Check if venue exists
+    venue = await db.venues.find_one({"id": data.venue_id}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue not found")
+    
+    # Check if musician has participated in an event at this venue
+    has_participated = await db.event_participations.find_one({
+        "venue_id": data.venue_id,
+        "musician_id": musician["id"]
+    })
+    
+    if not has_participated:
+        raise HTTPException(
+            status_code=403, 
+            detail="Vous devez avoir participé à un événement dans cet établissement pour laisser un avis"
+        )
+    
+    # Check if musician already reviewed this venue
+    existing_review = await db.reviews.find_one({
+        "venue_id": data.venue_id,
+        "musician_id": musician["id"]
+    })
+    
+    if existing_review:
+        raise HTTPException(status_code=400, detail="Vous avez déjà laissé un avis pour cet établissement")
+    
+    # Create review
+    review_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    review_doc = {
+        "id": review_id,
+        "venue_id": data.venue_id,
+        "musician_id": musician["id"],
+        "musician_user_id": current_user["id"],
+        "musician_name": musician.get("pseudo", current_user["name"]),
+        "musician_image": musician.get("profile_image"),
+        "rating": data.rating,
+        "comment": data.comment,
+        "venue_response": None,
+        "venue_response_date": None,
+        "is_reported": False,
+        "created_at": now
+    }
+    
+    await db.reviews.insert_one(review_doc)
+    
+    # Notify venue
+    await create_notification(
+        venue["user_id"],
+        "new_review",
+        "⭐ Nouvel avis",
+        f"{musician.get('pseudo', current_user['name'])} a laissé un avis ({data.rating}/5 étoiles)",
+        f"/venue/{data.venue_id}"
+    )
+    
+    return ReviewResponse(**review_doc)
+
+@api_router.get("/venues/{venue_id}/reviews", response_model=List[ReviewResponse])
+async def get_venue_reviews(venue_id: str):
+    """Get all reviews for a venue (only if venue allows public reviews)"""
+    venue = await db.venues.find_one({"id": venue_id}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue not found")
+    
+    # Check if venue allows public reviews
+    if not venue.get("show_reviews", True):
+        return []
+    
+    reviews = await db.reviews.find(
+        {"venue_id": venue_id, "is_reported": False},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    return [ReviewResponse(**r) for r in reviews]
+
+@api_router.get("/venues/{venue_id}/average-rating")
+async def get_venue_average_rating(venue_id: str):
+    """Get average rating for a venue"""
+    reviews = await db.reviews.find(
+        {"venue_id": venue_id, "is_reported": False},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    if not reviews:
+        return {"average_rating": 0, "total_reviews": 0}
+    
+    total_rating = sum(r["rating"] for r in reviews)
+    average = total_rating / len(reviews)
+    
+    return {
+        "average_rating": round(average, 1),
+        "total_reviews": len(reviews)
+    }
+
+@api_router.post("/reviews/{review_id}/respond")
+async def respond_to_review(review_id: str, data: ReviewResponseRequest, current_user: dict = Depends(get_current_user)):
+    """Venue responds to a review"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can respond to reviews")
+    
+    # Get venue profile
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Get review and verify it belongs to this venue
+    review = await db.reviews.find_one({"id": review_id}, {"_id": 0})
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+    
+    if review["venue_id"] != venue["id"]:
+        raise HTTPException(status_code=403, detail="This review is not for your venue")
+    
+    # Update review with response
+    now = datetime.now(timezone.utc).isoformat()
+    await db.reviews.update_one(
+        {"id": review_id},
+        {"$set": {"venue_response": data.response, "venue_response_date": now}}
+    )
+    
+    # Notify musician
+    await create_notification(
+        review["musician_user_id"],
+        "review_response",
+        "💬 Réponse à votre avis",
+        f"{venue['name']} a répondu à votre avis",
+        f"/venue/{venue['id']}"
+    )
+    
+    return {"message": "Response added successfully"}
+
+@api_router.post("/reviews/{review_id}/report")
+async def report_review(review_id: str, current_user: dict = Depends(get_current_user)):
+    """Report an inappropriate review"""
+    review = await db.reviews.find_one({"id": review_id}, {"_id": 0})
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+    
+    await db.reviews.update_one(
+        {"id": review_id},
+        {"$set": {"is_reported": True}}
+    )
+    
+    return {"message": "Review reported successfully"}
+
+@api_router.put("/venues/me/reviews-visibility")
+async def toggle_reviews_visibility(show_reviews: bool, current_user: dict = Depends(get_current_user)):
+    """Toggle venue reviews visibility"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can toggle reviews visibility")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    await db.venues.update_one(
+        {"user_id": current_user["id"]},
+        {"$set": {"show_reviews": show_reviews}}
+    )
+    
+    return {"message": "Reviews visibility updated", "show_reviews": show_reviews}
+
+@api_router.get("/venues/me/reviews", response_model=List[ReviewResponse])
+async def get_my_venue_reviews(current_user: dict = Depends(get_current_user)):
+    """Get all reviews for my venue (including reported ones, for venue owner)"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can view their reviews")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    reviews = await db.reviews.find(
+        {"venue_id": venue["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    return [ReviewResponse(**r) for r in reviews]
+
 # ============= PAYMENT ROUTES =============
 
 SUBSCRIPTION_PRICE = 10.00

@@ -258,23 +258,23 @@ export default function MusicianDashboard() {
     fetchFriends();
   }, [fetchData, fetchProfile, fetchNotifications, fetchFriends]);
 
-  const handleGeolocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation([latitude, longitude]);
-          setMapCenter([latitude, longitude]);
-          try {
-            const response = await axios.post(`${API}/venues/nearby`, { latitude, longitude, radius_km: 50 });
-            setVenues(response.data);
-            toast.success(`${response.data.length} établissements trouvés`);
-          } catch (error) {
-            toast.error("Erreur lors de la recherche");
-          }
-        },
-        () => toast.error("Impossible d'obtenir votre position")
-      );
+  // Toggle geolocation tracking
+  const toggleGeolocation = () => {
+    setGeoEnabled(!geoEnabled);
+    if (!geoEnabled) {
+      toast.success("Géolocalisation activée");
+    } else {
+      toast.info("Géolocalisation désactivée");
+    }
+  };
+
+  // Center map on user position
+  const centerOnUser = () => {
+    if (geoPosition) {
+      setMapCenter([geoPosition.latitude, geoPosition.longitude]);
+      setFollowUser(true);
+    } else {
+      toast.error("Position non disponible");
     }
   };
 

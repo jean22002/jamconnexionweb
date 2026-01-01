@@ -160,6 +160,7 @@ class VenueProfile(BaseModel):
     music_styles: List[str] = []
     opening_hours: Optional[str] = None
     show_reviews: bool = True  # Toggle to show/hide reviews publicly
+    gallery: List[str] = []  # Array of image URLs (max 20)
 
 class VenueProfileResponse(BaseModel):
     id: str
@@ -187,6 +188,7 @@ class VenueProfileResponse(BaseModel):
     subscription_status: Optional[str] = None
     subscribers_count: int = 0
     show_reviews: bool = True
+    gallery: List[str] = []
 
 # Jam Event (Boeuf musical)
 class JamEvent(BaseModel):

@@ -241,6 +241,66 @@ frontend:
         agent: "main"
         comment: "Badge de participation ajouté sur les profils musiciens (MusicianDetail et MusicianDashboard header). Polling automatique toutes les 30s sur le dashboard"
 
+  - task: "Broadcast Notifications System - Backend"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Endpoints créés: POST /api/venues/me/broadcast-notification (envoyer notification géographique), GET /api/venues/me/broadcast-history (historique), GET /api/venues/me/nearby-musicians-count (compteur). Collection broadcast_notifications créée"
+
+  - task: "Broadcast Notifications System - Frontend"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/VenueDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Nouvel onglet 'Notifications' dans VenueDashboard. Formulaire d'envoi de notifications, compteur de musiciens à proximité, historique des notifications envoyées"
+
+  - task: "Review System - Backend"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Endpoints créés: POST /api/reviews (créer avis avec vérification participation), GET /api/venues/{venue_id}/reviews (liste avis publics), GET /api/venues/{venue_id}/average-rating (note moyenne), POST /api/reviews/{review_id}/respond (établissement répond), POST /api/reviews/{review_id}/report (signaler), PUT /api/venues/me/reviews-visibility (toggle affichage), GET /api/venues/me/reviews (mes avis). Collection reviews créée. Champ show_reviews ajouté au profil venue"
+
+  - task: "Review System - Frontend VenueDetail"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/VenueDetail.jsx, /app/frontend/src/components/StarRating.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Nouvel onglet 'Avis' sur VenueDetail. Affichage note moyenne, liste des avis avec étoiles, formulaire pour laisser un avis (musiciens ayant participé), bouton signaler avis, affichage réponses établissement. Composant StarRating créé"
+
+  - task: "Review System - Frontend VenueDashboard"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/VenueDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Nouvel onglet 'Avis' dans VenueDashboard. Affichage note moyenne, toggle show/hide avis publiquement, liste des avis reçus, formulaire de réponse aux avis, marquage visuel des avis signalés"
+
   - task: "Venue Detail Page"
     implemented: true
     working: true

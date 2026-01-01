@@ -313,6 +313,15 @@ export default function MusicianDashboard() {
                     </TabsList>
 
                     <TabsContent value="info" className="space-y-4 mt-4">
+                      <div className="space-y-2">
+                        <Label>Photo de profil</Label>
+                        <ProfileImageUpload
+                          value={profileForm.profile_image}
+                          onChange={(url) => setProfileForm({ ...profileForm, profile_image: url })}
+                          token={token}
+                        />
+                      </div>
+
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>Pseudo</Label>
@@ -322,11 +331,6 @@ export default function MusicianDashboard() {
                           <Label>Âge</Label>
                           <Input type="number" value={profileForm.age || ""} onChange={(e) => setProfileForm({ ...profileForm, age: parseInt(e.target.value) || null })} className="bg-black/20 border-white/10" />
                         </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label>Photo de profil (URL)</Label>
-                        <Input value={profileForm.profile_image} onChange={(e) => setProfileForm({ ...profileForm, profile_image: e.target.value })} placeholder="https://..." className="bg-black/20 border-white/10" />
                       </div>
                       
                       <div className="space-y-2">

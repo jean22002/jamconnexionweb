@@ -1396,6 +1396,8 @@ class JamConnexionAPITester:
         self.venue_user = None
         self.venue_profile_id = None
         self.musician_profile_id = None
+        self.review_id = None
+        self.review_musician_token = None
         
         # Run tests in order
         tests = [

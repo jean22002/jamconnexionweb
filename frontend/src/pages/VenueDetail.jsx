@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
+import JoinEventButton from "../components/JoinEventButton";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -44,6 +45,8 @@ export default function VenueDetail() {
     links: { facebook: "", instagram: "", youtube: "" },
     contact_email: "", contact_phone: ""
   });
+  const [activeEvents, setActiveEvents] = useState([]);
+  const [currentParticipation, setCurrentParticipation] = useState(null);
 
   const fetchVenue = useCallback(async () => {
     try {
@@ -82,6 +85,27 @@ export default function VenueDetail() {
       console.error("Error:", error);
     }
   }, [id, token, user]);
+
+  const fetchActiveEvents = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/venues/${id}/active-events`);
+      setActiveEvents(response.data);
+    } catch (error) {
+      console.error("Error fetching active events:", error);
+    }
+  }, [id]);
+
+  const fetchCurrentParticipation = useCallback(async () => {
+    if (!token || !user || user.role !== "musician") return;
+    try {
+      const response = await axios.get(`${API}/musicians/me/current-participation`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCurrentParticipation(response.data);
+    } catch (error) {
+      console.error("Error fetching participation:", error);
+    }
+  }, [token, user]);
 
   useEffect(() => {
     fetchVenue();

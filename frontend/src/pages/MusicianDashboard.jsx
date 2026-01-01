@@ -94,6 +94,7 @@ export default function MusicianDashboard() {
   const [friendRequests, setFriendRequests] = useState([]);
   const [subscriptions, setSubscriptions] = useState([]);
   const [activeTab, setActiveTab] = useState("map");
+  const [currentParticipation, setCurrentParticipation] = useState(null);
   
   // Geolocation states
   const [geoEnabled, setGeoEnabled] = useState(true);
@@ -251,12 +252,34 @@ export default function MusicianDashboard() {
     }
   }, [token]);
 
+  const fetchCurrentParticipation = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/musicians/me/current-participation`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCurrentParticipation(response.data);
+    } catch (error) {
+      // No participation or error - that's okay
+      setCurrentParticipation(null);
+    }
+  }, [token]);
+
   useEffect(() => {
     fetchData();
     fetchProfile();
     fetchNotifications();
     fetchFriends();
-  }, [fetchData, fetchProfile, fetchNotifications, fetchFriends]);
+    fetchCurrentParticipation();
+  }, [fetchData, fetchProfile, fetchNotifications, fetchFriends, fetchCurrentParticipation]);
+
+  // Polling for participation status (every 30 seconds)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchCurrentParticipation();
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [fetchCurrentParticipation]);
 
   // Toggle geolocation tracking
   const toggleGeolocation = () => {

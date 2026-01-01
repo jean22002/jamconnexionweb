@@ -1128,7 +1128,7 @@ class JamConnexionAPITester:
     def test_create_duplicate_review(self):
         """Test creating duplicate review (should fail)"""
         try:
-            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            headers = {'Authorization': f'Bearer {self.review_musician_token}'}
             review_data = {
                 "venue_id": self.venue_profile_id,
                 "rating": 3,

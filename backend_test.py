@@ -1039,21 +1039,85 @@ class JamConnexionAPITester:
     def test_create_review_with_participation(self):
         """Test creating review after having participated"""
         try:
-            headers = {'Authorization': f'Bearer {self.musician_token}'}
-            review_data = {
-                "venue_id": self.venue_profile_id,
-                "rating": 4,
-                "comment": "Super ambiance, équipe sympa et bonne acoustique! Recommande vivement pour les jam sessions."
+            # Create a new musician for this test to avoid conflicts
+            test_data = {
+                "email": f"musician_review_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Review Test Musician",
+                "role": "musician"
             }
-            response = requests.post(f"{self.base_url}/reviews", json=review_data, headers=headers, timeout=10)
-            success = response.status_code == 200
             
-            if success:
-                review_response = response.json()
-                self.review_id = review_response.get('id')
-                details = f"Review created successfully, ID: {self.review_id}, Rating: {review_response.get('rating')}"
+            response = requests.post(f"{self.base_url}/auth/register", json=test_data, timeout=10)
+            if response.status_code == 200:
+                review_musician_data = response.json()
+                self.review_musician_token = review_musician_data.get('token')
+                
+                # Create profile
+                profile_data = {"pseudo": "ReviewTester", "instruments": ["Piano"]}
+                headers = {'Authorization': f'Bearer {self.review_musician_token}'}
+                profile_response = requests.post(f"{self.base_url}/musicians", json=profile_data, headers=headers, timeout=10)
+                
+                if profile_response.status_code == 200:
+                    review_musician_profile = profile_response.json()
+                    self.review_musician_profile_id = review_musician_profile.get('id')
+                    
+                    # Create and join an event to establish participation
+                    venue_headers = {'Authorization': f'Bearer {self.venue_token}'}
+                    from datetime import datetime, timedelta
+                    now = datetime.now()
+                    start_time = (now - timedelta(minutes=5)).strftime("%H:%M")
+                    end_time = (now + timedelta(hours=1)).strftime("%H:%M")
+                    today = now.strftime("%Y-%m-%d")
+                    
+                    jam_data = {
+                        "date": today,
+                        "start_time": start_time,
+                        "end_time": end_time,
+                        "music_styles": ["Jazz"],
+                        "rules": "Test jam for review"
+                    }
+                    
+                    jam_response = requests.post(f"{self.base_url}/jams", json=jam_data, headers=venue_headers, timeout=10)
+                    if jam_response.status_code == 200:
+                        review_jam = jam_response.json()
+                        review_jam_id = review_jam.get('id')
+                        
+                        # Join and leave the event
+                        join_response = requests.post(f"{self.base_url}/events/{review_jam_id}/join?event_type=jam", headers=headers, timeout=10)
+                        if join_response.status_code == 200:
+                            leave_response = requests.post(f"{self.base_url}/events/{review_jam_id}/leave", headers=headers, timeout=10)
+                            
+                            if leave_response.status_code == 200:
+                                # Now create the review
+                                review_data = {
+                                    "venue_id": self.venue_profile_id,
+                                    "rating": 4,
+                                    "comment": "Super ambiance, équipe sympa et bonne acoustique! Recommande vivement pour les jam sessions."
+                                }
+                                response = requests.post(f"{self.base_url}/reviews", json=review_data, headers=headers, timeout=10)
+                                success = response.status_code == 200
+                                
+                                if success:
+                                    review_response = response.json()
+                                    self.review_id = review_response.get('id')
+                                    details = f"Review created successfully, ID: {self.review_id}, Rating: {review_response.get('rating')}"
+                                else:
+                                    details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+                            else:
+                                success = False
+                                details = f"Failed to leave event: {leave_response.status_code}"
+                        else:
+                            success = False
+                            details = f"Failed to join event: {join_response.status_code}"
+                    else:
+                        success = False
+                        details = f"Failed to create jam: {jam_response.status_code}"
+                else:
+                    success = False
+                    details = f"Failed to create profile: {profile_response.status_code}"
             else:
-                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+                success = False
+                details = f"Failed to create musician: {response.status_code}"
             
             self.log_test("Create Review With Participation", success, details)
             return success

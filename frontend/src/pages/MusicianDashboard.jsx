@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Button } from "../components/ui/button";
@@ -10,6 +10,7 @@ import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { Switch } from "../components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { Slider } from "../components/ui/slider";
 import { ProfileImageUpload, BandImageUpload } from "../components/ui/image-upload";
 import { 
   Dialog,
@@ -21,9 +22,11 @@ import {
 import { 
   Music, MapPin, LogOut, Search, Guitar, Users,
   Globe, Instagram, Facebook, Phone, User, Loader2, Navigation, X,
-  Bell, Youtube, UserPlus, Check, Calendar as CalendarIcon, Heart
+  Bell, Youtube, UserPlus, Check, Calendar as CalendarIcon, Heart,
+  Radio, MapPinOff, Locate, Settings2
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useAutoGeolocation } from "../hooks/useGeolocation";
 import { toast } from "sonner";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -40,11 +43,39 @@ const userIcon = new L.Icon({
   iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
 });
 
-function SetViewOnLocation({ coords }) {
+// Animated user marker for real-time tracking
+const userPulseIcon = L.divIcon({
+  className: 'user-pulse-marker',
+  html: `
+    <div class="relative">
+      <div class="w-6 h-6 bg-blue-500 rounded-full border-3 border-white shadow-lg flex items-center justify-center">
+        <div class="w-2 h-2 bg-white rounded-full"></div>
+      </div>
+      <div class="absolute inset-0 w-6 h-6 bg-blue-500 rounded-full animate-ping opacity-75"></div>
+    </div>
+  `,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+});
+
+function SetViewOnLocation({ coords, zoom = 12 }) {
   const map = useMap();
   useEffect(() => {
-    if (coords) map.setView(coords, 12);
-  }, [coords, map]);
+    if (coords) map.setView(coords, zoom);
+  }, [coords, map, zoom]);
+  return null;
+}
+
+// Component to follow user in real-time
+function FollowUser({ position, enabled }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (enabled && position) {
+      map.setView([position.latitude, position.longitude], map.getZoom());
+    }
+  }, [position, enabled, map]);
+  
   return null;
 }
 
@@ -54,7 +85,6 @@ export default function MusicianDashboard() {
   const [musicians, setMusicians] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchCity, setSearchCity] = useState("");
-  const [userLocation, setUserLocation] = useState(null);
   const [mapCenter, setMapCenter] = useState([46.603354, 1.888334]);
   const [profile, setProfile] = useState(null);
   const [editingProfile, setEditingProfile] = useState(false);

@@ -765,6 +765,9 @@ class JamConnexionAPITester:
                 join_response = requests.post(f"{self.base_url}/events/{new_jam_id}/join?event_type=jam", headers=musician_headers, timeout=10)
                 
                 if join_response.status_code == 200:
+                    # Update the active jam ID for subsequent tests
+                    self.active_jam_id = new_jam_id
+                    
                     # Check friend's notifications after
                     import time
                     time.sleep(1)  # Give time for notification to be created

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
+import ParticipationBadge from "../components/ParticipationBadge";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -16,11 +17,24 @@ export default function MusicianDetail() {
   const { user, token } = useAuth();
   const [musician, setMusician] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [participation, setParticipation] = useState(null);
 
   const fetchMusician = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/musicians/${id}`);
       setMusician(response.data);
+      
+      // Check if this musician has an active participation
+      // We need to fetch from user-specific endpoint if viewing own profile
+      // Otherwise check if they have a participation visible publicly
+      try {
+        // Try to fetch musician's user participation (works for any musician)
+        const participationRes = await axios.get(`${API}/musicians/${id}/current-participation`);
+        setParticipation(participationRes.data);
+      } catch (err) {
+        // No active participation
+        setParticipation(null);
+      }
     } catch (error) {
       console.error("Error:", error);
     } finally {

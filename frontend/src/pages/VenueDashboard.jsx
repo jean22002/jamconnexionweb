@@ -78,7 +78,7 @@ export default function VenueDashboard() {
   });
 
   const [planningForm, setPlanningForm] = useState({
-    date: "", music_styles: [], description: ""
+    date: "", music_styles: [], description: "", artist_categories: []
   });
 
   const [newBand, setNewBand] = useState({ name: "", musician_id: "", photo: "", facebook: "", instagram: "" });

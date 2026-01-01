@@ -118,7 +118,8 @@ export default function VenueDetail() {
     fetchVenue();
     fetchEvents();
     fetchActiveEvents();
-  }, [fetchVenue, fetchEvents, fetchActiveEvents]);
+    fetchReviews();
+  }, [fetchVenue, fetchEvents, fetchActiveEvents, fetchReviews]);
 
   useEffect(() => {
     checkSubscription();

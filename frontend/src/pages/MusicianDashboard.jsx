@@ -95,6 +95,80 @@ export default function MusicianDashboard() {
   const [subscriptions, setSubscriptions] = useState([]);
   const [activeTab, setActiveTab] = useState("map");
   
+  // Geolocation states
+  const [geoEnabled, setGeoEnabled] = useState(true);
+  const [followUser, setFollowUser] = useState(true);
+  const [searchRadius, setSearchRadius] = useState(25); // km
+  const [showRadiusCircle, setShowRadiusCircle] = useState(true);
+  const [nearbyVenues, setNearbyVenues] = useState([]);
+  const [lastSearchTime, setLastSearchTime] = useState(null);
+  const searchTimeoutRef = useRef(null);
+
+  // Auto geolocation hook
+  const { 
+    position: geoPosition, 
+    error: geoError, 
+    isTracking, 
+    isLoading: geoLoading,
+    startTracking,
+    stopTracking 
+  } = useAutoGeolocation(geoEnabled, handlePositionChange);
+
+  // Handle position change - fetch nearby venues
+  function handlePositionChange(newPosition) {
+    if (newPosition) {
+      setMapCenter([newPosition.latitude, newPosition.longitude]);
+      
+      // Debounce nearby search
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+      
+      searchTimeoutRef.current = setTimeout(() => {
+        fetchNearbyVenues(newPosition.latitude, newPosition.longitude);
+      }, 1000);
+    }
+  }
+
+  // Fetch nearby venues based on current position
+  const fetchNearbyVenues = useCallback(async (lat, lng) => {
+    try {
+      const response = await axios.post(`${API}/venues/nearby`, {
+        latitude: lat,
+        longitude: lng,
+        radius_km: searchRadius
+      });
+      setNearbyVenues(response.data);
+      setLastSearchTime(new Date());
+      
+      // Show toast only on significant changes
+      if (response.data.length > 0) {
+        toast.success(`${response.data.length} établissement(s) à proximité`, {
+          id: 'nearby-venues',
+          duration: 2000
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching nearby venues:", error);
+    }
+  }, [searchRadius]);
+
+  // Effect to refetch when radius changes
+  useEffect(() => {
+    if (geoPosition) {
+      fetchNearbyVenues(geoPosition.latitude, geoPosition.longitude);
+    }
+  }, [searchRadius, geoPosition, fetchNearbyVenues]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+  
   const [profileForm, setProfileForm] = useState({
     pseudo: "", age: null, profile_image: "", bio: "",
     instruments: [], music_styles: [], experience_years: 0,

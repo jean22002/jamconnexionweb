@@ -932,7 +932,20 @@ class JamConnexionAPITester:
             self.test_jam_events,
             self.test_concert_events,
             self.test_planning_and_applications,
-            self.test_notifications
+            self.test_notifications,
+            # Event Participation Tests
+            self.test_create_active_jam_event,
+            self.test_get_active_events,
+            self.test_join_event_without_auth,
+            self.test_join_event_as_musician,
+            self.test_double_participation,
+            self.test_get_my_current_participation,
+            self.test_get_musician_participation_public,
+            self.test_get_event_participants,
+            self.test_create_second_musician_for_friends,
+            self.test_friend_notifications_on_participation,
+            self.test_leave_event,
+            self.test_participation_after_leaving
         ]
         
         for test in tests:

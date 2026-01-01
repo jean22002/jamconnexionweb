@@ -101,3 +101,171 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Application Jam Connexion pour connecter musiciens et établissements organisant des jam sessions. Feature en cours: Système de participation en temps réel aux événements."
+
+backend:
+  - task: "Authentication (JWT)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Authentication fonctionnelle selon tests précédents"
+
+  - task: "Musician & Venue Profiles"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Profils avec upload d'images fonctionnels"
+
+  - task: "Event Participation System - Backend"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Vient d'être implémenté. Backend endpoints créés: /api/venues/{venue_id}/active-events, /api/events/{event_id}/join, /api/events/{event_id}/leave, /api/musicians/me/current-participation, /api/musicians/{musician_id}/current-participation, /api/events/{event_id}/participants"
+
+  - task: "Friend System"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Système d'amis fonctionnel"
+
+  - task: "Venue Subscription"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Abonnement aux établissements fonctionnel"
+
+  - task: "Event Calendar (Jams/Concerts)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Calendrier d'événements fonctionnel"
+
+frontend:
+  - task: "Landing Page & Auth Forms"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/Auth.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Landing page et authentification fonctionnels"
+
+  - task: "Musician Dashboard with Geolocation"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/MusicianDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Dashboard avec carte de géolocalisation en temps réel fonctionnel"
+
+  - task: "Event Participation - Frontend Components"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/JoinEventButton.jsx, /app/frontend/src/components/ParticipationBadge.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Composants créés: JoinEventButton (bouton 'Je participe') et ParticipationBadge (badge de participation). Intégrés dans VenueDetail, MusicianDetail et MusicianDashboard"
+
+  - task: "Event Participation - VenueDetail Integration"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/VenueDetail.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Bouton 'Je participe' ajouté sur la page établissement. Visible uniquement pendant un événement actif. Permet de rejoindre/quitter l'événement"
+
+  - task: "Event Participation - Musician Profile Badge"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/MusicianDetail.jsx, /app/frontend/src/pages/MusicianDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Badge de participation ajouté sur les profils musiciens (MusicianDetail et MusicianDashboard header). Polling automatique toutes les 30s sur le dashboard"
+
+  - task: "Venue Detail Page"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/VenueDetail.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Page détail établissement avec onglets info/jams/concerts/planning fonctionnelle"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Event Participation - Frontend Components"
+    - "Event Participation - VenueDetail Integration"
+    - "Event Participation - Musician Profile Badge"
+    - "Event Participation System - Backend"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Système de participation aux événements implémenté. Backend prêt avec endpoints de participation. Frontend complété avec composants JoinEventButton et ParticipationBadge. Intégrations terminées sur VenueDetail, MusicianDetail et MusicianDashboard. Nécessite test complet backend + frontend pour vérifier: 1) Récupération des événements actifs, 2) Fonctionnalité rejoindre/quitter événement, 3) Affichage du badge de participation, 4) Notifications aux amis, 5) Polling automatique du statut de participation. Un test de fichier doit être créé sous /app/backend/tests/test_event_participation.py pour tester les nouveaux endpoints."

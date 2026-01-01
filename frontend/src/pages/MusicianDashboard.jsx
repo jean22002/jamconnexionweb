@@ -407,12 +407,16 @@ export default function MusicianDashboard() {
                       {profileForm.has_band && (
                         <div className="space-y-4 p-4 border border-white/10 rounded-xl">
                           <div className="space-y-2">
-                            <Label>Nom du groupe</Label>
-                            <Input value={profileForm.band.name} onChange={(e) => setProfileForm({ ...profileForm, band: { ...profileForm.band, name: e.target.value } })} className="bg-black/20 border-white/10" />
+                            <Label>Photo du groupe</Label>
+                            <BandImageUpload
+                              value={profileForm.band.photo}
+                              onChange={(url) => setProfileForm({ ...profileForm, band: { ...profileForm.band, photo: url } })}
+                              token={token}
+                            />
                           </div>
                           <div className="space-y-2">
-                            <Label>Photo du groupe (URL)</Label>
-                            <Input value={profileForm.band.photo} onChange={(e) => setProfileForm({ ...profileForm, band: { ...profileForm.band, photo: e.target.value } })} className="bg-black/20 border-white/10" />
+                            <Label>Nom du groupe</Label>
+                            <Input value={profileForm.band.name} onChange={(e) => setProfileForm({ ...profileForm, band: { ...profileForm.band, name: e.target.value } })} className="bg-black/20 border-white/10" />
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">

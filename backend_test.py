@@ -949,19 +949,40 @@ class JamConnexionAPITester:
     def test_create_review_without_participation(self):
         """Test creating review without having participated (should fail)"""
         try:
-            headers = {'Authorization': f'Bearer {self.musician_token}'}
-            review_data = {
-                "venue_id": self.venue_profile_id,
-                "rating": 5,
-                "comment": "Great venue but I never participated in an event here"
+            # Create a new musician who has never participated
+            test_data = {
+                "email": f"musician_no_participation_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "No Participation Musician",
+                "role": "musician"
             }
-            response = requests.post(f"{self.base_url}/reviews", json=review_data, headers=headers, timeout=10)
-            success = response.status_code == 403
             
-            if success:
-                details = "Correctly rejected review without participation"
+            response = requests.post(f"{self.base_url}/auth/register", json=test_data, timeout=10)
+            if response.status_code == 200:
+                no_participation_data = response.json()
+                no_participation_token = no_participation_data.get('token')
+                
+                # Create profile for this musician
+                profile_data = {"pseudo": "NoParticipation", "instruments": ["Guitar"]}
+                headers = {'Authorization': f'Bearer {no_participation_token}'}
+                requests.post(f"{self.base_url}/musicians", json=profile_data, headers=headers, timeout=10)
+                
+                # Try to create review without participation
+                review_data = {
+                    "venue_id": self.venue_profile_id,
+                    "rating": 5,
+                    "comment": "Great venue but I never participated in an event here"
+                }
+                response = requests.post(f"{self.base_url}/reviews", json=review_data, headers=headers, timeout=10)
+                success = response.status_code == 403
+                
+                if success:
+                    details = "Correctly rejected review without participation"
+                else:
+                    details = f"Unexpected status: {response.status_code}, Expected: 403"
             else:
-                details = f"Unexpected status: {response.status_code}, Expected: 403"
+                success = False
+                details = "Failed to create test musician"
             
             self.log_test("Create Review Without Participation", success, details)
             return success

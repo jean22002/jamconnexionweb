@@ -1,106 +1,178 @@
 {
   "summary": {
-    "total_tests": 16,
-    "passed_tests": 16,
-    "success_rate": 100.0,
-    "timestamp": "2026-01-01T21:09:04.276752"
+    "total_tests": 28,
+    "passed_tests": 26,
+    "success_rate": 92.85714285714286,
+    "timestamp": "2026-01-01T22:01:53.815387"
   },
   "test_results": [
     {
       "test": "Health Check",
       "success": true,
       "details": "Status: 200, Response: healthy",
-      "timestamp": "2026-01-01T21:09:02.104257"
+      "timestamp": "2026-01-01T22:01:49.968880"
     },
     {
       "test": "Register Musician",
       "success": true,
-      "details": "User ID: a996379f-12a0-4295-971f-693dc1669bac, Role: musician",
-      "timestamp": "2026-01-01T21:09:02.397178"
+      "details": "User ID: 46813ccc-05e1-4e67-be9e-8bb28117c29f, Role: musician",
+      "timestamp": "2026-01-01T22:01:50.252544"
     },
     {
       "test": "Register Venue",
       "success": true,
-      "details": "User ID: 7077aa8d-e55c-4885-9331-9ace7c3506bc, Trial: trial",
-      "timestamp": "2026-01-01T21:09:02.659190"
+      "details": "User ID: 37bf6cbe-68f7-46ef-887c-82c38cf0e924, Trial: trial",
+      "timestamp": "2026-01-01T22:01:50.510042"
     },
     {
       "test": "Login",
       "success": true,
       "details": "Login successful for musician",
-      "timestamp": "2026-01-01T21:09:02.921624"
+      "timestamp": "2026-01-01T22:01:50.771856"
     },
     {
       "test": "Auth Me",
       "success": true,
       "details": "User: Test Musician, Role: musician",
-      "timestamp": "2026-01-01T21:09:02.968784"
+      "timestamp": "2026-01-01T22:01:50.849699"
     },
     {
       "test": "Create Venue Profile",
       "success": true,
-      "details": "Venue ID: fdaad5b9-6602-4af7-8114-1b4df547c686, Name: Test Jazz Club",
-      "timestamp": "2026-01-01T21:09:03.058926"
+      "details": "Venue ID: 71feba1f-39dc-43d7-bd6e-589043b72693, Name: Test Jazz Club",
+      "timestamp": "2026-01-01T22:01:50.899346"
     },
     {
       "test": "Create Enhanced Musician Profile",
       "success": true,
-      "details": "Musician ID: 94370abc-0821-4a12-943a-0d90801517fe, Pseudo: JazzMaster, Band: True",
-      "timestamp": "2026-01-01T21:09:03.102088"
+      "details": "Musician ID: dc789819-e9d3-4cdd-a091-c5c853c852ef, Pseudo: JazzMaster, Band: True",
+      "timestamp": "2026-01-01T22:01:50.939736"
     },
     {
       "test": "List Venues",
       "success": true,
-      "details": "Found 2 venues",
-      "timestamp": "2026-01-01T21:09:03.146000"
+      "details": "Found 3 venues",
+      "timestamp": "2026-01-01T22:01:50.978127"
     },
     {
       "test": "Nearby Venues Search",
       "success": true,
-      "details": "Found 2 nearby venues",
-      "timestamp": "2026-01-01T21:09:03.182504"
+      "details": "Found 3 nearby venues",
+      "timestamp": "2026-01-01T22:01:51.015776"
     },
     {
       "test": "Get Venue Profile",
       "success": true,
       "details": "Venue: Test Jazz Club, City: Paris",
-      "timestamp": "2026-01-01T21:09:03.225523"
+      "timestamp": "2026-01-01T22:01:51.052044"
     },
     {
       "test": "Friend Request System",
       "success": true,
       "details": "Friend request sent successfully, Received 1 friend request(s), Friend request accepted",
-      "timestamp": "2026-01-01T21:09:03.730198"
+      "timestamp": "2026-01-01T22:01:51.449310"
     },
     {
       "test": "Venue Subscription System",
       "success": true,
       "details": "Subscription successful, Subscribed: True, Total subscriptions: 1",
-      "timestamp": "2026-01-01T21:09:03.856214"
+      "timestamp": "2026-01-01T22:01:51.553341"
     },
     {
       "test": "Jam Events",
       "success": true,
-      "details": "Jam created: 2024-12-20 at Test Jazz Club, Total jams: 1",
-      "timestamp": "2026-01-01T21:09:03.948554"
+      "details": "Jam created: 2024-12-20 at Test Jazz Club, Total jams: 2",
+      "timestamp": "2026-01-01T22:01:51.619028"
     },
     {
       "test": "Concert Events",
       "success": true,
-      "details": "Concert created: Christmas Jazz Night on 2024-12-25, Total concerts: 1",
-      "timestamp": "2026-01-01T21:09:04.076064"
+      "details": "Concert created: Christmas Jazz Night on 2024-12-25, Total concerts: 2",
+      "timestamp": "2026-01-01T22:01:51.690559"
     },
     {
       "test": "Planning and Applications",
       "success": true,
       "details": "Planning slot created for 2024-12-30, Application submitted: The Rock Stars, Applications received: 1",
-      "timestamp": "2026-01-01T21:09:04.207280"
+      "timestamp": "2026-01-01T22:01:51.800247"
     },
     {
       "test": "Notifications",
       "success": true,
       "details": "Retrieved 4 notifications, Unread: 4",
-      "timestamp": "2026-01-01T21:09:04.275878"
+      "timestamp": "2026-01-01T22:01:51.877232"
+    },
+    {
+      "test": "Create Active Jam Event",
+      "success": true,
+      "details": "Active jam created: 2026-01-01 21:46-00:01 at Test Jazz Club",
+      "timestamp": "2026-01-01T22:01:51.908727"
+    },
+    {
+      "test": "Get Active Events",
+      "success": true,
+      "details": "Found 1 active events, Event: jam at Test Jazz Club, Participants: 0",
+      "timestamp": "2026-01-01T22:01:51.946638"
+    },
+    {
+      "test": "Join Event Without Auth",
+      "success": true,
+      "details": "Correctly rejected unauthenticated request",
+      "timestamp": "2026-01-01T22:01:51.981915"
+    },
+    {
+      "test": "Join Event as Musician",
+      "success": true,
+      "details": "Successfully joined event at Test Jazz Club, Participation ID: 91e62744-a4c6-4880-bdf1-cfdf9c080f58",
+      "timestamp": "2026-01-01T22:01:52.022236"
+    },
+    {
+      "test": "Double Participation Prevention",
+      "success": true,
+      "details": "Correctly prevented double participation",
+      "timestamp": "2026-01-01T22:01:52.052841"
+    },
+    {
+      "test": "Get My Current Participation",
+      "success": true,
+      "details": "Current participation: jam at Test Jazz Club",
+      "timestamp": "2026-01-01T22:01:52.083670"
+    },
+    {
+      "test": "Get Musician Participation (Public)",
+      "success": true,
+      "details": "Public participation view: jam at Test Jazz Club",
+      "timestamp": "2026-01-01T22:01:52.114555"
+    },
+    {
+      "test": "Get Event Participants",
+      "success": true,
+      "details": "Found 1 participants, First participant: JazzMaster",
+      "timestamp": "2026-01-01T22:01:52.145298"
+    },
+    {
+      "test": "Create Second Musician for Friends",
+      "success": true,
+      "details": "Friend musician created: 902016b4-22cf-48bc-a6ba-ff7e6b09478b, Profile: 1070c382-0ac9-423f-b029-891e721fa59c",
+      "timestamp": "2026-01-01T22:01:52.580392"
+    },
+    {
+      "test": "Friend Notifications on Participation",
+      "success": true,
+      "details": "Notification count increased from 1 to 2",
+      "timestamp": "2026-01-01T22:01:53.751305"
+    },
+    {
+      "test": "Leave Event",
+      "success": false,
+      "details": "Status: 404, Error: {\"detail\":\"Participation not found\"}",
+      "timestamp": "2026-01-01T22:01:53.783959"
+    },
+    {
+      "test": "Participation After Leaving",
+      "success": false,
+      "details": "WARNING: Still has active participation: Test Jazz Club",
+      "timestamp": "2026-01-01T22:01:53.814668"
     }
   ]
 }

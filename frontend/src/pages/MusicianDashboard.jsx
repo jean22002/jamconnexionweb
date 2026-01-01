@@ -28,6 +28,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useAutoGeolocation } from "../hooks/useGeolocation";
 import { toast } from "sonner";
+import ParticipationBadge from "../components/ParticipationBadge";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 

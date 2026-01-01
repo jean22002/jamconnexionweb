@@ -19,6 +19,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
 import JoinEventButton from "../components/JoinEventButton";
+import { StarRating, StarRatingInput } from "../components/StarRating";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -47,6 +48,12 @@ export default function VenueDetail() {
   });
   const [activeEvents, setActiveEvents] = useState([]);
   const [currentParticipation, setCurrentParticipation] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   const fetchVenue = useCallback(async () => {
     try {

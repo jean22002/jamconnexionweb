@@ -560,6 +560,56 @@ async def upload_venue_photo(
     
     return {"url": url}
 
+# ============= VENUE GALLERY =============
+
+@api_router.post("/venues/me/gallery")
+async def add_gallery_photo(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    """Add a photo to venue gallery (max 20 photos)"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can manage gallery")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Check gallery limit
+    current_gallery = venue.get("gallery", [])
+    if len(current_gallery) >= 20:
+        raise HTTPException(status_code=400, detail="Limite de 20 photos atteinte. Supprimez des photos avant d'en ajouter.")
+    
+    # Upload file
+    try:
+        file_url = await save_upload_file(file, "gallery")
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Upload error: {e}")
+        raise HTTPException(status_code=500, detail="Erreur lors du téléchargement")
+    
+    # Add to gallery
+    await db.venues.update_one(
+        {"user_id": current_user["id"]},
+        {"$push": {"gallery": file_url}}
+    )
+    
+    return {"url": file_url, "message": "Photo ajoutée à la galerie"}
+
+@api_router.delete("/venues/me/gallery")
+async def remove_gallery_photo(photo_url: str, current_user: dict = Depends(get_current_user)):
+    """Remove a photo from venue gallery"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can manage gallery")
+    
+    result = await db.venues.update_one(
+        {"user_id": current_user["id"]},
+        {"$pull": {"gallery": photo_url}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Photo not found in gallery")
+    
+    return {"message": "Photo supprimée de la galerie"}
+
 # ============= MUSICIAN ROUTES =============
 
 @api_router.post("/musicians", response_model=MusicianProfileResponse)

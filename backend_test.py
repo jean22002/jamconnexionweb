@@ -1063,7 +1063,7 @@ class JamConnexionAPITester:
                     
                     # Create and join an event to establish participation
                     venue_headers = {'Authorization': f'Bearer {self.venue_token}'}
-                    from datetime import datetime, timedelta
+                    from datetime import timedelta
                     now = datetime.now()
                     start_time = (now - timedelta(minutes=5)).strftime("%H:%M")
                     end_time = (now + timedelta(hours=1)).strftime("%H:%M")

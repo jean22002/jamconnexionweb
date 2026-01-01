@@ -486,6 +486,360 @@ class JamConnexionAPITester:
             self.log_test("Notifications", False, f"Error: {str(e)}")
             return False
 
+    def test_create_active_jam_event(self):
+        """Test creating an active jam event for participation testing"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Get current time and create an active jam (happening now)
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            start_time = (now - timedelta(minutes=15)).strftime("%H:%M")  # Started 15 min ago
+            end_time = (now + timedelta(hours=2)).strftime("%H:%M")       # Ends in 2 hours
+            today = now.strftime("%Y-%m-%d")
+            
+            jam_data = {
+                "date": today,
+                "start_time": start_time,
+                "end_time": end_time,
+                "music_styles": ["Jazz", "Blues", "Rock"],
+                "rules": "Venez avec vos instruments!",
+                "has_instruments": True,
+                "has_pa_system": True,
+                "instruments_available": ["Piano", "Batterie", "Ampli guitare"],
+                "additional_info": "Jam session test pour participation en temps réel"
+            }
+            
+            response = requests.post(f"{self.base_url}/jams", json=jam_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                jam_response = response.json()
+                self.active_jam_id = jam_response.get('id')
+                details = f"Active jam created: {jam_response.get('date')} {start_time}-{end_time} at {jam_response.get('venue_name')}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Create Active Jam Event", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Create Active Jam Event", False, f"Error: {str(e)}")
+            return False
+
+    def test_get_active_events(self):
+        """Test retrieving active events at a venue"""
+        try:
+            response = requests.get(f"{self.base_url}/venues/{self.venue_profile_id}/active-events", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                active_events = response.json()
+                details = f"Found {len(active_events)} active events"
+                if active_events:
+                    event = active_events[0]
+                    details += f", Event: {event.get('type')} at {event.get('venue_name')}, Participants: {event.get('participants_count', 0)}"
+                    self.active_event_for_test = event
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Get Active Events", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get Active Events", False, f"Error: {str(e)}")
+            return False
+
+    def test_join_event_without_auth(self):
+        """Test joining event without authentication (should fail)"""
+        try:
+            response = requests.post(f"{self.base_url}/events/{self.active_jam_id}/join?event_type=jam", timeout=10)
+            success = response.status_code == 401
+            
+            if success:
+                details = "Correctly rejected unauthenticated request"
+            else:
+                details = f"Unexpected status: {response.status_code}, Expected: 401"
+            
+            self.log_test("Join Event Without Auth", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Join Event Without Auth", False, f"Error: {str(e)}")
+            return False
+
+    def test_join_event_as_musician(self):
+        """Test musician joining an active event"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            response = requests.post(f"{self.base_url}/events/{self.active_jam_id}/join?event_type=jam", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                join_response = response.json()
+                self.participation_id = join_response.get('participation_id')
+                details = f"Successfully joined event at {join_response.get('venue_name')}, Participation ID: {self.participation_id}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Join Event as Musician", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Join Event as Musician", False, f"Error: {str(e)}")
+            return False
+
+    def test_double_participation(self):
+        """Test trying to join the same event twice (should fail)"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            response = requests.post(f"{self.base_url}/events/{self.active_jam_id}/join?event_type=jam", headers=headers, timeout=10)
+            success = response.status_code == 400
+            
+            if success:
+                details = "Correctly prevented double participation"
+            else:
+                details = f"Unexpected status: {response.status_code}, Expected: 400"
+            
+            self.log_test("Double Participation Prevention", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Double Participation Prevention", False, f"Error: {str(e)}")
+            return False
+
+    def test_get_my_current_participation(self):
+        """Test retrieving musician's current participation"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            response = requests.get(f"{self.base_url}/musicians/me/current-participation", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                participation = response.json()
+                if participation:
+                    details = f"Current participation: {participation.get('event_type')} at {participation.get('venue_name')}"
+                else:
+                    details = "No current participation found"
+                    success = False  # Should have participation from previous test
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Get My Current Participation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get My Current Participation", False, f"Error: {str(e)}")
+            return False
+
+    def test_get_musician_participation_public(self):
+        """Test retrieving a musician's participation (public endpoint)"""
+        try:
+            response = requests.get(f"{self.base_url}/musicians/{self.musician_profile_id}/current-participation", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                participation = response.json()
+                if participation:
+                    details = f"Public participation view: {participation.get('event_type')} at {participation.get('venue_name')}"
+                else:
+                    details = "No current participation found"
+                    success = False  # Should have participation from previous test
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Get Musician Participation (Public)", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get Musician Participation (Public)", False, f"Error: {str(e)}")
+            return False
+
+    def test_get_event_participants(self):
+        """Test retrieving list of event participants"""
+        try:
+            response = requests.get(f"{self.base_url}/events/{self.active_jam_id}/participants", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                participants = response.json()
+                details = f"Found {len(participants)} participants"
+                if participants:
+                    participant = participants[0]
+                    details += f", First participant: {participant.get('pseudo')}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Get Event Participants", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get Event Participants", False, f"Error: {str(e)}")
+            return False
+
+    def test_create_second_musician_for_friends(self):
+        """Create a second musician to test friend notifications"""
+        try:
+            test_data = {
+                "email": f"musician_friend_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Ami Musicien",
+                "role": "musician"
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/register", json=test_data, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                self.friend_musician_token = data.get('token')
+                self.friend_musician_user = data.get('user')
+                
+                # Create musician profile
+                profile_data = {
+                    "pseudo": "AmiMusicien",
+                    "instruments": ["Saxophone"],
+                    "music_styles": ["Jazz"]
+                }
+                headers = {'Authorization': f'Bearer {self.friend_musician_token}'}
+                profile_response = requests.post(f"{self.base_url}/musicians", json=profile_data, headers=headers, timeout=10)
+                
+                if profile_response.status_code == 200:
+                    friend_profile = profile_response.json()
+                    self.friend_musician_profile_id = friend_profile.get('id')
+                    
+                    # Send friend request from first musician to second
+                    headers1 = {'Authorization': f'Bearer {self.musician_token}'}
+                    friend_request_data = {"to_user_id": self.friend_musician_user['id']}
+                    requests.post(f"{self.base_url}/friends/request", json=friend_request_data, headers=headers1, timeout=10)
+                    
+                    # Accept friend request
+                    requests_response = requests.get(f"{self.base_url}/friends/requests", headers=headers, timeout=10)
+                    if requests_response.status_code == 200:
+                        friend_requests = requests_response.json()
+                        if friend_requests:
+                            request_id = friend_requests[0]['id']
+                            requests.post(f"{self.base_url}/friends/accept/{request_id}", headers=headers, timeout=10)
+                    
+                    details = f"Friend musician created: {self.friend_musician_user.get('id')}, Profile: {self.friend_musician_profile_id}"
+                else:
+                    details = f"Profile creation failed: {profile_response.status_code}"
+                    success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Create Second Musician for Friends", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Create Second Musician for Friends", False, f"Error: {str(e)}")
+            return False
+
+    def test_friend_notifications_on_participation(self):
+        """Test that friends receive notifications when musician joins event"""
+        try:
+            # Check friend's notifications before
+            headers = {'Authorization': f'Bearer {self.friend_musician_token}'}
+            response = requests.get(f"{self.base_url}/notifications/unread-count", headers=headers, timeout=10)
+            initial_count = 0
+            if response.status_code == 200:
+                initial_count = response.json().get('count', 0)
+            
+            # Create another active jam and join it (to trigger friend notification)
+            venue_headers = {'Authorization': f'Bearer {self.venue_token}'}
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            start_time = (now - timedelta(minutes=10)).strftime("%H:%M")
+            end_time = (now + timedelta(hours=1)).strftime("%H:%M")
+            today = now.strftime("%Y-%m-%d")
+            
+            jam_data = {
+                "date": today,
+                "start_time": start_time,
+                "end_time": end_time,
+                "music_styles": ["Rock"],
+                "rules": "Test jam for notifications"
+            }
+            
+            jam_response = requests.post(f"{self.base_url}/jams", json=jam_data, headers=venue_headers, timeout=10)
+            if jam_response.status_code == 200:
+                new_jam = jam_response.json()
+                new_jam_id = new_jam.get('id')
+                
+                # First musician leaves current event
+                musician_headers = {'Authorization': f'Bearer {self.musician_token}'}
+                requests.post(f"{self.base_url}/events/{self.active_jam_id}/leave", headers=musician_headers, timeout=10)
+                
+                # First musician joins new event
+                join_response = requests.post(f"{self.base_url}/events/{new_jam_id}/join?event_type=jam", headers=musician_headers, timeout=10)
+                
+                if join_response.status_code == 200:
+                    # Check friend's notifications after
+                    import time
+                    time.sleep(1)  # Give time for notification to be created
+                    response = requests.get(f"{self.base_url}/notifications/unread-count", headers=headers, timeout=10)
+                    final_count = 0
+                    if response.status_code == 200:
+                        final_count = response.json().get('count', 0)
+                    
+                    success = final_count > initial_count
+                    details = f"Notification count increased from {initial_count} to {final_count}"
+                else:
+                    success = False
+                    details = f"Failed to join new event: {join_response.status_code}"
+            else:
+                success = False
+                details = f"Failed to create new jam: {jam_response.status_code}"
+            
+            self.log_test("Friend Notifications on Participation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Friend Notifications on Participation", False, f"Error: {str(e)}")
+            return False
+
+    def test_leave_event(self):
+        """Test leaving an event"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            response = requests.post(f"{self.base_url}/events/{self.active_jam_id}/leave", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                details = "Successfully left event"
+                
+                # Verify participation is no longer active
+                response = requests.get(f"{self.base_url}/musicians/me/current-participation", headers=headers, timeout=10)
+                if response.status_code == 200:
+                    participation = response.json()
+                    if participation is None:
+                        details += ", Participation correctly deactivated"
+                    else:
+                        details += ", WARNING: Participation still active"
+                        success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Leave Event", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Leave Event", False, f"Error: {str(e)}")
+            return False
+
+    def test_participation_after_leaving(self):
+        """Test that participation is no longer active after leaving"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            response = requests.get(f"{self.base_url}/musicians/me/current-participation", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                participation = response.json()
+                if participation is None:
+                    details = "No active participation found (correct after leaving)"
+                    success = True
+                else:
+                    details = f"WARNING: Still has active participation: {participation.get('venue_name')}"
+                    success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Participation After Leaving", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Participation After Leaving", False, f"Error: {str(e)}")
+            return False
+
     def test_list_venues(self):
         """Test listing venues"""
         try:

@@ -321,9 +321,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Event Participation - Frontend Components"
-    - "Event Participation - VenueDetail Integration"
-    - "Event Participation - Musician Profile Badge"
+    - "Broadcast Notifications System - Backend"
+    - "Broadcast Notifications System - Frontend"
+    - "Review System - Backend"
+    - "Review System - Frontend VenueDetail"
+    - "Review System - Frontend VenueDashboard"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -333,3 +335,5 @@ agent_communication:
     message: "Système de participation aux événements implémenté. Backend prêt avec endpoints de participation. Frontend complété avec composants JoinEventButton et ParticipationBadge. Intégrations terminées sur VenueDetail, MusicianDetail et MusicianDashboard. Nécessite test complet backend + frontend pour vérifier: 1) Récupération des événements actifs, 2) Fonctionnalité rejoindre/quitter événement, 3) Affichage du badge de participation, 4) Notifications aux amis, 5) Polling automatique du statut de participation. Un test de fichier doit être créé sous /app/backend/tests/test_event_participation.py pour tester les nouveaux endpoints."
   - agent: "testing"
     message: "🎯 BACKEND PARTICIPATION SYSTEM - TESTS COMPLETS RÉUSSIS (28/28 - 100%) - Tous les endpoints de participation aux événements fonctionnent parfaitement. Tests détaillés effectués: ✅ Création événements actifs avec timing correct, ✅ Récupération événements actifs par établissement, ✅ Sécurité: authentification requise pour participation, ✅ Participation musicien avec création participation record, ✅ Prévention double participation, ✅ Récupération participation active (privée et publique), ✅ Liste participants événement, ✅ Notifications automatiques aux amis lors participation, ✅ Fonctionnalité quitter événement, ✅ Nettoyage automatique participations. La fonction is_event_active() avec buffer 30min fonctionne correctement. Système prêt pour tests frontend. BACKEND PARTICIPATION: ENTIÈREMENT FONCTIONNEL."
+  - agent: "main"
+    message: "NOUVELLES FONCTIONNALITÉS IMPLÉMENTÉES: 1) NOTIFICATIONS GÉOGRAPHIQUES - Établissements peuvent envoyer des notifications à tous les musiciens dans un rayon de 100km. Backend: 3 endpoints créés (broadcast, history, count). Frontend: Nouvel onglet dans VenueDashboard avec formulaire et historique. 2) SYSTÈME D'AVIS - Musiciens peuvent noter établissements (1-5 étoiles + commentaire). Établissements peuvent répondre et toggle visibilité. Backend: 7 endpoints créés (create, list, rating, respond, report, visibility, my reviews). Frontend: Onglet Avis sur VenueDetail (affichage + formulaire) et VenueDashboard (gestion). Composant StarRating créé. BESOIN TESTS COMPLETS backend + frontend pour ces 2 nouvelles fonctionnalités."

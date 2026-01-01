@@ -804,6 +804,28 @@ export default function VenueDashboard() {
                         <Input type="date" value={planningForm.date} onChange={(e) => setPlanningForm({ ...planningForm, date: e.target.value })} className="bg-black/20 border-white/10" />
                       </div>
                       <div className="space-y-2">
+                        <Label>Type d'artiste recherché</Label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {['Groupe de compos', 'Groupe de reprise', 'Tribute', 'Acoustique solo', 'Duo acoustique', 'Trio acoustique', 'DJ', 'Band complet'].map((cat) => (
+                            <label key={cat} className="flex items-center gap-2 p-2 border border-white/10 rounded-lg cursor-pointer hover:bg-white/5">
+                              <input
+                                type="checkbox"
+                                checked={planningForm.artist_categories.includes(cat)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setPlanningForm({ ...planningForm, artist_categories: [...planningForm.artist_categories, cat] });
+                                  } else {
+                                    setPlanningForm({ ...planningForm, artist_categories: planningForm.artist_categories.filter(c => c !== cat) });
+                                  }
+                                }}
+                                className="rounded"
+                              />
+                              <span className="text-sm">{cat}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="space-y-2">
                         <Label>Styles recherchés</Label>
                         <Input placeholder="Entrée pour ajouter" onKeyPress={(e) => { if (e.key === 'Enter') { addToList('music_styles', e.target.value, planningForm, setPlanningForm); e.target.value = ''; } }} className="bg-black/20 border-white/10" />
                         <div className="flex flex-wrap gap-2">

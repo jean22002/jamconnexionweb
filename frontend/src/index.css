@@ -124,11 +124,11 @@ html {
   background: transparent !important;
   border: none !important;
   cursor: pointer !important;
-  transition: transform 0.2s ease;
 }
 
 .venue-guitar-marker:hover {
-  transform: scale(1.15);
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
 }
 
 /* User pulse marker */

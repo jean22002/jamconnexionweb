@@ -1042,6 +1042,245 @@ async def delete_jam_event(jam_id: str, current_user: dict = Depends(get_current
     
     return {"message": "Jam event deleted"}
 
+# ============= EVENT PARTICIPATION (Live Check-in) =============
+
+def is_event_active(event_date: str, start_time: str, end_time: str) -> bool:
+    """Check if an event is currently active based on date and time"""
+    try:
+        now = datetime.now(timezone.utc)
+        # Parse event date and times
+        event_day = datetime.strptime(event_date, "%Y-%m-%d").date()
+        start = datetime.strptime(start_time, "%H:%M").time()
+        end = datetime.strptime(end_time, "%H:%M").time()
+        
+        # Create datetime objects for comparison (assume local time, add 1 hour buffer)
+        event_start = datetime.combine(event_day, start).replace(tzinfo=timezone.utc)
+        event_end = datetime.combine(event_day, end).replace(tzinfo=timezone.utc)
+        
+        # Handle events that go past midnight
+        if end < start:
+            event_end = event_end + timedelta(days=1)
+        
+        # Add 30 min buffer before and after
+        event_start = event_start - timedelta(minutes=30)
+        event_end = event_end + timedelta(minutes=30)
+        
+        return event_start <= now <= event_end
+    except Exception as e:
+        logger.error(f"Error checking event time: {e}")
+        return False
+
+@api_router.get("/venues/{venue_id}/active-events")
+async def get_active_events(venue_id: str):
+    """Get currently active events at a venue"""
+    jams = await db.jams.find({"venue_id": venue_id}, {"_id": 0}).to_list(100)
+    
+    active_events = []
+    for jam in jams:
+        if is_event_active(jam["date"], jam["start_time"], jam["end_time"]):
+            # Count participants
+            participants_count = await db.event_participations.count_documents({
+                "event_id": jam["id"],
+                "event_type": "jam",
+                "active": True
+            })
+            active_events.append({
+                "id": jam["id"],
+                "type": "jam",
+                "venue_id": venue_id,
+                "venue_name": jam["venue_name"],
+                "date": jam["date"],
+                "start_time": jam["start_time"],
+                "end_time": jam["end_time"],
+                "music_styles": jam.get("music_styles", []),
+                "participants_count": participants_count
+            })
+    
+    return active_events
+
+@api_router.post("/events/{event_id}/join")
+async def join_event(event_id: str, event_type: str = "jam", current_user: dict = Depends(get_current_user)):
+    """Join an active event and notify friends"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can join events")
+    
+    # Find the event
+    if event_type == "jam":
+        event = await db.jams.find_one({"id": event_id}, {"_id": 0})
+    else:
+        event = await db.concerts.find_one({"id": event_id}, {"_id": 0})
+    
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    # Check if event is active
+    if not is_event_active(event["date"], event["start_time"], event.get("end_time", "23:59")):
+        raise HTTPException(status_code=400, detail="Event is not currently active")
+    
+    # Get musician profile
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Check if already participating
+    existing = await db.event_participations.find_one({
+        "event_id": event_id,
+        "musician_id": musician["id"],
+        "active": True
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Already participating in this event")
+    
+    # Create participation record
+    participation_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    participation_doc = {
+        "id": participation_id,
+        "event_id": event_id,
+        "event_type": event_type,
+        "venue_id": event["venue_id"],
+        "venue_name": event["venue_name"],
+        "event_date": event["date"],
+        "event_start": event["start_time"],
+        "event_end": event.get("end_time", "23:59"),
+        "musician_id": musician["id"],
+        "musician_user_id": current_user["id"],
+        "musician_pseudo": musician.get("pseudo", current_user["name"]),
+        "musician_image": musician.get("profile_image"),
+        "active": True,
+        "joined_at": now
+    }
+    
+    await db.event_participations.insert_one(participation_doc)
+    
+    # Notify all friends
+    friendships = await db.friends.find({
+        "$or": [{"user1_id": current_user["id"]}, {"user2_id": current_user["id"]}],
+        "status": "accepted"
+    }, {"_id": 0}).to_list(100)
+    
+    for friendship in friendships:
+        friend_id = friendship["user2_id"] if friendship["user1_id"] == current_user["id"] else friendship["user1_id"]
+        await create_notification(
+            friend_id,
+            "friend_at_event",
+            f"🎵 {musician.get('pseudo', current_user['name'])} est en jam!",
+            f"Participe au boeuf musical chez {event['venue_name']}",
+            f"/venue/{event['venue_id']}"
+        )
+    
+    return {
+        "message": "Joined event successfully",
+        "participation_id": participation_id,
+        "venue_name": event["venue_name"]
+    }
+
+@api_router.post("/events/{event_id}/leave")
+async def leave_event(event_id: str, current_user: dict = Depends(get_current_user)):
+    """Leave an event (deactivate participation)"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can leave events")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    result = await db.event_participations.update_one(
+        {"event_id": event_id, "musician_id": musician["id"], "active": True},
+        {"$set": {"active": False, "left_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Participation not found")
+    
+    return {"message": "Left event successfully"}
+
+@api_router.get("/events/{event_id}/participants")
+async def get_event_participants(event_id: str):
+    """Get list of current participants in an event"""
+    participants = await db.event_participations.find({
+        "event_id": event_id,
+        "active": True
+    }, {"_id": 0}).to_list(100)
+    
+    return [{
+        "musician_id": p["musician_id"],
+        "pseudo": p["musician_pseudo"],
+        "profile_image": p.get("musician_image"),
+        "joined_at": p["joined_at"]
+    } for p in participants]
+
+@api_router.get("/musicians/me/current-participation")
+async def get_my_current_participation(current_user: dict = Depends(get_current_user)):
+    """Get musician's current active event participation"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can check participation")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        return None
+    
+    # Find active participation
+    participation = await db.event_participations.find_one({
+        "musician_id": musician["id"],
+        "active": True
+    }, {"_id": 0})
+    
+    if not participation:
+        return None
+    
+    # Check if event is still active (auto-cleanup)
+    if not is_event_active(participation["event_date"], participation["event_start"], participation["event_end"]):
+        # Event ended, deactivate participation
+        await db.event_participations.update_one(
+            {"id": participation["id"]},
+            {"$set": {"active": False, "auto_ended": True}}
+        )
+        return None
+    
+    return {
+        "id": participation["id"],
+        "event_id": participation["event_id"],
+        "event_type": participation["event_type"],
+        "venue_id": participation["venue_id"],
+        "venue_name": participation["venue_name"],
+        "event_date": participation["event_date"],
+        "event_start": participation["event_start"],
+        "event_end": participation["event_end"],
+        "joined_at": participation["joined_at"]
+    }
+
+@api_router.get("/musicians/{musician_id}/current-participation")
+async def get_musician_participation(musician_id: str):
+    """Get a musician's current active event participation (public)"""
+    musician = await db.musicians.find_one({"id": musician_id}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician not found")
+    
+    participation = await db.event_participations.find_one({
+        "musician_id": musician_id,
+        "active": True
+    }, {"_id": 0})
+    
+    if not participation:
+        return None
+    
+    # Check if event is still active
+    if not is_event_active(participation["event_date"], participation["event_start"], participation["event_end"]):
+        await db.event_participations.update_one(
+            {"id": participation["id"]},
+            {"$set": {"active": False, "auto_ended": True}}
+        )
+        return None
+    
+    return {
+        "venue_id": participation["venue_id"],
+        "venue_name": participation["venue_name"],
+        "event_type": participation["event_type"],
+        "joined_at": participation["joined_at"]
+    }
+
 # ============= CONCERT EVENTS =============
 
 @api_router.post("/concerts", response_model=ConcertEventResponse)

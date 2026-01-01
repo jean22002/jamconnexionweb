@@ -110,11 +110,13 @@ export default function VenueDetail() {
   useEffect(() => {
     fetchVenue();
     fetchEvents();
-  }, [fetchVenue, fetchEvents]);
+    fetchActiveEvents();
+  }, [fetchVenue, fetchEvents, fetchActiveEvents]);
 
   useEffect(() => {
     checkSubscription();
-  }, [checkSubscription]);
+    fetchCurrentParticipation();
+  }, [checkSubscription, fetchCurrentParticipation]);
 
   const toggleSubscription = async () => {
     if (!token) {
@@ -162,6 +164,11 @@ export default function VenueDetail() {
     }
     setSelectedSlot(slot);
     setShowApplyDialog(true);
+  };
+
+  const handleParticipationChange = () => {
+    fetchCurrentParticipation();
+    fetchActiveEvents();
   };
 
   if (loading) {

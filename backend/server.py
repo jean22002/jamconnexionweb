@@ -186,6 +186,7 @@ class VenueProfileResponse(BaseModel):
     created_at: str
     subscription_status: Optional[str] = None
     subscribers_count: int = 0
+    show_reviews: bool = True
 
 # Jam Event (Boeuf musical)
 class JamEvent(BaseModel):

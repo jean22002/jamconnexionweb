@@ -43,6 +43,12 @@ export default function VenueDashboard() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [viewingApplications, setViewingApplications] = useState(null);
   
+  // Broadcast notifications
+  const [broadcastMessage, setBroadcastMessage] = useState("");
+  const [broadcastHistory, setBroadcastHistory] = useState([]);
+  const [nearbyMusiciansCount, setNearbyMusiciansCount] = useState(0);
+  const [sendingBroadcast, setSendingBroadcast] = useState(false);
+  
   const [formData, setFormData] = useState({
     name: "", description: "", profile_image: "", cover_image: "",
     address: "", city: "", postal_code: "", latitude: 0, longitude: 0,

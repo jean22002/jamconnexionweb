@@ -814,6 +814,96 @@ export default function VenueDashboard() {
               </Dialog>
             </div>
           </TabsContent>
+
+          {/* Notifications Tab */}
+          <TabsContent value="notifications">
+            <div className="space-y-6">
+              {/* Broadcast Notification Form */}
+              <div className="glassmorphism rounded-2xl p-6">
+                <h2 className="font-heading font-semibold text-xl mb-4">📢 Envoyer une notification</h2>
+                <p className="text-muted-foreground text-sm mb-4">
+                  Envoyez un message à tous les musiciens dans un rayon de 100 km autour de votre établissement.
+                </p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="broadcast-message">Message</Label>
+                    <Textarea
+                      id="broadcast-message"
+                      value={broadcastMessage}
+                      onChange={(e) => setBroadcastMessage(e.target.value)}
+                      placeholder="Ex: Recherche batteur pour jam session ce soir à 21h..."
+                      rows={4}
+                      className="bg-black/20 border-white/10 mt-2"
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {broadcastMessage.length} caractères
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg border border-primary/30">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-5 h-5 text-primary" />
+                      <span className="text-sm">
+                        <strong>{nearbyMusiciansCount}</strong> musicien(s) dans un rayon de 100 km
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <Button
+                    onClick={sendBroadcastNotification}
+                    disabled={sendingBroadcast || !broadcastMessage.trim()}
+                    className="w-full bg-primary hover:bg-primary/90 rounded-full gap-2"
+                  >
+                    {sendingBroadcast ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Envoi en cours...
+                      </>
+                    ) : (
+                      <>
+                        <Bell className="w-4 h-4" />
+                        Envoyer la notification
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Broadcast History */}
+              <div className="glassmorphism rounded-2xl p-6">
+                <h2 className="font-heading font-semibold text-xl mb-4">Historique des notifications</h2>
+                
+                {broadcastHistory.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">
+                    Aucune notification envoyée pour le moment
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {broadcastHistory.map((broadcast) => (
+                      <div key={broadcast.id} className="p-4 bg-muted/30 rounded-xl">
+                        <div className="flex items-start justify-between mb-2">
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(broadcast.created_at).toLocaleDateString('fr-FR', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                          <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
+                            {broadcast.recipients_count} destinataires
+                          </span>
+                        </div>
+                        <p className="text-sm">{broadcast.message}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
       </main>
     </div>

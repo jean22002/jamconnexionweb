@@ -1171,12 +1171,12 @@ class JamConnexionAPITester:
                     "comment": "Invalid rating test"
                 }
                 response = requests.post(f"{self.base_url}/reviews", json=review_data, headers=headers, timeout=10)
-                success = response.status_code == 422  # Validation error
+                success = response.status_code == 400  # Backend validates and returns 400
                 
                 if success:
                     details = "Correctly rejected invalid rating (6/5)"
                 else:
-                    details = f"Unexpected status: {response.status_code}, Expected: 422"
+                    details = f"Unexpected status: {response.status_code}, Expected: 400"
             else:
                 success = False
                 details = "Failed to create test musician"

@@ -159,6 +159,7 @@ class VenueProfile(BaseModel):
     equipment: List[str] = []
     music_styles: List[str] = []
     opening_hours: Optional[str] = None
+    show_reviews: bool = True  # Toggle to show/hide reviews publicly
 
 class VenueProfileResponse(BaseModel):
     id: str

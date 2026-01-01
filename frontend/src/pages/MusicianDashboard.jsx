@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, Tooltip } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Button } from "../components/ui/button";
@@ -831,7 +831,30 @@ export default function MusicianDashboard() {
                   {venues.map((venue) => {
                     const isNearby = nearbyVenues.some(nv => nv.id === venue.id);
                     return (
-                      <Marker key={venue.id} position={[venue.latitude, venue.longitude]} icon={venueIcon}>
+                      <Marker 
+                        key={venue.id} 
+                        position={[venue.latitude, venue.longitude]} 
+                        icon={venueIcon}
+                        eventHandlers={{
+                          click: () => {
+                            // Navigate to venue detail page
+                            window.location.href = `/venue/${venue.id}`;
+                          }
+                        }}
+                      >
+                        <Tooltip 
+                          permanent 
+                          direction="right" 
+                          offset={[15, -5]}
+                          className="venue-name-tooltip"
+                        >
+                          <div className="text-xs font-semibold cursor-pointer hover:text-primary">
+                            {venue.name}
+                            {isNearby && venue.distance_km && (
+                              <span className="text-primary ml-1">({venue.distance_km}km)</span>
+                            )}
+                          </div>
+                        </Tooltip>
                         <Popup>
                           <div className="min-w-[200px]">
                             <h3 className="font-semibold text-lg mb-1">{venue.name}</h3>

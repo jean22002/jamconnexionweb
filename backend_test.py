@@ -1342,7 +1342,25 @@ class JamConnexionAPITester:
             self.test_create_second_musician_for_friends,
             self.test_friend_notifications_on_participation,
             self.test_leave_event,
-            self.test_participation_after_leaving
+            self.test_participation_after_leaving,
+            # Broadcast Notifications Tests
+            self.test_broadcast_notification_without_auth,
+            self.test_broadcast_notification_as_musician,
+            self.test_broadcast_notification_venue_subscribed,
+            self.test_get_broadcast_history,
+            self.test_get_nearby_musicians_count,
+            # Review System Tests
+            self.test_create_review_without_participation,
+            self.test_create_participation_for_review,
+            self.test_create_review_with_participation,
+            self.test_create_duplicate_review,
+            self.test_invalid_rating_review,
+            self.test_get_venue_reviews,
+            self.test_get_venue_average_rating,
+            self.test_venue_respond_to_review,
+            self.test_report_review,
+            self.test_toggle_reviews_visibility,
+            self.test_get_venue_my_reviews
         ]
         
         for test in tests:

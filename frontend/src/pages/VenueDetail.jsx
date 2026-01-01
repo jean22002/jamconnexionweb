@@ -178,6 +178,62 @@ export default function VenueDetail() {
     fetchActiveEvents();
   };
 
+  const fetchReviews = useCallback(async () => {
+    try {
+      const [reviewsRes, ratingRes] = await Promise.all([
+        axios.get(`${API}/venues/${id}/reviews`),
+        axios.get(`${API}/venues/${id}/average-rating`)
+      ]);
+      setReviews(reviewsRes.data);
+      setAverageRating(ratingRes.data.average_rating);
+      setTotalReviews(ratingRes.data.total_reviews);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
+  }, [id]);
+
+  const submitReview = async () => {
+    if (!token) {
+      toast.error("Connectez-vous pour laisser un avis");
+      return;
+    }
+
+    setSubmittingReview(true);
+    try {
+      await axios.post(`${API}/reviews`, {
+        venue_id: id,
+        rating: reviewForm.rating,
+        comment: reviewForm.comment
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      
+      toast.success("Avis publié ! Merci pour votre retour 🎵");
+      setShowReviewDialog(false);
+      setReviewForm({ rating: 5, comment: "" });
+      fetchReviews();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur lors de la publication de l'avis");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const reportReview = async (reviewId) => {
+    if (!token) {
+      toast.error("Connectez-vous pour signaler un avis");
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/reviews/${reviewId}/report`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success("Avis signalé");
+      fetchReviews();
+    } catch (error) {
+      toast.error("Erreur lors du signalement");
+    }
+  };
+
   if (loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   }

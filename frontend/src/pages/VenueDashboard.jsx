@@ -400,14 +400,26 @@ export default function VenueDashboard() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label>Photo de profil (URL)</Label>
-                    <Input value={formData.profile_image} onChange={(e) => setFormData({ ...formData, profile_image: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
+                    <Label>Photo de profil</Label>
+                    <VenueImageUpload
+                      value={formData.profile_image}
+                      onChange={(url) => setFormData({ ...formData, profile_image: url })}
+                      token={token}
+                      photoType="profile"
+                      disabled={!editing}
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label>Photo de couverture (URL)</Label>
-                    <Input value={formData.cover_image} onChange={(e) => setFormData({ ...formData, cover_image: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
+                    <Label>Photo de couverture</Label>
+                    <VenueImageUpload
+                      value={formData.cover_image}
+                      onChange={(url) => setFormData({ ...formData, cover_image: url })}
+                      token={token}
+                      photoType="cover"
+                      disabled={!editing}
+                    />
                   </div>
                 </div>
 

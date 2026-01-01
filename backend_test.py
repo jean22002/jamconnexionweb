@@ -227,14 +227,263 @@ class JamConnexionAPITester:
             if success:
                 data = response.json()
                 self.musician_profile_id = data.get('id')
-                details = f"Musician ID: {self.musician_profile_id}, Name: {data.get('name')}"
+                details = f"Musician ID: {self.musician_profile_id}, Pseudo: {data.get('pseudo')}, Band: {data.get('has_band')}"
             else:
                 details = f"Status: {response.status_code}, Error: {response.text[:100]}"
             
-            self.log_test("Create Musician Profile", success, details)
+            self.log_test("Create Enhanced Musician Profile", success, details)
             return success
         except Exception as e:
-            self.log_test("Create Musician Profile", False, f"Error: {str(e)}")
+            self.log_test("Create Enhanced Musician Profile", False, f"Error: {str(e)}")
+            return False
+
+    def test_friend_request_system(self):
+        """Test friend request functionality"""
+        try:
+            # Create second musician for friend request
+            test_data = {
+                "email": f"musician2_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Test Musician 2",
+                "role": "musician"
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/register", json=test_data, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Friend Request System - Setup", False, "Failed to create second musician")
+                return False
+                
+            musician2_data = response.json()
+            musician2_token = musician2_data.get('token')
+            musician2_user = musician2_data.get('user')
+            
+            # Create profile for second musician
+            profile_data = {"pseudo": "TestFriend", "instruments": ["Piano"]}
+            headers2 = {'Authorization': f'Bearer {musician2_token}'}
+            requests.post(f"{self.base_url}/musicians", json=profile_data, headers=headers2, timeout=10)
+            
+            # Send friend request
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            friend_request_data = {"to_user_id": musician2_user['id']}
+            response = requests.post(f"{self.base_url}/friends/request", json=friend_request_data, headers=headers, timeout=10)
+            
+            success = response.status_code == 200
+            if success:
+                details = "Friend request sent successfully"
+                
+                # Test getting friend requests
+                response = requests.get(f"{self.base_url}/friends/requests", headers=headers2, timeout=10)
+                if response.status_code == 200:
+                    requests_data = response.json()
+                    details += f", Received {len(requests_data)} friend request(s)"
+                    
+                    # Accept friend request if any
+                    if requests_data:
+                        request_id = requests_data[0]['id']
+                        response = requests.post(f"{self.base_url}/friends/accept/{request_id}", headers=headers2, timeout=10)
+                        if response.status_code == 200:
+                            details += ", Friend request accepted"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Friend Request System", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Friend Request System", False, f"Error: {str(e)}")
+            return False
+
+    def test_venue_subscription_system(self):
+        """Test venue subscription functionality"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            
+            # Subscribe to venue
+            response = requests.post(f"{self.base_url}/venues/{self.venue_profile_id}/subscribe", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                details = "Subscription successful"
+                
+                # Check subscription status
+                response = requests.get(f"{self.base_url}/venues/{self.venue_profile_id}/subscription-status", headers=headers, timeout=10)
+                if response.status_code == 200:
+                    status_data = response.json()
+                    details += f", Subscribed: {status_data.get('subscribed')}"
+                
+                # Get my subscriptions
+                response = requests.get(f"{self.base_url}/my-subscriptions", headers=headers, timeout=10)
+                if response.status_code == 200:
+                    subs_data = response.json()
+                    details += f", Total subscriptions: {len(subs_data)}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Venue Subscription System", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Venue Subscription System", False, f"Error: {str(e)}")
+            return False
+
+    def test_jam_events(self):
+        """Test jam event creation and listing"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Create jam event
+            jam_data = {
+                "date": "2024-12-20",
+                "start_time": "20:00",
+                "end_time": "23:00",
+                "music_styles": ["Jazz", "Blues"],
+                "rules": "Bring your own instrument",
+                "has_instruments": True,
+                "has_pa_system": True,
+                "instruments_available": ["Piano", "Drums"],
+                "additional_info": "Open mic night"
+            }
+            
+            response = requests.post(f"{self.base_url}/jams", json=jam_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                jam_response = response.json()
+                self.jam_id = jam_response.get('id')
+                details = f"Jam created: {jam_response.get('date')} at {jam_response.get('venue_name')}"
+                
+                # Test listing jams
+                response = requests.get(f"{self.base_url}/jams", timeout=10)
+                if response.status_code == 200:
+                    jams_data = response.json()
+                    details += f", Total jams: {len(jams_data)}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Jam Events", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Jam Events", False, f"Error: {str(e)}")
+            return False
+
+    def test_concert_events(self):
+        """Test concert event creation and listing"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Create concert event
+            concert_data = {
+                "date": "2024-12-25",
+                "start_time": "21:00",
+                "title": "Christmas Jazz Night",
+                "description": "Special Christmas concert",
+                "bands": [
+                    {
+                        "name": "The Jazz Collective",
+                        "photo": "https://example.com/band.jpg",
+                        "facebook": "https://facebook.com/jazzcollective"
+                    }
+                ],
+                "price": "15€"
+            }
+            
+            response = requests.post(f"{self.base_url}/concerts", json=concert_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                concert_response = response.json()
+                self.concert_id = concert_response.get('id')
+                details = f"Concert created: {concert_response.get('title')} on {concert_response.get('date')}"
+                
+                # Test listing concerts
+                response = requests.get(f"{self.base_url}/concerts", timeout=10)
+                if response.status_code == 200:
+                    concerts_data = response.json()
+                    details += f", Total concerts: {len(concerts_data)}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Concert Events", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Concert Events", False, f"Error: {str(e)}")
+            return False
+
+    def test_planning_and_applications(self):
+        """Test planning slots and application system"""
+        try:
+            headers_venue = {'Authorization': f'Bearer {self.venue_token}'}
+            headers_musician = {'Authorization': f'Bearer {self.musician_token}'}
+            
+            # Create planning slot
+            planning_data = {
+                "date": "2024-12-30",
+                "music_styles": ["Rock", "Pop"],
+                "description": "Looking for energetic rock band",
+                "is_open": True
+            }
+            
+            response = requests.post(f"{self.base_url}/planning", json=planning_data, headers=headers_venue, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                planning_response = response.json()
+                self.planning_slot_id = planning_response.get('id')
+                details = f"Planning slot created for {planning_response.get('date')}"
+                
+                # Test application submission
+                application_data = {
+                    "planning_slot_id": self.planning_slot_id,
+                    "band_name": "The Rock Stars",
+                    "description": "High energy rock band",
+                    "music_style": "Rock",
+                    "contact_email": "rockstars@test.com",
+                    "contact_phone": "+33123456789"
+                }
+                
+                response = requests.post(f"{self.base_url}/applications", json=application_data, headers=headers_musician, timeout=10)
+                if response.status_code == 200:
+                    app_response = response.json()
+                    self.application_id = app_response.get('id')
+                    details += f", Application submitted: {app_response.get('band_name')}"
+                    
+                    # Test viewing applications
+                    response = requests.get(f"{self.base_url}/planning/{self.planning_slot_id}/applications", headers=headers_venue, timeout=10)
+                    if response.status_code == 200:
+                        apps_data = response.json()
+                        details += f", Applications received: {len(apps_data)}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Planning and Applications", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Planning and Applications", False, f"Error: {str(e)}")
+            return False
+
+    def test_notifications(self):
+        """Test notification system"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            
+            # Get notifications
+            response = requests.get(f"{self.base_url}/notifications", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                notifications_data = response.json()
+                details = f"Retrieved {len(notifications_data)} notifications"
+                
+                # Get unread count
+                response = requests.get(f"{self.base_url}/notifications/unread-count", headers=headers, timeout=10)
+                if response.status_code == 200:
+                    count_data = response.json()
+                    details += f", Unread: {count_data.get('count', 0)}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Notifications", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Notifications", False, f"Error: {str(e)}")
             return False
 
     def test_list_venues(self):

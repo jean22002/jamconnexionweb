@@ -312,6 +312,40 @@ class TokenResponse(BaseModel):
     token: str
     user: UserResponse
 
+# ============= FILE UPLOAD HELPERS =============
+
+ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+
+async def save_upload_file(file: UploadFile, folder: str = "") -> str:
+    """Save uploaded file and return the URL path"""
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=400, detail="Type de fichier non autorisé. Utilisez JPG, PNG, GIF ou WebP.")
+    
+    # Generate unique filename
+    ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+    filename = f"{uuid.uuid4()}.{ext}"
+    
+    # Create folder if specified
+    save_dir = UPLOADS_DIR / folder if folder else UPLOADS_DIR
+    save_dir.mkdir(parents=True, exist_ok=True)
+    
+    file_path = save_dir / filename
+    
+    # Read and check file size
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="Fichier trop volumineux. Maximum 5MB.")
+    
+    # Save file
+    async with aiofiles.open(file_path, 'wb') as f:
+        await f.write(content)
+    
+    # Return relative URL path
+    if folder:
+        return f"/uploads/{folder}/{filename}"
+    return f"/uploads/{filename}"
+
 # ============= AUTH HELPERS =============
 
 def hash_password(password: str) -> str:

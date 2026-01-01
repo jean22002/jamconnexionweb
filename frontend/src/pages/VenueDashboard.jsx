@@ -49,6 +49,14 @@ export default function VenueDashboard() {
   const [nearbyMusiciansCount, setNearbyMusiciansCount] = useState(0);
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
   
+  // Reviews
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [showReviews, setShowReviews] = useState(true);
+  const [respondingTo, setRespondingTo] = useState(null);
+  const [responseText, setResponseText] = useState("");
+  
   const [formData, setFormData] = useState({
     name: "", description: "", profile_image: "", cover_image: "",
     address: "", city: "", postal_code: "", latitude: 0, longitude: 0,

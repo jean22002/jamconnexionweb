@@ -183,10 +183,12 @@ class JamConnexionAPITester:
             return False
 
     def test_create_musician_profile(self):
-        """Test musician profile creation"""
+        """Test enhanced musician profile creation"""
         try:
             musician_data = {
-                "name": "John Doe",
+                "pseudo": "JazzMaster",
+                "age": 28,
+                "profile_image": "https://example.com/profile.jpg",
                 "bio": "Passionate jazz guitarist with 10 years experience",
                 "instruments": ["Guitar", "Bass"],
                 "music_styles": ["Jazz", "Blues", "Rock"],
@@ -195,7 +197,27 @@ class JamConnexionAPITester:
                 "phone": "+33987654321",
                 "website": "https://johndoe.music",
                 "facebook": "https://facebook.com/johndoemusic",
-                "instagram": "@johndoemusic"
+                "instagram": "@johndoemusic",
+                "youtube": "https://youtube.com/johndoemusic",
+                "bandcamp": "https://johndoe.bandcamp.com",
+                "has_band": True,
+                "band": {
+                    "name": "The Jazz Collective",
+                    "photo": "https://example.com/band.jpg",
+                    "facebook": "https://facebook.com/jazzcollective",
+                    "instagram": "@jazzcollective",
+                    "youtube": "https://youtube.com/jazzcollective",
+                    "website": "https://jazzcollective.com",
+                    "bandcamp": "https://jazzcollective.bandcamp.com"
+                },
+                "concerts": [
+                    {
+                        "date": "2024-12-25",
+                        "venue_name": "Blue Note",
+                        "city": "Paris",
+                        "description": "Christmas Jazz Night"
+                    }
+                ]
             }
             
             headers = {'Authorization': f'Bearer {self.musician_token}'}

@@ -22,9 +22,11 @@ Application de mise en relation entre cafés-concerts (où se font des jams/boeu
 ## Architecture
 - **Backend**: FastAPI + MongoDB + Stripe (emergentintegrations)
 - **Frontend**: React + Tailwind CSS + Shadcn/UI + Leaflet maps
-- **Database Collections**: users, venues, musicians, payment_transactions
+- **Database Collections**: users, venues, musicians, friends, venue_subscriptions, jams, concerts, planning_slots, applications, notifications, payment_transactions
 
 ## What's Been Implemented (Jan 2026)
+
+### Phase 1 (Initial MVP)
 - [x] Landing page avec hero section
 - [x] Authentification (register/login) avec rôle musicien/venue
 - [x] Dashboard musicien avec carte interactive
@@ -34,26 +36,41 @@ Application de mise en relation entre cafés-concerts (où se font des jams/boeu
 - [x] Page tarifs
 - [x] Intégration Stripe (checkout, paiement, statut)
 - [x] Période d'essai 2 mois pour établissements
-- [x] Design neon/dark thème musical
+
+### Phase 2 (Fonctionnalités avancées - Jan 2026)
+- [x] **Profil musicien enrichi**: pseudo, âge, photo, bio, instruments, styles
+- [x] **Profil groupe**: nom, photo, liens (FB, Instagram, YouTube, site web, Bandcamp)
+- [x] **Concerts musicien**: liste des dates avec lieux (depuis DB ou manuel)
+- [x] **Système d'amis**: demande d'ami, acceptation/refus, liste d'amis
+- [x] **Profil établissement enrichi**: photo de profil, photo couverture
+- [x] **Calendrier Boeufs musicaux**: date, heure, styles, règlement, matériel dispo, sono
+- [x] **Calendrier Concerts**: date, groupes (avec liens), prix
+- [x] **Mode Planning**: dates ouvertes aux candidatures avec styles recherchés
+- [x] **Système de candidatures**: musiciens postulent pour les dates ouvertes
+- [x] **Abonnement aux établissements**: musiciens s'abonnent pour recevoir notifications
+- [x] **Système de notifications**: alertes pour boeufs, concerts, demandes d'amis, candidatures
+- [x] **Page profil musicien public**: consultable par tous
 
 ## P0/P1/P2 Features Remaining
+
 ### P0 (Critical)
 - Toutes les fonctionnalités P0 implémentées
 
 ### P1 (Important)
-- [ ] Système de messagerie musicien <-> établissement
-- [ ] Calendrier des événements/jam sessions
-- [ ] Photos multiples pour établissements
-- [ ] Notifications email
+- [ ] Notifications push/email (actuellement in-app seulement)
+- [ ] Rappels automatiques 1 semaine et 2 jours avant les événements
+- [ ] Upload d'images (actuellement via URL)
+- [ ] Recherche avancée par style, équipement, date
 
 ### P2 (Nice to have)
 - [ ] Système d'avis/notation
-- [ ] Filtres avancés par équipement
+- [ ] Chat/messagerie privée entre utilisateurs
 - [ ] Application mobile
-- [ ] Système de réservation de créneaux
+- [ ] Partage sur réseaux sociaux
+- [ ] Statistiques pour établissements (vues, abonnés)
 
 ## Next Action Items
-1. Ajouter un système de messagerie interne
-2. Implémenter le calendrier des événements
-3. Ajouter la gestion des photos d'établissement
-4. Améliorer le SEO et l'accessibilité
+1. Implémenter l'upload d'images (photos profil, groupe, établissement)
+2. Ajouter les rappels automatiques par email avant les événements
+3. Améliorer la recherche avec filtres avancés
+4. Intégrer notifications push

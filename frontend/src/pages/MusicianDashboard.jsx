@@ -826,19 +826,16 @@ export default function MusicianDashboard() {
                   )}
                   
                   {/* Venue markers - show all venues, highlight nearby ones */}
-                  {console.log('Venues data:', venues.length, venues.slice(0, 2)) || null}
-                  {venues && venues.length > 0 ? venues.map((venue) => {
+                  {venues && venues.length > 0 && venues.map((venue) => {
                     if (!venue.latitude || !venue.longitude) {
-                      console.warn('Venue missing coordinates:', venue);
                       return null;
                     }
                     const isNearby = nearbyVenues.some(nv => nv.id === venue.id);
-                    console.log(`Rendering marker for ${venue.name} at [${venue.latitude}, ${venue.longitude}]`);
                     return (
                       <Marker 
                         key={venue.id} 
                         position={[venue.latitude, venue.longitude]} 
-                        icon={venueIconSimple}
+                        icon={venueIcon}
                         eventHandlers={{
                           click: () => {
                             window.location.href = `/venue/${venue.id}`;
@@ -870,7 +867,7 @@ export default function MusicianDashboard() {
                         </Popup>
                       </Marker>
                     );
-                  }) : <div>No venues to display</div>}
+                  })}
                 </MapContainer>
 
                 {/* Map controls overlay */}

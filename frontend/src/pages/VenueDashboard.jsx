@@ -184,6 +184,60 @@ export default function VenueDashboard() {
     }
   };
 
+  // Broadcast Notifications
+  const fetchNearbyMusiciansCount = async () => {
+    try {
+      const response = await axios.get(`${API}/venues/me/nearby-musicians-count`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNearbyMusiciansCount(response.data.count);
+    } catch (error) {
+      console.error("Error fetching nearby musicians count:", error);
+    }
+  };
+
+  const fetchBroadcastHistory = async () => {
+    try {
+      const response = await axios.get(`${API}/venues/me/broadcast-history`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setBroadcastHistory(response.data);
+    } catch (error) {
+      console.error("Error fetching broadcast history:", error);
+    }
+  };
+
+  const sendBroadcastNotification = async () => {
+    if (!broadcastMessage.trim()) {
+      toast.error("Entrez un message");
+      return;
+    }
+
+    setSendingBroadcast(true);
+    try {
+      const response = await axios.post(
+        `${API}/venues/me/broadcast-notification`,
+        { message: broadcastMessage },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      toast.success(`Notification envoyée à ${response.data.recipients_count} musicien(s) ! 🎵`);
+      setBroadcastMessage("");
+      fetchBroadcastHistory();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur lors de l'envoi");
+    } finally {
+      setSendingBroadcast(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "notifications" && profile) {
+      fetchNearbyMusiciansCount();
+      fetchBroadcastHistory();
+    }
+  }, [activeTab, profile]);
+
   // Create Jam
   const createJam = async () => {
     try {

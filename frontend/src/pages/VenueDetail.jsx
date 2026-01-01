@@ -549,6 +549,136 @@ export default function VenueDetail() {
               </DialogContent>
             </Dialog>
           </TabsContent>
+
+          {/* Reviews Tab */}
+          <TabsContent value="reviews">
+            <div className="space-y-6">
+              {/* Average Rating Summary */}
+              {totalReviews > 0 && (
+                <div className="glassmorphism rounded-2xl p-6 text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <StarRating rating={averageRating} size="w-8 h-8" showNumber={false} />
+                    <p className="text-4xl font-bold">{averageRating.toFixed(1)}</p>
+                    <p className="text-muted-foreground">{totalReviews} avis</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Add Review Button */}
+              {user?.role === "musician" && (
+                <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
+                  <DialogTrigger asChild>
+                    <Button className="w-full bg-primary hover:bg-primary/90 rounded-full gap-2">
+                      <Send className="w-4 h-4" />
+                      Laisser un avis
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="glassmorphism border-white/10 max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Laisser un avis pour {venue?.name}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 mt-4">
+                      <div className="space-y-2">
+                        <Label>Votre note</Label>
+                        <div className="flex justify-center">
+                          <StarRatingInput
+                            rating={reviewForm.rating}
+                            onRatingChange={(rating) => setReviewForm({ ...reviewForm, rating })}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Commentaire (optionnel)</Label>
+                        <Textarea
+                          value={reviewForm.comment}
+                          onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                          placeholder="Partagez votre expérience..."
+                          className="bg-black/20 border-white/10"
+                          rows={4}
+                        />
+                      </div>
+                      <Button
+                        onClick={submitReview}
+                        disabled={submittingReview}
+                        className="w-full bg-primary hover:bg-primary/90 rounded-full"
+                      >
+                        {submittingReview ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            Publication...
+                          </>
+                        ) : (
+                          "Publier l'avis"
+                        )}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
+
+              {/* Reviews List */}
+              {reviews.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground glassmorphism rounded-2xl">
+                  <Music className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Aucun avis pour le moment</p>
+                  <p className="text-sm mt-2">Soyez le premier à partager votre expérience !</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="glassmorphism rounded-xl p-5">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          {review.musician_image ? (
+                            <img src={review.musician_image} alt="" className="w-10 h-10 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                              <User className="w-5 h-5 text-primary" />
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-semibold">{review.musician_name}</p>
+                            <StarRating rating={review.rating} size="w-4 h-4" showNumber={false} />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(review.created_at).toLocaleDateString('fr-FR')}
+                          </span>
+                          {user && user.id !== review.musician_user_id && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => reportReview(review.id)}
+                              className="text-muted-foreground hover:text-destructive"
+                            >
+                              <AlertCircle className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      {review.comment && (
+                        <p className="text-muted-foreground mb-3">{review.comment}</p>
+                      )}
+
+                      {review.venue_response && (
+                        <div className="mt-4 pl-4 border-l-2 border-primary/30">
+                          <p className="text-sm font-semibold text-primary mb-1">
+                            Réponse de l'établissement
+                          </p>
+                          <p className="text-sm text-muted-foreground">{review.venue_response}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(review.venue_response_date).toLocaleDateString('fr-FR')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
         </Tabs>
       </main>
     </div>

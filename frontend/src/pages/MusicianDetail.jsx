@@ -110,6 +110,13 @@ export default function MusicianDetail() {
               
               {musician.age && <p className="text-muted-foreground">{musician.age} ans</p>}
               
+              {/* Participation Badge */}
+              {participation && (
+                <div className="mt-4 flex justify-center md:justify-start">
+                  <ParticipationBadge eventInfo={participation} />
+                </div>
+              )}
+              
               <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4">
                 {musician.city && (
                   <div className="flex items-center gap-2 text-muted-foreground">

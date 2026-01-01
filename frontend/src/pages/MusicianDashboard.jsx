@@ -860,50 +860,52 @@ export default function MusicianDashboard() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="font-heading font-semibold text-xl">
-                    {nearbyVenues.length > 0 
-                      ? `${nearbyVenues.length} établissement${nearbyVenues.length > 1 ? 's' : ''} à proximité`
-                      : `${venues.length} établissement${venues.length > 1 ? 's' : ''}`
-                    }
+                    {venues.length} établissement{venues.length > 1 ? 's' : ''} répertorié{venues.length > 1 ? 's' : ''}
                   </h2>
                   {nearbyVenues.length > 0 && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setNearbyVenues([])}
-                      className="text-muted-foreground"
-                    >
-                      Voir tous
-                    </Button>
+                    <span className="text-xs text-secondary">
+                      {nearbyVenues.length} à proximité ({searchRadius}km)
+                    </span>
                   )}
                 </div>
                 {loading ? (
                   <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
                 ) : (
                   <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2">
-                    {(nearbyVenues.length > 0 ? nearbyVenues : venues).map((venue) => (
-                      <Link key={venue.id} to={`/venue/${venue.id}`} className="block" data-testid={`venue-card-${venue.id}`}>
-                        <div className="card-venue p-5 group">
-                          <div className="flex items-start gap-4">
-                            {venue.profile_image && <img src={venue.profile_image} alt="" className="w-16 h-16 rounded-xl object-cover" />}
-                            <div className="flex-1">
-                              <h3 className="font-heading font-semibold text-lg group-hover:text-primary transition-colors">{venue.name}</h3>
-                              <div className="flex items-center gap-2 text-muted-foreground text-sm mt-1">
-                                <MapPin className="w-4 h-4" /><span>{venue.city}</span>
-                                {venue.distance_km && (
-                                  <span className="text-secondary font-medium ml-2">• {venue.distance_km} km</span>
-                                )}
+                    {venues.map((venue) => {
+                      const isNearby = nearbyVenues.some(nv => nv.id === venue.id);
+                      return (
+                        <Link key={venue.id} to={`/venue/${venue.id}`} className="block" data-testid={`venue-card-${venue.id}`}>
+                          <div className={`card-venue p-5 group ${isNearby ? 'border border-primary/30' : ''}`}>
+                            <div className="flex items-start gap-4">
+                              {venue.profile_image && <img src={venue.profile_image} alt="" className="w-16 h-16 rounded-xl object-cover" />}
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <h3 className="font-heading font-semibold text-lg group-hover:text-primary transition-colors">{venue.name}</h3>
+                                  {isNearby && (
+                                    <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                                      À proximité
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 text-muted-foreground text-sm mt-1">
+                                  <MapPin className="w-4 h-4" /><span>{venue.city}</span>
+                                  {isNearby && venue.distance_km && (
+                                    <span className="text-secondary font-medium ml-2">• {venue.distance_km} km</span>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                            <div className="flex flex-col gap-2 items-end">
-                              <div className="flex gap-2">
-                                {venue.has_stage && <span className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">Scène</span>}
-                                {venue.has_sound_engineer && <span className="px-2 py-1 bg-secondary/20 text-secondary text-xs rounded-full">Ingé son</span>}
+                              <div className="flex flex-col gap-2 items-end">
+                                <div className="flex gap-2">
+                                  {venue.has_stage && <span className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">Scène</span>}
+                                  {venue.has_sound_engineer && <span className="px-2 py-1 bg-secondary/20 text-secondary text-xs rounded-full">Ingé son</span>}
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </Link>
-                    ))}
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
               </div>

@@ -251,6 +251,7 @@ class PlanningSlot(BaseModel):
     music_styles: List[str] = []
     description: Optional[str] = None
     is_open: bool = True
+    artist_categories: List[str] = []  # Types recherchés: groupe compos, reprise, tribute, etc.
 
 class PlanningSlotResponse(BaseModel):
     id: str
@@ -262,6 +263,7 @@ class PlanningSlotResponse(BaseModel):
     is_open: bool = True
     applications_count: int = 0
     created_at: str
+    artist_categories: List[str] = []
 
 # Application/Candidature
 class ConcertApplication(BaseModel):

@@ -863,7 +863,12 @@ export default function VenueDashboard() {
                           <Button variant="ghost" size="sm" onClick={() => deletePlanningSlot(slot.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                         </div>
                       </div>
-                      <div className="flex flex-wrap gap-2 mt-3">
+                      {slot.artist_categories?.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {slot.artist_categories.map((cat, i) => <span key={i} className="px-3 py-1 bg-primary/20 text-primary text-xs rounded-full">{cat}</span>)}
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-2 mt-2">
                         {slot.music_styles.map((s, i) => <span key={i} className="px-2 py-1 bg-secondary/20 text-secondary text-xs rounded-full">{s}</span>)}
                       </div>
                       {!slot.is_open && <p className="text-sm text-primary mt-2">Date pourvue</p>}

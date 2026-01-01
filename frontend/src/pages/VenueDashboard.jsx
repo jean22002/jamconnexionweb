@@ -247,6 +247,64 @@ export default function VenueDashboard() {
     }
   }, [activeTab, profile]);
 
+  // Reviews Management
+  const fetchMyReviews = async () => {
+    try {
+      const [reviewsRes, ratingRes] = await Promise.all([
+        axios.get(`${API}/venues/me/reviews`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API}/venues/${profile.id}/average-rating`)
+      ]);
+      setReviews(reviewsRes.data);
+      setAverageRating(ratingRes.data.average_rating);
+      setTotalReviews(ratingRes.data.total_reviews);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
+  };
+
+  const toggleReviewsVisibility = async () => {
+    try {
+      await axios.put(
+        `${API}/venues/me/reviews-visibility?show_reviews=${!showReviews}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setShowReviews(!showReviews);
+      toast.success(showReviews ? "Avis masqués" : "Avis affichés publiquement");
+      fetchProfile();
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour");
+    }
+  };
+
+  const respondToReview = async (reviewId) => {
+    if (!responseText.trim()) {
+      toast.error("Entrez une réponse");
+      return;
+    }
+
+    try {
+      await axios.post(
+        `${API}/reviews/${reviewId}/respond`,
+        { response: responseText },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Réponse publiée !");
+      setRespondingTo(null);
+      setResponseText("");
+      fetchMyReviews();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur");
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "reviews" && profile) {
+      fetchMyReviews();
+      setShowReviews(profile.show_reviews ?? true);
+    }
+  }, [activeTab, profile]);
+
   // Create Jam
   const createJam = async () => {
     try {

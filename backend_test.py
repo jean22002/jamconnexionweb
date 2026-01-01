@@ -572,7 +572,13 @@ class JamConnexionAPITester:
             self.test_create_musician_profile,
             self.test_list_venues,
             self.test_nearby_venues,
-            self.test_get_venue_profile
+            self.test_get_venue_profile,
+            self.test_friend_request_system,
+            self.test_venue_subscription_system,
+            self.test_jam_events,
+            self.test_concert_events,
+            self.test_planning_and_applications,
+            self.test_notifications
         ]
         
         for test in tests:

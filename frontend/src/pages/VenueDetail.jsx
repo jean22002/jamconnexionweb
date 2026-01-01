@@ -236,17 +236,30 @@ export default function VenueDetail() {
                 </div>
               </div>
               
-              {user?.role === "musician" && (
-                <Button 
-                  onClick={toggleSubscription} 
-                  variant={isSubscribed ? "outline" : "default"}
-                  className={`rounded-full gap-2 ${isSubscribed ? 'border-white/20' : 'bg-primary hover:bg-primary/90'}`}
-                  data-testid="subscribe-btn"
-                >
-                  {isSubscribed ? <BellOff className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
-                  {isSubscribed ? "Abonné" : "S'abonner"}
-                </Button>
-              )}
+              <div className="flex flex-col gap-2">
+                {user?.role === "musician" && (
+                  <Button 
+                    onClick={toggleSubscription} 
+                    variant={isSubscribed ? "outline" : "default"}
+                    className={`rounded-full gap-2 ${isSubscribed ? 'border-white/20' : 'bg-primary hover:bg-primary/90'}`}
+                    data-testid="subscribe-btn"
+                  >
+                    {isSubscribed ? <BellOff className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
+                    {isSubscribed ? "Abonné" : "S'abonner"}
+                  </Button>
+                )}
+                
+                {/* Show join button if there's an active event */}
+                {user?.role === "musician" && activeEvents.length > 0 && (
+                  <JoinEventButton 
+                    event={activeEvents[0]}
+                    venueId={id}
+                    token={token}
+                    currentParticipation={currentParticipation}
+                    onParticipationChange={handleParticipationChange}
+                  />
+                )}
+              </div>
             </div>
             
             <div className="flex items-center gap-2 mt-2 text-muted-foreground">

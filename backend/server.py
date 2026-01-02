@@ -726,7 +726,7 @@ async def get_my_musician_profile(current_user: dict = Depends(get_current_user)
 
 @api_router.get("/musicians", response_model=List[MusicianProfileResponse])
 async def list_musicians(instrument: Optional[str] = None, style: Optional[str] = None, city: Optional[str] = None):
-    query = {}
+    query = {"pseudo": {"$exists": True, "$ne": ""}}  # Ne retourner que les musiciens avec un pseudo valide
     if instrument:
         query["instruments"] = {"$regex": instrument, "$options": "i"}
     if style:
@@ -741,7 +741,12 @@ async def list_musicians(instrument: Optional[str] = None, style: Optional[str] 
             "$or": [{"user1_id": m["user_id"]}, {"user2_id": m["user_id"]}],
             "status": "accepted"
         })
-        result.append(MusicianProfileResponse(**m, friends_count=friends_count))
+        try:
+            result.append(MusicianProfileResponse(**m, friends_count=friends_count))
+        except Exception as e:
+            # Skip musicians with invalid data
+            logger.warning(f"Skipping musician {m.get('id')} due to validation error: {e}")
+            continue
     return result
 
 @api_router.get("/musicians/{musician_id}", response_model=MusicianProfileResponse)

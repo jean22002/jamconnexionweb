@@ -88,6 +88,7 @@ export default function MusicianDashboard() {
   const [venues, setVenues] = useState([]);
   const [musicians, setMusicians] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingError, setLoadingError] = useState(false);
   const [searchCity, setSearchCity] = useState("");
   const [mapCenter, setMapCenter] = useState([46.603354, 1.888334]);
   const [profile, setProfile] = useState(null);

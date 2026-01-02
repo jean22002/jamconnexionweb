@@ -466,6 +466,30 @@ test_plan:
         agent: "main"
         comment: "NOUVELLE FONCTIONNALITÉ IMPLÉMENTÉE - Interface de messagerie complète style WhatsApp/Messenger. Composant MessagesImproved créé avec layout 2 colonnes (conversations + chat), header avec boutons Retour/Nouveau, recherche utilisateurs, envoi messages, polling automatique. Route /messages-improved protégée par authentification. Boutons d'accès ajoutés dans MusicianDashboard et VenueDashboard headers."
 
+  - task: "VenueDetail - Bouton Se connecter"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/VenueDetail.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NOUVELLE FONCTIONNALITÉ IMPLÉMENTÉE - Bouton 'Se connecter' visible et coloré sur les profils d'établissements. Bouton vert attractif avec icône cœur rempli, animation hover, change d'apparence après connexion (gris avec check). Toast de succès lors de la connexion/déconnexion. Établissement apparaît dans l'onglet Connexions du musicien."
+
+  - task: "Proximity Alerts - Backend"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NOUVELLE FONCTIONNALITÉ IMPLÉMENTÉE - Alerte automatique aux établissements dans un rayon de 50km lors de la création d'un bœuf. Calcul de distance avec formule Haversine, notification envoyée à tous les établissements proches avec détails du bœuf (nom, date, heure, distance). Type de notification 'nearby_jam_alert'."
+
 agent_communication:
   - agent: "main"
     message: "Système de participation aux événements implémenté. Backend prêt avec endpoints de participation. Frontend complété avec composants JoinEventButton et ParticipationBadge. Intégrations terminées sur VenueDetail, MusicianDetail et MusicianDashboard. Nécessite test complet backend + frontend pour vérifier: 1) Récupération des événements actifs, 2) Fonctionnalité rejoindre/quitter événement, 3) Affichage du badge de participation, 4) Notifications aux amis, 5) Polling automatique du statut de participation. Un test de fichier doit être créé sous /app/backend/tests/test_event_participation.py pour tester les nouveaux endpoints."

@@ -54,6 +54,8 @@ export default function VenueDetail() {
   const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [bandsPlayed, setBandsPlayed] = useState([]);
+  const [loadingBands, setLoadingBands] = useState(false);
 
   const fetchVenue = useCallback(async () => {
     try {

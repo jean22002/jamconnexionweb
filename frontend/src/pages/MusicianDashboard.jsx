@@ -26,6 +26,46 @@ import ParticipationBadge from "../components/ParticipationBadge";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Composant réutilisable pour afficher une carte de musicien
+function MusicianCard({ musician, onSendFriendRequest }) {
+  return (
+    <div className="card-venue p-5">
+      <div className="flex items-start gap-4">
+        {musician.profile_image ? (
+          <img src={musician.profile_image} alt="" className="w-16 h-16 rounded-full object-cover" />
+        ) : (
+          <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+            <User className="w-8 h-8 text-primary" />
+          </div>
+        )}
+        <div className="flex-1">
+          <h3 className="font-heading font-semibold">{musician.pseudo}</h3>
+          {musician.city && (
+            <p className="text-sm text-muted-foreground flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              {musician.city}
+              {musician.department && ` (${musician.department})`}
+            </p>
+          )}
+          <div className="flex flex-wrap gap-1 mt-2">
+            {musician.instruments?.slice(0, 2).map((inst, i) => (
+              <span key={i} className="px-2 py-0.5 bg-primary/20 text-primary text-xs rounded-full">{inst}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="flex gap-2 mt-4">
+        <Button onClick={() => onSendFriendRequest(musician.user_id)} variant="outline" className="flex-1 rounded-full border-white/20 gap-2">
+          <UserPlus className="w-4 h-4" /> Ajouter
+        </Button>
+        <Link to={`/musician/${musician.id}`} className="flex-1">
+          <Button variant="ghost" className="w-full rounded-full">Voir profil</Button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 // Custom guitar icon for venues
 const venueIcon = L.divIcon({
   className: 'venue-guitar-marker',

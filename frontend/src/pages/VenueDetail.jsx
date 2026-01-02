@@ -35,7 +35,6 @@ export default function VenueDetail() {
   const { user, token } = useAuth();
   const [venue, setVenue] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isSubscribed, setIsSubscribed] = useState(false);
   const [jams, setJams] = useState([]);
   const [concerts, setConcerts] = useState([]);
   const [planningSlots, setPlanningSlots] = useState([]);

@@ -1157,7 +1157,11 @@ export default function MusicianDashboard() {
               <div className="glassmorphism rounded-2xl p-6">
                 <h2 className="font-heading font-semibold text-xl mb-4">Filtrer par localisation</h2>
                 
-                <Tabs defaultValue="all" className="w-full">
+                <Tabs defaultValue="all" className="w-full" onValueChange={(value) => {
+                  // Réinitialiser les sélections quand on change d'onglet
+                  setSelectedRegion(null);
+                  setSelectedDepartment(null);
+                }}>
                   <TabsList className="grid w-full grid-cols-5 bg-muted/50 rounded-full p-1">
                     <TabsTrigger value="all" className="rounded-full">
                       Tous ({musicians.length})

@@ -363,15 +363,18 @@ frontend:
 
   - task: "MusicianDashboard - Changement terminologie Connexions"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/MusicianDashboard.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Changement de terminologie: Onglet 'Abonnements' renommé en 'Connexions', message mis à jour: 'Vous n'êtes connecté à aucun établissement'"
+      - working: true
+        agent: "testing"
+        comment: "✅ CORRECTION VALIDÉE - Test avec compte test_musician_radius_7406@test.com. RÉSULTATS: ✅ Onglet s'appelle maintenant 'Connexions' (pas 'Abonnements'), ✅ Message 'Vous n'êtes connecté à aucun établissement' affiché dans l'onglet, ✅ Changement de terminologie entièrement appliqué. L'onglet Connexions est présent et fonctionnel avec le bon message."
 
   - task: "Venue Detail Page"
     implemented: true

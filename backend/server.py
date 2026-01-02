@@ -1183,6 +1183,66 @@ async def create_jam_event(data: JamEvent, current_user: dict = Depends(get_curr
     await notify_venue_subscribers(venue["id"], "jam_event", f"Nouveau boeuf musical chez {venue['name']}", 
                                    f"Le {data.date} de {data.start_time} à {data.end_time}", f"/venue/{venue['id']}")
     
+    # NOUVELLE FONCTIONNALITÉ : Alerter les établissements dans un rayon de 50km
+    try:
+        all_venues = await db.venues.find({}, {"_id": 0}).to_list(1000)
+        
+        nearby_venues = []
+        for other_venue in all_venues:
+            if other_venue["id"] == venue["id"]:
+                continue
+            
+            if not other_venue.get("latitude") or not other_venue.get("longitude"):
+                continue
+            
+            if not venue.get("latitude") or not venue.get("longitude"):
+                continue
+            
+            # Calculate distance using Haversine formula
+            from math import radians, sin, cos, sqrt, atan2
+            
+            lat1, lon1 = radians(venue["latitude"]), radians(venue["longitude"])
+            lat2, lon2 = radians(other_venue["latitude"]), radians(other_venue["longitude"])
+            
+            dlat = lat2 - lat1
+            dlon = lon2 - lon1
+            
+            a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+            c = 2 * atan2(sqrt(a), sqrt(1-a))
+            distance_km = 6371 * c
+            
+            if distance_km <= 50:
+                nearby_venues.append({
+                    "venue": other_venue,
+                    "distance_km": round(distance_km, 1)
+                })
+        
+        # Envoyer notification à chaque établissement proche
+        for nearby in nearby_venues:
+            notification = {
+                "id": str(uuid.uuid4()),
+                "user_id": nearby["venue"]["user_id"],
+                "type": "nearby_jam_alert",
+                "title": f"🎵 Bœuf planifié à proximité",
+                "message": f"{venue['name']} organise un bœuf le {data.date} de {data.start_time} à {data.end_time} ({nearby['distance_km']}km de chez vous). Pensez à vérifier votre planning !",
+                "data": {
+                    "jam_id": jam_id,
+                    "venue_id": venue["id"],
+                    "venue_name": venue["name"],
+                    "date": data.date,
+                    "start_time": data.start_time,
+                    "end_time": data.end_time,
+                    "distance_km": nearby["distance_km"]
+                },
+                "is_read": False,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.notifications.insert_one(notification)
+        
+        logger.info(f"✅ Alerted {len(nearby_venues)} nearby venues about jam on {data.date}")
+    except Exception as e:
+        logger.error(f"⚠️ Error alerting nearby venues: {e}")
+    
     return JamEventResponse(**jam_doc)
 
 @api_router.get("/jams", response_model=List[JamEventResponse])

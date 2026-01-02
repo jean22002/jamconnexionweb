@@ -119,19 +119,6 @@ export default function VenueDetail() {
     }
   }, [id]);
 
-  const checkSubscription = useCallback(async () => {
-    if (!token || !user || user.role !== "musician") return;
-    try {
-      const response = await axios.get(`${API}/musicians/me/subscriptions`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const isSubbed = response.data.some(sub => sub.venue_id === id);
-      setIsSubscribed(isSubbed);
-    } catch (error) {
-      console.error("Error checking subscription:", error);
-    }
-  }, [id, token, user]);
-
   const handleSubscribe = async () => {
     if (!token || !user || user.role !== "musician") {
       toast.error("Connectez-vous en tant que musicien pour vous connecter");

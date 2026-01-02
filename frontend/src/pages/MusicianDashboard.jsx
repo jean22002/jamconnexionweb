@@ -193,21 +193,50 @@ export default function MusicianDashboard() {
 
   const [newConcert, setNewConcert] = useState({ date: "", venue_id: "", venue_name: "", city: "", description: "" });
 
-  const fetchData = useCallback(async () => {
-    console.log('[MusicianDashboard] fetchData called, API endpoint:', `${API}/venues`);
+  const fetchData = useCallback(async (retryCount = 0) => {
+    const MAX_RETRIES = 3;
+    console.log('[MusicianDashboard] fetchData called (attempt', retryCount + 1, '/', MAX_RETRIES + 1, '), API endpoint:', `${API}/venues`);
+    
     try {
       const [venuesRes, musiciansRes] = await Promise.all([
-        axios.get(`${API}/venues`),
-        axios.get(`${API}/musicians`)
+        axios.get(`${API}/venues`, { timeout: 10000 }),
+        axios.get(`${API}/musicians`, { timeout: 10000 })
       ]);
+      
       console.log('[MusicianDashboard] fetchData success. Venues count:', venuesRes.data.length, 'Musicians count:', musiciansRes.data.length);
-      setVenues(venuesRes.data);
-      setMusicians(musiciansRes.data);
-    } catch (error) {
-      console.error("[MusicianDashboard] Error fetching data:", error);
-      console.error("[MusicianDashboard] Error details:", error.response?.status, error.response?.data, error.message);
-    } finally {
+      
+      // Valider que les données sont bien des tableaux
+      if (Array.isArray(venuesRes.data)) {
+        setVenues(venuesRes.data);
+        console.log('[MusicianDashboard] Venues state updated successfully');
+      } else {
+        console.error('[MusicianDashboard] Venues data is not an array:', typeof venuesRes.data);
+        setVenues([]);
+      }
+      
+      if (Array.isArray(musiciansRes.data)) {
+        setMusicians(musiciansRes.data);
+      } else {
+        setMusicians([]);
+      }
+      
       setLoading(false);
+    } catch (error) {
+      console.error("[MusicianDashboard] Error fetching data (attempt", retryCount + 1, "):", error);
+      console.error("[MusicianDashboard] Error details:", error.response?.status, error.response?.data, error.message);
+      
+      // Retry logic pour erreurs réseau et 520
+      if (retryCount < MAX_RETRIES && (error.code === 'ECONNABORTED' || error.response?.status === 520 || error.message === 'Network Error')) {
+        console.log('[MusicianDashboard] Retrying in 2 seconds...');
+        setTimeout(() => {
+          fetchData(retryCount + 1);
+        }, 2000);
+      } else {
+        // Après tous les retries, afficher un message d'erreur
+        console.error('[MusicianDashboard] All retries failed');
+        toast.error("Erreur de chargement des établissements. Veuillez rafraîchir la page.");
+        setLoading(false);
+      }
     }
   }, []);
 

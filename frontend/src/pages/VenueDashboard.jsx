@@ -42,7 +42,6 @@ export default function VenueDashboard() {
   const [showJamDialog, setShowJamDialog] = useState(false);
   const [showConcertDialog, setShowConcertDialog] = useState(false);
   const [showPlanningDialog, setShowPlanningDialog] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
   const [viewingApplications, setViewingApplications] = useState(null);
   
   // Broadcast notifications

@@ -199,14 +199,10 @@ export default function MusicianDashboard() {
     console.log('[MusicianDashboard] fetchData called (attempt', retryCount + 1, '/', MAX_RETRIES + 1, '), API endpoint:', `${API}/venues`);
     
     try {
-      const [venuesRes, musiciansRes] = await Promise.all([
-        axios.get(`${API}/venues`, { timeout: 10000 }),
-        axios.get(`${API}/musicians`, { timeout: 10000 })
-      ]);
+      // Charger les venues (critique pour l'affichage de la carte)
+      const venuesRes = await axios.get(`${API}/venues`, { timeout: 10000 });
+      console.log('[MusicianDashboard] Venues loaded successfully. Count:', venuesRes.data.length);
       
-      console.log('[MusicianDashboard] fetchData success. Venues count:', venuesRes.data.length, 'Musicians count:', musiciansRes.data.length);
-      
-      // Valider que les données sont bien des tableaux
       if (Array.isArray(venuesRes.data)) {
         setVenues(venuesRes.data);
         console.log('[MusicianDashboard] Venues state updated successfully');
@@ -215,16 +211,26 @@ export default function MusicianDashboard() {
         setVenues([]);
       }
       
-      if (Array.isArray(musiciansRes.data)) {
-        setMusicians(musiciansRes.data);
-      } else {
+      // Charger les musiciens séparément (non-critique, ne doit pas bloquer venues)
+      try {
+        const musiciansRes = await axios.get(`${API}/musicians`, { timeout: 10000 });
+        console.log('[MusicianDashboard] Musicians loaded successfully. Count:', musiciansRes.data.length);
+        
+        if (Array.isArray(musiciansRes.data)) {
+          setMusicians(musiciansRes.data);
+        } else {
+          setMusicians([]);
+        }
+      } catch (musiciansError) {
+        console.warn('[MusicianDashboard] Failed to load musicians (non-critical):', musiciansError.response?.status, musiciansError.message);
+        // L'échec de chargement des musiciens ne doit pas empêcher l'affichage des venues
         setMusicians([]);
       }
       
       setLoadingError(false);
       setLoading(false);
     } catch (error) {
-      console.error("[MusicianDashboard] Error fetching data (attempt", retryCount + 1, "):", error);
+      console.error("[MusicianDashboard] Error fetching venues (attempt", retryCount + 1, "):", error);
       console.error("[MusicianDashboard] Error details:", error.response?.status, error.response?.data, error.message);
       
       // Retry logic pour erreurs réseau et 520

@@ -170,7 +170,27 @@ export default function VenueDashboard() {
   useEffect(() => {
     fetchProfile();
     fetchMusicians();
+    fetchBookedDates();
   }, [fetchProfile, fetchMusicians]);
+
+  // Fetch booked dates for calendar
+  const fetchBookedDates = useCallback(async () => {
+    if (!token) return;
+    try {
+      const [jamsRes, concertsRes] = await Promise.all([
+        axios.get(`${API}/venues/me/jams`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API}/venues/me/concerts`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      
+      const bookedDatesArray = [
+        ...jamsRes.data.map(j => j.date),
+        ...concertsRes.data.map(c => c.date)
+      ];
+      setBookedDates(bookedDatesArray);
+    } catch (error) {
+      console.error("Error fetching booked dates:", error);
+    }
+  }, [token]);
 
   useEffect(() => {
     if (profile) fetchEvents();

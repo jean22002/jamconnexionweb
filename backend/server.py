@@ -2048,6 +2048,156 @@ async def get_my_venue_reviews(current_user: dict = Depends(get_current_user)):
     
     return [ReviewResponse(**r) for r in reviews]
 
+# ============= MESSAGING SYSTEM =============
+
+@api_router.post("/messages", response_model=MessageResponse)
+async def send_message(data: MessageCreate, current_user: dict = Depends(get_current_user)):
+    """Send a message to another user"""
+    # Get recipient info
+    recipient = await db.users.find_one({"id": data.recipient_id}, {"_id": 0})
+    if not recipient:
+        raise HTTPException(status_code=404, detail="Destinataire non trouvé")
+    
+    # Get sender profile for name/image
+    sender_profile = None
+    if current_user["role"] == "musician":
+        sender_profile = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    elif current_user["role"] == "venue":
+        sender_profile = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    
+    sender_name = sender_profile.get("pseudo" if current_user["role"] == "musician" else "name", current_user["name"]) if sender_profile else current_user["name"]
+    sender_image = sender_profile.get("profile_image") if sender_profile else None
+    
+    # Create message
+    message_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    message_doc = {
+        "id": message_id,
+        "sender_id": current_user["id"],
+        "sender_name": sender_name,
+        "sender_image": sender_image,
+        "recipient_id": data.recipient_id,
+        "recipient_name": recipient["name"],
+        "subject": data.subject,
+        "content": data.content,
+        "is_read": False,
+        "created_at": now
+    }
+    
+    await db.messages.insert_one(message_doc)
+    
+    # Send notification to recipient
+    await create_notification(
+        data.recipient_id,
+        "new_message",
+        f"💬 Nouveau message de {sender_name}",
+        data.subject,
+        f"/messages"
+    )
+    
+    return MessageResponse(**message_doc)
+
+@api_router.get("/messages/inbox", response_model=List[MessageResponse])
+async def get_inbox(current_user: dict = Depends(get_current_user)):
+    """Get received messages"""
+    messages = await db.messages.find(
+        {"recipient_id": current_user["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(100).to_list(100)
+    
+    return [MessageResponse(**m) for m in messages]
+
+@api_router.get("/messages/sent", response_model=List[MessageResponse])
+async def get_sent_messages(current_user: dict = Depends(get_current_user)):
+    """Get sent messages"""
+    messages = await db.messages.find(
+        {"sender_id": current_user["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(100).to_list(100)
+    
+    return [MessageResponse(**m) for m in messages]
+
+@api_router.put("/messages/{message_id}/read")
+async def mark_message_read(message_id: str, current_user: dict = Depends(get_current_user)):
+    """Mark a message as read"""
+    result = await db.messages.update_one(
+        {"id": message_id, "recipient_id": current_user["id"]},
+        {"$set": {"is_read": True}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    return {"message": "Message marqué comme lu"}
+
+# ============= BANDS DIRECTORY =============
+
+@api_router.get("/bands")
+async def get_bands_directory(department: Optional[str] = None, city: Optional[str] = None):
+    """Get public bands directory with optional filters"""
+    query = {"has_band": True, "band.is_public": True}
+    
+    musicians = await db.musicians.find(query, {"_id": 0}).to_list(1000)
+    
+    # Filter and structure band data
+    bands = []
+    for musician in musicians:
+        if musician.get("band"):
+            band = musician["band"]
+            # Apply filters
+            if department and musician.get("department") != department:
+                continue
+            if city and musician.get("city", "").lower() != city.lower():
+                continue
+            
+            bands.append({
+                "id": musician["id"],
+                "musician_id": musician["id"],
+                "musician_user_id": musician["user_id"],
+                "name": band.get("name"),
+                "photo": band.get("photo"),
+                "description": band.get("description"),
+                "members_count": band.get("members_count"),
+                "music_styles": band.get("music_styles", []),
+                "city": musician.get("city"),
+                "department": musician.get("department"),
+                "facebook": band.get("facebook"),
+                "instagram": band.get("instagram"),
+                "youtube": band.get("youtube"),
+                "website": band.get("website"),
+                "bandcamp": band.get("bandcamp"),
+                "looking_for_concerts": band.get("looking_for_concerts", True),
+                "looking_for_members": band.get("looking_for_members", False)
+            })
+    
+    return bands
+
+@api_router.get("/bands/departments")
+async def get_bands_by_department():
+    """Get bands grouped by department"""
+    musicians = await db.musicians.find(
+        {"has_band": True, "band.is_public": True},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Group by department
+    departments = {}
+    for musician in musicians:
+        dept = musician.get("department", "Non spécifié")
+        if dept not in departments:
+            departments[dept] = []
+        
+        if musician.get("band"):
+            departments[dept].append({
+                "id": musician["id"],
+                "name": musician["band"].get("name"),
+                "city": musician.get("city"),
+                "music_styles": musician["band"].get("music_styles", [])
+            })
+    
+    return departments
+
 # ============= PAYMENT ROUTES =============
 
 SUBSCRIPTION_PRICE = 10.00

@@ -8,6 +8,7 @@ import { Textarea } from "../components/ui/textarea";
 import { Switch } from "../components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { VenueImageUpload } from "../components/ui/image-upload";
+import Calendar from "../components/Calendar";
 import { 
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter
 } from "../components/ui/dialog";

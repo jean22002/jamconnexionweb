@@ -102,6 +102,20 @@ export default function VenueDetail() {
     }
   }, [id]);
 
+  const fetchReviews = useCallback(async () => {
+    try {
+      const [reviewsRes, ratingRes] = await Promise.all([
+        axios.get(`${API}/venues/${id}/reviews`),
+        axios.get(`${API}/venues/${id}/average-rating`)
+      ]);
+      setReviews(reviewsRes.data);
+      setAverageRating(ratingRes.data.average_rating);
+      setTotalReviews(ratingRes.data.total_reviews);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
+  }, [id]);
+
   const fetchCurrentParticipation = useCallback(async () => {
     if (!token || !user || user.role !== "musician") return;
     try {

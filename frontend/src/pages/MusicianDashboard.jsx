@@ -1110,35 +1110,147 @@ export default function MusicianDashboard() {
           </TabsContent>
 
           <TabsContent value="musicians">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {musicians.filter(m => m.user_id !== user?.id).map((musician) => (
-                <div key={musician.id} className="card-venue p-5">
-                  <div className="flex items-start gap-4">
-                    {musician.profile_image ? (
-                      <img src={musician.profile_image} alt="" className="w-16 h-16 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center"><User className="w-8 h-8 text-primary" /></div>
-                    )}
-                    <div className="flex-1">
-                      <h3 className="font-heading font-semibold">{musician.pseudo}</h3>
-                      {musician.city && <p className="text-sm text-muted-foreground">{musician.city}</p>}
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {musician.instruments?.slice(0, 2).map((inst, i) => (
-                          <span key={i} className="px-2 py-0.5 bg-primary/20 text-primary text-xs rounded-full">{inst}</span>
-                        ))}
-                      </div>
+            <div className="space-y-6">
+              {/* Filtres de localisation */}
+              <div className="glassmorphism rounded-2xl p-6">
+                <h2 className="font-heading font-semibold text-xl mb-4">Filtrer par localisation</h2>
+                
+                <Tabs defaultValue="all" className="w-full">
+                  <TabsList className="grid w-full grid-cols-5 bg-muted/50 rounded-full p-1">
+                    <TabsTrigger value="all" className="rounded-full">
+                      Tous ({musicians.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="france" className="rounded-full">
+                      France ({musicians.filter(m => !m.country || m.country === 'France').length})
+                    </TabsTrigger>
+                    <TabsTrigger value="region" className="rounded-full">
+                      Par Région
+                    </TabsTrigger>
+                    <TabsTrigger value="department" className="rounded-full">
+                      Par Département
+                    </TabsTrigger>
+                    <TabsTrigger value="country" className="rounded-full">
+                      Autres Pays
+                    </TabsTrigger>
+                  </TabsList>
+
+                  {/* Tous les musiciens */}
+                  <TabsContent value="all" className="mt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {musicians.filter(m => m.user_id !== user?.id).map((musician) => (
+                        <MusicianCard key={musician.id} musician={musician} onSendFriendRequest={sendFriendRequest} />
+                      ))}
                     </div>
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    <Button onClick={() => sendFriendRequest(musician.user_id)} variant="outline" className="flex-1 rounded-full border-white/20 gap-2">
-                      <UserPlus className="w-4 h-4" /> Ajouter
-                    </Button>
-                    <Link to={`/musician/${musician.id}`} className="flex-1">
-                      <Button variant="ghost" className="w-full rounded-full">Voir profil</Button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
+                  </TabsContent>
+
+                  {/* France */}
+                  <TabsContent value="france" className="mt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {musicians
+                        .filter(m => m.user_id !== user?.id && (!m.country || m.country === 'France'))
+                        .map((musician) => (
+                          <MusicianCard key={musician.id} musician={musician} onSendFriendRequest={sendFriendRequest} />
+                        ))}
+                    </div>
+                  </TabsContent>
+
+                  {/* Par Région */}
+                  <TabsContent value="region" className="mt-6">
+                    {(() => {
+                      const musiciansByRegion = {};
+                      musicians.filter(m => m.user_id !== user?.id && (!m.country || m.country === 'France')).forEach(m => {
+                        const region = m.region || 'Non spécifiée';
+                        if (!musiciansByRegion[region]) musiciansByRegion[region] = [];
+                        musiciansByRegion[region].push(m);
+                      });
+                      
+                      return (
+                        <div className="space-y-6">
+                          {Object.keys(musiciansByRegion).sort().map(region => (
+                            <div key={region}>
+                              <h3 className="font-heading font-semibold text-lg mb-3 flex items-center gap-2">
+                                <MapPin className="w-5 h-5 text-primary" />
+                                {region} ({musiciansByRegion[region].length})
+                              </h3>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {musiciansByRegion[region].map((musician) => (
+                                  <MusicianCard key={musician.id} musician={musician} onSendFriendRequest={sendFriendRequest} />
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </TabsContent>
+
+                  {/* Par Département */}
+                  <TabsContent value="department" className="mt-6">
+                    {(() => {
+                      const musiciansByDepartment = {};
+                      musicians.filter(m => m.user_id !== user?.id && (!m.country || m.country === 'France')).forEach(m => {
+                        const dept = m.department || 'Non spécifié';
+                        if (!musiciansByDepartment[dept]) musiciansByDepartment[dept] = [];
+                        musiciansByDepartment[dept].push(m);
+                      });
+                      
+                      return (
+                        <div className="space-y-6">
+                          {Object.keys(musiciansByDepartment).sort().map(dept => (
+                            <div key={dept}>
+                              <h3 className="font-heading font-semibold text-lg mb-3 flex items-center gap-2">
+                                <MapPin className="w-5 h-5 text-secondary" />
+                                Département {dept} ({musiciansByDepartment[dept].length})
+                              </h3>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {musiciansByDepartment[dept].map((musician) => (
+                                  <MusicianCard key={musician.id} musician={musician} onSendFriendRequest={sendFriendRequest} />
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </TabsContent>
+
+                  {/* Autres Pays */}
+                  <TabsContent value="country" className="mt-6">
+                    {(() => {
+                      const musiciansByCountry = {};
+                      musicians.filter(m => m.user_id !== user?.id && m.country && m.country !== 'France').forEach(m => {
+                        const country = m.country;
+                        if (!musiciansByCountry[country]) musiciansByCountry[country] = [];
+                        musiciansByCountry[country].push(m);
+                      });
+                      
+                      return (
+                        <div className="space-y-6">
+                          {Object.keys(musiciansByCountry).sort().map(country => (
+                            <div key={country}>
+                              <h3 className="font-heading font-semibold text-lg mb-3 flex items-center gap-2">
+                                <Globe className="w-5 h-5 text-primary" />
+                                {country} ({musiciansByCountry[country].length})
+                              </h3>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {musiciansByCountry[country].map((musician) => (
+                                  <MusicianCard key={musician.id} musician={musician} onSendFriendRequest={sendFriendRequest} />
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                          {Object.keys(musiciansByCountry).length === 0 && (
+                            <div className="text-center py-12 text-muted-foreground">
+                              <Globe className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                              <p>Aucun musicien d'autres pays pour le moment</p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </TabsContent>
+                </Tabs>
+              </div>
             </div>
           </TabsContent>
 

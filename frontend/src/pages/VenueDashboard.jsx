@@ -104,10 +104,6 @@ export default function VenueDashboard() {
     bands: [], price: ""
   });
 
-  const [planningForm, setPlanningForm] = useState({
-    date: "", music_styles: [], description: "", artist_categories: []
-  });
-
   const [newBand, setNewBand] = useState({ name: "", musician_id: "", photo: "", facebook: "", instagram: "" });
 
   const fetchProfile = useCallback(async () => {

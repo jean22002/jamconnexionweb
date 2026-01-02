@@ -120,6 +120,55 @@ export default function VenueDetail() {
     }
   }, [id]);
 
+  const checkSubscription = useCallback(async () => {
+    if (!token || !user || user.role !== "musician") return;
+    try {
+      const response = await axios.get(`${API}/musicians/me/subscriptions`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const isSubbed = response.data.some(sub => sub.venue_id === id);
+      setIsSubscribed(isSubbed);
+    } catch (error) {
+      console.error("Error checking subscription:", error);
+    }
+  }, [id, token, user]);
+
+  const handleSubscribe = async () => {
+    if (!token || !user || user.role !== "musician") {
+      toast.error("Connectez-vous en tant que musicien pour vous connecter");
+      return;
+    }
+
+    setSubscribing(true);
+    try {
+      if (isSubscribed) {
+        // Unsubscribe
+        await axios.post(
+          `${API}/venues/${id}/unsubscribe`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setIsSubscribed(false);
+        toast.success("Déconnecté de cet établissement");
+      } else {
+        // Subscribe
+        await axios.post(
+          `${API}/venues/${id}/subscribe`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setIsSubscribed(true);
+        toast.success("Connecté à cet établissement ! Il apparaîtra dans votre onglet Connexions.");
+      }
+      fetchVenue(); // Refresh subscriber count
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Erreur lors de la connexion");
+    } finally {
+      setSubscribing(false);
+    }
+  };
+
   const fetchBandsPlayed = useCallback(async () => {
     setLoadingBands(true);
     try {

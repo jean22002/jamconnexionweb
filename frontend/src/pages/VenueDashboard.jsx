@@ -516,6 +516,29 @@ export default function VenueDashboard() {
     }
   };
 
+  // Fetch planning slots
+  const fetchPlanningSlots = async () => {
+    if (!profile) return;
+    try {
+      const response = await axios.get(`${API}/venues/${profile.id}/planning`);
+      setPlanningSlots(response.data);
+    } catch (error) {
+      console.error("Error fetching planning slots:", error);
+    }
+  };
+
+  // Fetch applications for a specific slot
+  const fetchApplications = async (slotId) => {
+    try {
+      const response = await axios.get(`${API}/planning/${slotId}/applications`, { 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+      setApplications({ ...applications, [slotId]: response.data });
+    } catch (error) {
+      console.error("Error fetching applications:", error);
+    }
+  };
+
   // Create Jam
   const createJam = async () => {
     try {

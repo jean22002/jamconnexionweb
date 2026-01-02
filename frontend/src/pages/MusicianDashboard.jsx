@@ -823,7 +823,7 @@ export default function MusicianDashboard() {
             <TabsTrigger value="map" className="rounded-full">Carte</TabsTrigger>
             <TabsTrigger value="musicians" className="rounded-full">Musiciens</TabsTrigger>
             <TabsTrigger value="friends" className="rounded-full">Amis ({friends.length})</TabsTrigger>
-            <TabsTrigger value="subscriptions" className="rounded-full">Abonnements</TabsTrigger>
+            <TabsTrigger value="subscriptions" className="rounded-full">Connexions</TabsTrigger>
             <TabsTrigger value="bands" className="rounded-full">Groupes</TabsTrigger>
           </TabsList>
 

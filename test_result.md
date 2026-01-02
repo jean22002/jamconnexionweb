@@ -195,15 +195,18 @@ frontend:
 
   - task: "Musician Dashboard with Geolocation"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/pages/MusicianDashboard.jsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Dashboard avec carte de géolocalisation en temps réel fonctionnel"
+      - working: false
+        agent: "testing"
+        comment: "❌ BUG CONFIRMÉ EN PRODUCTION - Les établissements ne s'affichent PAS sur la carte Leaflet ni dans la liste. Test effectué avec compte musicien test_musician_frontend_6004@test.com. DIAGNOSTIC: 1) API /api/venues fonctionne (10 établissements avec coordonnées valides), 2) Frontend reçoit erreurs 520 intermittentes de Cloudflare, 3) Console logs montrent 'Total venues: 0' malgré API 200 OK, 4) Aucun marqueur sur carte, 5) Liste vide '0 établissement répertorié'. CAUSE PROBABLE: Erreurs réseau intermittentes 520 empêchent chargement données ou problème gestion erreurs dans fetchData(). Backend logs montrent aussi erreur 500 sur /api/musicians (champ 'pseudo' manquant)."
 
   - task: "Event Participation - Frontend Components"
     implemented: true

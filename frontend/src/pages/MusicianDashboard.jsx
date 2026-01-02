@@ -619,6 +619,52 @@ export default function MusicianDashboard() {
                             <Label>Nom du groupe</Label>
                             <Input value={profileForm.band.name} onChange={(e) => setProfileForm({ ...profileForm, band: { ...profileForm.band, name: e.target.value } })} className="bg-black/20 border-white/10" />
                           </div>
+                          
+                          <div className="space-y-2">
+                            <Label>Description</Label>
+                            <Textarea value={profileForm.band.description || ""} onChange={(e) => setProfileForm({ ...profileForm, band: { ...profileForm.band, description: e.target.value } })} className="bg-black/20 border-white/10" rows={3} placeholder="Décrivez votre groupe..." />
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Nombre de membres</Label>
+                              <Input type="number" value={profileForm.band.members_count || ""} onChange={(e) => setProfileForm({ ...profileForm, band: { ...profileForm.band, members_count: parseInt(e.target.value) || null } })} className="bg-black/20 border-white/10" />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Département</Label>
+                              <Input placeholder="Ex: 75" value={profileForm.department || ""} onChange={(e) => setProfileForm({ ...profileForm, department: e.target.value })} className="bg-black/20 border-white/10" />
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label>Styles musicaux du groupe</Label>
+                            <Input placeholder="Appuyez Entrée" onKeyPress={(e) => { if (e.key === 'Enter' && e.target.value) { setProfileForm({ ...profileForm, band: { ...profileForm.band, music_styles: [...(profileForm.band.music_styles || []), e.target.value] } }); e.target.value = ''; } }} className="bg-black/20 border-white/10" />
+                            <div className="flex flex-wrap gap-2">
+                              {profileForm.band.music_styles?.map((s, i) => (
+                                <span key={i} className="px-2 py-1 bg-secondary/20 text-secondary rounded-full text-xs flex items-center gap-1">
+                                  {s}
+                                  <button onClick={() => setProfileForm({ ...profileForm, band: { ...profileForm.band, music_styles: profileForm.band.music_styles.filter((_, idx) => idx !== i) } })}><X className="w-3 h-3" /></button>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <Label>Disponibilités</Label>
+                            <div className="flex items-center gap-2">
+                              <Switch checked={profileForm.band.looking_for_concerts !== false} onCheckedChange={(checked) => setProfileForm({ ...profileForm, band: { ...profileForm.band, looking_for_concerts: checked } })} />
+                              <Label className="text-sm">🎤 Cherche des concerts</Label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Switch checked={profileForm.band.looking_for_members || false} onCheckedChange={(checked) => setProfileForm({ ...profileForm, band: { ...profileForm.band, looking_for_members: checked } })} />
+                              <Label className="text-sm">👥 Cherche des membres</Label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Switch checked={profileForm.band.is_public !== false} onCheckedChange={(checked) => setProfileForm({ ...profileForm, band: { ...profileForm.band, is_public: checked } })} />
+                              <Label className="text-sm">👁️ Visible dans le répertoire public</Label>
+                            </div>
+                          </div>
+                          
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <Label>Facebook</Label>

@@ -367,6 +367,55 @@ export default function VenueDashboard() {
     }
   }, [activeTab, bandFilters]);
 
+  // Gallery Management
+  const uploadGalleryPhoto = async (file) => {
+    if (!file) return;
+    
+    if (gallery.length >= 20) {
+      toast.error("Limite de 20 photos atteinte");
+      return;
+    }
+
+    setUploadingPhoto(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(`${API}/venues/me/gallery`, formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      toast.success("Photo ajoutée ! 📸");
+      fetchProfile();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur lors de l'upload");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const deleteGalleryPhoto = async (photoUrl) => {
+    try {
+      await axios.delete(`${API}/venues/me/gallery?photo_url=${encodeURIComponent(photoUrl)}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      toast.success("Photo supprimée");
+      fetchProfile();
+    } catch (error) {
+      toast.error("Erreur lors de la suppression");
+    }
+  };
+
+  useEffect(() => {
+    if (profile?.gallery) {
+      setGallery(profile.gallery);
+    }
+  }, [profile]);
+
   // Create Jam
   const createJam = async () => {
     try {

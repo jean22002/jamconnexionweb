@@ -65,11 +65,17 @@ class UserResponse(BaseModel):
 class BandInfo(BaseModel):
     name: str
     photo: Optional[str] = None
+    description: Optional[str] = None
+    members_count: Optional[int] = None
+    music_styles: List[str] = []
     facebook: Optional[str] = None
     instagram: Optional[str] = None
     youtube: Optional[str] = None
     website: Optional[str] = None
     bandcamp: Optional[str] = None
+    looking_for_concerts: bool = True
+    looking_for_members: bool = False
+    is_public: bool = True
 
 # Musician Concert
 class MusicianConcert(BaseModel):
@@ -90,6 +96,7 @@ class MusicianProfile(BaseModel):
     music_styles: List[str] = []
     experience_years: Optional[int] = None
     city: Optional[str] = None
+    department: Optional[str] = None  # Département français
     phone: Optional[str] = None
     website: Optional[str] = None
     facebook: Optional[str] = None

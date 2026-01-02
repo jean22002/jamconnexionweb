@@ -58,6 +58,14 @@ export default function VenueDashboard() {
   const [respondingTo, setRespondingTo] = useState(null);
   const [responseText, setResponseText] = useState("");
   
+  // Bands
+  const [bands, setBands] = useState([]);
+  const [bandsLoading, setBandsLoading] = useState(false);
+  const [bandFilters, setBandFilters] = useState({ department: "", city: "" });
+  const [showMessageDialog, setShowMessageDialog] = useState(false);
+  const [selectedBand, setSelectedBand] = useState(null);
+  const [messageForm, setMessageForm] = useState({ subject: "", content: "" });
+  
   const [formData, setFormData] = useState({
     name: "", description: "", profile_image: "", cover_image: "",
     address: "", city: "", postal_code: "", latitude: 0, longitude: 0,

@@ -333,15 +333,18 @@ frontend:
 
   - task: "VenueDetail - Correction erreur fetchReviews"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/VenueDetail.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Correction de l'erreur 'Cannot access uninitialized variable': fetchReviews déplacé avant son utilisation dans useEffect pour éviter les erreurs d'initialisation"
+      - working: true
+        agent: "testing"
+        comment: "✅ CORRECTION VALIDÉE - Page VenueDetail se charge sans erreur 'Cannot access uninitialized variable'. Tests effectués: ✅ Navigation vers établissement réussie, ✅ Page se charge correctement, ✅ Onglet Avis accessible sans erreur, ✅ fetchReviews correctement placé dans useEffect (ligne 135), ✅ Pas d'erreur JavaScript dans la console. La correction de l'ordre d'initialisation des fonctions a résolu le problème."
 
   - task: "VenueDashboard - Onglet Factures"
     implemented: true

@@ -451,6 +451,71 @@ export default function VenueDashboard() {
     }
   }, [profile]);
 
+  // Calendar helper functions
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    return { daysInMonth, startingDayOfWeek, year, month };
+  };
+
+  const isDateBooked = (dateStr) => {
+    return bookedDates.includes(dateStr);
+  };
+
+  const handleDateClick = (date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    if (isDateBooked(dateStr)) {
+      toast.info("Cette date est déjà réservée");
+      return;
+    }
+    setSelectedDate(date);
+    setPlanningForm({
+      ...planningForm,
+      date: dateStr,
+      time: ''
+    });
+    setShowPlanningModal(true);
+  };
+
+  const handleCreatePlanningSlot = async () => {
+    try {
+      await axios.post(
+        `${API}/planning`,
+        {
+          date: planningForm.date,
+          time: planningForm.time,
+          title: planningForm.title,
+          description: planningForm.description,
+          expected_band_style: planningForm.expectedBandStyle,
+          expected_attendance: parseInt(planningForm.expectedAttendance) || 0,
+          payment: planningForm.payment
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Créneau créé avec succès ! Les groupes peuvent maintenant postuler.");
+      setShowPlanningModal(false);
+      setPlanningForm({
+        date: '',
+        time: '',
+        title: '',
+        description: '',
+        expectedBandStyle: '',
+        expectedAttendance: '',
+        payment: ''
+      });
+      fetchPlanningSlots();
+      fetchBookedDates();
+    } catch (error) {
+      toast.error("Erreur lors de la création du créneau");
+      console.error(error);
+    }
+  };
+
   // Create Jam
   const createJam = async () => {
     try {

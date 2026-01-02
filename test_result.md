@@ -348,15 +348,18 @@ frontend:
 
   - task: "VenueDashboard - Onglet Factures"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/VenueDashboard.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Ajout d'un nouvel onglet 'Factures' dans VenueDashboard (9 onglets au total). Affiche statut de l'abonnement, prix 29,99€/mois, message 'Aucune facture disponible', section de contact support"
+      - working: true
+        agent: "testing"
+        comment: "✅ CORRECTION VALIDÉE - Test avec compte test_venue_invoice_4266@test.com. RÉSULTATS: ✅ 9 onglets présents (au lieu de 8), ✅ Onglet 'Factures' trouvé et accessible, ✅ Statut de l'abonnement affiché, ✅ Prix 29,99 € par mois affiché, ✅ Message 'Aucune facture disponible' affiché, ✅ Section de contact support présente. Onglets complets: ['Profil', 'Boeufs', 'Concerts', 'Planning', 'Notifications', 'Avis', 'Groupes', 'Galerie', 'Factures']. L'onglet Factures est entièrement fonctionnel."
 
   - task: "MusicianDashboard - Changement terminologie Connexions"
     implemented: true

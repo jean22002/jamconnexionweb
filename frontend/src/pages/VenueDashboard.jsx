@@ -603,7 +603,7 @@ export default function VenueDashboard() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-8 bg-muted/50 rounded-full p-1 mb-6">
+          <TabsList className="grid w-full grid-cols-9 bg-muted/50 rounded-full p-1 mb-6">
             <TabsTrigger value="profile" className="rounded-full">Profil</TabsTrigger>
             <TabsTrigger value="jams" className="rounded-full">Boeufs</TabsTrigger>
             <TabsTrigger value="concerts" className="rounded-full">Concerts</TabsTrigger>
@@ -612,6 +612,7 @@ export default function VenueDashboard() {
             <TabsTrigger value="reviews" className="rounded-full">Avis</TabsTrigger>
             <TabsTrigger value="bands" className="rounded-full">Groupes</TabsTrigger>
             <TabsTrigger value="gallery" className="rounded-full">Galerie</TabsTrigger>
+            <TabsTrigger value="invoices" className="rounded-full">Factures</TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}

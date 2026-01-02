@@ -316,6 +316,54 @@ frontend:
         agent: "main"
         comment: "Nouvel onglet 'Avis' dans VenueDashboard. Affichage note moyenne, toggle show/hide avis publiquement, liste des avis reçus, formulaire de réponse aux avis, marquage visuel des avis signalés"
 
+  - task: "MusicianDashboard - Filtrage par rayon"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/MusicianDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Correction appliquée: Liste des établissements filtrée pour n'afficher que ceux dans le rayon de recherche. Affiche 'X établissements à proximité' au lieu de 'X établissements répertoriés' quand GPS actif et établissements dans le rayon"
+
+  - task: "VenueDetail - Correction erreur fetchReviews"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/VenueDetail.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Correction de l'erreur 'Cannot access uninitialized variable': fetchReviews déplacé avant son utilisation dans useEffect pour éviter les erreurs d'initialisation"
+
+  - task: "VenueDashboard - Onglet Factures"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/VenueDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Ajout d'un nouvel onglet 'Factures' dans VenueDashboard (9 onglets au total). Affiche statut de l'abonnement, prix 29,99€/mois, message 'Aucune facture disponible', section de contact support"
+
+  - task: "MusicianDashboard - Changement terminologie Connexions"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/MusicianDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Changement de terminologie: Onglet 'Abonnements' renommé en 'Connexions', message mis à jour: 'Vous n'êtes connecté à aucun établissement'"
+
   - task: "Venue Detail Page"
     implemented: true
     working: true

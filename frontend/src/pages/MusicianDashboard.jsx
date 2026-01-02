@@ -925,11 +925,14 @@ export default function MusicianDashboard() {
                   )}
                   
                   {/* Venue markers - show all venues, highlight nearby ones */}
+                  {console.log('[MusicianDashboard] Rendering venue markers. Total venues:', venues.length, 'With coordinates:', venues.filter(v => v.latitude && v.longitude).length) || null}
                   {venues && venues.length > 0 && venues.map((venue) => {
                     if (!venue.latitude || !venue.longitude) {
+                      console.warn('[MusicianDashboard] Venue missing coordinates:', venue.name, venue.id);
                       return null;
                     }
                     const isNearby = nearbyVenues.some(nv => nv.id === venue.id);
+                    console.log(`[MusicianDashboard] Rendering marker for "${venue.name}" at [${venue.latitude}, ${venue.longitude}]`);
                     return (
                       <Marker 
                         key={venue.id} 

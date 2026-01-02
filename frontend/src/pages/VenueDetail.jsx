@@ -680,6 +680,31 @@ export default function VenueDetail() {
               )}
             </div>
           </TabsContent>
+
+          {/* Gallery Tab */}
+          <TabsContent value="gallery">
+            <div className="space-y-6">
+              {!venue?.gallery || venue.gallery.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground glassmorphism rounded-2xl">
+                  <Music className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Aucune photo disponible</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {venue.gallery.map((photo, index) => (
+                    <div key={index} className="group cursor-pointer">
+                      <img 
+                        src={photo} 
+                        alt={`${venue.name} - Photo ${index + 1}`}
+                        className="w-full h-64 object-cover rounded-xl transition-transform group-hover:scale-105"
+                        onClick={() => window.open(photo, '_blank')}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
         </Tabs>
       </main>
     </div>

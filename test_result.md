@@ -411,10 +411,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "MusicianDashboard - Filtrage par rayon"
-    - "VenueDetail - Correction erreur fetchReviews"
-    - "VenueDashboard - Onglet Factures"
-    - "MusicianDashboard - Changement terminologie Connexions"
+    - "VenueDetail - Bouton Se connecter"
+    - "Proximity Alerts - Backend"
+    - "Messaging System - MessagesImproved Interface"
     - "Review System - Frontend VenueDetail"
     - "Review System - Frontend VenueDashboard"
   stuck_tasks: []

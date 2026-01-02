@@ -1065,7 +1065,8 @@ export default function MusicianDashboard() {
                   </div>
                 ) : (
                   <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2">
-                    {venues.map((venue) => {
+                    {/* Filtrer pour n'afficher que les établissements dans le rayon si géolocalisation active */}
+                    {(geoPosition && nearbyVenues.length > 0 ? nearbyVenues : venues).map((venue) => {
                       const isNearby = nearbyVenues.some(nv => nv.id === venue.id);
                       return (
                         <Link key={venue.id} to={`/venue/${venue.id}`} className="block" data-testid={`venue-card-${venue.id}`}>

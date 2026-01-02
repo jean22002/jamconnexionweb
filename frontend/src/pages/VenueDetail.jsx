@@ -370,13 +370,25 @@ export default function VenueDetail() {
               <div className="flex flex-col gap-2">
                 {user?.role === "musician" && (
                   <Button 
-                    onClick={toggleSubscription} 
-                    variant={isSubscribed ? "outline" : "default"}
-                    className={`rounded-full gap-2 ${isSubscribed ? 'border-white/20' : 'bg-primary hover:bg-primary/90'}`}
+                    onClick={handleSubscribe} 
+                    disabled={subscribing}
+                    size="lg"
+                    className={`
+                      rounded-full px-6 py-3 gap-2 font-bold transition-all transform hover:scale-105 shadow-lg
+                      ${isSubscribed 
+                        ? 'bg-muted hover:bg-muted/80 text-foreground border-2 border-white/20' 
+                        : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-green-500/50'
+                      }
+                    `}
                     data-testid="subscribe-btn"
                   >
-                    {isSubscribed ? <BellOff className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
-                    {isSubscribed ? "Abonné" : "S'abonner"}
+                    {subscribing ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> Chargement...</>
+                    ) : isSubscribed ? (
+                      <><Check className="w-4 h-4" /> Connecté</>
+                    ) : (
+                      <><Heart className="w-4 h-4 fill-current" /> Se connecter</>
+                    )}
                   </Button>
                 )}
                 

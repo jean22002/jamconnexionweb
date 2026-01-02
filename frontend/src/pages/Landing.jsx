@@ -104,8 +104,8 @@ export default function Landing() {
             <div className="relative hidden lg:block">
               <div className="relative rounded-3xl overflow-hidden neon-border animate-pulse-glow">
                 <img 
-                  src="https://images.unsplash.com/photo-1562408590-e32931084e23?w=800&q=80"
-                  alt="Circuit board representing musical connections"
+                  src="https://images.unsplash.com/photo-1615297658577-dc5cec88e81a?w=800&q=80"
+                  alt="Musical connections - network of musicians and venues"
                   className="w-full h-[500px] object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>

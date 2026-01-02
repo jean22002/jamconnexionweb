@@ -140,6 +140,8 @@ export default function MusicianDashboard() {
   const [subscriptions, setSubscriptions] = useState([]);
   const [activeTab, setActiveTab] = useState("map");
   const [currentParticipation, setCurrentParticipation] = useState(null);
+  const [selectedRegion, setSelectedRegion] = useState(null);
+  const [selectedDepartment, setSelectedDepartment] = useState(null);
   
   // Geolocation states
   const [geoEnabled, setGeoEnabled] = useState(true);
@@ -1204,21 +1206,54 @@ export default function MusicianDashboard() {
                         musiciansByRegion[region].push(m);
                       });
                       
-                      return (
-                        <div className="space-y-6">
-                          {Object.keys(musiciansByRegion).sort().map(region => (
-                            <div key={region}>
-                              <h3 className="font-heading font-semibold text-lg mb-3 flex items-center gap-2">
-                                <MapPin className="w-5 h-5 text-primary" />
-                                {region} ({musiciansByRegion[region].length})
-                              </h3>
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {musiciansByRegion[region].map((musician) => (
-                                  <MusicianCard key={musician.id} musician={musician} onSendFriendRequest={sendFriendRequest} />
-                                ))}
-                              </div>
+                      // Si une région est sélectionnée, afficher les profils
+                      if (selectedRegion) {
+                        return (
+                          <div>
+                            <Button 
+                              onClick={() => setSelectedRegion(null)} 
+                              variant="outline" 
+                              className="mb-4 rounded-full gap-2"
+                            >
+                              <ArrowLeft className="w-4 h-4" /> Retour aux régions
+                            </Button>
+                            <h3 className="font-heading font-semibold text-xl mb-4 flex items-center gap-2">
+                              <MapPin className="w-6 h-6 text-primary" />
+                              {selectedRegion} ({musiciansByRegion[selectedRegion]?.length || 0} musicien{(musiciansByRegion[selectedRegion]?.length || 0) > 1 ? 's' : ''})
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {(musiciansByRegion[selectedRegion] || []).map((musician) => (
+                                <MusicianCard key={musician.id} musician={musician} onSendFriendRequest={sendFriendRequest} />
+                              ))}
                             </div>
-                          ))}
+                          </div>
+                        );
+                      }
+                      
+                      // Sinon, afficher la grille de boutons des régions
+                      return (
+                        <div>
+                          <h3 className="font-heading font-semibold text-lg mb-4">
+                            Sélectionnez une région
+                          </h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                            {Object.keys(musiciansByRegion).sort().map(region => (
+                              <Button
+                                key={region}
+                                onClick={() => setSelectedRegion(region)}
+                                variant="outline"
+                                className="h-auto py-4 px-4 flex flex-col items-center gap-2 hover:bg-primary/10 hover:border-primary transition-all"
+                              >
+                                <MapPin className="w-5 h-5 text-primary" />
+                                <div className="text-center">
+                                  <div className="font-semibold">{region}</div>
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    {musiciansByRegion[region].length} musicien{musiciansByRegion[region].length > 1 ? 's' : ''}
+                                  </div>
+                                </div>
+                              </Button>
+                            ))}
+                          </div>
                         </div>
                       );
                     })()}
@@ -1234,21 +1269,60 @@ export default function MusicianDashboard() {
                         musiciansByDepartment[dept].push(m);
                       });
                       
-                      return (
-                        <div className="space-y-6">
-                          {Object.keys(musiciansByDepartment).sort().map(dept => (
-                            <div key={dept}>
-                              <h3 className="font-heading font-semibold text-lg mb-3 flex items-center gap-2">
-                                <MapPin className="w-5 h-5 text-secondary" />
-                                Département {dept} ({musiciansByDepartment[dept].length})
-                              </h3>
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {musiciansByDepartment[dept].map((musician) => (
-                                  <MusicianCard key={musician.id} musician={musician} onSendFriendRequest={sendFriendRequest} />
-                                ))}
-                              </div>
+                      // Si un département est sélectionné, afficher les profils
+                      if (selectedDepartment) {
+                        return (
+                          <div>
+                            <Button 
+                              onClick={() => setSelectedDepartment(null)} 
+                              variant="outline" 
+                              className="mb-4 rounded-full gap-2"
+                            >
+                              <ArrowLeft className="w-4 h-4" /> Retour aux départements
+                            </Button>
+                            <h3 className="font-heading font-semibold text-xl mb-4 flex items-center gap-2">
+                              <MapPin className="w-6 h-6 text-secondary" />
+                              Département {selectedDepartment} ({musiciansByDepartment[selectedDepartment]?.length || 0} musicien{(musiciansByDepartment[selectedDepartment]?.length || 0) > 1 ? 's' : ''})
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {(musiciansByDepartment[selectedDepartment] || []).map((musician) => (
+                                <MusicianCard key={musician.id} musician={musician} onSendFriendRequest={sendFriendRequest} />
+                              ))}
                             </div>
-                          ))}
+                          </div>
+                        );
+                      }
+                      
+                      // Sinon, afficher la grille de boutons des départements
+                      return (
+                        <div>
+                          <h3 className="font-heading font-semibold text-lg mb-4">
+                            Sélectionnez un département
+                          </h3>
+                          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                            {Object.keys(musiciansByDepartment).sort((a, b) => {
+                              // Trier les départements numériquement
+                              const numA = parseInt(a);
+                              const numB = parseInt(b);
+                              if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                              return a.localeCompare(b);
+                            }).map(dept => (
+                              <Button
+                                key={dept}
+                                onClick={() => setSelectedDepartment(dept)}
+                                variant="outline"
+                                className="h-auto py-4 px-3 flex flex-col items-center gap-2 hover:bg-secondary/10 hover:border-secondary transition-all"
+                              >
+                                <MapPin className="w-5 h-5 text-secondary" />
+                                <div className="text-center">
+                                  <div className="font-semibold">{dept}</div>
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    {musiciansByDepartment[dept].length} musicien{musiciansByDepartment[dept].length > 1 ? 's' : ''}
+                                  </div>
+                                </div>
+                              </Button>
+                            ))}
+                          </div>
                         </div>
                       );
                     })()}

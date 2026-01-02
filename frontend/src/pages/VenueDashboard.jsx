@@ -48,6 +48,21 @@ export default function VenueDashboard() {
   const [broadcastMessage, setBroadcastMessage] = useState("");
   const [broadcastHistory, setBroadcastHistory] = useState([]);
   const [nearbyMusiciansCount, setNearbyMusiciansCount] = useState(0);
+  
+  // Planning calendar states
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [showPlanningModal, setShowPlanningModal] = useState(false);
+  const [bookedDates, setBookedDates] = useState([]);
+  const [planningForm, setPlanningForm] = useState({
+    date: '',
+    time: '',
+    title: '',
+    description: '',
+    expectedBandStyle: '',
+    expectedAttendance: '',
+    payment: ''
+  });
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
   
   // Reviews

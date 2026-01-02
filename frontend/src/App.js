@@ -94,6 +94,7 @@ function App() {
             } 
           />
           <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+          <Route path="/messages-improved" element={<ProtectedRoute><MessagesImproved /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

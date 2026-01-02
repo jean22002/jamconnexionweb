@@ -221,6 +221,7 @@ export default function MusicianDashboard() {
         setMusicians([]);
       }
       
+      setLoadingError(false);
       setLoading(false);
     } catch (error) {
       console.error("[MusicianDashboard] Error fetching data (attempt", retryCount + 1, "):", error);
@@ -236,6 +237,7 @@ export default function MusicianDashboard() {
         // Après tous les retries, afficher un message d'erreur
         console.error('[MusicianDashboard] All retries failed');
         toast.error("Erreur de chargement des établissements. Veuillez rafraîchir la page.");
+        setLoadingError(true);
         setLoading(false);
       }
     }

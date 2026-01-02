@@ -454,6 +454,18 @@ test_plan:
         agent: "testing"
         comment: "✅ NOUVELLE FONCTIONNALITÉ VALIDÉE - Onglet Groupes dans VenueDetail entièrement fonctionnel. Test avec venue Test Jazz Club: ✅ 7 onglets présents (au lieu de 6), ✅ Onglet 'Groupes (0)' trouvé et accessible, ✅ Titre '🎸 Groupes qui ont joué ici', ✅ Description 'Découvrez les groupes qui se sont produits dans ce lieu', ✅ Message d'état vide: 'Aucun groupe n'a encore joué dans ce lieu', ✅ Message informatif: 'Les groupes apparaîtront ici après leurs concerts'. L'onglet Groupes est entièrement fonctionnel et prêt à afficher les groupes."
 
+  - task: "Messaging System - MessagesImproved Interface"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/MessagesImproved.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NOUVELLE FONCTIONNALITÉ IMPLÉMENTÉE - Interface de messagerie complète style WhatsApp/Messenger. Composant MessagesImproved créé avec layout 2 colonnes (conversations + chat), header avec boutons Retour/Nouveau, recherche utilisateurs, envoi messages, polling automatique. Route /messages-improved protégée par authentification. Boutons d'accès ajoutés dans MusicianDashboard et VenueDashboard headers."
+
 agent_communication:
   - agent: "main"
     message: "Système de participation aux événements implémenté. Backend prêt avec endpoints de participation. Frontend complété avec composants JoinEventButton et ParticipationBadge. Intégrations terminées sur VenueDetail, MusicianDetail et MusicianDashboard. Nécessite test complet backend + frontend pour vérifier: 1) Récupération des événements actifs, 2) Fonctionnalité rejoindre/quitter événement, 3) Affichage du badge de participation, 4) Notifications aux amis, 5) Polling automatique du statut de participation. Un test de fichier doit être créé sous /app/backend/tests/test_event_participation.py pour tester les nouveaux endpoints."
@@ -483,3 +495,7 @@ agent_communication:
     message: "NOUVELLE FONCTIONNALITÉ IMPLÉMENTÉE - CALENDRIER VISUEL PLANNING: Calendrier visuel interactif dans l'onglet Planning du VenueDashboard avec jours libres en BLEU, jours réservés en ROUGE, clic sur jour libre pour créer créneau ouvert aux groupes. Composant Calendar.jsx créé avec navigation entre mois, légende Libre/Réservé, système de couleurs. Modal de création avec formulaire complet: date, heure, titre, description, style recherché, affluence, rémunération. BESOIN TESTS COMPLETS pour valider cette nouvelle fonctionnalité majeure."
   - agent: "testing"
     message: "🎉 CALENDRIER VISUEL ENTIÈREMENT FONCTIONNEL - TESTS COMPLETS RÉUSSIS! Test avec compte test_venue_cal_4369@test.com. RÉSULTATS DÉTAILLÉS: ✅ Affichage calendrier mensuel (Janvier 2026) avec navigation < >, ✅ Légende Libre/Réservé présente, ✅ Jours colorés: 30 jours libres (bleus), 0 jours réservés (rouges), ✅ Clic jour libre ouvre modal 'Créer un créneau ouvert aux groupes', ✅ Modal avec TOUS les champs requis: Date sélectionnée (vendredi 2 janvier 2026), Heure du concert, Titre événement (optionnel), Description, Style groupe recherché, Affluence estimée, Rémunération proposée, ✅ Bouton 'Publier le créneau' fonctionnel. CORRECTIONS TECHNIQUES APPLIQUÉES: Suppression déclarations dupliquées (selectedDate, planningForm), ajout fonctions manquantes (fetchPlanningSlots, fetchApplications), suppression ancien TabsContent Planning. CALENDRIER VISUEL 100% FONCTIONNEL SELON SPÉCIFICATIONS!"
+  - agent: "main"
+    message: "NOUVELLE FONCTIONNALITÉ IMPLÉMENTÉE - MESSAGERIE AMÉLIORÉE: Interface de messagerie complète style WhatsApp/Messenger accessible depuis les dashboards Musicien et Établissement. Composant MessagesImproved créé avec layout 2 colonnes (conversations + chat), header avec boutons Retour/Nouveau, recherche utilisateurs, envoi messages, polling automatique toutes les 5s. Route /messages-improved protégée par authentification. Boutons d'accès ajoutés dans headers des deux dashboards. Backend endpoints messages existants utilisés (/api/messages, /api/messages/inbox, /api/messages/sent). BESOIN TESTS COMPLETS pour valider cette nouvelle fonctionnalité majeure."
+  - agent: "testing"
+    message: "🎯 MESSAGERIE AMÉLIORÉE - TESTS PARTIELS EFFECTUÉS - Tests de base réalisés avec succès. RÉSULTATS: ✅ Route /messages-improved existe et est correctement protégée (redirection vers /auth si non connecté), ✅ Composant MessagesImproved implémenté avec structure complète, ✅ Backend endpoints messages fonctionnels (/api/messages, /api/messages/inbox, /api/messages/sent), ✅ Import MessageSquare corrigé dans MusicianDashboard. LIMITATION TESTS: Impossible de tester complètement l'interface utilisateur à cause de problèmes techniques avec les tests automatisés (erreurs browser). TESTS REQUIS: 1) Vérifier boutons Messages dans headers des dashboards, 2) Tester interface 2 colonnes, 3) Valider recherche utilisateurs et envoi messages, 4) Confirmer polling automatique. STATUT: Implémentation technique correcte mais tests UI incomplets."

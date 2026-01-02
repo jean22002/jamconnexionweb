@@ -11,6 +11,7 @@ import { Textarea } from "../components/ui/textarea";
 import { Switch } from "../components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Slider } from "../components/ui/slider";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
 import { ProfileImageUpload, BandImageUpload } from "../components/ui/image-upload";
 import { 
   Dialog,

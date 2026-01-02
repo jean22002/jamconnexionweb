@@ -109,6 +109,14 @@ export default function MusicianDashboard() {
   // Geolocation states
   const [geoEnabled, setGeoEnabled] = useState(true);
   const [followUser, setFollowUser] = useState(true);
+  
+  // Bands
+  const [bands, setBands] = useState([]);
+  const [bandsLoading, setBandsLoading] = useState(false);
+  const [bandFilters, setBandFilters] = useState({ department: "", city: "" });
+  const [showMessageDialog, setShowMessageDialog] = useState(false);
+  const [selectedBand, setSelectedBand] = useState(null);
+  const [messageForm, setMessageForm] = useState({ subject: "", content: "" });
   const [searchRadius, setSearchRadius] = useState(25); // km
   const [showRadiusCircle, setShowRadiusCircle] = useState(true);
   const [nearbyVenues, setNearbyVenues] = useState([]);

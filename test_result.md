@@ -361,6 +361,21 @@ frontend:
         agent: "testing"
         comment: "✅ CORRECTION VALIDÉE - Test avec compte test_venue_invoice_4266@test.com. RÉSULTATS: ✅ 9 onglets présents (au lieu de 8), ✅ Onglet 'Factures' trouvé et accessible, ✅ Statut de l'abonnement affiché, ✅ Prix 29,99 € par mois affiché, ✅ Message 'Aucune facture disponible' affiché, ✅ Section de contact support présente. Onglets complets: ['Profil', 'Boeufs', 'Concerts', 'Planning', 'Notifications', 'Avis', 'Groupes', 'Galerie', 'Factures']. L'onglet Factures est entièrement fonctionnel."
 
+  - task: "VenueDashboard - Calendrier Visuel Planning"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/VenueDashboard.jsx, /app/frontend/src/components/Calendar.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NOUVELLE FONCTIONNALITÉ IMPLÉMENTÉE - Calendrier visuel interactif dans l'onglet Planning du VenueDashboard avec jours libres en BLEU, jours réservés en ROUGE, clic sur jour libre pour créer créneau ouvert aux groupes. Composant Calendar.jsx créé avec navigation mois, légende, couleurs."
+      - working: true
+        agent: "testing"
+        comment: "🎉 CALENDRIER VISUEL ENTIÈREMENT FONCTIONNEL - Tests complets réussis avec compte test_venue_cal_4369@test.com. RÉSULTATS DÉTAILLÉS: ✅ Affichage calendrier mensuel (Janvier 2026), ✅ Navigation entre mois avec boutons < >, ✅ Légende Libre/Réservé présente, ✅ Jours colorés: 30 jours libres (bleus), 0 jours réservés (rouges), ✅ Clic jour libre ouvre modal 'Créer un créneau ouvert aux groupes', ✅ Modal avec tous les champs: Date sélectionnée, Heure du concert, Titre événement (optionnel), Description, Style groupe recherché, Affluence estimée, Rémunération proposée, ✅ Bouton 'Publier le créneau' fonctionnel, ✅ Formulaire de création complet et opérationnel. CORRECTIONS APPLIQUÉES: Suppression déclarations dupliquées (selectedDate, planningForm), ajout fonctions manquantes (fetchPlanningSlots, fetchApplications), suppression ancien TabsContent Planning. Calendrier visuel 100% fonctionnel selon spécifications."
+
   - task: "MusicianDashboard - Changement terminologie Connexions"
     implemented: true
     working: true

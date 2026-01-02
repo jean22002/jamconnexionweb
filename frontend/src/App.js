@@ -8,6 +8,7 @@ import VenueDashboard from "./pages/VenueDashboard";
 import VenueDetail from "./pages/VenueDetail";
 import MusicianDetail from "./pages/MusicianDetail";
 import Messages from "./pages/Messages";
+import MessagesImproved from "./pages/MessagesImproved";
 import Pricing from "./pages/Pricing";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import "./App.css";

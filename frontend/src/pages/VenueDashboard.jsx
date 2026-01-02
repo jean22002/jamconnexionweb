@@ -1475,6 +1475,96 @@ export default function VenueDashboard() {
               </div>
             </div>
           </TabsContent>
+
+          {/* Invoices Tab */}
+          <TabsContent value="invoices">
+            <div className="glassmorphism rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="font-heading font-semibold text-xl mb-2">📄 Factures</h2>
+                  <p className="text-muted-foreground text-sm">
+                    Consultez et téléchargez vos factures d'abonnement mensuel
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {/* Current Subscription Status */}
+                <div className="p-4 bg-muted/30 rounded-xl border border-white/10">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold mb-1">Statut de l'abonnement</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {user?.subscription_status === "active" && "✅ Actif - Abonnement mensuel"}
+                        {user?.subscription_status === "trial" && "🎁 Période d'essai"}
+                        {(!user?.subscription_status || user?.subscription_status === "inactive") && "❌ Inactif"}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-lg">29,99 €</p>
+                      <p className="text-xs text-muted-foreground">par mois</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sample Invoices - In real implementation, fetch from backend */}
+                <div className="space-y-3">
+                  <h3 className="font-semibold mb-3">Historique des factures</h3>
+                  
+                  {/* Placeholder message */}
+                  <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-xl">
+                    <FileText className="w-12 h-12 mx-auto mb-4 opacity-50 text-muted-foreground" />
+                    <p className="text-muted-foreground mb-2">Aucune facture disponible</p>
+                    <p className="text-sm text-muted-foreground">
+                      Vos factures mensuelles apparaîtront ici après votre premier paiement
+                    </p>
+                  </div>
+
+                  {/* Example invoice structure (commented for future implementation) */}
+                  {/* 
+                  <div className="p-4 bg-card rounded-xl border border-white/10 hover:border-primary/30 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
+                          <FileText className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold">Facture Janvier 2025</h4>
+                          <p className="text-sm text-muted-foreground">Émise le 01/01/2025</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="font-semibold">29,99 €</p>
+                          <p className="text-xs text-green-400">✓ Payée</p>
+                        </div>
+                        <Button variant="outline" size="sm" className="rounded-full">
+                          Télécharger
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  */}
+                </div>
+
+                {/* Contact Support */}
+                <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-blue-400 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1">Besoin d'aide avec vos factures ?</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Contactez notre support à{" "}
+                        <a href="mailto:support@jamconnexion.com" className="text-primary hover:underline">
+                          support@jamconnexion.com
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
       </main>
     </div>

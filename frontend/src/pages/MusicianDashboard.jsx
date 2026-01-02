@@ -1040,7 +1040,23 @@ export default function MusicianDashboard() {
                   )}
                 </div>
                 {loading ? (
-                  <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                  <div className="flex items-center justify-center h-64">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  </div>
+                ) : loadingError ? (
+                  <div className="flex flex-col items-center justify-center h-64 text-center p-6 glassmorphism rounded-xl">
+                    <div className="w-16 h-16 rounded-full bg-destructive/20 flex items-center justify-center mb-4">
+                      <X className="w-8 h-8 text-destructive" />
+                    </div>
+                    <h3 className="font-heading font-semibold text-xl mb-2">Erreur de chargement</h3>
+                    <p className="text-muted-foreground mb-4">Impossible de charger les établissements. Veuillez réessayer.</p>
+                    <Button 
+                      onClick={() => { setLoading(true); setLoadingError(false); fetchData(); }} 
+                      className="bg-primary hover:bg-primary/90 rounded-full"
+                    >
+                      Réessayer
+                    </Button>
+                  </div>
                 ) : (
                   <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2">
                     {venues.map((venue) => {

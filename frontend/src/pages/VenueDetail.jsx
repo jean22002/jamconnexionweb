@@ -118,6 +118,18 @@ export default function VenueDetail() {
     }
   }, [id]);
 
+  const fetchBandsPlayed = useCallback(async () => {
+    setLoadingBands(true);
+    try {
+      const response = await axios.get(`${API}/venues/${id}/bands-played`);
+      setBandsPlayed(response.data);
+    } catch (error) {
+      console.error("Error fetching bands:", error);
+    } finally {
+      setLoadingBands(false);
+    }
+  }, [id]);
+
   const fetchCurrentParticipation = useCallback(async () => {
     if (!token || !user || user.role !== "musician") return;
     try {

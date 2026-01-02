@@ -199,7 +199,8 @@ export default function VenueDetail() {
     fetchActiveEvents();
     fetchReviews();
     fetchBandsPlayed();
-  }, [fetchVenue, fetchEvents, fetchActiveEvents, fetchReviews, fetchBandsPlayed]);
+    checkSubscription();
+  }, [fetchVenue, fetchEvents, fetchActiveEvents, fetchReviews, fetchBandsPlayed, checkSubscription]);
 
   useEffect(() => {
     checkSubscription();

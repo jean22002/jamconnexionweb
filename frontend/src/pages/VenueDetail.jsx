@@ -206,26 +206,6 @@ export default function VenueDetail() {
     fetchCurrentParticipation();
   }, [checkSubscription, fetchCurrentParticipation]);
 
-  const toggleSubscription = async () => {
-    if (!token) {
-      toast.error("Connectez-vous pour vous abonner");
-      return;
-    }
-    try {
-      if (isSubscribed) {
-        await axios.delete(`${API}/venues/${id}/subscribe`, { headers: { Authorization: `Bearer ${token}` } });
-        toast.success("Désabonné");
-      } else {
-        await axios.post(`${API}/venues/${id}/subscribe`, {}, { headers: { Authorization: `Bearer ${token}` } });
-        toast.success("Abonné! Vous recevrez les notifications");
-      }
-      setIsSubscribed(!isSubscribed);
-      fetchVenue();
-    } catch (error) {
-      toast.error(error.response?.data?.detail || "Erreur");
-    }
-  };
-
   const submitApplication = async () => {
     if (!selectedSlot) return;
     try {

@@ -685,6 +685,11 @@ export default function VenueDashboard() {
                   <span className="text-sm">{profile.subscribers_count} abonnés</span>
                 </div>
               )}
+              <Link to="/messages-improved">
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10">
+                  <Send className="w-4 h-4" />
+                </Button>
+              </Link>
               <Button variant="ghost" onClick={logout} className="text-destructive hover:text-destructive/80" data-testid="logout-btn">
                 <LogOut className="w-4 h-4" />
               </Button>

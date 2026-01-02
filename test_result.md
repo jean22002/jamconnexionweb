@@ -207,6 +207,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "❌ BUG CONFIRMÉ EN PRODUCTION - Les établissements ne s'affichent PAS sur la carte Leaflet ni dans la liste. Test effectué avec compte musicien test_musician_frontend_6004@test.com. DIAGNOSTIC: 1) API /api/venues fonctionne (10 établissements avec coordonnées valides), 2) Frontend reçoit erreurs 520 intermittentes de Cloudflare, 3) Console logs montrent 'Total venues: 0' malgré API 200 OK, 4) Aucun marqueur sur carte, 5) Liste vide '0 établissement répertorié'. CAUSE PROBABLE: Erreurs réseau intermittentes 520 empêchent chargement données ou problème gestion erreurs dans fetchData(). Backend logs montrent aussi erreur 500 sur /api/musicians (champ 'pseudo' manquant)."
+      - working: false
+        agent: "testing"
+        comment: "🔍 DIAGNOSTIC COMPLET APRÈS CORRECTIONS - Test avec compte test_musician_fix_6473@test.com. RÉSULTATS: ✅ Retry logic fonctionne (3 tentatives + 1 = 4 total), ✅ Message d'erreur utilisateur affiché avec bouton 'Réessayer', ✅ Console logs détaillés présents. CAUSE RACINE IDENTIFIÉE: /api/musicians retourne 500 (ValidationError: pseudo field required) ce qui fait échouer Promise.all() dans fetchData() et empêche l'affichage des venues même si /api/venues fonctionne parfaitement (200 OK). Le problème n'est PAS les erreurs 520 mais l'échec de /api/musicians qui bloque tout le chargement. SOLUTION: Séparer les appels API ou gérer l'échec de /api/musicians sans bloquer /api/venues."
 
   - task: "Event Participation - Frontend Components"
     implemented: true

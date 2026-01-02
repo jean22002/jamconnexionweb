@@ -1123,6 +1123,224 @@ export default function VenueDashboard() {
                 </DialogContent>
               </Dialog>
             </div>
+          {/* Planning Tab - Calendrier Visuel */}
+          <TabsContent value="planning">
+            <div className="space-y-6">
+              {/* Calendrier Visuel */}
+              <Calendar
+                currentMonth={currentMonth}
+                onMonthChange={setCurrentMonth}
+                onDateClick={handleDateClick}
+                bookedDates={bookedDates}
+              />
+
+              {/* Liste des créneaux ouverts */}
+              <div className="glassmorphism rounded-2xl p-6">
+                <h2 className="font-heading font-semibold text-xl mb-4">📅 Créneaux ouverts aux candidatures</h2>
+                
+                {planningSlots.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <CalendarIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Aucun créneau ouvert pour le moment</p>
+                    <p className="text-sm mt-2">Cliquez sur un jour libre (bleu) dans le calendrier pour créer un créneau</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {planningSlots.map((slot) => (
+                      <div key={slot.id} className="p-5 border border-white/10 rounded-xl hover:border-primary/30 transition-all">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <span className="px-3 py-1 bg-primary/20 text-primary text-sm rounded-full font-semibold">
+                                {new Date(slot.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                              </span>
+                              {slot.time && (
+                                <span className="text-sm text-muted-foreground">🕐 {slot.time}</span>
+                              )}
+                              {slot.is_open ? (
+                                <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">Ouvert</span>
+                              ) : (
+                                <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">Fermé</span>
+                              )}
+                            </div>
+                            
+                            {slot.title && (
+                              <h3 className="font-heading font-semibold text-lg mb-2">{slot.title}</h3>
+                            )}
+                            
+                            {slot.description && (
+                              <p className="text-sm text-muted-foreground mb-3">{slot.description}</p>
+                            )}
+                            
+                            {slot.expected_band_style && (
+                              <p className="text-sm mb-2">
+                                <span className="text-muted-foreground">Style recherché:</span>{' '}
+                                <span className="text-primary font-medium">{slot.expected_band_style}</span>
+                              </p>
+                            )}
+                            
+                            {slot.expected_attendance > 0 && (
+                              <p className="text-sm mb-2">
+                                <span className="text-muted-foreground">Affluence estimée:</span>{' '}
+                                <span className="font-medium">{slot.expected_attendance} personnes</span>
+                              </p>
+                            )}
+                            
+                            {slot.payment && (
+                              <p className="text-sm mb-2">
+                                <span className="text-muted-foreground">Rémunération:</span>{' '}
+                                <span className="text-green-400 font-medium">{slot.payment}</span>
+                              </p>
+                            )}
+                          </div>
+                          
+                          <Button
+                            onClick={() => {
+                              setViewingApplications(slot.id);
+                              fetchApplications(slot.id);
+                            }}
+                            variant="outline"
+                            className="rounded-full gap-2"
+                          >
+                            <Users className="w-4 h-4" />
+                            Candidatures ({applications[slot.id]?.length || 0})
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Modal de création de créneau */}
+              <Dialog open={showPlanningModal} onOpenChange={setShowPlanningModal}>
+                <DialogContent className="glassmorphism border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Créer un créneau ouvert aux groupes</DialogTitle>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4 mt-4">
+                    <div className="p-4 bg-primary/10 rounded-lg border border-primary/30">
+                      <p className="text-sm">
+                        📅 <strong>Date sélectionnée:</strong> {selectedDate && selectedDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Heure du concert</Label>
+                      <Input
+                        type="time"
+                        value={planningForm.time}
+                        onChange={(e) => setPlanningForm({ ...planningForm, time: e.target.value })}
+                        className="bg-black/20 border-white/10"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Titre de l'événement (optionnel)</Label>
+                      <Input
+                        type="text"
+                        placeholder="Ex: Soirée Rock, Concert acoustique..."
+                        value={planningForm.title}
+                        onChange={(e) => setPlanningForm({ ...planningForm, title: e.target.value })}
+                        className="bg-black/20 border-white/10"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Textarea
+                        placeholder="Décrivez le type de concert, l'ambiance recherchée..."
+                        value={planningForm.description}
+                        onChange={(e) => setPlanningForm({ ...planningForm, description: e.target.value })}
+                        rows={3}
+                        className="bg-black/20 border-white/10"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Style de groupe recherché</Label>
+                      <Input
+                        type="text"
+                        placeholder="Ex: Rock, Jazz, Blues, Pop..."
+                        value={planningForm.expectedBandStyle}
+                        onChange={(e) => setPlanningForm({ ...planningForm, expectedBandStyle: e.target.value })}
+                        className="bg-black/20 border-white/10"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Affluence estimée (nombre de personnes)</Label>
+                      <Input
+                        type="number"
+                        placeholder="Ex: 50, 100, 200..."
+                        value={planningForm.expectedAttendance}
+                        onChange={(e) => setPlanningForm({ ...planningForm, expectedAttendance: e.target.value })}
+                        className="bg-black/20 border-white/10"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Rémunération proposée</Label>
+                      <Input
+                        type="text"
+                        placeholder="Ex: 200€, Au chapeau, Visibilité..."
+                        value={planningForm.payment}
+                        onChange={(e) => setPlanningForm({ ...planningForm, payment: e.target.value })}
+                        className="bg-black/20 border-white/10"
+                      />
+                    </div>
+
+                    <div className="flex gap-3 mt-6">
+                      <Button
+                        onClick={handleCreatePlanningSlot}
+                        className="flex-1 bg-primary hover:bg-primary/90 rounded-full"
+                      >
+                        Publier le créneau
+                      </Button>
+                      <Button
+                        onClick={() => setShowPlanningModal(false)}
+                        variant="outline"
+                        className="rounded-full"
+                      >
+                        Annuler
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              {/* Applications Dialog */}
+              <Dialog open={!!viewingApplications} onOpenChange={() => setViewingApplications(null)}>
+                <DialogContent className="glassmorphism border-white/10 max-w-lg max-h-[80vh] overflow-y-auto">
+                  <DialogHeader><DialogTitle>Candidatures</DialogTitle></DialogHeader>
+                  <div className="space-y-4 mt-4">
+                    {(!applications[viewingApplications] || applications[viewingApplications].length === 0) ? (
+                      <p className="text-muted-foreground text-center py-4">Aucune candidature</p>
+                    ) : applications[viewingApplications].map((app) => (
+                      <div key={app.id} className="p-4 border border-white/10 rounded-xl">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="font-heading font-semibold">{app.band_name}</p>
+                            <p className="text-sm text-muted-foreground">{app.music_style}</p>
+                          </div>
+                          <span className={`px-2 py-1 rounded-full text-xs ${app.status === 'accepted' ? 'bg-green-500/20 text-green-400' : app.status === 'rejected' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                            {app.status === 'accepted' ? 'Accepté' : app.status === 'rejected' ? 'Refusé' : 'En attente'}
+                          </span>
+                        </div>
+                        {app.description && <p className="text-sm mt-2">{app.description}</p>}
+                        {app.status === 'pending' && (
+                          <div className="flex gap-2 mt-4">
+                            <Button onClick={() => handleApplication(app.id, 'accept')} className="flex-1 bg-green-500 hover:bg-green-600 rounded-full">Accepter</Button>
+                            <Button onClick={() => handleApplication(app.id, 'reject')} variant="outline" className="flex-1 border-destructive text-destructive rounded-full">Refuser</Button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </TabsContent>
 
           {/* Notifications Tab */}

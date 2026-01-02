@@ -195,7 +195,7 @@ frontend:
 
   - task: "Musician Dashboard with Geolocation"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/pages/MusicianDashboard.jsx"
     stuck_count: 1
     priority: "high"
@@ -210,6 +210,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "🔍 DIAGNOSTIC COMPLET APRÈS CORRECTIONS - Test avec compte test_musician_fix_6473@test.com. RÉSULTATS: ✅ Retry logic fonctionne (3 tentatives + 1 = 4 total), ✅ Message d'erreur utilisateur affiché avec bouton 'Réessayer', ✅ Console logs détaillés présents. CAUSE RACINE IDENTIFIÉE: /api/musicians retourne 500 (ValidationError: pseudo field required) ce qui fait échouer Promise.all() dans fetchData() et empêche l'affichage des venues même si /api/venues fonctionne parfaitement (200 OK). Le problème n'est PAS les erreurs 520 mais l'échec de /api/musicians qui bloque tout le chargement. SOLUTION: Séparer les appels API ou gérer l'échec de /api/musicians sans bloquer /api/venues."
+      - working: true
+        agent: "testing"
+        comment: "🎉 BUG RÉSOLU - TEST FINAL RÉUSSI! Test avec nouveau compte test_musician_final_7400@test.com. RÉSULTATS: ✅ 10 marqueurs 🎸 affichés sur carte Leaflet, ✅ Titre '10 établissements répertoriés', ✅ 10 cartes d'établissements dans la liste, ✅ Aucune erreur de chargement, ✅ Pas de bouton 'Réessayer'. CONSOLE LOGS: 'Venues loaded successfully. Count: 10', 'Musicians loaded successfully. Count: 23', 'Total venues: 10 With coordinates: 10'. CORRECTIONS APPLIQUÉES EFFICACES: 1) Séparation appels API - échec /api/musicians ne bloque plus /api/venues, 2) Backend filtre musiciens sans pseudo (évite erreur 500), 3) Retry logic fonctionnel, 4) Gestion erreurs améliorée. Les établissements s'affichent maintenant correctement sur la carte et dans la liste!"
 
   - task: "Event Participation - Frontend Components"
     implemented: true

@@ -66,6 +66,10 @@ export default function VenueDashboard() {
   const [selectedBand, setSelectedBand] = useState(null);
   const [messageForm, setMessageForm] = useState({ subject: "", content: "" });
   
+  // Gallery
+  const [gallery, setGallery] = useState([]);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  
   const [formData, setFormData] = useState({
     name: "", description: "", profile_image: "", cover_image: "",
     address: "", city: "", postal_code: "", latitude: 0, longitude: 0,

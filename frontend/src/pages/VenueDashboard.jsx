@@ -313,6 +313,56 @@ export default function VenueDashboard() {
     }
   }, [activeTab, profile]);
 
+  // Bands Management
+  const fetchBands = async () => {
+    setBandsLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (bandFilters.department) params.append('department', bandFilters.department);
+      if (bandFilters.city) params.append('city', bandFilters.city);
+      
+      const response = await axios.get(`${API}/bands?${params.toString()}`);
+      setBands(response.data);
+    } catch (error) {
+      console.error("Error fetching bands:", error);
+      toast.error("Erreur lors du chargement des groupes");
+    } finally {
+      setBandsLoading(false);
+    }
+  };
+
+  const sendMessageToBand = async () => {
+    if (!messageForm.subject.trim() || !messageForm.content.trim()) {
+      toast.error("Remplissez tous les champs");
+      return;
+    }
+
+    try {
+      await axios.post(
+        `${API}/messages`,
+        {
+          recipient_id: selectedBand.musician_user_id,
+          subject: messageForm.subject,
+          content: messageForm.content
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      toast.success("Message envoyé ! 📧");
+      setShowMessageDialog(false);
+      setMessageForm({ subject: "", content: "" });
+      setSelectedBand(null);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur lors de l'envoi");
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "bands") {
+      fetchBands();
+    }
+  }, [activeTab, bandFilters]);
+
   // Create Jam
   const createJam = async () => {
     try {

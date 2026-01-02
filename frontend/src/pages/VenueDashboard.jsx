@@ -1186,6 +1186,168 @@ export default function VenueDashboard() {
               )}
             </div>
           </TabsContent>
+
+          {/* Bands Tab */}
+          <TabsContent value="bands">
+            <div className="space-y-6">
+              {/* Filters */}
+              <div className="glassmorphism rounded-2xl p-6">
+                <h2 className="font-heading font-semibold text-xl mb-4">🎸 Répertoire des Groupes</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Département</Label>
+                    <Input
+                      placeholder="Ex: 75, 13, 69..."
+                      value={bandFilters.department}
+                      onChange={(e) => setBandFilters({ ...bandFilters, department: e.target.value })}
+                      className="bg-black/20 border-white/10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Ville</Label>
+                    <Input
+                      placeholder="Ex: Paris, Lyon..."
+                      value={bandFilters.city}
+                      onChange={(e) => setBandFilters({ ...bandFilters, city: e.target.value })}
+                      className="bg-black/20 border-white/10"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Bands List */}
+              {bandsLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : bands.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground glassmorphism rounded-2xl">
+                  <Music className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Aucun groupe trouvé</p>
+                  <p className="text-sm mt-2">Essayez avec d'autres filtres</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {bands.map((band) => (
+                    <div key={band.id} className="glassmorphism rounded-xl p-5">
+                      {band.photo && (
+                        <img src={band.photo} alt={band.name} className="w-full h-40 object-cover rounded-lg mb-4" />
+                      )}
+                      
+                      <h3 className="font-heading font-semibold text-lg mb-2">{band.name}</h3>
+                      
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                        <MapPin className="w-4 h-4" />
+                        <span>{band.city} {band.department && `(${band.department})`}</span>
+                      </div>
+
+                      {band.members_count && (
+                        <p className="text-sm text-muted-foreground mb-2">
+                          <Users className="w-4 h-4 inline mr-1" />
+                          {band.members_count} membre(s)
+                        </p>
+                      )}
+
+                      {band.description && (
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{band.description}</p>
+                      )}
+
+                      {band.music_styles?.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {band.music_styles.map((style, i) => (
+                            <span key={i} className="text-xs px-2 py-1 bg-primary/20 text-primary rounded-full">{style}</span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex gap-2 mb-3">
+                        {band.looking_for_concerts && (
+                          <span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded-full">
+                            🎤 Cherche concerts
+                          </span>
+                        )}
+                        {band.looking_for_members && (
+                          <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full">
+                            👥 Cherche membres
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex gap-2 flex-wrap mb-3">
+                        {band.facebook && (
+                          <a href={band.facebook} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-white">
+                            <Facebook className="w-4 h-4" />
+                          </a>
+                        )}
+                        {band.instagram && (
+                          <a href={band.instagram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-white">
+                            <Instagram className="w-4 h-4" />
+                          </a>
+                        )}
+                        {band.youtube && (
+                          <a href={band.youtube} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-white">
+                            <Youtube className="w-4 h-4" />
+                          </a>
+                        )}
+                        {band.website && (
+                          <a href={band.website} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-white">
+                            <Globe className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
+
+                      <Button
+                        onClick={() => {
+                          setSelectedBand(band);
+                          setShowMessageDialog(true);
+                        }}
+                        className="w-full bg-primary hover:bg-primary/90 rounded-full gap-2"
+                      >
+                        <Send className="w-4 h-4" />
+                        Contacter
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Message Dialog */}
+              <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
+                <DialogContent className="glassmorphism border-white/10 max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Contacter {selectedBand?.name}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <Label>Sujet</Label>
+                      <Input
+                        value={messageForm.subject}
+                        onChange={(e) => setMessageForm({ ...messageForm, subject: e.target.value })}
+                        placeholder="Ex: Proposition de concert"
+                        className="bg-black/20 border-white/10"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Message</Label>
+                      <Textarea
+                        value={messageForm.content}
+                        onChange={(e) => setMessageForm({ ...messageForm, content: e.target.value })}
+                        placeholder="Votre message..."
+                        className="bg-black/20 border-white/10"
+                        rows={5}
+                      />
+                    </div>
+                    <Button
+                      onClick={sendMessageToBand}
+                      className="w-full bg-primary hover:bg-primary/90 rounded-full"
+                    >
+                      Envoyer le message
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </TabsContent>
         </Tabs>
       </main>
     </div>

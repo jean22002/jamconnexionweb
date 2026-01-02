@@ -1003,6 +1003,69 @@ async def get_venue(venue_id: str):
     
     return VenueProfileResponse(**venue, subscription_status=subscription_status, subscribers_count=subscribers_count)
 
+@api_router.get("/venues/{venue_id}/bands-played")
+async def get_bands_played_at_venue(venue_id: str):
+    """Get all bands that have played at this venue based on past concerts"""
+    venue = await db.venues.find_one({"id": venue_id}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue not found")
+    
+    # Get all past concerts at this venue
+    past_concerts = await db.concerts.find(
+        {"venue_id": venue_id},
+        {"_id": 0}
+    ).sort("date", -1).to_list(1000)
+    
+    # Extract unique band names and get their full info
+    bands_info = []
+    seen_bands = set()
+    
+    for concert in past_concerts:
+        band_name = concert.get("band_name")
+        if band_name and band_name not in seen_bands:
+            seen_bands.add(band_name)
+            
+            # Try to find the band's full profile from musicians
+            musician = await db.musicians.find_one(
+                {"band.name": band_name},
+                {"_id": 0, "band": 1, "user_id": 1, "pseudo": 1}
+            )
+            
+            if musician and musician.get("band"):
+                band = musician["band"]
+                bands_info.append({
+                    "band_name": band_name,
+                    "photo": band.get("photo"),
+                    "description": band.get("description"),
+                    "music_styles": band.get("music_styles", []),
+                    "members_count": band.get("members_count"),
+                    "facebook": band.get("facebook"),
+                    "instagram": band.get("instagram"),
+                    "youtube": band.get("youtube"),
+                    "website": band.get("website"),
+                    "bandcamp": band.get("bandcamp"),
+                    "last_played": concert.get("date"),
+                    "musician_id": musician.get("user_id")
+                })
+            else:
+                # Band without full profile
+                bands_info.append({
+                    "band_name": band_name,
+                    "photo": None,
+                    "description": None,
+                    "music_styles": [],
+                    "members_count": None,
+                    "facebook": None,
+                    "instagram": None,
+                    "youtube": None,
+                    "website": None,
+                    "bandcamp": None,
+                    "last_played": concert.get("date"),
+                    "musician_id": None
+                })
+    
+    return bands_info
+
 @api_router.post("/venues/nearby", response_model=List[VenueProfileResponse])
 async def find_nearby_venues(data: NearbySearchRequest):
     all_venues = await db.venues.find({}, {"_id": 0}).to_list(500)

@@ -533,6 +533,13 @@ export default function MusicianDashboard() {
                 <ParticipationBadge eventInfo={currentParticipation} className="hidden md:inline-flex" />
               )}
               
+              {/* Messages */}
+              <Link to="/messages-improved">
+                <Button variant="ghost" className="relative">
+                  <MessageSquare className="w-5 h-5" />
+                </Button>
+              </Link>
+
               {/* Notifications */}
               <Dialog>
                 <DialogTrigger asChild>

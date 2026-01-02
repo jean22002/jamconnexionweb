@@ -194,15 +194,18 @@ export default function MusicianDashboard() {
   const [newConcert, setNewConcert] = useState({ date: "", venue_id: "", venue_name: "", city: "", description: "" });
 
   const fetchData = useCallback(async () => {
+    console.log('[MusicianDashboard] fetchData called, API endpoint:', `${API}/venues`);
     try {
       const [venuesRes, musiciansRes] = await Promise.all([
         axios.get(`${API}/venues`),
         axios.get(`${API}/musicians`)
       ]);
+      console.log('[MusicianDashboard] fetchData success. Venues count:', venuesRes.data.length, 'Musicians count:', musiciansRes.data.length);
       setVenues(venuesRes.data);
       setMusicians(musiciansRes.data);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("[MusicianDashboard] Error fetching data:", error);
+      console.error("[MusicianDashboard] Error details:", error.response?.status, error.response?.data, error.message);
     } finally {
       setLoading(false);
     }

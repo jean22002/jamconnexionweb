@@ -56,6 +56,8 @@ export default function VenueDetail() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [bandsPlayed, setBandsPlayed] = useState([]);
   const [loadingBands, setLoadingBands] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
 
   const fetchVenue = useCallback(async () => {
     try {

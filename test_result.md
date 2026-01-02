@@ -384,9 +384,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Broadcast Notifications System - Backend"
-    - "Broadcast Notifications System - Frontend"
-    - "Review System - Backend"
+    - "MusicianDashboard - Filtrage par rayon"
+    - "VenueDetail - Correction erreur fetchReviews"
+    - "VenueDashboard - Onglet Factures"
+    - "MusicianDashboard - Changement terminologie Connexions"
     - "Review System - Frontend VenueDetail"
     - "Review System - Frontend VenueDashboard"
   stuck_tasks: []

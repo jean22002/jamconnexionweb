@@ -17,7 +17,7 @@ import {
   Music, MapPin, LogOut, Search, Guitar, Users,
   Globe, Instagram, Facebook, Phone, User, Loader2, Navigation, X,
   Bell, Youtube, UserPlus, Check, Calendar as CalendarIcon, Heart,
-  Radio, MapPinOff, Locate, Settings2, Send
+  Radio, MapPinOff, Locate, Settings2, Send, ArrowLeft
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useAutoGeolocation } from "../hooks/useGeolocation";

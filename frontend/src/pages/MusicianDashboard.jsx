@@ -1037,11 +1037,14 @@ export default function MusicianDashboard() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="font-heading font-semibold text-xl">
-                    {venues.length} établissement{venues.length > 1 ? 's' : ''} répertorié{venues.length > 1 ? 's' : ''}
+                    {geoPosition && nearbyVenues.length > 0 
+                      ? `${nearbyVenues.length} établissement${nearbyVenues.length > 1 ? 's' : ''} à proximité`
+                      : `${venues.length} établissement${venues.length > 1 ? 's' : ''} répertorié${venues.length > 1 ? 's' : ''}`
+                    }
                   </h2>
-                  {nearbyVenues.length > 0 && (
+                  {nearbyVenues.length > 0 && geoPosition && (
                     <span className="text-xs text-secondary">
-                      {nearbyVenues.length} à proximité ({searchRadius}km)
+                      Dans un rayon de {searchRadius}km
                     </span>
                   )}
                 </div>

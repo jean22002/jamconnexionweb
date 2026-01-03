@@ -1447,33 +1447,6 @@ export default function MusicianDashboard() {
                       );
                     })()}
                   </TabsContent>
-                            {Object.keys(musiciansByDepartment).sort((a, b) => {
-                              // Trier les départements numériquement
-                              const numA = parseInt(a);
-                              const numB = parseInt(b);
-                              if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-                              return a.localeCompare(b);
-                            }).map(dept => (
-                              <Button
-                                key={dept}
-                                onClick={() => setSelectedDepartment(dept)}
-                                variant="outline"
-                                className="h-auto py-4 px-3 flex flex-col items-center gap-2 hover:bg-secondary/10 hover:border-secondary transition-all"
-                              >
-                                <MapPin className="w-5 h-5 text-secondary" />
-                                <div className="text-center">
-                                  <div className="font-semibold">{dept}</div>
-                                  <div className="text-xs text-muted-foreground mt-1">
-                                    {musiciansByDepartment[dept].length} musicien{musiciansByDepartment[dept].length > 1 ? 's' : ''}
-                                  </div>
-                                </div>
-                              </Button>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </TabsContent>
 
                   {/* Autres Pays */}
                   <TabsContent value="country" className="mt-6">

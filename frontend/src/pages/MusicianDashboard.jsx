@@ -493,6 +493,7 @@ export default function MusicianDashboard() {
       toast.success("Profil mis à jour!");
       setEditingProfile(false);
       fetchProfile();
+      fetchData(); // Recharger la liste des musiciens pour mettre à jour les filtres
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur");
     }

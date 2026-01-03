@@ -87,7 +87,7 @@ export default function Landing() {
                     Je suis Musicien
                   </Button>
                 </Link>
-                <Link to="/auth?role=venue">
+                <Link to="/venue-register">
                   <Button 
                     size="lg" 
                     variant="outline"

@@ -480,6 +480,21 @@ test_plan:
         agent: "testing"
         comment: "✅ BOUTON 'SE CONNECTER' ENTIÈREMENT FONCTIONNEL - Tests complets réussis avec compte test_musician_connect_3972@test.com. RÉSULTATS DÉTAILLÉS: ✅ Bouton visible et bien positionné sous le nom de l'établissement, ✅ Couleur verte attractive (gradient green-500 to emerald-600), ✅ Icône cœur rempli ❤️ présente, ✅ Texte 'Se connecter' correct, ✅ Animation et hover fonctionnels, ✅ Clic sur bouton fonctionne parfaitement, ✅ Toast de succès affiché: 'Connecté à cet établissement ! Il apparaîtra dans votre onglet Connexions.', ✅ Bouton change d'apparence après connexion (couleur grise, texte 'Connecté', icône check), ✅ Établissement apparaît dans l'onglet Connexions. TOUTES LES SPÉCIFICATIONS RESPECTÉES - Fonctionnalité 100% opérationnelle."
 
+  - task: "Musician Registration Flow - 2-Step Process"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/MusicianRegister.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "NOUVEAU FLUX D'INSCRIPTION MUSICIEN TESTÉ - Processus en 2 étapes avec conditions légales obligatoires. PROBLÈME CRITIQUE IDENTIFIÉ ET CORRIGÉ: Bug dans la gestion d'état des checkboxes - la première checkbox ne mettait à jour que 'mentionsLegales' alors que l'état contient 10 propriétés (mentionsLegales, cgu, confidentialite, cookies, etc.). Correction appliquée pour mettre à jour toutes les propriétés liées aux documents légaux."
+      - working: true
+        agent: "testing"
+        comment: "🎉 FLUX D'INSCRIPTION MUSICIEN ENTIÈREMENT FONCTIONNEL - Tests complets réussis après correction du bug critique. RÉSULTATS DÉTAILLÉS: ✅ Navigation depuis page d'accueil vers /musician-register, ✅ Étape 1: Formulaire informations personnelles (nom, email, mot de passe), ✅ Indicateurs de progression corrects (étape 1 → étape 2), ✅ Étape 2: 7 cases à cocher pour conditions légales, ✅ Message d'avertissement 'Toutes les cases doivent être cochées' affiché initialement, ✅ Bouton désactivé tant que toutes les cases ne sont pas cochées, ✅ Après cochage complet: message disparaît, bouton devient vert et actif, ✅ Finalisation: redirection vers /musician avec toast 'Compte créé avec succès!', ✅ Tests négatifs: validation formulaire, navigation retour avec données préservées, bouton reste désactivé avec cases partielles. FLUX COMPLET 100% OPÉRATIONNEL."
+
   - task: "Proximity Alerts - Backend"
     implemented: true
     working: true

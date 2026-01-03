@@ -49,6 +49,11 @@ function MusicianCard({ musician, onSendFriendRequest }) {
               {musician.department && ` (${musician.department})`}
             </p>
           )}
+          {musician.experience_level && (
+            <p className="text-xs text-muted-foreground mt-1">
+              🎵 {musician.experience_level}
+            </p>
+          )}
           <div className="flex flex-wrap gap-1 mt-2">
             {musician.instruments?.slice(0, 2).map((inst, i) => (
               <span key={i} className="px-2 py-0.5 bg-primary/20 text-primary text-xs rounded-full">{inst}</span>

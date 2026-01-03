@@ -1360,15 +1360,27 @@ export default function MusicianDashboard() {
                   {/* Par Département */}
                   <TabsContent value="department" className="mt-6">
                     {(() => {
+                      // Compter les musiciens par département
                       const musiciansByDepartment = {};
+                      
+                      // Initialiser TOUS les départements avec 0 musicien
+                      DEPARTEMENTS_FRANCE.forEach(dept => {
+                        musiciansByDepartment[dept.code] = {
+                          nom: dept.nom,
+                          musicians: []
+                        };
+                      });
+                      
+                      // Ajouter les musiciens dans leurs départements respectifs
                       musicians.filter(m => m.user_id !== user?.id && (!m.country || m.country === 'France')).forEach(m => {
-                        const dept = m.department || 'Non spécifié';
-                        if (!musiciansByDepartment[dept]) musiciansByDepartment[dept] = [];
-                        musiciansByDepartment[dept].push(m);
+                        if (m.department && musiciansByDepartment[m.department]) {
+                          musiciansByDepartment[m.department].musicians.push(m);
+                        }
                       });
                       
                       // Si un département est sélectionné, afficher les profils
                       if (selectedDepartment) {
+                        const deptData = musiciansByDepartment[selectedDepartment];
                         return (
                           <div>
                             <Button 
@@ -1380,24 +1392,61 @@ export default function MusicianDashboard() {
                             </Button>
                             <h3 className="font-heading font-semibold text-xl mb-4 flex items-center gap-2">
                               <MapPin className="w-6 h-6 text-secondary" />
-                              Département {selectedDepartment} ({musiciansByDepartment[selectedDepartment]?.length || 0} musicien{(musiciansByDepartment[selectedDepartment]?.length || 0) > 1 ? 's' : ''})
+                              {selectedDepartment} - {deptData?.nom} ({deptData?.musicians.length || 0} musicien{(deptData?.musicians.length || 0) > 1 ? 's' : ''})
                             </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                              {(musiciansByDepartment[selectedDepartment] || []).map((musician) => (
-                                <MusicianCard key={musician.id} musician={musician} onSendFriendRequest={sendFriendRequest} />
-                              ))}
-                            </div>
+                            {deptData?.musicians.length > 0 ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {deptData.musicians.map((musician) => (
+                                  <MusicianCard key={musician.id} musician={musician} onSendFriendRequest={sendFriendRequest} />
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-center py-8 text-muted-foreground">
+                                <MapPinOff className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                                <p>Aucun musicien dans ce département pour le moment</p>
+                              </div>
+                            )}
                           </div>
                         );
                       }
                       
-                      // Sinon, afficher la grille de boutons des départements
+                      // Sinon, afficher TOUS les départements de France
                       return (
                         <div>
                           <h3 className="font-heading font-semibold text-lg mb-4">
-                            Sélectionnez un département
+                            Tous les départements de France
                           </h3>
                           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                            {DEPARTEMENTS_FRANCE.map(dept => {
+                              const count = musiciansByDepartment[dept.code]?.musicians.length || 0;
+                              return (
+                                <Button
+                                  key={dept.code}
+                                  onClick={() => setSelectedDepartment(dept.code)}
+                                  variant="outline"
+                                  className={`h-auto py-3 px-3 flex flex-col items-center gap-2 transition-all ${
+                                    count > 0 
+                                      ? 'hover:bg-secondary/10 hover:border-secondary' 
+                                      : 'opacity-50 hover:bg-muted/10'
+                                  }`}
+                                >
+                                  <div className={`text-lg font-bold ${count > 0 ? 'text-secondary' : 'text-muted-foreground'}`}>
+                                    {dept.code}
+                                  </div>
+                                  <div className="text-center">
+                                    <div className="font-semibold text-xs leading-tight">{dept.nom}</div>
+                                    <div className={`text-xs mt-1 ${count > 0 ? 'text-secondary font-semibold' : 'text-muted-foreground'}`}>
+                                      {count} musicien{count > 1 ? 's' : ''}
+                                    </div>
+                                  </div>
+                                </Button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </TabsContent>
                             {Object.keys(musiciansByDepartment).sort((a, b) => {
                               // Trier les départements numériquement
                               const numA = parseInt(a);

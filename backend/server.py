@@ -97,6 +97,7 @@ class MusicianProfile(BaseModel):
     experience_years: Optional[int] = None
     city: Optional[str] = None
     department: Optional[str] = None  # Département français
+    region: Optional[str] = None  # Région française
     phone: Optional[str] = None
     website: Optional[str] = None
     facebook: Optional[str] = None

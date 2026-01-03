@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -31,6 +31,12 @@ export default function MusicianRegister() {
   });
 
   const allLegalAccepted = Object.values(legalAcceptance).every(val => val === true);
+  
+  // Debug: Log l'état des checkboxes
+  useEffect(() => {
+    console.log('Legal Acceptance State:', legalAcceptance);
+    console.log('All Legal Accepted:', allLegalAccepted);
+  }, [legalAcceptance, allLegalAccepted]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

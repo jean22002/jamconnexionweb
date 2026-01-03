@@ -275,7 +275,7 @@ export default function MusicianRegister() {
                   checked={legalAcceptance.documentsLegaux}
                   onCheckedChange={(checked) => setLegalAcceptance({ 
                     ...legalAcceptance, 
-                    documentsLegaux: checked
+                    documentsLegaux: Boolean(checked)
                   })}
                 />
 
@@ -285,7 +285,7 @@ export default function MusicianRegister() {
                   title="ACCEPTATION OBLIGATOIRE – RÔLE DE LA PLATEFORME"
                   description="Je reconnais que Jam Connexion agit uniquement comme plateforme de mise en relation et n'intervient pas dans les accords conclus avec les établissements."
                   checked={legalAcceptance.rolePlateforme}
-                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, rolePlateforme: checked })}
+                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, rolePlateforme: Boolean(checked) })}
                 />
 
                 {/* 3. Absence de garantie */}
@@ -294,7 +294,7 @@ export default function MusicianRegister() {
                   title="ACCEPTATION OBLIGATOIRE – ABSENCE DE GARANTIE"
                   description="Je reconnais que Jam Connexion ne garantit aucun concert, contrat, engagement ni rémunération."
                   checked={legalAcceptance.absenceGarantie}
-                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, absenceGarantie: checked })}
+                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, absenceGarantie: Boolean(checked) })}
                 />
 
                 {/* 4. Messagerie interne */}
@@ -303,7 +303,7 @@ export default function MusicianRegister() {
                   title="ACCEPTATION OBLIGATOIRE – MESSAGERIE INTERNE"
                   description="Je m'engage à utiliser la messagerie interne de Jam Connexion de manière professionnelle, respectueuse et conforme à la loi, et j'accepte les règles de modération prévues dans les CGU."
                   checked={legalAcceptance.messagerie}
-                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, messagerie: checked })}
+                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, messagerie: Boolean(checked) })}
                 />
 
                 {/* 5. Responsabilité personnelle */}
@@ -312,7 +312,7 @@ export default function MusicianRegister() {
                   title="ACCEPTATION OBLIGATOIRE – RESPONSABILITÉ PERSONNELLE"
                   description="Je reconnais être seul responsable des informations figurant sur mon profil et des messages que j'envoie via la plateforme."
                   checked={legalAcceptance.responsabilite}
-                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, responsabilite: checked })}
+                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, responsabilite: Boolean(checked) })}
                 />
 
                 {/* 6. Statut du musicien */}
@@ -321,7 +321,7 @@ export default function MusicianRegister() {
                   title="ACCEPTATION RECOMMANDÉE – STATUT DU MUSICIEN"
                   description="Je reconnais que Jam Connexion n'est ni mon employeur, ni mon producteur, ni mon représentant, et que je reste totalement indépendant."
                   checked={legalAcceptance.statutMusicien}
-                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, statutMusicien: checked })}
+                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, statutMusicien: Boolean(checked) })}
                 />
 
                 {/* 7. Données personnelles */}
@@ -330,7 +330,7 @@ export default function MusicianRegister() {
                   title="ACCEPTATION RECOMMANDÉE – DONNÉES PERSONNELLES"
                   description="J'accepte que mes données personnelles soient traitées conformément à la Politique de confidentialité de Jam Connexion et au RGPD."
                   checked={legalAcceptance.donneesPersonnelles}
-                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, donneesPersonnelles: checked })}
+                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, donneesPersonnelles: Boolean(checked) })}
                 />
               </div>
 

@@ -11,6 +11,7 @@ import Messages from "./pages/Messages";
 import MessagesImproved from "./pages/MessagesImproved";
 import FAQ from "./pages/FAQ";
 import VenueRegister from "./pages/VenueRegister";
+import MusicianRegister from "./pages/MusicianRegister";
 import Pricing from "./pages/Pricing";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import "./App.css";
@@ -99,6 +100,7 @@ function App() {
           <Route path="/messages-improved" element={<ProtectedRoute><MessagesImproved /></ProtectedRoute>} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/venue-register" element={<VenueRegister />} />
+          <Route path="/musician-register" element={<MusicianRegister />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

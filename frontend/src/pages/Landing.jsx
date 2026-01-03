@@ -20,6 +20,11 @@ export default function Landing() {
             </Link>
             
             <div className="flex items-center gap-4">
+              <Link to="/faq">
+                <Button variant="ghost" className="text-muted-foreground hover:text-white">
+                  FAQ
+                </Button>
+              </Link>
               <Link to="/pricing">
                 <Button variant="ghost" className="text-muted-foreground hover:text-white" data-testid="nav-pricing">
                   Tarifs

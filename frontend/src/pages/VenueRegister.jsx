@@ -213,7 +213,7 @@ export default function VenueRegister() {
                     </div>
                   }
                   checked={legalAcceptance.mentionsLegales}
-                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, mentionsLegales: checked })}
+                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, mentionsLegales: Boolean(checked) })}
                 />
 
                 {/* CGU */}
@@ -253,7 +253,7 @@ export default function VenueRegister() {
                     </div>
                   }
                   checked={legalAcceptance.cgu}
-                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, cgu: checked })}
+                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, cgu: Boolean(checked) })}
                 />
 
                 {/* CGV */}
@@ -290,7 +290,7 @@ export default function VenueRegister() {
                     </div>
                   }
                   checked={legalAcceptance.cgv}
-                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, cgv: checked })}
+                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, cgv: Boolean(checked) })}
                 />
 
                 {/* Confidentialité */}
@@ -330,7 +330,7 @@ export default function VenueRegister() {
                     </div>
                   }
                   checked={legalAcceptance.confidentialite}
-                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, confidentialite: checked })}
+                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, confidentialite: Boolean(checked) })}
                 />
 
                 {/* Cookies */}

@@ -144,6 +144,7 @@ export default function MusicianDashboard() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [friends, setFriends] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
+  const [sentRequests, setSentRequests] = useState([]); // Nouvelles demandes envoyées
   const [subscriptions, setSubscriptions] = useState([]);
   const [activeTab, setActiveTab] = useState("map");
   const [currentParticipation, setCurrentParticipation] = useState(null);

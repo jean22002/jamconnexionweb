@@ -1275,11 +1275,19 @@ export default function MusicianDashboard() {
                   {/* Par Région */}
                   <TabsContent value="region" className="mt-6">
                     {(() => {
+                      // Compter les musiciens par région
                       const musiciansByRegion = {};
+                      
+                      // Initialiser TOUTES les régions avec 0 musicien
+                      REGIONS_FRANCE.forEach(region => {
+                        musiciansByRegion[region] = [];
+                      });
+                      
+                      // Ajouter les musiciens dans leurs régions respectives
                       musicians.filter(m => m.user_id !== user?.id && (!m.country || m.country === 'France')).forEach(m => {
-                        const region = m.region || 'Non spécifiée';
-                        if (!musiciansByRegion[region]) musiciansByRegion[region] = [];
-                        musiciansByRegion[region].push(m);
+                        if (m.region && musiciansByRegion[m.region]) {
+                          musiciansByRegion[m.region].push(m);
+                        }
                       });
                       
                       // Si une région est sélectionnée, afficher les profils
@@ -1297,38 +1305,52 @@ export default function MusicianDashboard() {
                               <MapPin className="w-6 h-6 text-primary" />
                               {selectedRegion} ({musiciansByRegion[selectedRegion]?.length || 0} musicien{(musiciansByRegion[selectedRegion]?.length || 0) > 1 ? 's' : ''})
                             </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                              {(musiciansByRegion[selectedRegion] || []).map((musician) => (
-                                <MusicianCard key={musician.id} musician={musician} onSendFriendRequest={sendFriendRequest} />
-                              ))}
-                            </div>
+                            {musiciansByRegion[selectedRegion]?.length > 0 ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {musiciansByRegion[selectedRegion].map((musician) => (
+                                  <MusicianCard key={musician.id} musician={musician} onSendFriendRequest={sendFriendRequest} />
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-center py-8 text-muted-foreground">
+                                <MapPinOff className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                                <p>Aucun musicien dans cette région pour le moment</p>
+                              </div>
+                            )}
                           </div>
                         );
                       }
                       
-                      // Sinon, afficher la grille de boutons des régions
+                      // Sinon, afficher TOUTES les régions de France
                       return (
                         <div>
                           <h3 className="font-heading font-semibold text-lg mb-4">
-                            Sélectionnez une région
+                            Toutes les régions de France
                           </h3>
                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                            {Object.keys(musiciansByRegion).sort().map(region => (
-                              <Button
-                                key={region}
-                                onClick={() => setSelectedRegion(region)}
-                                variant="outline"
-                                className="h-auto py-4 px-4 flex flex-col items-center gap-2 hover:bg-primary/10 hover:border-primary transition-all"
-                              >
-                                <MapPin className="w-5 h-5 text-primary" />
-                                <div className="text-center">
-                                  <div className="font-semibold">{region}</div>
-                                  <div className="text-xs text-muted-foreground mt-1">
-                                    {musiciansByRegion[region].length} musicien{musiciansByRegion[region].length > 1 ? 's' : ''}
+                            {REGIONS_FRANCE.map(region => {
+                              const count = musiciansByRegion[region]?.length || 0;
+                              return (
+                                <Button
+                                  key={region}
+                                  onClick={() => setSelectedRegion(region)}
+                                  variant="outline"
+                                  className={`h-auto py-4 px-4 flex flex-col items-center gap-2 transition-all ${
+                                    count > 0 
+                                      ? 'hover:bg-primary/10 hover:border-primary' 
+                                      : 'opacity-50 hover:bg-muted/10'
+                                  }`}
+                                >
+                                  <MapPin className={`w-5 h-5 ${count > 0 ? 'text-primary' : 'text-muted-foreground'}`} />
+                                  <div className="text-center">
+                                    <div className="font-semibold text-sm">{region}</div>
+                                    <div className={`text-xs mt-1 ${count > 0 ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+                                      {count} musicien{count > 1 ? 's' : ''}
+                                    </div>
                                   </div>
-                                </div>
-                              </Button>
-                            ))}
+                                </Button>
+                              );
+                            })}
                           </div>
                         </div>
                       );

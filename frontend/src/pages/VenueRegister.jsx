@@ -349,7 +349,7 @@ export default function VenueRegister() {
                     </div>
                   }
                   checked={legalAcceptance.cookies}
-                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, cookies: checked })}
+                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, cookies: Boolean(checked) })}
                 />
               </div>
 

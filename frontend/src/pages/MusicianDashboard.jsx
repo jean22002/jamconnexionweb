@@ -345,13 +345,15 @@ export default function MusicianDashboard() {
 
   const fetchFriends = useCallback(async () => {
     try {
-      const [friendsRes, requestsRes, subsRes] = await Promise.all([
+      const [friendsRes, requestsRes, sentRes, subsRes] = await Promise.all([
         axios.get(`${API}/friends`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API}/friends/requests`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API}/friends/sent`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API}/my-subscriptions`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setFriends(friendsRes.data);
       setFriendRequests(requestsRes.data);
+      setSentRequests(sentRes.data);
       setSubscriptions(subsRes.data);
     } catch (error) {
       console.error("Error:", error);
@@ -490,6 +492,17 @@ export default function MusicianDashboard() {
     try {
       await axios.post(`${API}/friends/request`, { to_user_id: userId }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Demande envoyée!");
+      fetchFriends(); // Refresh pour mettre à jour l'état des boutons
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur");
+    }
+  };
+
+  const cancelFriendRequest = async (requestId) => {
+    try {
+      await axios.delete(`${API}/friends/cancel/${requestId}`, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Demande annulée!");
+      fetchFriends(); // Refresh pour mettre à jour l'état des boutons
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur");
     }

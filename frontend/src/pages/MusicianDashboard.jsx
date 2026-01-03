@@ -1297,7 +1297,14 @@ export default function MusicianDashboard() {
                   <TabsContent value="all" className="mt-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {musicians.filter(m => m.user_id !== user?.id).map((musician) => (
-                        <MusicianCard key={musician.id} musician={musician} onSendFriendRequest={sendFriendRequest} />
+                        <MusicianCard 
+                          key={musician.id} 
+                          musician={musician} 
+                          onSendFriendRequest={sendFriendRequest}
+                          onCancelRequest={cancelFriendRequest}
+                          sentRequests={sentRequests}
+                          friends={friends}
+                        />
                       ))}
                     </div>
                   </TabsContent>

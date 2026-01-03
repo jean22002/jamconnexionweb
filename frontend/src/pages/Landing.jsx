@@ -109,11 +109,12 @@ export default function Landing() {
             <div className="relative hidden lg:block">
               <div className="relative rounded-3xl overflow-hidden neon-border animate-pulse-glow">
                 <img 
-                  src="https://images.unsplash.com/photo-1615297658577-dc5cec88e81a?w=800&q=80"
-                  alt="Musical connections - network of musicians and venues"
-                  className="w-full h-[500px] object-cover"
+                  src="https://customer-assets.emergentagent.com/job_50c65ff9-dffb-4fa4-89ca-c0630dc7b014/artifacts/oauw7wn1_18723499-C61F-4032-BF38-9B49E9B8BBBB.png"
+                  alt="Jam Connexion - Connectez musiciens et scènes locales"
+                  className="w-full h-[500px] object-contain"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/40"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-background/80"></div>
               </div>
               
               <div className="absolute -bottom-6 -left-6 glassmorphism rounded-2xl p-4 animate-float">

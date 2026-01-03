@@ -229,7 +229,7 @@ export default function MusicianDashboard() {
   
   const [profileForm, setProfileForm] = useState({
     pseudo: "", age: null, profile_image: "", bio: "",
-    instruments: [], music_styles: [], experience_years: 0,
+    instruments: [], music_styles: [], experience_years: 0, experience_level: "",
     city: "", department: "", region: "", phone: "", website: "", facebook: "", instagram: "", youtube: "", bandcamp: "",
     has_band: false,
     band: { name: "", photo: "", facebook: "", instagram: "", youtube: "", website: "", bandcamp: "" },
@@ -305,6 +305,7 @@ export default function MusicianDashboard() {
         instruments: response.data.instruments || [],
         music_styles: response.data.music_styles || [],
         experience_years: response.data.experience_years || 0,
+        experience_level: response.data.experience_level || "",
         city: response.data.city || "",
         department: response.data.department || "",
         region: response.data.region || "",

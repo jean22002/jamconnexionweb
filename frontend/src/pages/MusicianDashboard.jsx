@@ -12,6 +12,7 @@ import { Switch } from "../components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Slider } from "../components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { ProfileImageUpload, BandImageUpload } from "../components/ui/image-upload";
 import { 
   Music, MapPin, LogOut, Search, Guitar, Users,
@@ -23,6 +24,7 @@ import { useAuth } from "../context/AuthContext";
 import { useAutoGeolocation } from "../hooks/useGeolocation";
 import { toast } from "sonner";
 import ParticipationBadge from "../components/ParticipationBadge";
+import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -228,7 +230,7 @@ export default function MusicianDashboard() {
   const [profileForm, setProfileForm] = useState({
     pseudo: "", age: null, profile_image: "", bio: "",
     instruments: [], music_styles: [], experience_years: 0,
-    city: "", phone: "", website: "", facebook: "", instagram: "", youtube: "", bandcamp: "",
+    city: "", department: "", region: "", phone: "", website: "", facebook: "", instagram: "", youtube: "", bandcamp: "",
     has_band: false,
     band: { name: "", photo: "", facebook: "", instagram: "", youtube: "", website: "", bandcamp: "" },
     concerts: []
@@ -304,6 +306,8 @@ export default function MusicianDashboard() {
         music_styles: response.data.music_styles || [],
         experience_years: response.data.experience_years || 0,
         city: response.data.city || "",
+        department: response.data.department || "",
+        region: response.data.region || "",
         phone: response.data.phone || "",
         website: response.data.website || "",
         facebook: response.data.facebook || "",
@@ -656,6 +660,39 @@ export default function MusicianDashboard() {
                         <div className="space-y-2">
                           <Label>Années d'expérience</Label>
                           <Input type="number" value={profileForm.experience_years} onChange={(e) => setProfileForm({ ...profileForm, experience_years: parseInt(e.target.value) || 0 })} className="bg-black/20 border-white/10" />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Département</Label>
+                          <Select value={profileForm.department} onValueChange={(value) => setProfileForm({ ...profileForm, department: value })}>
+                            <SelectTrigger className="bg-black/20 border-white/10">
+                              <SelectValue placeholder="Sélectionnez un département" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background border-white/10 max-h-[300px]">
+                              {DEPARTEMENTS_FRANCE.map((dept) => (
+                                <SelectItem key={dept.code} value={dept.code}>
+                                  {dept.code} - {dept.nom}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Région</Label>
+                          <Select value={profileForm.region} onValueChange={(value) => setProfileForm({ ...profileForm, region: value })}>
+                            <SelectTrigger className="bg-black/20 border-white/10">
+                              <SelectValue placeholder="Sélectionnez une région" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background border-white/10 max-h-[300px]">
+                              {REGIONS_FRANCE.map((region) => (
+                                <SelectItem key={region} value={region}>
+                                  {region}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
 

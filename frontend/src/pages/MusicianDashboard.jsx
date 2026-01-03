@@ -29,7 +29,14 @@ import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Composant réutilisable pour afficher une carte de musicien
-function MusicianCard({ musician, onSendFriendRequest }) {
+function MusicianCard({ musician, onSendFriendRequest, onCancelRequest, sentRequests, friends }) {
+  // Vérifier si une demande a déjà été envoyée à ce musicien
+  const requestSent = sentRequests?.some(req => req.to_user_id === musician.user_id);
+  // Trouver l'ID de la demande pour pouvoir l'annuler
+  const sentRequest = sentRequests?.find(req => req.to_user_id === musician.user_id);
+  // Vérifier si déjà ami
+  const isFriend = friends?.some(f => f.friend_id === musician.user_id);
+
   return (
     <div className="card-venue p-5">
       <div className="flex items-start gap-4">
@@ -62,9 +69,29 @@ function MusicianCard({ musician, onSendFriendRequest }) {
         </div>
       </div>
       <div className="flex gap-2 mt-4">
-        <Button onClick={() => onSendFriendRequest(musician.user_id)} variant="outline" className="flex-1 rounded-full border-white/20 gap-2">
-          <UserPlus className="w-4 h-4" /> Ajouter
-        </Button>
+        {isFriend ? (
+          <Button variant="outline" className="flex-1 rounded-full border-green-500/50 text-green-500" disabled>
+            <Check className="w-4 h-4 mr-2" /> Ami
+          </Button>
+        ) : requestSent ? (
+          <>
+            <Button variant="outline" className="flex-1 rounded-full border-orange-500/50 text-orange-500" disabled>
+              <Clock className="w-4 h-4 mr-2" /> Envoyé
+            </Button>
+            <Button 
+              onClick={() => onCancelRequest(sentRequest.id)} 
+              variant="outline" 
+              size="icon"
+              className="rounded-full border-red-500/50 text-red-500 hover:bg-red-500/10"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </>
+        ) : (
+          <Button onClick={() => onSendFriendRequest(musician.user_id)} variant="outline" className="flex-1 rounded-full border-white/20 gap-2">
+            <UserPlus className="w-4 h-4" /> Ajouter
+          </Button>
+        )}
         <Link to={`/musician/${musician.id}`} className="flex-1">
           <Button variant="ghost" className="w-full rounded-full">Voir profil</Button>
         </Link>

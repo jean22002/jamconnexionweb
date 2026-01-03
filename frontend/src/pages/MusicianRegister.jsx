@@ -270,7 +270,13 @@ export default function MusicianRegister() {
                     </div>
                   }
                   checked={legalAcceptance.mentionsLegales}
-                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, mentionsLegales: checked })}
+                  onCheckedChange={(checked) => setLegalAcceptance({ 
+                    ...legalAcceptance, 
+                    mentionsLegales: checked,
+                    cgu: checked,
+                    confidentialite: checked,
+                    cookies: checked
+                  })}
                 />
 
                 {/* 2. Rôle de la plateforme */}

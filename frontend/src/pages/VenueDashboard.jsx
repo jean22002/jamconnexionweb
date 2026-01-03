@@ -7,6 +7,7 @@ import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { Switch } from "../components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { VenueImageUpload } from "../components/ui/image-upload";
 import Calendar from "../components/Calendar";
 import { 
@@ -20,6 +21,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
 import { StarRating } from "../components/StarRating";
+import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -87,7 +89,7 @@ export default function VenueDashboard() {
   
   const [formData, setFormData] = useState({
     name: "", description: "", profile_image: "", cover_image: "",
-    address: "", city: "", postal_code: "", latitude: 0, longitude: 0,
+    address: "", city: "", department: "", region: "", postal_code: "", latitude: 0, longitude: 0,
     phone: "", website: "", facebook: "", instagram: "",
     has_stage: false, has_sound_engineer: false, has_pa_system: false,
     equipment: [], music_styles: [], opening_hours: ""
@@ -117,6 +119,8 @@ export default function VenueDashboard() {
         cover_image: response.data.cover_image || "",
         address: response.data.address || "",
         city: response.data.city || "",
+        department: response.data.department || "",
+        region: response.data.region || "",
         postal_code: response.data.postal_code || "",
         latitude: response.data.latitude || 0,
         longitude: response.data.longitude || 0,
@@ -804,6 +808,39 @@ export default function VenueDashboard() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input placeholder="Ville" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" data-testid="venue-city" />
                     {editing && <Button type="button" onClick={geocodeAddress} variant="outline" className="border-white/20"><MapPin className="w-4 h-4 mr-2" /> Géolocaliser</Button>}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Département</Label>
+                      <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })} disabled={!editing}>
+                        <SelectTrigger className="bg-black/20 border-white/10 disabled:opacity-70">
+                          <SelectValue placeholder="Sélectionnez un département" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border-white/10 max-h-[300px]">
+                          {DEPARTEMENTS_FRANCE.map((dept) => (
+                            <SelectItem key={dept.code} value={dept.code}>
+                              {dept.code} - {dept.nom}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Région</Label>
+                      <Select value={formData.region} onValueChange={(value) => setFormData({ ...formData, region: value })} disabled={!editing}>
+                        <SelectTrigger className="bg-black/20 border-white/10 disabled:opacity-70">
+                          <SelectValue placeholder="Sélectionnez une région" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border-white/10 max-h-[300px]">
+                          {REGIONS_FRANCE.map((region) => (
+                            <SelectItem key={region} value={region}>
+                              {region}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
 

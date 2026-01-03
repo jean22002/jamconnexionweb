@@ -121,7 +121,10 @@ class MusicianProfileResponse(BaseModel):
     instruments: List[str] = []
     music_styles: List[str] = []
     experience_years: Optional[int] = None
+    experience_level: Optional[str] = None
     city: Optional[str] = None
+    department: Optional[str] = None
+    region: Optional[str] = None
     phone: Optional[str] = None
     website: Optional[str] = None
     facebook: Optional[str] = None

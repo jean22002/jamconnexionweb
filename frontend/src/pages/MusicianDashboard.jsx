@@ -617,7 +617,18 @@ export default function MusicianDashboard() {
                         </div>
                         <div className="space-y-2">
                           <Label>Âge</Label>
-                          <Input type="number" value={profileForm.age || ""} onChange={(e) => setProfileForm({ ...profileForm, age: parseInt(e.target.value) || null })} className="bg-black/20 border-white/10" />
+                          <Select value={profileForm.age?.toString() || ""} onValueChange={(value) => setProfileForm({ ...profileForm, age: parseInt(value) })}>
+                            <SelectTrigger className="bg-black/20 border-white/10">
+                              <SelectValue placeholder="Sélectionnez votre âge" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background border-white/10 max-h-[300px]">
+                              {Array.from({ length: 91 }, (_, i) => i + 10).map((age) => (
+                                <SelectItem key={age} value={age.toString()}>
+                                  {age} ans
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
                       
@@ -658,8 +669,19 @@ export default function MusicianDashboard() {
                           <Input value={profileForm.city} onChange={(e) => setProfileForm({ ...profileForm, city: e.target.value })} className="bg-black/20 border-white/10" />
                         </div>
                         <div className="space-y-2">
-                          <Label>Années d'expérience</Label>
-                          <Input type="number" value={profileForm.experience_years} onChange={(e) => setProfileForm({ ...profileForm, experience_years: parseInt(e.target.value) || 0 })} className="bg-black/20 border-white/10" />
+                          <Label>Niveau d'expérience</Label>
+                          <Select value={profileForm.experience_level || ""} onValueChange={(value) => setProfileForm({ ...profileForm, experience_level: value })}>
+                            <SelectTrigger className="bg-black/20 border-white/10">
+                              <SelectValue placeholder="Sélectionnez votre niveau" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background border-white/10">
+                              <SelectItem value="Débutant">🌱 Débutant</SelectItem>
+                              <SelectItem value="Je fais ce que je peux">🎵 Je fais ce que je peux</SelectItem>
+                              <SelectItem value="Je gère ça va">🎸 Je gère ça va</SelectItem>
+                              <SelectItem value="Je maîtrise bien">⭐ Je maîtrise bien</SelectItem>
+                              <SelectItem value="Maestro">👑 Maestro</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
 

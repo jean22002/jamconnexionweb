@@ -107,15 +107,15 @@ export default function Landing() {
             </div>
             
             <div className="relative hidden lg:block">
-              <div className="relative rounded-3xl overflow-hidden neon-border animate-pulse-glow bg-gradient-to-br from-purple-900/20 via-background to-blue-900/20">
+              <div className="relative rounded-3xl overflow-hidden neon-border animate-pulse-glow" style={{backgroundColor: '#0a0014'}}>
                 <img 
                   src="https://customer-assets.emergentagent.com/job_50c65ff9-dffb-4fa4-89ca-c0630dc7b014/artifacts/oauw7wn1_18723499-C61F-4032-BF38-9B49E9B8BBBB.png"
                   alt="Jam Connexion - Connectez musiciens et scènes locales"
-                  className="w-full h-[500px] object-contain mix-blend-lighten"
+                  className="w-full h-[500px] object-contain"
+                  style={{mixBlendMode: 'screen'}}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-transparent to-background/70"></div>
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/80"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-background/60"></div>
               </div>
               
               <div className="absolute -bottom-6 -left-6 glassmorphism rounded-2xl p-4 animate-float">

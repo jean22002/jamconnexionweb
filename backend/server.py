@@ -95,6 +95,7 @@ class MusicianProfile(BaseModel):
     instruments: List[str] = []
     music_styles: List[str] = []
     experience_years: Optional[int] = None
+    experience_level: Optional[str] = None  # Débutant, Je fais ce que je peux, Je gère ça va, Je maîtrise bien, Maestro
     city: Optional[str] = None
     department: Optional[str] = None  # Département français
     region: Optional[str] = None  # Région française

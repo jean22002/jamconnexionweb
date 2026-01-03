@@ -154,6 +154,8 @@ class VenueProfile(BaseModel):
     cover_image: Optional[str] = None
     address: str
     city: str
+    department: Optional[str] = None  # Département français
+    region: Optional[str] = None  # Région française
     postal_code: str
     latitude: float
     longitude: float

@@ -845,6 +845,59 @@ async def get_friend_requests(current_user: dict = Depends(get_current_user)):
     
     return result
 
+@api_router.get("/friends/sent")
+async def get_sent_friend_requests(current_user: dict = Depends(get_current_user)):
+    """Get friend requests sent by current user"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can send friend requests")
+    
+    requests = await db.friends.find({
+        "user1_id": current_user["id"],
+        "status": "pending"
+    }, {"_id": 0}).to_list(100)
+    
+    result = []
+    for req in requests:
+        # Get recipient's musician profile
+        recipient_musician = await db.musicians.find_one({"user_id": req["user2_id"]}, {"_id": 0})
+        if recipient_musician:
+            result.append({
+                "id": req["id"],
+                "to_user_id": req["user2_id"],
+                "to_user_name": recipient_musician.get("pseudo", "Musicien"),
+                "to_user_image": recipient_musician.get("profile_image"),
+                "status": req["status"],
+                "created_at": req["created_at"]
+            })
+    
+    return result
+
+@api_router.delete("/friends/cancel/{request_id}")
+async def cancel_friend_request(request_id: str, current_user: dict = Depends(get_current_user)):
+    """Cancel a pending friend request sent by current user"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can cancel friend requests")
+    
+    request = await db.friends.find_one({
+        "id": request_id,
+        "user1_id": current_user["id"],
+        "status": "pending"
+    }, {"_id": 0})
+    
+    if not request:
+        raise HTTPException(status_code=404, detail="Friend request not found")
+    
+    # Delete the request
+    await db.friends.delete_one({"id": request_id})
+    
+    # Delete notification
+    await db.notifications.delete_many({
+        "user_id": request["user2_id"],
+        "type": "friend_request"
+    })
+    
+    return {"message": "Friend request cancelled"}
+
 @api_router.post("/friends/accept/{request_id}")
 async def accept_friend_request(request_id: str, current_user: dict = Depends(get_current_user)):
     request = await db.friends.find_one({"id": request_id, "user2_id": current_user["id"]}, {"_id": 0})

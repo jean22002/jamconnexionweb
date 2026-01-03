@@ -21,16 +21,13 @@ export default function MusicianRegister() {
   });
 
   const [legalAcceptance, setLegalAcceptance] = useState({
-    mentionsLegales: false,
-    cgu: false,
-    confidentialite: false,
-    cookies: false,
-    rolePlateforme: false,
-    absenceGarantie: false,
-    messagerie: false,
-    responsabilite: false,
-    statutMusicien: false,
-    donneesPersonnelles: false
+    documentsLegaux: false, // Checkbox 1: Mentions légales + CGU + Confidentialité + Cookies
+    rolePlateforme: false, // Checkbox 2
+    absenceGarantie: false, // Checkbox 3
+    messagerie: false, // Checkbox 4
+    responsabilite: false, // Checkbox 5
+    statutMusicien: false, // Checkbox 6
+    donneesPersonnelles: false // Checkbox 7
   });
 
   const allLegalAccepted = Object.values(legalAcceptance).every(val => val === true);
@@ -269,13 +266,10 @@ export default function MusicianRegister() {
                       </div>
                     </div>
                   }
-                  checked={legalAcceptance.mentionsLegales}
+                  checked={legalAcceptance.documentsLegaux}
                   onCheckedChange={(checked) => setLegalAcceptance({ 
                     ...legalAcceptance, 
-                    mentionsLegales: checked,
-                    cgu: checked,
-                    confidentialite: checked,
-                    cookies: checked
+                    documentsLegaux: checked
                   })}
                 />
 

@@ -3621,10 +3621,16 @@ class JamConnexionAPITester:
         try:
             # Create a jam event first
             headers = {'Authorization': f'Bearer {self.venue_token}'}
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            start_time = (now - timedelta(minutes=10)).strftime("%H:%M")
+            end_time = (now + timedelta(hours=2)).strftime("%H:%M")
+            today = now.strftime("%Y-%m-%d")
+            
             jam_data = {
-                "date": "2024-12-21",
-                "start_time": "19:00",
-                "end_time": "22:00",
+                "date": today,
+                "start_time": start_time,
+                "end_time": end_time,
                 "music_styles": ["Jazz", "Blues"],
                 "rules": "Test jam for participants count",
                 "has_instruments": True,

@@ -2048,6 +2048,208 @@ export default function VenueDashboard() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Modale d'affichage/édition d'événement */}
+        <Dialog open={showEventDetailsModal} onOpenChange={setShowEventDetailsModal}>
+          <DialogContent className="glassmorphism border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="font-heading">
+                {isEditingEvent ? 'Modifier' : 'Détails'} {selectedEventType === 'concert' ? 'du Concert' : 'du Bœuf'}
+              </DialogTitle>
+            </DialogHeader>
+
+            {selectedEvent && (
+              <div className="space-y-4 mt-4">
+                {/* Date et Horaires */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Date</Label>
+                    <Input
+                      type="date"
+                      value={selectedEvent.date || ''}
+                      onChange={(e) => setSelectedEvent({ ...selectedEvent, date: e.target.value })}
+                      className="bg-black/20 border-white/10"
+                      disabled={!isEditingEvent}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Horaire de début</Label>
+                    <Input
+                      type="time"
+                      value={selectedEvent.start_time || ''}
+                      onChange={(e) => setSelectedEvent({ ...selectedEvent, start_time: e.target.value })}
+                      className="bg-black/20 border-white/10"
+                      disabled={!isEditingEvent}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Horaire de fin</Label>
+                  <Input
+                    type="time"
+                    value={selectedEvent.end_time || ''}
+                    onChange={(e) => setSelectedEvent({ ...selectedEvent, end_time: e.target.value })}
+                    className="bg-black/20 border-white/10"
+                    disabled={!isEditingEvent}
+                  />
+                </div>
+
+                {/* Champs spécifiques au Concert */}
+                {selectedEventType === 'concert' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Titre</Label>
+                      <Input
+                        value={selectedEvent.title || ''}
+                        onChange={(e) => setSelectedEvent({ ...selectedEvent, title: e.target.value })}
+                        className="bg-black/20 border-white/10"
+                        disabled={!isEditingEvent}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Textarea
+                        value={selectedEvent.description || ''}
+                        onChange={(e) => setSelectedEvent({ ...selectedEvent, description: e.target.value })}
+                        className="bg-black/20 border-white/10"
+                        rows={3}
+                        disabled={!isEditingEvent}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Prix</Label>
+                      <Input
+                        value={selectedEvent.price || ''}
+                        onChange={(e) => setSelectedEvent({ ...selectedEvent, price: e.target.value })}
+                        placeholder="Ex: 10€"
+                        className="bg-black/20 border-white/10"
+                        disabled={!isEditingEvent}
+                      />
+                    </div>
+
+                    {selectedEvent.bands && selectedEvent.bands.length > 0 && (
+                      <div className="space-y-2">
+                        <Label>Artistes</Label>
+                        <div className="space-y-2">
+                          {selectedEvent.bands.map((band, i) => (
+                            <div key={i} className="p-3 bg-muted/30 rounded-lg">
+                              <p className="font-medium">{band.name}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Champs spécifiques au Bœuf */}
+                {selectedEventType === 'jam' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Styles musicaux</Label>
+                      <Input
+                        value={selectedEvent.music_styles?.join(', ') || ''}
+                        onChange={(e) => setSelectedEvent({ 
+                          ...selectedEvent, 
+                          music_styles: e.target.value.split(',').map(s => s.trim()) 
+                        })}
+                        placeholder="Rock, Jazz, Blues..."
+                        className="bg-black/20 border-white/10"
+                        disabled={!isEditingEvent}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Règles</Label>
+                      <Textarea
+                        value={selectedEvent.rules || ''}
+                        onChange={(e) => setSelectedEvent({ ...selectedEvent, rules: e.target.value })}
+                        className="bg-black/20 border-white/10"
+                        rows={3}
+                        disabled={!isEditingEvent}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Informations supplémentaires</Label>
+                      <Textarea
+                        value={selectedEvent.additional_info || ''}
+                        onChange={(e) => setSelectedEvent({ ...selectedEvent, additional_info: e.target.value })}
+                        className="bg-black/20 border-white/10"
+                        rows={2}
+                        disabled={!isEditingEvent}
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={selectedEvent.has_instruments || false}
+                          onCheckedChange={(checked) => setSelectedEvent({ ...selectedEvent, has_instruments: checked })}
+                          disabled={!isEditingEvent}
+                        />
+                        <Label>Instruments sur place</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={selectedEvent.has_pa_system || false}
+                          onCheckedChange={(checked) => setSelectedEvent({ ...selectedEvent, has_pa_system: checked })}
+                          disabled={!isEditingEvent}
+                        />
+                        <Label>Sonorisation</Label>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Boutons d'action */}
+                <div className="flex gap-3 pt-4">
+                  {isEditingEvent ? (
+                    <>
+                      <Button 
+                        onClick={handleUpdateEvent}
+                        className="flex-1 bg-primary hover:bg-primary/90 rounded-full"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        Enregistrer
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setIsEditingEvent(false);
+                          setShowEventDetailsModal(false);
+                        }}
+                        variant="outline"
+                        className="flex-1 rounded-full border-white/20"
+                      >
+                        Annuler
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        onClick={() => setIsEditingEvent(true)}
+                        className="flex-1 bg-secondary hover:bg-secondary/90 rounded-full"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Modifier
+                      </Button>
+                      <Button
+                        onClick={() => setShowEventDetailsModal(false)}
+                        variant="outline"
+                        className="flex-1 rounded-full border-white/20"
+                      >
+                        Fermer
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );

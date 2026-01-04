@@ -800,6 +800,21 @@ test_plan:
         agent: "testing"
         comment: "✅ CORRECTION VALIDÉE - CHAMP LOOKING_FOR_PROFILES ENTIÈREMENT FONCTIONNEL! Tests complets effectués: ✅ Création compte musicien avec groupe ayant looking_for_members=true, ✅ Sauvegarde initiale du champ looking_for_profiles=['Batteur', 'Guitariste'] via PUT /api/musicians, ✅ Vérification persistance par GET /api/musicians/me - champ présent et valeurs correctes, ✅ Modification du champ (ajout 'Bassiste') via PUT /api/musicians, ✅ Vérification finale de persistance - modifications bien enregistrées. RÉSULTAT: Le champ looking_for_profiles est maintenant correctement sauvegardé et récupéré pour les groupes recherchant de nouveaux membres. Bug complètement résolu."
 
+  - task: "Band Join Request System - Backend"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Système complet de gestion des requêtes pour rejoindre un groupe implémenté. Endpoints créés: POST /api/bands/join-requests (créer requête), GET /api/bands/join-requests (lister requêtes admin), PUT /api/bands/join-requests/{request_id}/accept (accepter), PUT /api/bands/join-requests/{request_id}/reject (refuser). Collection band_join_requests créée avec notifications automatiques."
+      - working: true
+        agent: "testing"
+        comment: "✅ SYSTÈME REQUÊTES GROUPES - TESTS COMPLETS RÉUSSIS (11/11 - 100%) - Tous les endpoints de gestion des requêtes pour rejoindre un groupe fonctionnent parfaitement. TESTS DÉTAILLÉS EFFECTUÉS: ✅ Setup scenario: Création Musicien A (propriétaire groupe 'The Rockers' avec looking_for_members=true) et Musicien B (batteur voulant rejoindre), ✅ Création requête: POST /api/bands/join-requests avec message personnalisé réussie, ✅ Notification admin: Notification créée pour administrateur du groupe, ✅ Liste requêtes admin: GET /api/bands/join-requests retourne requêtes pending, ✅ Prévention doublons: Erreur 400 pour requête duplicate, ✅ Acceptation requête: PUT accept fonctionne avec notification au demandeur, ✅ Refus requête: PUT reject fonctionne avec notification appropriée, ✅ Sécurité: Établissements ne peuvent pas créer de requêtes (403), ✅ Autorisation: Seuls les admins peuvent accepter/refuser (403 pour non-admins). SYSTÈME COMPLET DE GESTION DES REQUÊTES GROUPES ENTIÈREMENT FONCTIONNEL."
+
 agent_communication:
   - agent: "main"
     message: "Système de participation aux événements implémenté. Backend prêt avec endpoints de participation. Frontend complété avec composants JoinEventButton et ParticipationBadge. Intégrations terminées sur VenueDetail, MusicianDetail et MusicianDashboard. Nécessite test complet backend + frontend pour vérifier: 1) Récupération des événements actifs, 2) Fonctionnalité rejoindre/quitter événement, 3) Affichage du badge de participation, 4) Notifications aux amis, 5) Polling automatique du statut de participation. Un test de fichier doit être créé sous /app/backend/tests/test_event_participation.py pour tester les nouveaux endpoints."

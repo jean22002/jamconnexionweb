@@ -411,8 +411,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Review System - Frontend VenueDetail"
-    - "Review System - Frontend VenueDashboard"
+    - "Calendar Event Click to View Details (New Feature)"
+    - "Group Names Display on Calendar (New Feature)"
+    - "Member Count Display in Concerts (New Feature)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

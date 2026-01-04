@@ -26,6 +26,26 @@ import { toast } from "sonner";
 import ParticipationBadge from "../components/ParticipationBadge";
 import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 
+// Options pour les groupes
+const BAND_TYPES = [
+  "Duo acoustique",
+  "Trio acoustique",
+  "Duo electro acoustique",
+  "Trio electro acoustique",
+  "Groupe de reprise",
+  "Groupe tribute"
+];
+
+const REPERTOIRE_TYPES = ["Compos", "Reprises"];
+
+const SHOW_DURATIONS = [
+  "30mn", "45mn", "1h", "1h15", "1h30", "1h45", 
+  "2h", "2h15", "2h30", "2h45", 
+  "3h", "3h15", "3h30", "3h45", 
+  "4h", "4h15", "4h30", "4h45", 
+  "5h", "5h15", "5h30", "5h45", "6h"
+];
+
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Composant réutilisable pour afficher une carte de musicien

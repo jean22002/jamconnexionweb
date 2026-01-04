@@ -1001,8 +1001,49 @@ export default function MusicianDashboard() {
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label>Ville</Label>
-                          <Input value={profileForm.city} onChange={(e) => setProfileForm({ ...profileForm, city: e.target.value })} className="bg-black/20 border-white/10" />
+                          <CityAutocomplete
+                            value={profileForm.city}
+                            onSelect={(cityData) => {
+                              setProfileForm({
+                                ...profileForm,
+                                city: cityData.city,
+                                department: cityData.department,
+                                region: cityData.region
+                              });
+                            }}
+                            label="Ville"
+                            placeholder="Ex: Paris"
+                          />
+                          <Button
+                            type="button"
+                            onClick={async () => {
+                              if (!navigator.geolocation) {
+                                toast.error("Géolocalisation non supportée");
+                                return;
+                              }
+                              toast.info("Localisation en cours...");
+                              navigator.geolocation.getCurrentPosition(
+                                async (position) => {
+                                  const cityData = await reverseGeocode(position.coords.latitude, position.coords.longitude);
+                                  if (cityData) {
+                                    setProfileForm({
+                                      ...profileForm,
+                                      city: cityData.city,
+                                      department: cityData.department,
+                                      region: cityData.region
+                                    });
+                                    toast.success(`📍 Localisé à ${cityData.city} !`);
+                                  }
+                                },
+                                () => toast.error("Erreur de localisation")
+                              );
+                            }}
+                            variant="outline"
+                            className="w-full border-white/20"
+                            size="sm"
+                          >
+                            📍 Ma position
+                          </Button>
                         </div>
                         <div className="space-y-2">
                           <Label>Niveau d'expérience</Label>

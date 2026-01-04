@@ -526,7 +526,7 @@ export default function VenueDashboard() {
     const eventType = eventsByDate[dateStr];
     
     if (eventType) {
-      // Il y a un événement, on l'affiche
+      // Il y a un événement (concert ou jam), on l'affiche
       try {
         let event = null;
         let type = null;
@@ -552,18 +552,36 @@ export default function VenueDashboard() {
         toast.error("Erreur lors du chargement de l'événement");
       }
     } else {
-      // Pas d'événement, créer un nouveau créneau de planning
-      if (isDateBooked(dateStr)) {
-        toast.info("Cette date est déjà réservée");
-        return;
+      // Vérifier s'il y a un créneau de planning à cette date
+      const planningSlot = planningSlots.find(slot => slot.date === dateStr);
+      
+      if (planningSlot) {
+        // Il y a un créneau de planning, on l'affiche pour modification
+        setPlanningForm({
+          date: planningSlot.date,
+          time: planningSlot.time,
+          title: planningSlot.title || '',
+          description: planningSlot.description || '',
+          expectedBandStyle: planningSlot.expectedBandStyle || '',
+          expectedAttendance: planningSlot.expectedAttendance || '',
+          payment: planningSlot.payment || ''
+        });
+        setSelectedDate(date);
+        setShowPlanningModal(true);
+      } else {
+        // Pas d'événement, créer un nouveau créneau de planning
+        if (isDateBooked(dateStr)) {
+          toast.info("Cette date est déjà réservée");
+          return;
+        }
+        setSelectedDate(date);
+        setPlanningForm({
+          ...planningForm,
+          date: dateStr,
+          time: ''
+        });
+        setShowPlanningModal(true);
       }
-      setSelectedDate(date);
-      setPlanningForm({
-        ...planningForm,
-        date: dateStr,
-        time: ''
-      });
-      setShowPlanningModal(true);
     }
   };
 

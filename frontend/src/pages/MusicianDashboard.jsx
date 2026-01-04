@@ -698,7 +698,14 @@ export default function MusicianDashboard() {
   const handleSaveProfile = async () => {
     try {
       const method = profile ? "put" : "post";
-      await axios[method](`${API}/musicians`, profileForm, { headers: { Authorization: `Bearer ${token}` } });
+      
+      // Préparer les données avec le profil solo
+      const profileData = {
+        ...profileForm,
+        solo_profile: soloProfile
+      };
+      
+      await axios[method](`${API}/musicians`, profileData, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Profil mis à jour!");
       setEditingProfile(false);
       fetchProfile();

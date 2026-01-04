@@ -929,7 +929,10 @@ export default function VenueDashboard() {
               <Plug className="w-4 h-4 inline mr-1" />
               Jacks
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="rounded-full">Notifications</TabsTrigger>
+            <TabsTrigger value="notifications" className="rounded-full">
+              <Bell className="w-4 h-4 inline mr-1" />
+              Notifications
+            </TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-full">Avis</TabsTrigger>
             <TabsTrigger value="bands" className="rounded-full">Groupes</TabsTrigger>
             <TabsTrigger value="gallery" className="rounded-full">Galerie</TabsTrigger>

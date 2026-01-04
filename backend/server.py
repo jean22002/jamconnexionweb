@@ -1706,6 +1706,35 @@ async def delete_concert_event(concert_id: str, current_user: dict = Depends(get
     
     return {"message": "Concert event deleted"}
 
+@api_router.put("/concerts/{concert_id}", response_model=ConcertEventResponse)
+async def update_concert_event(concert_id: str, data: ConcertEvent, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update concerts")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Vérifier que le concert appartient à ce venue
+    existing_concert = await db.concerts.find_one({"id": concert_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not existing_concert:
+        raise HTTPException(status_code=404, detail="Concert not found")
+    
+    # Mettre à jour le concert
+    update_data = {
+        **data.model_dump(),
+        "venue_name": venue["name"]
+    }
+    
+    await db.concerts.update_one(
+        {"id": concert_id},
+        {"$set": update_data}
+    )
+    
+    # Récupérer le concert mis à jour
+    updated_concert = await db.concerts.find_one({"id": concert_id}, {"_id": 0})
+    return ConcertEventResponse(**updated_concert)
+
 # ============= PLANNING SLOTS (Open dates for concerts) =============
 
 @api_router.post("/planning", response_model=PlanningSlotResponse)

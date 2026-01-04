@@ -76,6 +76,10 @@ class BandInfo(BaseModel):
     looking_for_concerts: bool = True
     looking_for_members: bool = False
     is_public: bool = True
+    # Nouveaux champs
+    band_type: Optional[str] = None  # duo acoustique, trio acoustique, duo electro acoustique, trio electro acoustique, groupe de reprise, groupe tribute
+    repertoire_type: Optional[str] = None  # compos ou reprises
+    show_duration: Optional[str] = None  # 30mn, 45mn, 1h, 1h15, etc.
 
 # Musician Concert
 class MusicianConcert(BaseModel):

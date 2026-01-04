@@ -2059,8 +2059,8 @@ async def notify_subscribers(
     
     venue_name = venue["name"]
     
-    # Get all subscribers
-    subscriptions = await db.subscriptions.find({"venue_id": venue["id"]}, {"_id": 0}).to_list(1000)
+    # Get all subscribers from the CORRECT collection
+    subscriptions = await db.venue_subscriptions.find({"venue_id": venue["id"]}, {"_id": 0}).to_list(1000)
     
     # Send notifications to each subscriber
     notification_count = 0

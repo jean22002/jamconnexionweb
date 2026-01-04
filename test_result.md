@@ -411,9 +411,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Calendar Event Click to View Details (New Feature)"
-    - "Group Names Display on Calendar (New Feature)"
-    - "Member Count Display in Concerts (New Feature)"
+    - "Catering Section in Event Creation (New Feature)"
+    - "Accommodation Section in Event Creation (New Feature)"
+    - "Sound Engineer Switch in Musician Profile (New Feature)"
+    - "Complete Address with CityAutocomplete in Venue Profile (New Feature)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

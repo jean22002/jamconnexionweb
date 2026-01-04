@@ -1655,6 +1655,15 @@ export default function MusicianDashboard() {
                       />
                     </div>
 
+                    {/* Switch Ingé Son */}
+                    <div className="flex items-center gap-2 p-3 bg-black/10 rounded-lg border border-white/10">
+                      <Switch 
+                        checked={currentBand.has_sound_engineer || false} 
+                        onCheckedChange={(checked) => setCurrentBand({ ...currentBand, has_sound_engineer: checked })}
+                      />
+                      <Label className="cursor-pointer">Le groupe possède son propre ingénieur son</Label>
+                    </div>
+
                     {/* Styles musicaux */}
                     <div className="space-y-2">
                       <Label>Styles musicaux du groupe</Label>

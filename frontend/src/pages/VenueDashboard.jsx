@@ -1805,6 +1805,7 @@ export default function VenueDashboard() {
                 eventsByDate={eventsByDate}
                 concerts={concerts}
                 jams={jams}
+                planningSlots={planningSlots}
               />
 
               {/* Liste des créneaux ouverts */}

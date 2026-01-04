@@ -2997,14 +2997,13 @@ export default function MusicianDashboard() {
                   <div className="space-y-2">
                     <Label>Style musical</Label>
                     <Select 
-                      value={bandFilters.musicStyle} 
+                      value={bandFilters.musicStyle || undefined} 
                       onValueChange={(value) => setBandFilters({ ...bandFilters, musicStyle: value })}
                     >
                       <SelectTrigger className="bg-black/20 border-white/10">
                         <SelectValue placeholder="Tous les styles" />
                       </SelectTrigger>
                       <SelectContent className="bg-background border-white/10 max-h-[300px]">
-                        <SelectItem value="">Tous les styles</SelectItem>
                         {MUSIC_STYLES_LIST.map((style) => (
                           <SelectItem key={style} value={style}>{style}</SelectItem>
                         ))}
@@ -3016,14 +3015,13 @@ export default function MusicianDashboard() {
                   <div className="space-y-2">
                     <Label>Type de groupe</Label>
                     <Select 
-                      value={bandFilters.bandType} 
+                      value={bandFilters.bandType || undefined} 
                       onValueChange={(value) => setBandFilters({ ...bandFilters, bandType: value })}
                     >
                       <SelectTrigger className="bg-black/20 border-white/10">
                         <SelectValue placeholder="Tous les types" />
                       </SelectTrigger>
                       <SelectContent className="bg-background border-white/10 max-h-[300px]">
-                        <SelectItem value="">Tous les types</SelectItem>
                         {BAND_TYPES.map((type) => (
                           <SelectItem key={type} value={type}>{type}</SelectItem>
                         ))}
@@ -3035,14 +3033,13 @@ export default function MusicianDashboard() {
                   <div className="space-y-2">
                     <Label>Type de répertoire</Label>
                     <Select 
-                      value={bandFilters.repertoireType} 
+                      value={bandFilters.repertoireType || undefined} 
                       onValueChange={(value) => setBandFilters({ ...bandFilters, repertoireType: value })}
                     >
                       <SelectTrigger className="bg-black/20 border-white/10">
                         <SelectValue placeholder="Tous" />
                       </SelectTrigger>
                       <SelectContent className="bg-background border-white/10">
-                        <SelectItem value="">Tous</SelectItem>
                         {REPERTOIRE_TYPES.map((type) => (
                           <SelectItem key={type} value={type}>{type}</SelectItem>
                         ))}

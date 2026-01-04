@@ -491,6 +491,11 @@ export default function MusicianDashboard() {
         bands: bandsArray,
         concerts: profileData.concerts || []
       });
+      
+      // Charger le profil solo s'il existe
+      if (profileData.solo_profile) {
+        setSoloProfile(profileData.solo_profile);
+      }
     } catch (error) {
       if (error.response?.status !== 404) console.error("Error:", error);
     }

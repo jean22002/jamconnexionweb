@@ -3406,7 +3406,7 @@ export default function MusicianDashboard() {
       </main>
 
       {/* Modale des événements d'un établissement */}
-      <Dialog open={showVenueEventsModal} onOpenChange={setShowVenueEventsModal}>
+      <Dialog open={showVenueEventsModal} onOpenChange={closeVenueEventsModal}>
         <DialogContent className="glassmorphism border-white/10 max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-heading text-2xl">

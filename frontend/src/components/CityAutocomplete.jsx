@@ -3,6 +3,31 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { MapPin } from 'lucide-react';
 
+// Fonction de géocodage inversé (coordonnées → ville)
+export const reverseGeocode = async (latitude, longitude) => {
+  try {
+    const response = await fetch(
+      `https://geo.api.gouv.fr/communes?lat=${latitude}&lon=${longitude}&fields=nom,code,codesPostaux,codeDepartement,codeRegion,departement,region&limit=1`
+    );
+    const data = await response.json();
+    
+    if (data && data.length > 0) {
+      const city = data[0];
+      return {
+        city: city.nom,
+        postalCode: city.codesPostaux?.[0] || '',
+        department: city.codeDepartement,
+        departmentName: city.departement?.nom || '',
+        region: city.region?.nom || ''
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error in reverse geocoding:', error);
+    return null;
+  }
+};
+
 export const CityAutocomplete = ({ value, onSelect, label = "Ville", placeholder = "Ex: Narbonne" }) => {
   const [query, setQuery] = useState(value || '');
   const [suggestions, setSuggestions] = useState([]);

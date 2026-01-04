@@ -1405,10 +1405,7 @@ export default function MusicianDashboard() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => {
-                                      setEditingBandIndex(index);
-                                      setShowBandDialog(true);
-                                    }}
+                                    onClick={() => handleOpenBandDialog(index)}
                                   >
                                     <Edit className="w-4 h-4" />
                                   </Button>

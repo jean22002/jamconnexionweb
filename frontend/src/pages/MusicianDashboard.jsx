@@ -285,6 +285,9 @@ export default function MusicianDashboard() {
   });
   const [showMessageDialog, setShowMessageDialog] = useState(false);
   const [selectedBand, setSelectedBand] = useState(null);
+  const [showBandDetailsDialog, setShowBandDetailsDialog] = useState(false);
+  const [bandSearchMode, setBandSearchMode] = useState("filters");
+  const [bandSearchRadius, setBandSearchRadius] = useState(50);
   const [messageForm, setMessageForm] = useState({ subject: "", content: "" });
   const [searchRadius, setSearchRadius] = useState(25); // km
   const [showRadiusCircle, setShowRadiusCircle] = useState(true);

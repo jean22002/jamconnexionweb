@@ -612,6 +612,34 @@ export default function MusicianDashboard() {
     }
   };
 
+  // Fonction pour charger les événements d'un établissement
+  const fetchVenueEvents = async (venueId, venueName) => {
+    setSelectedVenue({ id: venueId, name: venueName });
+    setLoadingVenueEvents(true);
+    setShowVenueEventsModal(true);
+    
+    try {
+      const [concertsRes, jamsRes] = await Promise.all([
+        axios.get(`${API}/venues/${venueId}/concerts`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API}/venues/${venueId}/jams`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+      
+      setVenueEvents({
+        concerts: concertsRes.data,
+        jams: jamsRes.data
+      });
+    } catch (error) {
+      console.error("Error fetching venue events:", error);
+      toast.error("Erreur lors du chargement des événements");
+    } finally {
+      setLoadingVenueEvents(false);
+    }
+  };
+
   const acceptFriendRequest = async (requestId) => {
     try {
       await axios.post(`${API}/friends/accept/${requestId}`, {}, { headers: { Authorization: `Bearer ${token}` } });

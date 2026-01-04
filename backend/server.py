@@ -1442,7 +1442,7 @@ async def list_jam_events(venue_id: Optional[str] = None, date_from: Optional[st
         participants_count = await db.event_participations.count_documents({
             "event_id": jam["id"],
             "event_type": "jam",
-            "is_active": True
+            "active": True
         })
         result.append(JamEventResponse(**jam, participants_count=participants_count))
     
@@ -1457,7 +1457,7 @@ async def get_venue_jams(venue_id: str):
         participants_count = await db.event_participations.count_documents({
             "event_id": jam["id"],
             "event_type": "jam",
-            "is_active": True
+            "active": True
         })
         result.append(JamEventResponse(**jam, participants_count=participants_count))
     
@@ -1544,7 +1544,7 @@ async def get_active_events(venue_id: str):
             participants_count = await db.event_participations.count_documents({
                 "event_id": jam["id"],
                 "event_type": "jam",
-                "is_active": True
+                "active": True
             })
             active_events.append({
                 "id": jam["id"],

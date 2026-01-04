@@ -312,6 +312,7 @@ class PlanningSlot(BaseModel):
     description: Optional[str] = None
     is_open: bool = True
     artist_categories: List[str] = []  # Types recherchés: groupe compos, reprise, tribute, etc.
+    num_bands_needed: int = 1  # Nombre de groupes nécessaires pour ce créneau (1, 2, 3+)
     # Catering
     has_catering: bool = False
     catering_drinks: Optional[int] = 0
@@ -330,6 +331,8 @@ class PlanningSlotResponse(BaseModel):
     description: Optional[str] = None
     is_open: bool = True
     applications_count: int = 0
+    accepted_bands_count: int = 0  # Nombre de groupes acceptés
+    num_bands_needed: int = 1  # Nombre de groupes nécessaires
     created_at: str
     artist_categories: List[str] = []
 

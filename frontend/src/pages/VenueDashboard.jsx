@@ -23,6 +23,7 @@ import { useAuth } from "../context/AuthContext";
 import SocialLinks from "../components/SocialLinks";
 import { StarRating } from "../components/StarRating";
 import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
+import { toast } from "sonner";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 

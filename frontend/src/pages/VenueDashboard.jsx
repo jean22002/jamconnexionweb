@@ -1432,6 +1432,8 @@ export default function VenueDashboard() {
                 onDateClick={handleDateClick}
                 bookedDates={bookedDates}
                 eventsByDate={eventsByDate}
+                concerts={concerts}
+                jams={jams}
               />
 
               {/* Liste des créneaux ouverts */}

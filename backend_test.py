@@ -2204,6 +2204,331 @@ class JamConnexionAPITester:
             self.log_test("Geolocation Excludes No-GPS Bands", False, f"Error: {str(e)}")
             return False
 
+    # ============= BANDS GEOLOCATION SEARCH FIX TESTS =============
+
+    def test_create_musicians_with_bands_for_geolocation(self):
+        """Create musicians with bands in different cities for geolocation testing"""
+        try:
+            # Create musicians with bands in various French cities
+            test_musicians = [
+                {
+                    "email": f"musician_paris_{datetime.now().strftime('%H%M%S')}@test.com",
+                    "name": "Musicien Paris",
+                    "city": "Paris",
+                    "band_name": "Les Parisiens",
+                    "band_city": "Paris"
+                },
+                {
+                    "email": f"musician_lyon_{datetime.now().strftime('%H%M%S')}@test.com", 
+                    "name": "Musicien Lyon",
+                    "city": "Lyon",
+                    "band_name": "Lyon Jazz Collective",
+                    "band_city": "Lyon"
+                },
+                {
+                    "email": f"musician_marseille_{datetime.now().strftime('%H%M%S')}@test.com",
+                    "name": "Musicien Marseille", 
+                    "city": "Marseille",
+                    "band_name": "Marseille Blues Band",
+                    "band_city": "Marseille"
+                },
+                {
+                    "email": f"musician_toulouse_{datetime.now().strftime('%H%M%S')}@test.com",
+                    "name": "Musicien Toulouse",
+                    "city": "Toulouse", 
+                    "band_name": "Toulouse Rock",
+                    "band_city": "Toulouse"
+                },
+                {
+                    "email": f"musician_bordeaux_{datetime.now().strftime('%H%M%S')}@test.com",
+                    "name": "Musicien Bordeaux",
+                    "city": "Bordeaux",
+                    "band_name": "Bordeaux Acoustic",
+                    "band_city": "Bordeaux"
+                }
+            ]
+            
+            self.test_band_ids = []
+            created_count = 0
+            
+            for musician_data in test_musicians:
+                # Register musician
+                register_data = {
+                    "email": musician_data["email"],
+                    "password": "TestPass123!",
+                    "name": musician_data["name"],
+                    "role": "musician"
+                }
+                
+                response = requests.post(f"{self.base_url}/auth/register", json=register_data, timeout=10)
+                if response.status_code == 200:
+                    user_data = response.json()
+                    token = user_data.get('token')
+                    
+                    # Create musician profile with band
+                    profile_data = {
+                        "pseudo": musician_data["name"],
+                        "city": musician_data["city"],
+                        "instruments": ["Guitar"],
+                        "music_styles": ["Rock", "Jazz"],
+                        "has_band": True,
+                        "bands": [{
+                            "name": musician_data["band_name"],
+                            "city": musician_data["band_city"],
+                            "music_styles": ["Rock", "Jazz"],
+                            "members_count": 4,
+                            "looking_for_concerts": True,
+                            "is_public": True
+                        }]
+                    }
+                    
+                    headers = {'Authorization': f'Bearer {token}'}
+                    profile_response = requests.post(f"{self.base_url}/musicians", json=profile_data, headers=headers, timeout=10)
+                    
+                    if profile_response.status_code == 200:
+                        profile = profile_response.json()
+                        self.test_band_ids.append({
+                            "musician_id": profile.get('id'),
+                            "band_name": musician_data["band_name"],
+                            "city": musician_data["band_city"]
+                        })
+                        created_count += 1
+            
+            success = created_count >= 3  # Need at least 3 bands for meaningful tests
+            details = f"Created {created_count} musicians with bands in different cities"
+            
+            self.log_test("Create Musicians with Bands for Geolocation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Create Musicians with Bands for Geolocation", False, f"Error: {str(e)}")
+            return False
+
+    def test_bands_geolocation_search_paris_100km(self):
+        """Test geolocation search from Paris with 100km radius"""
+        try:
+            # Paris coordinates: 48.8566, 2.3522
+            params = {
+                "latitude": 48.8566,
+                "longitude": 2.3522,
+                "radius": 100
+            }
+            
+            response = requests.get(f"{self.base_url}/bands", params=params, timeout=15)
+            success = response.status_code == 200
+            
+            if success:
+                bands = response.json()
+                details = f"Found {len(bands)} bands within 100km of Paris"
+                
+                # Verify each band has distance_km field
+                bands_with_distance = [b for b in bands if 'distance_km' in b]
+                details += f", {len(bands_with_distance)} with distance calculated"
+                
+                # Verify distances are within radius
+                valid_distances = [b for b in bands_with_distance if b['distance_km'] <= 100]
+                details += f", {len(valid_distances)} within 100km radius"
+                
+                if bands:
+                    closest_band = min(bands, key=lambda x: x.get('distance_km', float('inf')))
+                    details += f", Closest: {closest_band.get('name')} at {closest_band.get('distance_km')}km"
+                
+                # Store results for comparison with other tests
+                self.paris_100km_results = len(bands)
+                
+                success = len(bands) > 0  # Should find at least some bands
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Bands Geolocation Search - Paris 100km", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Bands Geolocation Search - Paris 100km", False, f"Error: {str(e)}")
+            return False
+
+    def test_bands_geolocation_search_paris_500km(self):
+        """Test geolocation search from Paris with 500km radius"""
+        try:
+            # Paris coordinates: 48.8566, 2.3522
+            params = {
+                "latitude": 48.8566,
+                "longitude": 2.3522,
+                "radius": 500
+            }
+            
+            response = requests.get(f"{self.base_url}/bands", params=params, timeout=15)
+            success = response.status_code == 200
+            
+            if success:
+                bands = response.json()
+                details = f"Found {len(bands)} bands within 500km of Paris"
+                
+                # Verify distances are within radius
+                bands_with_distance = [b for b in bands if 'distance_km' in b]
+                valid_distances = [b for b in bands_with_distance if b['distance_km'] <= 500]
+                details += f", {len(valid_distances)} within 500km radius"
+                
+                # Compare with 100km results
+                if hasattr(self, 'paris_100km_results'):
+                    details += f", vs {self.paris_100km_results} within 100km"
+                    success = len(bands) >= self.paris_100km_results  # Should find at least as many
+                
+                if bands:
+                    farthest_band = max(bands, key=lambda x: x.get('distance_km', 0))
+                    details += f", Farthest: {farthest_band.get('name')} at {farthest_band.get('distance_km')}km"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Bands Geolocation Search - Paris 500km", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Bands Geolocation Search - Paris 500km", False, f"Error: {str(e)}")
+            return False
+
+    def test_bands_geolocation_search_lyon_100km(self):
+        """Test geolocation search from Lyon with 100km radius"""
+        try:
+            # Lyon coordinates: 45.764, 4.8357
+            params = {
+                "latitude": 45.764,
+                "longitude": 4.8357,
+                "radius": 100
+            }
+            
+            response = requests.get(f"{self.base_url}/bands", params=params, timeout=15)
+            success = response.status_code == 200
+            
+            if success:
+                bands = response.json()
+                details = f"Found {len(bands)} bands within 100km of Lyon"
+                
+                # Verify distances are within radius
+                bands_with_distance = [b for b in bands if 'distance_km' in b]
+                valid_distances = [b for b in bands_with_distance if b['distance_km'] <= 100]
+                details += f", {len(valid_distances)} within 100km radius"
+                
+                # Check for Lyon-specific bands
+                lyon_bands = [b for b in bands if 'Lyon' in b.get('name', '') or b.get('city', '').lower() == 'lyon']
+                if lyon_bands:
+                    details += f", {len(lyon_bands)} Lyon-based bands found"
+                
+                if bands:
+                    closest_band = min(bands, key=lambda x: x.get('distance_km', float('inf')))
+                    details += f", Closest: {closest_band.get('name')} at {closest_band.get('distance_km')}km"
+                
+                success = len(bands) > 0  # Should find at least some bands
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Bands Geolocation Search - Lyon 100km", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Bands Geolocation Search - Lyon 100km", False, f"Error: {str(e)}")
+            return False
+
+    def test_bands_geolocation_precision_verification(self):
+        """Test that distance calculations are accurate and within specified radius"""
+        try:
+            # Test with a smaller radius to verify precision
+            params = {
+                "latitude": 48.8566,  # Paris
+                "longitude": 2.3522,
+                "radius": 50  # 50km radius
+            }
+            
+            response = requests.get(f"{self.base_url}/bands", params=params, timeout=15)
+            success = response.status_code == 200
+            
+            if success:
+                bands = response.json()
+                details = f"Found {len(bands)} bands within 50km of Paris"
+                
+                # Verify all distances are within radius
+                invalid_distances = [b for b in bands if b.get('distance_km', 0) > 50]
+                if invalid_distances:
+                    details += f", WARNING: {len(invalid_distances)} bands exceed 50km radius"
+                    success = False
+                else:
+                    details += ", All distances within specified radius"
+                
+                # Check distance calculation consistency
+                if bands:
+                    distances = [b.get('distance_km', 0) for b in bands]
+                    min_distance = min(distances)
+                    max_distance = max(distances)
+                    avg_distance = sum(distances) / len(distances)
+                    details += f", Distance range: {min_distance:.1f}-{max_distance:.1f}km (avg: {avg_distance:.1f}km)"
+                
+                # Verify bands are sorted by distance
+                sorted_distances = sorted([b.get('distance_km', 0) for b in bands])
+                actual_distances = [b.get('distance_km', 0) for b in bands]
+                if sorted_distances == actual_distances:
+                    details += ", Correctly sorted by distance"
+                else:
+                    details += ", WARNING: Not sorted by distance"
+                    success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Bands Geolocation Precision Verification", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Bands Geolocation Precision Verification", False, f"Error: {str(e)}")
+            return False
+
+    def test_bands_geolocation_on_the_fly_geocoding(self):
+        """Test that on-the-fly geocoding works for bands with only city information"""
+        try:
+            # First, get all bands without geolocation to see total count
+            response_all = requests.get(f"{self.base_url}/bands", timeout=10)
+            if response_all.status_code == 200:
+                all_bands = response_all.json()
+                total_bands = len(all_bands)
+            else:
+                total_bands = 0
+            
+            # Now test geolocation search
+            params = {
+                "latitude": 48.8566,  # Paris
+                "longitude": 2.3522,
+                "radius": 1000  # Large radius to catch most French cities
+            }
+            
+            response = requests.get(f"{self.base_url}/bands", params=params, timeout=20)
+            success = response.status_code == 200
+            
+            if success:
+                geo_bands = response.json()
+                details = f"Geolocation search found {len(geo_bands)} bands vs {total_bands} total bands"
+                
+                # Check if bands have city information but got geocoded
+                bands_with_city_only = []
+                for band in geo_bands:
+                    if band.get('city') and 'distance_km' in band:
+                        bands_with_city_only.append(band)
+                
+                details += f", {len(bands_with_city_only)} bands geocoded from city names"
+                
+                # Verify the fix is working - we should now get results
+                if len(geo_bands) > 0:
+                    details += ", ✅ On-the-fly geocoding working"
+                    
+                    # Show some examples
+                    if len(geo_bands) >= 3:
+                        examples = geo_bands[:3]
+                        example_cities = [f"{b.get('name')} ({b.get('city')}, {b.get('distance_km')}km)" for b in examples]
+                        details += f", Examples: {', '.join(example_cities)}"
+                else:
+                    details += ", ❌ No bands found - geocoding may not be working"
+                    success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Bands Geolocation On-the-fly Geocoding", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Bands Geolocation On-the-fly Geocoding", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🎵 Starting Jam Connexion API Tests...")

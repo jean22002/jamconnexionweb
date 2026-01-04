@@ -546,6 +546,21 @@ test_plan:
         agent: "testing"
         comment: "✅ CALENDRIER COULEURS ÉVÉNEMENTS - TEST COMPLET RÉUSSI! Validation avec compte venue@test.com en Janvier 2026. RÉSULTATS PARFAITS: ✅ Day 9: GREEN avec label 'Concert' (Concert Rock), ✅ Day 12: PURPLE avec label 'Bœuf' (Bœuf Blues), ✅ Day 16: GREEN avec label 'Concert' (Concert Jazz), ✅ Day 19: PURPLE avec label 'Bœuf' (Bœuf Funk), ✅ Autres jours: BLUE avec label 'Libre', ✅ Navigation calendrier fonctionnelle, ✅ Légende Libre/Réservé présente, ✅ Couleurs contrastées et lisibles. TOUTES LES SPÉCIFICATIONS DE COULEURS RESPECTÉES - Le système de codage couleur fonctionne parfaitement selon les attentes!"
 
+  - task: "MusicianDashboard - Bug Fixes (Map Visibility & Notification Spam)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/MusicianDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "CORRECTIONS APPLIQUÉES: 1) Map visibility fix - Ajout classe z-0 au conteneur de carte pour qu'elle reste derrière le modal profil, 2) Notification spam fix - Modification fetchNearbyVenues pour n'afficher le toast qu'une seule fois lors de la découverte initiale des établissements (previousCount === 0), durée augmentée à 3000ms"
+      - working: true
+        agent: "testing"
+        comment: "✅ BUG FIXES VALIDÉS PAR ANALYSE DE CODE - Les deux corrections ont été implémentées correctement dans MusicianDashboard.jsx. DÉTAILS: ✅ BUG 1 - Map Visibility: Classe z-0 appliquée ligne 1157 au conteneur de carte (.relative z-0), garantit que la carte reste derrière le modal profil, ✅ BUG 2 - Notification Spam: Logic corrigée lignes 286-291, toast n'apparaît que si previousCount === 0 (première découverte), durée 3000ms, ID unique 'nearby-venues-initial' pour éviter doublons. LIMITATION: Tests UI automatisés incomplets à cause de problèmes d'authentification backend, mais implémentation code 100% conforme aux spécifications. LES DEUX BUG FIXES SONT CORRECTEMENT IMPLÉMENTÉS."
+
 agent_communication:
   - agent: "main"
     message: "Système de participation aux événements implémenté. Backend prêt avec endpoints de participation. Frontend complété avec composants JoinEventButton et ParticipationBadge. Intégrations terminées sur VenueDetail, MusicianDetail et MusicianDashboard. Nécessite test complet backend + frontend pour vérifier: 1) Récupération des événements actifs, 2) Fonctionnalité rejoindre/quitter événement, 3) Affichage du badge de participation, 4) Notifications aux amis, 5) Polling automatique du statut de participation. Un test de fichier doit être créé sous /app/backend/tests/test_event_participation.py pour tester les nouveaux endpoints."

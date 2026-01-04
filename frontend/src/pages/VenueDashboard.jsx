@@ -1363,37 +1363,56 @@ export default function VenueDashboard() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {concerts.map((concert) => (
-                    <div 
-                      key={concert.id} 
-                      className="glassmorphism rounded-xl p-5 cursor-pointer hover:bg-white/5 transition-colors"
-                      onClick={() => handleEditEvent(concert, 'concert')}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="font-heading font-semibold text-lg">{concert.title || "Concert"}</p>
-                          <p className="text-muted-foreground">{concert.date} à {concert.start_time}</p>
+                  {concerts.map((concert) => {
+                    const totalMembers = concert.bands ? concert.bands.reduce((sum, band) => sum + (band.members_count || 0), 0) : 0;
+                    return (
+                      <div 
+                        key={concert.id} 
+                        className="glassmorphism rounded-xl p-5 cursor-pointer hover:bg-white/5 transition-colors"
+                        onClick={() => handleEditEvent(concert, 'concert')}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="font-heading font-semibold text-lg">{concert.title || "Concert"}</p>
+                            <p className="text-muted-foreground">{concert.date} à {concert.start_time}</p>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteConcert(concert.id);
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteConcert(concert.id);
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
+                        {concert.bands?.length > 0 && (
+                          <div className="mt-3">
+                            <p className="text-sm text-muted-foreground mb-1">Artistes:</p>
+                            {concert.bands.map((b, i) => (
+                              <div key={i} className="flex items-center justify-between text-white">
+                                <span>{b.name}</span>
+                                {b.members_count && (
+                                  <span className="text-xs text-muted-foreground">
+                                    ({b.members_count} membre{b.members_count > 1 ? 's' : ''})
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                            {totalMembers > 0 && (
+                              <div className="mt-2 pt-2 border-t border-white/10">
+                                <span className="text-xs font-semibold text-primary">
+                                  Total : {totalMembers} musicien{totalMembers > 1 ? 's' : ''}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {concert.price && <p className="text-sm text-secondary mt-2">{concert.price}</p>}
                       </div>
-                      {concert.bands?.length > 0 && (
-                        <div className="mt-3">
-                          <p className="text-sm text-muted-foreground mb-1">Artistes:</p>
-                          {concert.bands.map((b, i) => <p key={i} className="text-white">{b.name}</p>)}
-                        </div>
-                      )}
-                      {concert.price && <p className="text-sm text-secondary mt-2">{concert.price}</p>}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

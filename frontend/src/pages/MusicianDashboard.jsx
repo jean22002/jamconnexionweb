@@ -919,95 +919,94 @@ export default function MusicianDashboard() {
                     </TabsContent>
 
                     <TabsContent value="band" className="space-y-4 mt-4">
-                      <div className="flex items-center gap-4">
-                        <Switch checked={profileForm.has_band} onCheckedChange={(checked) => setProfileForm({ ...profileForm, has_band: checked })} />
-                        <Label>Je joue dans un groupe</Label>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-heading text-lg">Mes Groupes</h3>
+                        <Button 
+                          onClick={() => {
+                            setEditingBandIndex(null);
+                            setShowBandDialog(true);
+                          }}
+                          className="bg-primary hover:bg-primary/90 rounded-full"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Ajouter un groupe
+                        </Button>
                       </div>
 
-                      {profileForm.has_band && (
-                        <div className="space-y-4 p-4 border border-white/10 rounded-xl">
-                          <div className="space-y-2">
-                            <Label>Photo du groupe</Label>
-                            <BandImageUpload
-                              value={profileForm.band.photo}
-                              onChange={(url) => setProfileForm({ ...profileForm, band: { ...profileForm.band, photo: url } })}
-                              token={token}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Nom du groupe</Label>
-                            <Input value={profileForm.band.name} onChange={(e) => setProfileForm({ ...profileForm, band: { ...profileForm.band, name: e.target.value } })} className="bg-black/20 border-white/10" />
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label>Description</Label>
-                            <Textarea value={profileForm.band.description || ""} onChange={(e) => setProfileForm({ ...profileForm, band: { ...profileForm.band, description: e.target.value } })} className="bg-black/20 border-white/10" rows={3} placeholder="Décrivez votre groupe..." />
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label>Nombre de membres</Label>
-                              <Input type="number" value={profileForm.band.members_count || ""} onChange={(e) => setProfileForm({ ...profileForm, band: { ...profileForm.band, members_count: parseInt(e.target.value) || null } })} className="bg-black/20 border-white/10" />
+                      {profileForm.bands.length === 0 ? (
+                        <div className="text-center py-12 text-muted-foreground glassmorphism rounded-xl">
+                          <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                          <p>Vous n'avez pas encore ajouté de groupe</p>
+                          <p className="text-sm mt-2">Cliquez sur "Ajouter un groupe" pour commencer</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {profileForm.bands.map((band, index) => (
+                            <div key={index} className="glassmorphism rounded-xl p-5">
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex-1">
+                                  <h4 className="font-heading font-semibold text-lg">{band.name}</h4>
+                                  {band.band_type && (
+                                    <p className="text-sm text-muted-foreground">{band.band_type}</p>
+                                  )}
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      setEditingBandIndex(index);
+                                      setShowBandDialog(true);
+                                    }}
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      const newBands = profileForm.bands.filter((_, i) => i !== index);
+                                      setProfileForm({ ...profileForm, bands: newBands });
+                                      toast.success("Groupe supprimé");
+                                    }}
+                                  >
+                                    <X className="w-4 h-4 text-destructive" />
+                                  </Button>
+                                </div>
+                              </div>
+                              
+                              <div className="space-y-2 text-sm">
+                                {band.repertoire_type && (
+                                  <div className="flex items-center gap-2">
+                                    <Music className="w-4 h-4 text-primary" />
+                                    <span>{band.repertoire_type}</span>
+                                  </div>
+                                )}
+                                {band.show_duration && (
+                                  <div className="flex items-center gap-2">
+                                    <Clock className="w-4 h-4 text-secondary" />
+                                    <span>Durée du show : {band.show_duration}</span>
+                                  </div>
+                                )}
+                                {band.members_count && (
+                                  <div className="flex items-center gap-2">
+                                    <Users className="w-4 h-4 text-muted-foreground" />
+                                    <span>{band.members_count} membres</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {band.music_styles && band.music_styles.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                  {band.music_styles.map((style, i) => (
+                                    <span key={i} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">
+                                      {style}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                            <div className="space-y-2">
-                              <Label>Département</Label>
-                              <Input placeholder="Ex: 75" value={profileForm.department || ""} onChange={(e) => setProfileForm({ ...profileForm, department: e.target.value })} className="bg-black/20 border-white/10" />
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label>Styles musicaux du groupe</Label>
-                            <Input placeholder="Appuyez Entrée" onKeyPress={(e) => { if (e.key === 'Enter' && e.target.value) { setProfileForm({ ...profileForm, band: { ...profileForm.band, music_styles: [...(profileForm.band.music_styles || []), e.target.value] } }); e.target.value = ''; } }} className="bg-black/20 border-white/10" />
-                            <div className="flex flex-wrap gap-2">
-                              {profileForm.band.music_styles?.map((s, i) => (
-                                <span key={i} className="px-2 py-1 bg-secondary/20 text-secondary rounded-full text-xs flex items-center gap-1">
-                                  {s}
-                                  <button onClick={() => setProfileForm({ ...profileForm, band: { ...profileForm.band, music_styles: profileForm.band.music_styles.filter((_, idx) => idx !== i) } })}><X className="w-3 h-3" /></button>
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-3">
-                            <Label>Disponibilités</Label>
-                            <div className="flex items-center gap-2">
-                              <Switch checked={profileForm.band.looking_for_concerts !== false} onCheckedChange={(checked) => setProfileForm({ ...profileForm, band: { ...profileForm.band, looking_for_concerts: checked } })} />
-                              <Label className="text-sm">🎤 Cherche des concerts</Label>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Switch checked={profileForm.band.looking_for_members || false} onCheckedChange={(checked) => setProfileForm({ ...profileForm, band: { ...profileForm.band, looking_for_members: checked } })} />
-                              <Label className="text-sm">👥 Cherche des membres</Label>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Switch checked={profileForm.band.is_public !== false} onCheckedChange={(checked) => setProfileForm({ ...profileForm, band: { ...profileForm.band, is_public: checked } })} />
-                              <Label className="text-sm">👁️ Visible dans le répertoire public</Label>
-                            </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label>Facebook</Label>
-                              <Input value={profileForm.band.facebook} onChange={(e) => setProfileForm({ ...profileForm, band: { ...profileForm.band, facebook: e.target.value } })} className="bg-black/20 border-white/10" />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Instagram</Label>
-                              <Input value={profileForm.band.instagram} onChange={(e) => setProfileForm({ ...profileForm, band: { ...profileForm.band, instagram: e.target.value } })} className="bg-black/20 border-white/10" />
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label>YouTube</Label>
-                              <Input value={profileForm.band.youtube} onChange={(e) => setProfileForm({ ...profileForm, band: { ...profileForm.band, youtube: e.target.value } })} className="bg-black/20 border-white/10" />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Site web</Label>
-                              <Input value={profileForm.band.website} onChange={(e) => setProfileForm({ ...profileForm, band: { ...profileForm.band, website: e.target.value } })} className="bg-black/20 border-white/10" />
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Bandcamp</Label>
-                            <Input value={profileForm.band.bandcamp} onChange={(e) => setProfileForm({ ...profileForm, band: { ...profileForm.band, bandcamp: e.target.value } })} className="bg-black/20 border-white/10" />
-                          </div>
+                          ))}
                         </div>
                       )}
                     </TabsContent>

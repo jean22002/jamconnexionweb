@@ -1872,7 +1872,15 @@ async def list_planning_slots(venue_id: Optional[str] = None, is_open: bool = Tr
     result = []
     for s in slots:
         apps_count = await db.applications.count_documents({"planning_slot_id": s["id"]})
-        result.append(PlanningSlotResponse(**s, applications_count=apps_count))
+        accepted_count = await db.applications.count_documents({
+            "planning_slot_id": s["id"],
+            "status": "accepted"
+        })
+        result.append(PlanningSlotResponse(
+            **s, 
+            applications_count=apps_count,
+            accepted_bands_count=accepted_count
+        ))
     
     return result
 
@@ -1883,7 +1891,15 @@ async def get_venue_planning(venue_id: str):
     result = []
     for s in slots:
         apps_count = await db.applications.count_documents({"planning_slot_id": s["id"]})
-        result.append(PlanningSlotResponse(**s, applications_count=apps_count))
+        accepted_count = await db.applications.count_documents({
+            "planning_slot_id": s["id"],
+            "status": "accepted"
+        })
+        result.append(PlanningSlotResponse(
+            **s, 
+            applications_count=apps_count,
+            accepted_bands_count=accepted_count
+        ))
     
     return result
 

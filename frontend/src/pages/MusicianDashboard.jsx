@@ -3447,7 +3447,7 @@ export default function MusicianDashboard() {
                         )}
                         <div className="mt-4">
                           <JoinEventButton 
-                            event={{ ...concert, event_type: 'concert' }}
+                            event={{ ...concert, type: 'concert' }}
                             venueId={concert.venue_id}
                             token={token}
                             currentParticipation={null}
@@ -3514,7 +3514,7 @@ export default function MusicianDashboard() {
                         )}
                         <div className="mt-4">
                           <JoinEventButton 
-                            event={{ ...jam, event_type: 'jam' }}
+                            event={{ ...jam, type: 'jam' }}
                             venueId={jam.venue_id}
                             token={token}
                             currentParticipation={null}

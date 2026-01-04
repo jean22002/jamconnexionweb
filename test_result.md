@@ -841,6 +841,18 @@ test_plan:
         agent: "testing"
         comment: "✅ VALIDATION PAR ANALYSE DE CODE - CityAutocomplete entièrement implémenté selon spécifications. DÉTAILS: ✅ Composant CityAutocomplete intégré lignes 1038-1051 VenueDashboard.jsx, ✅ Callback onSelect met à jour city, postal_code, department, region, ✅ Bouton GPS 'Ma position GPS' présent lignes 1056-1058, ✅ Fonction useMyLocation lignes 273-333 pour géolocalisation automatique, ✅ API geo.api.gouv.fr utilisée via reverseGeocode, ✅ Auto-remplissage complet des champs d'adresse. LIMITATION: Tests UI automatisés incomplets à cause de problèmes d'authentification, mais implémentation code 100% conforme aux spécifications demandées."
 
+  - task: "MusicianDashboard - Bouton Je participe dans onglet Connexions"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/MusicianDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NOUVELLE FONCTIONNALITÉ IMPLÉMENTÉE - Bouton 'Je participe' ajouté pour les concerts ET les bœufs dans l'onglet 'Connexions' du MusicianDashboard. Import de JoinEventButton, ajout du bouton dans la modale d'événements d'un établissement connecté, ajout du badge de compteur de participants pour les bœufs (icône 👥 + nombre). Fonctionnalité accessible via clic sur établissement dans onglet Connexions."
+
   - task: "Bands Geolocation Search Issue"
     implemented: true
     working: true

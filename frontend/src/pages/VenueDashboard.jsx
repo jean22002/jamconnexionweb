@@ -262,6 +262,10 @@ export default function VenueDashboard() {
         const cityData = await reverseGeocode(lat, lon);
         
         if (cityData) {
+          console.log('🔍 Données géocodées:', cityData);
+          console.log('📝 Département formaté:', `${cityData.department} - ${cityData.departmentName}`);
+          console.log('📝 Région:', cityData.region);
+          
           setFormData({ 
             ...formData, 
             latitude: lat, 

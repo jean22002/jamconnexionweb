@@ -313,6 +313,7 @@ export default function VenueDashboard() {
     if (activeTab === "notifications" && profile) {
       fetchNearbyMusiciansCount();
       fetchBroadcastHistory();
+      fetchSubscribers(); // Rafraîchir les abonnés
     }
   }, [activeTab, profile]);
 

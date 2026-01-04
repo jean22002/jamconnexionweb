@@ -1178,13 +1178,26 @@ export default function VenueDashboard() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {concerts.map((concert) => (
-                    <div key={concert.id} className="glassmorphism rounded-xl p-5">
+                    <div 
+                      key={concert.id} 
+                      className="glassmorphism rounded-xl p-5 cursor-pointer hover:bg-white/5 transition-colors"
+                      onClick={() => handleEditEvent(concert, 'concert')}
+                    >
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="font-heading font-semibold text-lg">{concert.title || "Concert"}</p>
                           <p className="text-muted-foreground">{concert.date} à {concert.start_time}</p>
                         </div>
-                        <Button variant="ghost" size="sm" onClick={() => deleteConcert(concert.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteConcert(concert.id);
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
                       </div>
                       {concert.bands?.length > 0 && (
                         <div className="mt-3">

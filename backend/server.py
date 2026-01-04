@@ -276,6 +276,7 @@ class JamEventResponse(BaseModel):
     instruments_available: List[str] = []
     additional_info: Optional[str] = None
     created_at: str
+    participants_count: int = 0  # Nombre de participants
 
 # Concert Event
 class ConcertBand(BaseModel):

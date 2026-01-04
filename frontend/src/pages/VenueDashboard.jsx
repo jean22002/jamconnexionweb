@@ -1345,10 +1345,62 @@ export default function VenueDashboard() {
               <div className="glassmorphism rounded-2xl p-6">
                 <h2 className="font-heading font-semibold text-xl mb-4">📢 Envoyer une notification</h2>
                 <p className="text-muted-foreground text-sm mb-4">
-                  Envoyez un message à tous les musiciens dans un rayon de 100 km autour de votre établissement.
+                  Choisissez les destinataires et envoyez votre message.
                 </p>
                 
                 <div className="space-y-4">
+                  {/* Recipient Selection */}
+                  <div>
+                    <Label className="mb-3 block">Destinataires</Label>
+                    <div className="space-y-3">
+                      <div 
+                        className={`flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${notificationTarget === 'subscribers' ? 'border-primary bg-primary/10' : 'border-white/10 hover:border-white/20'}`}
+                        onClick={() => setNotificationTarget('subscribers')}
+                      >
+                        <input 
+                          type="radio" 
+                          name="target" 
+                          value="subscribers" 
+                          checked={notificationTarget === 'subscribers'}
+                          onChange={() => setNotificationTarget('subscribers')}
+                          className="w-4 h-4"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <Heart className="w-4 h-4 text-primary" />
+                            <span className="font-semibold">Mes Jacks (Abonnés)</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {subscribers.length} abonné{subscribers.length > 1 ? 's' : ''} recevr{subscribers.length > 1 ? 'ont' : 'a'} la notification
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div 
+                        className={`flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${notificationTarget === 'nearby' ? 'border-secondary bg-secondary/10' : 'border-white/10 hover:border-white/20'}`}
+                        onClick={() => setNotificationTarget('nearby')}
+                      >
+                        <input 
+                          type="radio" 
+                          name="target" 
+                          value="nearby" 
+                          checked={notificationTarget === 'nearby'}
+                          onChange={() => setNotificationTarget('nearby')}
+                          className="w-4 h-4"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-secondary" />
+                            <span className="font-semibold">Musiciens à proximité (50 km)</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Estimation : {nearbyMusiciansCount} musicien{nearbyMusiciansCount > 1 ? 's' : ''} dans un rayon de 50 km
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <div>
                     <Label htmlFor="broadcast-message">Message</Label>
                     <Textarea
@@ -1362,15 +1414,6 @@ export default function VenueDashboard() {
                     <p className="text-xs text-muted-foreground mt-2">
                       {broadcastMessage.length} caractères
                     </p>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg border border-primary/30">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-5 h-5 text-primary" />
-                      <span className="text-sm">
-                        <strong>{nearbyMusiciansCount}</strong> musicien(s) dans un rayon de 100 km
-                      </span>
-                    </div>
                   </div>
                   
                   <Button

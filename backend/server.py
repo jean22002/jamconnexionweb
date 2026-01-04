@@ -113,6 +113,8 @@ class MusicianProfile(BaseModel):
     has_band: bool = False
     band: Optional[BandInfo] = None  # Deprecated - kept for backwards compatibility
     bands: List[BandInfo] = []  # Multiple bands support
+    # Solo profile
+    solo_profile: Optional[Dict[str, Any]] = None
     # Concerts
     concerts: List[MusicianConcert] = []
 

@@ -4077,7 +4077,12 @@ class JamConnexionAPITester:
             self.test_accept_second_application_slot_closes,
             self.test_verify_api_response_fields,
             self.test_single_group_behavior,
-            self.test_three_plus_groups_behavior
+            self.test_three_plus_groups_behavior,
+            # Jam Improvements Tests (NEW)
+            self.test_jam_participants_count_api,
+            self.test_jam_join_button_functionality,
+            self.test_jam_security_musician_only,
+            self.test_jam_participants_counter_updates
         ]
         
         for test in tests:

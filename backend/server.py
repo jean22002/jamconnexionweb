@@ -141,6 +141,7 @@ class MusicianProfileResponse(BaseModel):
     has_band: bool = False
     band: Optional[Dict[str, Any]] = None  # Deprecated
     bands: List[Dict[str, Any]] = []  # Multiple bands support
+    solo_profile: Optional[Dict[str, Any]] = None
     concerts: List[Dict[str, Any]] = []
     friends_count: int = 0
     created_at: str

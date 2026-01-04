@@ -1121,6 +1121,7 @@ export default function VenueDashboard() {
                 onMonthChange={setCurrentMonth}
                 onDateClick={handleDateClick}
                 bookedDates={bookedDates}
+                eventsByDate={eventsByDate}
               />
 
               {/* Liste des créneaux ouverts */}

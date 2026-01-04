@@ -137,10 +137,14 @@ class MusicianProfileResponse(BaseModel):
     youtube: Optional[str] = None
     bandcamp: Optional[str] = None
     has_band: bool = False
-    band: Optional[Dict[str, Any]] = None
+    band: Optional[Dict[str, Any]] = None  # Deprecated
+    bands: List[Dict[str, Any]] = []  # Multiple bands support
     concerts: List[Dict[str, Any]] = []
     friends_count: int = 0
     created_at: str
+    region: Optional[str] = None
+    department: Optional[str] = None
+    experience_level: Optional[str] = None
 
 # Friend Request
 class FriendRequest(BaseModel):

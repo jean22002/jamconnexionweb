@@ -277,20 +277,22 @@ export default function MusicianDashboard() {
         longitude: lng,
         radius_km: searchRadius
       });
+      
+      const previousCount = nearbyVenues.length;
       setNearbyVenues(response.data);
       setLastSearchTime(new Date());
       
-      // Show toast only on significant changes
-      if (response.data.length > 0) {
+      // Show toast only once when first venues are found or when count significantly changes
+      if (response.data.length > 0 && previousCount === 0) {
         toast.success(`${response.data.length} établissement(s) à proximité`, {
-          id: 'nearby-venues',
-          duration: 2000
+          id: 'nearby-venues-initial',
+          duration: 3000
         });
       }
     } catch (error) {
       console.error("Error fetching nearby venues:", error);
     }
-  }, [searchRadius]);
+  }, [searchRadius, nearbyVenues.length]);
 
   // Effect to refetch when radius changes
   useEffect(() => {

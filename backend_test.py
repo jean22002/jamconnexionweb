@@ -1718,6 +1718,236 @@ class JamConnexionAPITester:
             self.log_test("Get Venue Profile", False, f"Error: {str(e)}")
             return False
 
+    # ============= GEOLOCATION SEARCH TESTS =============
+    
+    def test_bands_geolocation_search(self):
+        """Test geolocation search functionality for bands directory"""
+        try:
+            # Test 1: Basic geolocation search with Paris coordinates
+            paris_lat = 48.8566
+            paris_lon = 2.3522
+            radius = 100  # 100km radius
+            
+            response = requests.get(
+                f"{self.base_url}/bands?latitude={paris_lat}&longitude={paris_lon}&radius={radius}", 
+                timeout=10
+            )
+            success = response.status_code == 200
+            
+            if success:
+                bands_data = response.json()
+                bands_count = len(bands_data)
+                
+                # Check if bands have distance_km field
+                bands_with_distance = [b for b in bands_data if 'distance_km' in b]
+                
+                details = f"Found {bands_count} bands within {radius}km of Paris"
+                if bands_with_distance:
+                    details += f", {len(bands_with_distance)} have distance_km field"
+                    avg_distance = sum(b['distance_km'] for b in bands_with_distance) / len(bands_with_distance)
+                    details += f", avg distance: {avg_distance:.1f}km"
+                else:
+                    details += ", no bands have distance_km field"
+                
+                # Store for further analysis
+                self.geolocation_bands = bands_data
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Bands Geolocation Search", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Bands Geolocation Search", False, f"Error: {str(e)}")
+            return False
+
+    def test_bands_data_analysis(self):
+        """Analyze the state of bands data - GPS vs city-only"""
+        try:
+            # Get all musicians to analyze their bands
+            response = requests.get(f"{self.base_url}/musicians", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                musicians = response.json()
+                
+                total_musicians = len(musicians)
+                musicians_with_bands = 0
+                total_bands = 0
+                bands_with_gps = 0
+                bands_with_city_only = 0
+                bands_without_location = 0
+                
+                for musician in musicians:
+                    # Check new format (multiple bands)
+                    if musician.get("bands"):
+                        musicians_with_bands += 1
+                        for band in musician["bands"]:
+                            total_bands += 1
+                            
+                            # Check if band has GPS coordinates
+                            band_lat = band.get("latitude") or musician.get("latitude")
+                            band_lon = band.get("longitude") or musician.get("longitude")
+                            
+                            if band_lat and band_lon:
+                                bands_with_gps += 1
+                            elif band.get("city") or musician.get("city"):
+                                bands_with_city_only += 1
+                            else:
+                                bands_without_location += 1
+                    
+                    # Check old format (single band)
+                    elif musician.get("band") and musician.get("has_band"):
+                        musicians_with_bands += 1
+                        total_bands += 1
+                        
+                        # Check GPS coordinates (from musician profile for old format)
+                        if musician.get("latitude") and musician.get("longitude"):
+                            bands_with_gps += 1
+                        elif musician.get("city"):
+                            bands_with_city_only += 1
+                        else:
+                            bands_without_location += 1
+                
+                details = f"Data analysis: {total_musicians} musicians, {musicians_with_bands} have bands, "
+                details += f"{total_bands} total bands. GPS: {bands_with_gps}, City only: {bands_with_city_only}, "
+                details += f"No location: {bands_without_location}"
+                
+                # Store analysis results
+                self.bands_analysis = {
+                    "total_musicians": total_musicians,
+                    "musicians_with_bands": musicians_with_bands,
+                    "total_bands": total_bands,
+                    "bands_with_gps": bands_with_gps,
+                    "bands_with_city_only": bands_with_city_only,
+                    "bands_without_location": bands_without_location
+                }
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Bands Data Analysis", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Bands Data Analysis", False, f"Error: {str(e)}")
+            return False
+
+    def test_create_band_without_gps(self):
+        """Create a test band with only city information (no GPS coordinates)"""
+        try:
+            # Create a new musician for this test
+            test_data = {
+                "email": f"musician_no_gps_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "No GPS Musician",
+                "role": "musician"
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/register", json=test_data, timeout=10)
+            if response.status_code == 200:
+                no_gps_data = response.json()
+                no_gps_token = no_gps_data.get('token')
+                
+                # Create musician profile with band but NO GPS coordinates
+                profile_data = {
+                    "pseudo": "NoGPSBand",
+                    "city": "Lyon",  # City only, no coordinates
+                    "department": "69",
+                    "region": "Auvergne-Rhône-Alpes",
+                    "instruments": ["Guitar"],
+                    "music_styles": ["Rock"],
+                    "bands": [{
+                        "name": "Test Band No GPS",
+                        "description": "A test band without GPS coordinates",
+                        "music_styles": ["Rock", "Pop"],
+                        "city": "Lyon",
+                        "department": "69",
+                        "region": "Auvergne-Rhône-Alpes",
+                        "is_public": True,
+                        "looking_for_concerts": True
+                        # Note: NO latitude/longitude fields
+                    }]
+                }
+                
+                headers = {'Authorization': f'Bearer {no_gps_token}'}
+                response = requests.post(f"{self.base_url}/musicians", json=profile_data, headers=headers, timeout=10)
+                success = response.status_code == 200
+                
+                if success:
+                    profile_response = response.json()
+                    self.no_gps_musician_id = profile_response.get('id')
+                    details = f"Created band without GPS: {profile_response.get('bands', [{}])[0].get('name', 'Unknown')} in Lyon"
+                else:
+                    details = f"Profile creation failed: {response.status_code}, Error: {response.text[:100]}"
+            else:
+                success = False
+                details = f"Musician creation failed: {response.status_code}"
+            
+            self.log_test("Create Band Without GPS", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Create Band Without GPS", False, f"Error: {str(e)}")
+            return False
+
+    def test_geolocation_excludes_no_gps_bands(self):
+        """Test that geolocation search excludes bands without GPS coordinates"""
+        try:
+            # First, get all bands without geolocation filter
+            response = requests.get(f"{self.base_url}/bands", timeout=10)
+            if response.status_code == 200:
+                all_bands = response.json()
+                all_bands_count = len(all_bands)
+                
+                # Find our test band without GPS
+                test_band_found_in_all = any(
+                    band.get('name') == 'Test Band No GPS' for band in all_bands
+                )
+                
+                # Now test with geolocation (Paris coordinates, large radius to include Lyon)
+                paris_lat = 48.8566
+                paris_lon = 2.3522
+                radius = 500  # Large radius to include Lyon (460km from Paris)
+                
+                response = requests.get(
+                    f"{self.base_url}/bands?latitude={paris_lat}&longitude={paris_lon}&radius={radius}", 
+                    timeout=10
+                )
+                success = response.status_code == 200
+                
+                if success:
+                    geo_bands = response.json()
+                    geo_bands_count = len(geo_bands)
+                    
+                    # Check if our test band without GPS is excluded
+                    test_band_found_in_geo = any(
+                        band.get('name') == 'Test Band No GPS' for band in geo_bands
+                    )
+                    
+                    details = f"All bands: {all_bands_count}, Geo search: {geo_bands_count}"
+                    details += f", Test band in all: {test_band_found_in_all}, in geo: {test_band_found_in_geo}"
+                    
+                    # The test passes if:
+                    # 1. Our test band is found in the general search
+                    # 2. Our test band is NOT found in the geolocation search
+                    if test_band_found_in_all and not test_band_found_in_geo:
+                        details += " ✅ Correctly excluded band without GPS from geolocation search"
+                        success = True
+                    elif not test_band_found_in_all:
+                        details += " ⚠️ Test band not found in general search"
+                        success = False
+                    else:
+                        details += " ❌ Band without GPS incorrectly included in geolocation search"
+                        success = False
+                else:
+                    details = f"Geolocation search failed: {response.status_code}"
+            else:
+                success = False
+                details = f"General search failed: {response.status_code}"
+            
+            self.log_test("Geolocation Excludes No-GPS Bands", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Geolocation Excludes No-GPS Bands", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🎵 Starting Jam Connexion API Tests...")

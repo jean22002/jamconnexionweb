@@ -2,7 +2,7 @@ import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
 
-const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, eventsByDate = {} }) => {
+const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, eventsByDate = {}, concerts = [], jams = [] }) => {
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -62,21 +62,37 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
     const isPast = isPastDate(date);
     const isToday = new Date().toDateString() === date.toDateString();
     
+    // Trouver le concert correspondant à cette date pour afficher les groupes
+    const concert = concerts.find(c => c.date === dateStr);
+    const jam = jams.find(j => j.date === dateStr);
+    
+    // Calculer le nombre total de membres pour les concerts
+    let totalMembers = 0;
+    if (concert && concert.bands) {
+      totalMembers = concert.bands.reduce((sum, band) => sum + (band.members_count || 0), 0);
+    }
+    
     // Définir les couleurs selon le type d'événement
     let colorClasses = '';
     let label = '';
+    let eventInfo = '';
     
     if (eventType === 'concert') {
-      // Vert pour les concerts
-      colorClasses = 'bg-green-500/20 text-green-400 border-2 border-green-500/40 cursor-not-allowed';
+      // Vert pour les concerts - maintenant cliquable
+      colorClasses = 'bg-green-500/20 text-green-400 border-2 border-green-500/40 hover:bg-green-500/30 cursor-pointer';
       label = 'Concert';
+      // Afficher les noms des groupes
+      if (concert && concert.bands && concert.bands.length > 0) {
+        const bandNames = concert.bands.map(b => b.name).join(', ');
+        eventInfo = bandNames.length > 20 ? bandNames.substring(0, 20) + '...' : bandNames;
+      }
     } else if (eventType === 'jam') {
-      // Mauve pour les bœufs
-      colorClasses = 'bg-purple-500/20 text-purple-400 border-2 border-purple-500/40 cursor-not-allowed';
+      // Mauve pour les bœufs - maintenant cliquable
+      colorClasses = 'bg-purple-500/20 text-purple-400 border-2 border-purple-500/40 hover:bg-purple-500/30 cursor-pointer';
       label = 'Bœuf';
     } else if (isBooked) {
       // Rouge pour autres réservations (au cas où)
-      colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 cursor-not-allowed';
+      colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 cursor-pointer';
       label = 'Réservé';
     } else if (isPast) {
       // Gris pour le passé
@@ -91,8 +107,8 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
     calendarDays.push(
       <button
         key={day}
-        onClick={() => !isPast && !isBooked && onDateClick(date)}
-        disabled={isPast || isBooked}
+        onClick={() => onDateClick(date)}
+        disabled={isPast && !eventType}
         className={`
           aspect-square p-2 rounded-lg font-semibold transition-all
           ${colorClasses}
@@ -108,6 +124,11 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
           <div className="text-[10px] mt-1 font-normal">
             {label}
           </div>
+          {eventInfo && (
+            <div className="text-[9px] mt-0.5 font-normal truncate">
+              {eventInfo}
+            </div>
+          )}
         </div>
       </button>
     );

@@ -2971,7 +2971,9 @@ export default function MusicianDashboard() {
                 <p className="text-sm text-muted-foreground mb-4">
                   Découvrez les groupes de musique de votre région et contactez-les directement
                 </p>
-                <div className="grid grid-cols-2 gap-4">
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Localisation */}
                   <div className="space-y-2">
                     <Label>Département</Label>
                     <Input
@@ -2990,7 +2992,92 @@ export default function MusicianDashboard() {
                       className="bg-black/20 border-white/10"
                     />
                   </div>
+
+                  {/* Style musical */}
+                  <div className="space-y-2">
+                    <Label>Style musical</Label>
+                    <Select 
+                      value={bandFilters.musicStyle} 
+                      onValueChange={(value) => setBandFilters({ ...bandFilters, musicStyle: value })}
+                    >
+                      <SelectTrigger className="bg-black/20 border-white/10">
+                        <SelectValue placeholder="Tous les styles" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-white/10 max-h-[300px]">
+                        <SelectItem value="">Tous les styles</SelectItem>
+                        {MUSIC_STYLES_LIST.map((style) => (
+                          <SelectItem key={style} value={style}>{style}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Type de groupe */}
+                  <div className="space-y-2">
+                    <Label>Type de groupe</Label>
+                    <Select 
+                      value={bandFilters.bandType} 
+                      onValueChange={(value) => setBandFilters({ ...bandFilters, bandType: value })}
+                    >
+                      <SelectTrigger className="bg-black/20 border-white/10">
+                        <SelectValue placeholder="Tous les types" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-white/10 max-h-[300px]">
+                        <SelectItem value="">Tous les types</SelectItem>
+                        {BAND_TYPES.map((type) => (
+                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Type de répertoire */}
+                  <div className="space-y-2">
+                    <Label>Type de répertoire</Label>
+                    <Select 
+                      value={bandFilters.repertoireType} 
+                      onValueChange={(value) => setBandFilters({ ...bandFilters, repertoireType: value })}
+                    >
+                      <SelectTrigger className="bg-black/20 border-white/10">
+                        <SelectValue placeholder="Tous" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-white/10">
+                        <SelectItem value="">Tous</SelectItem>
+                        {REPERTOIRE_TYPES.map((type) => (
+                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Cherche membres */}
+                  <div className="space-y-2 flex items-end">
+                    <div className="flex items-center gap-2 p-3 bg-black/10 rounded-lg border border-white/10 w-full">
+                      <Switch 
+                        checked={bandFilters.lookingForMembers} 
+                        onCheckedChange={(checked) => setBandFilters({ ...bandFilters, lookingForMembers: checked })}
+                      />
+                      <Label className="cursor-pointer text-sm">Cherche des membres</Label>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Bouton réinitialiser */}
+                <Button 
+                  variant="outline" 
+                  className="mt-4"
+                  onClick={() => setBandFilters({ 
+                    department: "", 
+                    city: "", 
+                    musicStyle: "", 
+                    bandType: "",
+                    repertoireType: "",
+                    lookingForMembers: false
+                  })}
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Réinitialiser les filtres
+                </Button>
               </div>
 
               {/* Bands List */}

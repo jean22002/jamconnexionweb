@@ -196,8 +196,8 @@ export default function VenueDashboard() {
   useEffect(() => {
     fetchProfile();
     fetchMusicians();
-    fetchBookedDates();
-  }, [fetchProfile, fetchMusicians]);
+    fetchEvents();
+  }, [fetchProfile, fetchMusicians, fetchEvents]);
 
   // Fetch booked dates for calendar
   const fetchBookedDates = useCallback(async () => {

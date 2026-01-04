@@ -1075,13 +1075,26 @@ export default function VenueDashboard() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {jams.map((jam) => (
-                    <div key={jam.id} className="glassmorphism rounded-xl p-5">
+                    <div 
+                      key={jam.id} 
+                      className="glassmorphism rounded-xl p-5 cursor-pointer hover:bg-white/5 transition-colors"
+                      onClick={() => handleEditEvent(jam, 'jam')}
+                    >
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="font-heading font-semibold text-lg">{jam.date}</p>
                           <p className="text-muted-foreground">{jam.start_time} - {jam.end_time}</p>
                         </div>
-                        <Button variant="ghost" size="sm" onClick={() => deleteJam(jam.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteJam(jam.id);
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
                       </div>
                       <div className="flex flex-wrap gap-2 mt-3">
                         {jam.music_styles.map((s, i) => <span key={i} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">{s}</span>)}

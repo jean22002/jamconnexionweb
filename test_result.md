@@ -410,9 +410,7 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus:
-    - "VenueDashboard - Toast Import Fix"
-    - "VenueDashboard - Equipment Switches Edit Mode"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

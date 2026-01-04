@@ -1984,6 +1984,7 @@ export default function MusicianDashboard() {
                           value={currentBand.facebook || ""} 
                           onChange={(e) => setCurrentBand({ ...currentBand, facebook: e.target.value })}
                           className="bg-black/20 border-white/10"
+                          placeholder="https://facebook.com/..."
                         />
                       </div>
                       <div className="space-y-2">
@@ -1992,8 +1993,41 @@ export default function MusicianDashboard() {
                           value={currentBand.instagram || ""} 
                           onChange={(e) => setCurrentBand({ ...currentBand, instagram: e.target.value })}
                           className="bg-black/20 border-white/10"
+                          placeholder="https://instagram.com/..."
                         />
                       </div>
+                      <div className="space-y-2">
+                        <Label>YouTube</Label>
+                        <Input 
+                          value={currentBand.youtube || ""} 
+                          onChange={(e) => setCurrentBand({ ...currentBand, youtube: e.target.value })}
+                          className="bg-black/20 border-white/10"
+                          placeholder="https://youtube.com/..."
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Bandcamp</Label>
+                        <Input 
+                          value={currentBand.bandcamp || ""} 
+                          onChange={(e) => setCurrentBand({ ...currentBand, bandcamp: e.target.value })}
+                          className="bg-black/20 border-white/10"
+                          placeholder="https://bandcamp.com/..."
+                        />
+                      </div>
+                    </div>
+
+                    {/* Aperçu des liens */}
+                    <div className="p-3 bg-black/10 rounded-lg border border-white/10">
+                      <Label className="text-xs mb-2 block">Aperçu de vos liens :</Label>
+                      <SocialLinks 
+                        facebook={currentBand.facebook}
+                        instagram={currentBand.instagram}
+                        youtube={currentBand.youtube}
+                        bandcamp={currentBand.bandcamp}
+                      />
+                      {!currentBand.facebook && !currentBand.instagram && !currentBand.youtube && !currentBand.bandcamp && (
+                        <p className="text-xs text-muted-foreground">Aucun lien ajouté</p>
+                      )}
                     </div>
 
                     {/* Boutons */}

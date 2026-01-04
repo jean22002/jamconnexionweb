@@ -2,7 +2,7 @@ import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
 
-const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates }) => {
+const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, eventsByDate = {} }) => {
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();

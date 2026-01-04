@@ -815,6 +815,30 @@ async def get_musician(musician_id: str):
     
     return MusicianProfileResponse(**musician, friends_count=friends_count)
 
+# ============= BANDS SEARCH =============
+
+@api_router.get("/bands/search")
+async def search_bands(query: str = "", limit: int = 10):
+    """Rechercher des groupes par nom"""
+    if not query or len(query) < 2:
+        return []
+    
+    # Rechercher dans tous les profils de musiciens qui ont des groupes
+    musicians = await db.musicians.find({}, {"_id": 0, "bands": 1, "pseudo": 1}).to_list(1000)
+    
+    all_bands = []
+    for musician in musicians:
+        if musician.get("bands"):
+            for band in musician["bands"]:
+                if query.lower() in band.get("name", "").lower():
+                    # Ajouter le pseudo du musicien propriétaire
+                    band_info = band.copy()
+                    band_info["musician_name"] = musician.get("pseudo", "")
+                    all_bands.append(band_info)
+    
+    # Limiter les résultats
+    return all_bands[:limit]
+
 # ============= FRIENDS SYSTEM =============
 
 @api_router.post("/friends/request")

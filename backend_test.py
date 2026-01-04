@@ -1782,7 +1782,15 @@ class JamConnexionAPITester:
             self.test_venue_respond_to_review,
             self.test_report_review,
             self.test_toggle_reviews_visibility,
-            self.test_get_venue_my_reviews
+            self.test_get_venue_my_reviews,
+            # PUT Endpoints Tests (Never tested before)
+            self.test_put_jam_update,
+            self.test_put_concert_update,
+            self.test_put_jam_unauthorized,
+            self.test_put_concert_unauthorized,
+            self.test_put_jam_not_found,
+            self.test_put_concert_not_found,
+            self.test_put_jam_invalid_data
         ]
         
         for test in tests:

@@ -585,6 +585,76 @@ export default function MusicianDashboard() {
     }
   };
 
+  // Band management functions
+  const handleOpenBandDialog = (index = null) => {
+    if (index !== null) {
+      // Editing existing band
+      setCurrentBand(profileForm.bands[index]);
+      setEditingBandIndex(index);
+    } else {
+      // Adding new band
+      setCurrentBand({
+        name: "",
+        photo: "",
+        description: "",
+        members_count: null,
+        music_styles: [],
+        band_type: "",
+        repertoire_type: "",
+        show_duration: "",
+        facebook: "",
+        instagram: "",
+        youtube: "",
+        website: "",
+        bandcamp: "",
+        looking_for_concerts: true,
+        looking_for_members: false,
+        is_public: true
+      });
+      setEditingBandIndex(null);
+    }
+    setShowBandDialog(true);
+  };
+
+  const handleSaveBand = () => {
+    if (!currentBand.name) {
+      toast.error("Le nom du groupe est requis");
+      return;
+    }
+
+    if (editingBandIndex !== null) {
+      // Update existing band
+      const newBands = [...profileForm.bands];
+      newBands[editingBandIndex] = currentBand;
+      setProfileForm({ ...profileForm, bands: newBands });
+      toast.success("Groupe mis à jour");
+    } else {
+      // Add new band
+      setProfileForm({ ...profileForm, bands: [...profileForm.bands, currentBand] });
+      toast.success("Groupe ajouté");
+    }
+    
+    setShowBandDialog(false);
+    setCurrentBand({
+      name: "",
+      photo: "",
+      description: "",
+      members_count: null,
+      music_styles: [],
+      band_type: "",
+      repertoire_type: "",
+      show_duration: "",
+      facebook: "",
+      instagram: "",
+      youtube: "",
+      website: "",
+      bandcamp: "",
+      looking_for_concerts: true,
+      looking_for_members: false,
+      is_public: true
+    });
+  };
+
   const handleSaveProfile = async () => {
     try {
       const method = profile ? "put" : "post";

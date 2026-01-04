@@ -41,7 +41,7 @@ const BAND_TYPES = [
   "Autre"
 ];
 
-const REPERTOIRE_TYPES = ["Compos", "Reprises"];
+const REPERTOIRE_TYPES = ["Compos", "Reprises", "Compos + Reprises"];
 
 const SHOW_DURATIONS = [
   "30mn", "45mn", "1h", "1h15", "1h30", "1h45", 

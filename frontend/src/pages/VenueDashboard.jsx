@@ -65,6 +65,8 @@ export default function VenueDashboard() {
   const [broadcastHistory, setBroadcastHistory] = useState([]);
   const [nearbyMusiciansCount, setNearbyMusiciansCount] = useState(0);
   const [subscribers, setSubscribers] = useState([]); // Liste des abonnés (Jacks)
+  const [bandSuggestions, setBandSuggestions] = useState([]);
+  const [showBandSuggestions, setShowBandSuggestions] = useState(false);
   
   // Planning calendar states
   const [currentMonth, setCurrentMonth] = useState(new Date());

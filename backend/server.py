@@ -1359,6 +1359,35 @@ async def delete_jam_event(jam_id: str, current_user: dict = Depends(get_current
     
     return {"message": "Jam event deleted"}
 
+@api_router.put("/jams/{jam_id}", response_model=JamEventResponse)
+async def update_jam_event(jam_id: str, data: JamEvent, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update jam events")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Vérifier que le jam appartient à ce venue
+    existing_jam = await db.jams.find_one({"id": jam_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not existing_jam:
+        raise HTTPException(status_code=404, detail="Jam event not found")
+    
+    # Mettre à jour le jam
+    update_data = {
+        **data.model_dump(),
+        "venue_name": venue["name"]
+    }
+    
+    await db.jams.update_one(
+        {"id": jam_id},
+        {"$set": update_data}
+    )
+    
+    # Récupérer le jam mis à jour
+    updated_jam = await db.jams.find_one({"id": jam_id}, {"_id": 0})
+    return JamEventResponse(**updated_jam)
+
 # ============= EVENT PARTICIPATION (Live Check-in) =============
 
 def is_event_active(event_date: str, start_time: str, end_time: str) -> bool:

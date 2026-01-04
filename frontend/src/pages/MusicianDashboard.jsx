@@ -1036,6 +1036,82 @@ export default function MusicianDashboard() {
                       </div>
                     </TabsContent>
 
+                    {/* Onglet Styles musicaux */}
+                    <TabsContent value="styles" className="space-y-4 mt-4">
+                      <div className="space-y-4">
+                        <div>
+                          <Label className="text-lg font-semibold mb-3 block">Styles musicaux</Label>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Sélectionnez les styles musicaux que vous pratiquez
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          {MUSIC_STYLES_LIST.map((style) => (
+                            <div key={style} className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                id={`style-${style}`}
+                                checked={profileForm.music_styles?.includes(style) || false}
+                                onChange={(e) => {
+                                  const currentStyles = profileForm.music_styles || [];
+                                  if (e.target.checked) {
+                                    // Ajouter le style
+                                    setProfileForm({
+                                      ...profileForm,
+                                      music_styles: [...currentStyles, style]
+                                    });
+                                  } else {
+                                    // Retirer le style
+                                    setProfileForm({
+                                      ...profileForm,
+                                      music_styles: currentStyles.filter(s => s !== style)
+                                    });
+                                  }
+                                }}
+                                className="w-4 h-4 text-primary bg-black/20 border-white/10 rounded focus:ring-primary focus:ring-2"
+                              />
+                              <Label 
+                                htmlFor={`style-${style}`} 
+                                className="text-sm font-normal cursor-pointer select-none"
+                              >
+                                {style}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Affichage des styles sélectionnés */}
+                        {profileForm.music_styles && profileForm.music_styles.length > 0 && (
+                          <div className="mt-4 p-4 glassmorphism rounded-xl">
+                            <p className="text-sm font-semibold mb-2">Styles sélectionnés ({profileForm.music_styles.length}) :</p>
+                            <div className="flex flex-wrap gap-2">
+                              {profileForm.music_styles.map((style, index) => (
+                                <span 
+                                  key={index}
+                                  className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm flex items-center gap-2"
+                                >
+                                  {style}
+                                  <button
+                                    onClick={() => {
+                                      setProfileForm({
+                                        ...profileForm,
+                                        music_styles: profileForm.music_styles.filter(s => s !== style)
+                                      });
+                                    }}
+                                    className="hover:bg-primary/30 rounded-full"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </TabsContent>
+
+                    {/* Onglet Groupe */}
                     <TabsContent value="band" className="space-y-4 mt-4">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="font-heading text-lg">Mes Groupes</h3>

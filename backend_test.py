@@ -2020,7 +2020,12 @@ class JamConnexionAPITester:
             self.test_put_concert_unauthorized,
             self.test_put_jam_not_found,
             self.test_put_concert_not_found,
-            self.test_put_jam_invalid_data
+            self.test_put_jam_invalid_data,
+            # Geolocation Search Tests (NEW)
+            self.test_bands_data_analysis,
+            self.test_bands_geolocation_search,
+            self.test_create_band_without_gps,
+            self.test_geolocation_excludes_no_gps_bands
         ]
         
         for test in tests:

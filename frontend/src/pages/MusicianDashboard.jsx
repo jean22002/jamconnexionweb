@@ -714,7 +714,9 @@ export default function MusicianDashboard() {
       bandcamp: "",
       looking_for_concerts: true,
       looking_for_members: false,
-      is_public: true
+      looking_for_profiles: [],
+      is_public: true,
+      has_sound_engineer: false
     });
   };
 

@@ -1274,6 +1274,15 @@ export default function MusicianDashboard() {
                               />
                             </div>
 
+                            {/* Switch Ingé Son */}
+                            <div className="flex items-center gap-2 p-3 bg-black/10 rounded-lg border border-white/10">
+                              <Switch 
+                                checked={soloProfile.has_sound_engineer || false} 
+                                onCheckedChange={(checked) => setSoloProfile({ ...soloProfile, has_sound_engineer: checked })}
+                              />
+                              <Label className="cursor-pointer">Je possède mon propre ingénieur son</Label>
+                            </div>
+
                             {/* Styles musicaux */}
                             <div className="space-y-2">
                               <Label>Styles musicaux</Label>

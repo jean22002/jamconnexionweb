@@ -485,7 +485,8 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "MusicianDashboard - Bouton Je participe dans onglet Connexions"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

@@ -3614,6 +3614,360 @@ class JamConnexionAPITester:
             self.log_test("Three Plus Groups Behavior", False, f"Error: {str(e)}")
             return False
 
+    # ============= JAM IMPROVEMENTS TESTS (NEW) =============
+    
+    def test_jam_participants_count_api(self):
+        """Test that jam API endpoints include participants_count field"""
+        try:
+            # Create a jam event first
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            jam_data = {
+                "date": "2024-12-21",
+                "start_time": "19:00",
+                "end_time": "22:00",
+                "music_styles": ["Jazz", "Blues"],
+                "rules": "Test jam for participants count",
+                "has_instruments": True,
+                "has_pa_system": True,
+                "instruments_available": ["Piano", "Batterie"],
+                "additional_info": "Test participants count"
+            }
+            
+            response = requests.post(f"{self.base_url}/jams", json=jam_data, headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Jam Participants Count API - Setup", False, f"Failed to create jam: {response.status_code}")
+                return False
+            
+            jam_response = response.json()
+            test_jam_id = jam_response.get('id')
+            
+            # Test 1: GET /api/jams should include participants_count
+            response = requests.get(f"{self.base_url}/jams", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                jams_data = response.json()
+                if jams_data:
+                    # Check if participants_count field exists
+                    first_jam = jams_data[0]
+                    if 'participants_count' in first_jam:
+                        initial_count = first_jam.get('participants_count', 0)
+                        details = f"GET /api/jams includes participants_count: {initial_count}"
+                        
+                        # Test 2: GET /api/venues/{venue_id}/jams should also include participants_count
+                        response = requests.get(f"{self.base_url}/venues/{self.venue_profile_id}/jams", timeout=10)
+                        if response.status_code == 200:
+                            venue_jams = response.json()
+                            if venue_jams and 'participants_count' in venue_jams[0]:
+                                details += f", GET /api/venues/{{venue_id}}/jams includes participants_count: {venue_jams[0].get('participants_count', 0)}"
+                                
+                                # Test 3: Join event and verify count increases
+                                musician_headers = {'Authorization': f'Bearer {self.musician_token}'}
+                                join_response = requests.post(f"{self.base_url}/events/{test_jam_id}/join?event_type=jam", headers=musician_headers, timeout=10)
+                                
+                                if join_response.status_code == 200:
+                                    # Check count after joining
+                                    response = requests.get(f"{self.base_url}/jams", timeout=10)
+                                    if response.status_code == 200:
+                                        updated_jams = response.json()
+                                        test_jam = next((j for j in updated_jams if j['id'] == test_jam_id), None)
+                                        if test_jam and test_jam.get('participants_count', 0) > initial_count:
+                                            details += f", Count increased to {test_jam.get('participants_count')} after join"
+                                        else:
+                                            details += ", WARNING: Count did not increase after join"
+                                            success = False
+                                else:
+                                    details += f", Failed to join event: {join_response.status_code}"
+                                    success = False
+                            else:
+                                details += ", Missing participants_count in venue jams endpoint"
+                                success = False
+                        else:
+                            details += f", Failed to get venue jams: {response.status_code}"
+                            success = False
+                    else:
+                        details = "Missing participants_count field in jams API response"
+                        success = False
+                else:
+                    details = "No jams found in API response"
+                    success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Jam Participants Count API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Jam Participants Count API", False, f"Error: {str(e)}")
+            return False
+
+    def test_jam_join_button_functionality(self):
+        """Test the 'Je participe' button functionality for musicians"""
+        try:
+            # Create an active jam for testing
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            start_time = (now - timedelta(minutes=10)).strftime("%H:%M")
+            end_time = (now + timedelta(hours=2)).strftime("%H:%M")
+            today = now.strftime("%Y-%m-%d")
+            
+            jam_data = {
+                "date": today,
+                "start_time": start_time,
+                "end_time": end_time,
+                "music_styles": ["Rock", "Pop"],
+                "rules": "Test jam for join button",
+                "has_instruments": True,
+                "has_pa_system": True,
+                "instruments_available": ["Guitare", "Basse"],
+                "additional_info": "Test join button functionality"
+            }
+            
+            response = requests.post(f"{self.base_url}/jams", json=jam_data, headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Jam Join Button Functionality - Setup", False, f"Failed to create active jam: {response.status_code}")
+                return False
+            
+            jam_response = response.json()
+            active_jam_id = jam_response.get('id')
+            
+            # Test 1: Musician can join the jam
+            musician_headers = {'Authorization': f'Bearer {self.musician_token}'}
+            join_response = requests.post(f"{self.base_url}/events/{active_jam_id}/join?event_type=jam", headers=musician_headers, timeout=10)
+            success = join_response.status_code == 200
+            
+            if success:
+                join_data = join_response.json()
+                details = f"Musician successfully joined jam: {join_data.get('venue_name')}"
+                
+                # Test 2: Verify participation is active
+                participation_response = requests.get(f"{self.base_url}/musicians/me/current-participation", headers=musician_headers, timeout=10)
+                if participation_response.status_code == 200:
+                    participation = participation_response.json()
+                    if participation and participation.get('event_id') == active_jam_id:
+                        details += ", Participation confirmed active"
+                        
+                        # Test 3: Musician can leave the jam
+                        leave_response = requests.post(f"{self.base_url}/events/{active_jam_id}/leave", headers=musician_headers, timeout=10)
+                        if leave_response.status_code == 200:
+                            details += ", Successfully left jam"
+                            
+                            # Test 4: Verify participation is no longer active
+                            final_participation_response = requests.get(f"{self.base_url}/musicians/me/current-participation", headers=musician_headers, timeout=10)
+                            if final_participation_response.status_code == 200:
+                                final_participation = final_participation_response.json()
+                                if final_participation is None:
+                                    details += ", Participation correctly deactivated"
+                                else:
+                                    details += ", WARNING: Participation still active after leaving"
+                                    success = False
+                        else:
+                            details += f", Failed to leave jam: {leave_response.status_code}"
+                            success = False
+                    else:
+                        details += ", Participation not found or incorrect event"
+                        success = False
+                else:
+                    details += f", Failed to get participation: {participation_response.status_code}"
+                    success = False
+            else:
+                details = f"Status: {join_response.status_code}, Error: {join_response.text[:100]}"
+            
+            self.log_test("Jam Join Button Functionality", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Jam Join Button Functionality", False, f"Error: {str(e)}")
+            return False
+
+    def test_jam_security_musician_only(self):
+        """Test that only musicians can see and use the 'Je participe' button"""
+        try:
+            # Create an active jam
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            start_time = (now - timedelta(minutes=5)).strftime("%H:%M")
+            end_time = (now + timedelta(hours=1)).strftime("%H:%M")
+            today = now.strftime("%Y-%m-%d")
+            
+            jam_data = {
+                "date": today,
+                "start_time": start_time,
+                "end_time": end_time,
+                "music_styles": ["Jazz"],
+                "rules": "Test jam for security",
+                "has_instruments": True
+            }
+            
+            response = requests.post(f"{self.base_url}/jams", json=jam_data, headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Jam Security Musician Only - Setup", False, f"Failed to create jam: {response.status_code}")
+                return False
+            
+            jam_response = response.json()
+            security_jam_id = jam_response.get('id')
+            
+            # Test 1: Venue (establishment) cannot join their own jam
+            venue_headers = {'Authorization': f'Bearer {self.venue_token}'}
+            venue_join_response = requests.post(f"{self.base_url}/events/{security_jam_id}/join?event_type=jam", headers=venue_headers, timeout=10)
+            success = venue_join_response.status_code == 403
+            
+            if success:
+                details = "Venue correctly rejected from joining jam (403 Forbidden)"
+                
+                # Test 2: Musician can join (should work)
+                musician_headers = {'Authorization': f'Bearer {self.musician_token}'}
+                musician_join_response = requests.post(f"{self.base_url}/events/{security_jam_id}/join?event_type=jam", headers=musician_headers, timeout=10)
+                
+                if musician_join_response.status_code == 200:
+                    details += ", Musician successfully joined jam"
+                    
+                    # Clean up - leave the jam
+                    requests.post(f"{self.base_url}/events/{security_jam_id}/leave", headers=musician_headers, timeout=10)
+                else:
+                    details += f", Musician join failed: {musician_join_response.status_code}"
+                    success = False
+            else:
+                details = f"Venue join status: {venue_join_response.status_code}, Expected: 403"
+            
+            self.log_test("Jam Security Musician Only", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Jam Security Musician Only", False, f"Error: {str(e)}")
+            return False
+
+    def test_jam_participants_counter_updates(self):
+        """Test that participant counter updates correctly when musicians join/leave"""
+        try:
+            # Create an active jam
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            start_time = (now - timedelta(minutes=5)).strftime("%H:%M")
+            end_time = (now + timedelta(hours=2)).strftime("%H:%M")
+            today = now.strftime("%Y-%m-%d")
+            
+            jam_data = {
+                "date": today,
+                "start_time": start_time,
+                "end_time": end_time,
+                "music_styles": ["Blues", "Rock"],
+                "rules": "Test jam for counter updates",
+                "has_instruments": True
+            }
+            
+            response = requests.post(f"{self.base_url}/jams", json=jam_data, headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Jam Participants Counter Updates - Setup", False, f"Failed to create jam: {response.status_code}")
+                return False
+            
+            jam_response = response.json()
+            counter_jam_id = jam_response.get('id')
+            
+            # Test 1: Initial count should be 0
+            response = requests.get(f"{self.base_url}/jams", timeout=10)
+            if response.status_code != 200:
+                self.log_test("Jam Participants Counter Updates", False, f"Failed to get jams: {response.status_code}")
+                return False
+            
+            jams_data = response.json()
+            test_jam = next((j for j in jams_data if j['id'] == counter_jam_id), None)
+            if not test_jam:
+                self.log_test("Jam Participants Counter Updates", False, "Test jam not found in API response")
+                return False
+            
+            initial_count = test_jam.get('participants_count', -1)
+            success = initial_count == 0
+            
+            if success:
+                details = f"Initial participants count: {initial_count}"
+                
+                # Test 2: First musician joins
+                musician_headers = {'Authorization': f'Bearer {self.musician_token}'}
+                join_response = requests.post(f"{self.base_url}/events/{counter_jam_id}/join?event_type=jam", headers=musician_headers, timeout=10)
+                
+                if join_response.status_code == 200:
+                    # Check count after first join
+                    response = requests.get(f"{self.base_url}/jams", timeout=10)
+                    if response.status_code == 200:
+                        updated_jams = response.json()
+                        updated_jam = next((j for j in updated_jams if j['id'] == counter_jam_id), None)
+                        if updated_jam:
+                            count_after_first = updated_jam.get('participants_count', -1)
+                            if count_after_first == 1:
+                                details += f", After 1st join: {count_after_first}"
+                                
+                                # Test 3: Create second musician and join
+                                test_data = {
+                                    "email": f"musician_counter_{datetime.now().strftime('%H%M%S')}@test.com",
+                                    "password": "TestPass123!",
+                                    "name": "Counter Test Musician",
+                                    "role": "musician"
+                                }
+                                
+                                reg_response = requests.post(f"{self.base_url}/auth/register", json=test_data, timeout=10)
+                                if reg_response.status_code == 200:
+                                    second_musician_data = reg_response.json()
+                                    second_musician_token = second_musician_data.get('token')
+                                    
+                                    # Create profile for second musician
+                                    profile_data = {"pseudo": "CounterTester", "instruments": ["Drums"]}
+                                    second_headers = {'Authorization': f'Bearer {second_musician_token}'}
+                                    requests.post(f"{self.base_url}/musicians", json=profile_data, headers=second_headers, timeout=10)
+                                    
+                                    # Second musician joins
+                                    second_join_response = requests.post(f"{self.base_url}/events/{counter_jam_id}/join?event_type=jam", headers=second_headers, timeout=10)
+                                    
+                                    if second_join_response.status_code == 200:
+                                        # Check count after second join
+                                        response = requests.get(f"{self.base_url}/jams", timeout=10)
+                                        if response.status_code == 200:
+                                            final_jams = response.json()
+                                            final_jam = next((j for j in final_jams if j['id'] == counter_jam_id), None)
+                                            if final_jam:
+                                                count_after_second = final_jam.get('participants_count', -1)
+                                                if count_after_second == 2:
+                                                    details += f", After 2nd join: {count_after_second}"
+                                                    
+                                                    # Test 4: First musician leaves
+                                                    leave_response = requests.post(f"{self.base_url}/events/{counter_jam_id}/leave", headers=musician_headers, timeout=10)
+                                                    if leave_response.status_code == 200:
+                                                        # Check count after leave
+                                                        response = requests.get(f"{self.base_url}/jams", timeout=10)
+                                                        if response.status_code == 200:
+                                                            leave_jams = response.json()
+                                                            leave_jam = next((j for j in leave_jams if j['id'] == counter_jam_id), None)
+                                                            if leave_jam:
+                                                                count_after_leave = leave_jam.get('participants_count', -1)
+                                                                if count_after_leave == 1:
+                                                                    details += f", After 1st leave: {count_after_leave}"
+                                                                else:
+                                                                    details += f", Count after leave incorrect: {count_after_leave} (expected 1)"
+                                                                    success = False
+                                                else:
+                                                    details += f", Count after 2nd join incorrect: {count_after_second} (expected 2)"
+                                                    success = False
+                                    else:
+                                        details += f", Second musician join failed: {second_join_response.status_code}"
+                                        success = False
+                                else:
+                                    details += f", Failed to create second musician: {reg_response.status_code}"
+                                    success = False
+                            else:
+                                details += f", Count after 1st join incorrect: {count_after_first} (expected 1)"
+                                success = False
+                else:
+                    details += f", Failed to join jam: {join_response.status_code}"
+                    success = False
+            else:
+                details = f"Initial count incorrect: {initial_count} (expected 0)"
+            
+            self.log_test("Jam Participants Counter Updates", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Jam Participants Counter Updates", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🎵 Starting Jam Connexion API Tests...")

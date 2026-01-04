@@ -770,6 +770,18 @@ test_plan:
         agent: "testing"
         comment: "✅ VALIDATION PAR ANALYSE DE CODE - CityAutocomplete entièrement implémenté selon spécifications. DÉTAILS: ✅ Composant CityAutocomplete intégré lignes 1038-1051 VenueDashboard.jsx, ✅ Callback onSelect met à jour city, postal_code, department, region, ✅ Bouton GPS 'Ma position GPS' présent lignes 1056-1058, ✅ Fonction useMyLocation lignes 273-333 pour géolocalisation automatique, ✅ API geo.api.gouv.fr utilisée via reverseGeocode, ✅ Auto-remplissage complet des champs d'adresse. LIMITATION: Tests UI automatisés incomplets à cause de problèmes d'authentification, mais implémentation code 100% conforme aux spécifications demandées."
 
+  - task: "Bands Geolocation Search Issue"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "🚨 PROBLÈME CRITIQUE CONFIRMÉ - Recherche géolocalisée des groupes ne retourne AUCUN résultat. DIAGNOSTIC COMPLET: ✅ Endpoint /api/bands fonctionne (GET 200 OK), ❌ Recherche géolocalisée retourne 0 groupes (latitude=48.8566&longitude=2.3522&radius=100), ✅ Analyse des données: 42 musiciens, 10 ont des groupes, 10 groupes totaux, ❌ GPS: 0 groupes, ✅ Ville seulement: 10 groupes. CAUSE RACINE: Tous les groupes n'ont QUE des informations de ville (pas de coordonnées GPS), donc exclus de la recherche géolocalisée (lignes 2704-2706 server.py). IMPACT: Fonctionnalité de recherche par proximité inutilisable. SOLUTION REQUISE: Géocoder automatiquement les villes en coordonnées GPS ou modifier la logique pour inclure les groupes avec ville seulement."
+
 agent_communication:
   - agent: "main"
     message: "Système de participation aux événements implémenté. Backend prêt avec endpoints de participation. Frontend complété avec composants JoinEventButton et ParticipationBadge. Intégrations terminées sur VenueDetail, MusicianDetail et MusicianDashboard. Nécessite test complet backend + frontend pour vérifier: 1) Récupération des événements actifs, 2) Fonctionnalité rejoindre/quitter événement, 3) Affichage du badge de participation, 4) Notifications aux amis, 5) Polling automatique du statut de participation. Un test de fichier doit être créé sous /app/backend/tests/test_event_participation.py pour tester les nouveaux endpoints."

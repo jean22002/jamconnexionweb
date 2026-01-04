@@ -411,10 +411,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Catering Section in Event Creation (New Feature)"
-    - "Accommodation Section in Event Creation (New Feature)"
-    - "Sound Engineer Switch in Musician Profile (New Feature)"
-    - "Complete Address with CityAutocomplete in Venue Profile (New Feature)"
+    - "VenueDashboard - Toast Import Fix"
+    - "VenueDashboard - Equipment Switches Edit Mode"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

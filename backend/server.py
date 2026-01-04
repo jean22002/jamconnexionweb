@@ -2658,8 +2658,9 @@ async def get_bands_directory(
                     
                     # Calculate distance if geolocation mode
                     if latitude and longitude and radius:
-                        band_lat = musician.get("latitude")
-                        band_lon = musician.get("longitude")
+                        # Try to get band location first, fallback to musician location
+                        band_lat = band.get("latitude") or musician.get("latitude")
+                        band_lon = band.get("longitude") or musician.get("longitude")
                         
                         if band_lat and band_lon:
                             from math import radians, sin, cos, sqrt, atan2
@@ -2678,7 +2679,7 @@ async def get_bands_directory(
                                 band_data["distance_km"] = round(distance_km, 1)
                                 all_bands.append(band_data)
                         else:
-                            # Skip bands without location in geolocation mode
+                            # Skip bands without any location in geolocation mode
                             continue
                     else:
                         all_bands.append(band_data)

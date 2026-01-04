@@ -1836,6 +1836,9 @@ export default function VenueDashboard() {
                               ) : (
                                 <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">Fermé</span>
                               )}
+                              <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">
+                                {slot.accepted_bands_count || 0}/{slot.num_bands_needed || 1} groupe{(slot.num_bands_needed || 1) > 1 ? 's' : ''}
+                              </span>
                             </div>
                             
                             {slot.title && (

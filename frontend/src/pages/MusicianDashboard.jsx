@@ -1666,6 +1666,49 @@ export default function MusicianDashboard() {
                       </Select>
                     </div>
 
+                    {/* Si Compos + Reprises, afficher les détails */}
+                    {currentBand.repertoire_type === "Compos + Reprises" && (
+                      <div className="grid grid-cols-2 gap-4 p-4 bg-black/10 rounded-lg border border-white/10">
+                        <div className="space-y-2">
+                          <Label>Nombre de compos</Label>
+                          <Select 
+                            value={currentBand.compos_count?.toString() || "0"} 
+                            onValueChange={(value) => setCurrentBand({ ...currentBand, compos_count: parseInt(value) })}
+                          >
+                            <SelectTrigger className="bg-black/20 border-white/10">
+                              <SelectValue placeholder="0" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background border-white/10 max-h-[200px]">
+                              {[...Array(51)].map((_, i) => (
+                                <SelectItem key={i} value={i.toString()}>{i}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Nombre de reprises</Label>
+                          <Select 
+                            value={currentBand.reprises_count?.toString() || "0"} 
+                            onValueChange={(value) => setCurrentBand({ ...currentBand, reprises_count: parseInt(value) })}
+                          >
+                            <SelectTrigger className="bg-black/20 border-white/10">
+                              <SelectValue placeholder="0" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background border-white/10 max-h-[200px]">
+                              {[...Array(51)].map((_, i) => (
+                                <SelectItem key={i} value={i.toString()}>{i}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="col-span-2 text-xs text-muted-foreground text-center">
+                          Total : {(currentBand.compos_count || 0) + (currentBand.reprises_count || 0)} morceaux
+                        </div>
+                      </div>
+                    )}
+
                     {/* Durée du show */}
                     <div className="space-y-2">
                       <Label>Durée du show</Label>

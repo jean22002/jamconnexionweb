@@ -98,6 +98,7 @@ class BandInfo(BaseModel):
     bandcamp: Optional[str] = None
     looking_for_concerts: bool = True
     looking_for_members: bool = False
+    looking_for_profiles: List[str] = []  # Profils recherchés (batteur, guitariste, etc.)
     is_public: bool = True
     # Nouveaux champs
     band_type: Optional[str] = None  # duo acoustique, trio acoustique, duo electro acoustique, trio electro acoustique, groupe de reprise, groupe tribute

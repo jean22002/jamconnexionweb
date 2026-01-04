@@ -1661,26 +1661,13 @@ export default function MusicianDashboard() {
                 <TabsContent value="all" className="mt-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {venues.map((venue) => (
-                      <Link to={`/venue/${venue.id}`} key={venue.id}>
-                        <div className="card-venue p-5 hover:scale-105 transition-all cursor-pointer">
-                          {venue.profile_image && (
-                            <img src={venue.profile_image} alt="" className="w-full h-32 object-cover rounded-lg mb-3" />
-                          )}
-                          <h3 className="font-heading font-semibold">{venue.name}</h3>
-                          <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                            <MapPin className="w-3 h-3" />
-                            {venue.city}
-                            {venue.department && ` (${venue.department})`}
-                          </p>
-                          {venue.music_styles?.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {venue.music_styles.slice(0, 3).map((style, i) => (
-                                <span key={i} className="px-2 py-0.5 bg-secondary/20 text-secondary text-xs rounded-full">{style}</span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </Link>
+                      <VenueCard 
+                        key={venue.id} 
+                        venue={venue}
+                        onSubscribe={handleSubscribe}
+                        onUnsubscribe={handleUnsubscribe}
+                        subscriptions={subscriptions}
+                      />
                     ))}
                   </div>
                 </TabsContent>

@@ -180,6 +180,21 @@ backend:
         agent: "main"
         comment: "Calendrier d'événements fonctionnel"
 
+  - task: "Multi-Group Planning Slots System"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NOUVELLE FONCTIONNALITÉ MAJEURE IMPLÉMENTÉE - Système de créneaux ouverts multi-groupes. Ajout du champ num_bands_needed (1, 2, ou 3+) dans les models PlanningSlot et PlanningSlotResponse. Modification de l'endpoint d'acceptation pour ne fermer un créneau que quand tous les groupes sont validés. Ajout du champ accepted_bands_count dans les réponses API."
+      - working: true
+        agent: "testing"
+        comment: "🎉 CRÉNEAUX MULTI-GROUPES - NOUVELLE FONCTIONNALITÉ ENTIÈREMENT VALIDÉE (9/9 - 100%) - Le système de créneaux ouverts multi-groupes fonctionne parfaitement selon toutes les spécifications demandées. TESTS EXHAUSTIFS RÉUSSIS: ✅ TEST 1 - Création créneau 2 groupes: num_bands_needed=2, is_open=true, accepted_bands_count=0, ✅ TEST 2 - Première candidature: Application soumise avec succès (The Rock Stars), ✅ TEST 3 - Première acceptation: Créneau reste OUVERT (is_open=true), compteur 1/2 groupes, ✅ TEST 4 - Deuxième candidature: Application soumise avec succès (The Pop Collective), ✅ TEST 5 - Deuxième acceptation: Créneau se FERME automatiquement (is_open=false), compteur 2/2 groupes, ✅ TEST 6 - Champs API: Tous les champs requis présents (num_bands_needed, accepted_bands_count, is_open, applications_count), ✅ TEST 7 - Comportement 1 groupe: Fermeture immédiate après première acceptation (comportement standard), ✅ TEST 8 - Comportement 3+ groupes: Reste ouvert après 2 acceptations, se ferme après la 3ème, ✅ TEST 9 - Logique backend: Endpoint d'acceptation ne ferme le créneau qu'après avoir atteint num_bands_needed. NOUVELLE FONCTIONNALITÉ MULTI-GROUPES 100% OPÉRATIONNELLE!"
+
 frontend:
   - task: "Landing Page & Auth Forms"
     implemented: true

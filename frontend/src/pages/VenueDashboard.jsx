@@ -1133,10 +1133,25 @@ export default function VenueDashboard() {
                 <div className="space-y-4">
                   <Label className="flex items-center gap-2"><Globe className="w-4 h-4 text-primary" /> Liens</Label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input placeholder="Site web" value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
-                    <Input placeholder="Facebook" value={formData.facebook} onChange={(e) => setFormData({ ...formData, facebook: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
-                    <Input placeholder="Instagram" value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
+                    <Input placeholder="Site web (https://...)" value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
+                    <Input placeholder="Facebook (https://facebook.com/...)" value={formData.facebook} onChange={(e) => setFormData({ ...formData, facebook: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
+                    <Input placeholder="Instagram (https://instagram.com/...)" value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
                   </div>
+
+                  {/* Aperçu des liens */}
+                  {!editing && (
+                    <div className="p-3 bg-black/10 rounded-lg border border-white/10">
+                      <Label className="text-xs mb-2 block">Vos liens :</Label>
+                      <SocialLinks 
+                        website={formData.website}
+                        facebook={formData.facebook}
+                        instagram={formData.instagram}
+                      />
+                      {!formData.website && !formData.facebook && !formData.instagram && (
+                        <p className="text-xs text-muted-foreground">Aucun lien ajouté</p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-4">

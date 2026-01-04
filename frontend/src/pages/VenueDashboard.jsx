@@ -20,7 +20,7 @@ import {
   Users, Bell, Trash2, Eye, FileText, User, Youtube, Send, Heart, Plug
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { toast } from "sonner";
+import SocialLinks from "../components/SocialLinks";
 import { StarRating } from "../components/StarRating";
 import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 

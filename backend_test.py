@@ -2529,6 +2529,147 @@ class JamConnexionAPITester:
             self.log_test("Bands Geolocation On-the-fly Geocoding", False, f"Error: {str(e)}")
             return False
 
+    def test_looking_for_profiles_field(self):
+        """Test the looking_for_profiles field in BandInfo model"""
+        try:
+            # Create a new musician for this specific test
+            test_data = {
+                "email": f"musician_profiles_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Test Profiles Musician",
+                "role": "musician"
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/register", json=test_data, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Looking For Profiles - Setup", False, "Failed to create test musician")
+                return False
+                
+            profiles_musician_data = response.json()
+            profiles_musician_token = profiles_musician_data.get('token')
+            
+            # Step 1: Create musician profile with band that has looking_for_members = true and looking_for_profiles
+            musician_data = {
+                "pseudo": "ProfilesTester",
+                "age": 30,
+                "instruments": ["Guitar", "Vocals"],
+                "music_styles": ["Rock", "Blues"],
+                "city": "Paris",
+                "has_band": True,
+                "bands": [{
+                    "name": "Les Chercheurs de Talents",
+                    "description": "Groupe de rock cherchant de nouveaux membres",
+                    "members_count": 3,
+                    "music_styles": ["Rock", "Blues", "Pop"],
+                    "looking_for_concerts": True,
+                    "looking_for_members": True,
+                    "looking_for_profiles": ["Batteur", "Guitariste"],  # This is the field we're testing
+                    "is_public": True,
+                    "city": "Paris"
+                }]
+            }
+            
+            headers = {'Authorization': f'Bearer {profiles_musician_token}'}
+            response = requests.post(f"{self.base_url}/musicians", json=musician_data, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                created_profile = response.json()
+                musician_id = created_profile.get('id')
+                
+                # Verify the looking_for_profiles field was saved
+                bands = created_profile.get('bands', [])
+                if bands and len(bands) > 0:
+                    band = bands[0]
+                    saved_profiles = band.get('looking_for_profiles', [])
+                    
+                    if saved_profiles == ["Batteur", "Guitariste"]:
+                        details = f"✅ Initial save successful: {saved_profiles}"
+                        
+                        # Step 2: Test persistence by retrieving the profile
+                        response = requests.get(f"{self.base_url}/musicians/me", headers=headers, timeout=10)
+                        if response.status_code == 200:
+                            retrieved_profile = response.json()
+                            retrieved_bands = retrieved_profile.get('bands', [])
+                            
+                            if retrieved_bands and len(retrieved_bands) > 0:
+                                retrieved_band = retrieved_bands[0]
+                                retrieved_profiles = retrieved_band.get('looking_for_profiles', [])
+                                
+                                if retrieved_profiles == ["Batteur", "Guitariste"]:
+                                    details += f", ✅ Persistence verified: {retrieved_profiles}"
+                                    
+                                    # Step 3: Test modification of the field
+                                    modified_data = musician_data.copy()
+                                    modified_data['bands'][0]['looking_for_profiles'] = ["Batteur", "Guitariste", "Bassiste"]
+                                    
+                                    response = requests.put(f"{self.base_url}/musicians", json=modified_data, headers=headers, timeout=10)
+                                    if response.status_code == 200:
+                                        modified_profile = response.json()
+                                        modified_bands = modified_profile.get('bands', [])
+                                        
+                                        if modified_bands and len(modified_bands) > 0:
+                                            modified_band = modified_bands[0]
+                                            modified_profiles = modified_band.get('looking_for_profiles', [])
+                                            
+                                            if modified_profiles == ["Batteur", "Guitariste", "Bassiste"]:
+                                                details += f", ✅ Modification successful: {modified_profiles}"
+                                                
+                                                # Step 4: Final verification of persistence after modification
+                                                response = requests.get(f"{self.base_url}/musicians/me", headers=headers, timeout=10)
+                                                if response.status_code == 200:
+                                                    final_profile = response.json()
+                                                    final_bands = final_profile.get('bands', [])
+                                                    
+                                                    if final_bands and len(final_bands) > 0:
+                                                        final_band = final_bands[0]
+                                                        final_profiles = final_band.get('looking_for_profiles', [])
+                                                        
+                                                        if final_profiles == ["Batteur", "Guitariste", "Bassiste"]:
+                                                            details += f", ✅ Final persistence verified: {final_profiles}"
+                                                            success = True
+                                                        else:
+                                                            details += f", ❌ Final persistence failed: expected ['Batteur', 'Guitariste', 'Bassiste'], got {final_profiles}"
+                                                            success = False
+                                                    else:
+                                                        details += ", ❌ No bands found in final verification"
+                                                        success = False
+                                                else:
+                                                    details += f", ❌ Final GET failed: {response.status_code}"
+                                                    success = False
+                                            else:
+                                                details += f", ❌ Modification failed: expected ['Batteur', 'Guitariste', 'Bassiste'], got {modified_profiles}"
+                                                success = False
+                                        else:
+                                            details += ", ❌ No bands found after modification"
+                                            success = False
+                                    else:
+                                        details += f", ❌ PUT request failed: {response.status_code}"
+                                        success = False
+                                else:
+                                    details += f", ❌ Persistence failed: expected ['Batteur', 'Guitariste'], got {retrieved_profiles}"
+                                    success = False
+                            else:
+                                details += ", ❌ No bands found in retrieved profile"
+                                success = False
+                        else:
+                            details += f", ❌ GET request failed: {response.status_code}"
+                            success = False
+                    else:
+                        details = f"❌ Initial save failed: expected ['Batteur', 'Guitariste'], got {saved_profiles}"
+                        success = False
+                else:
+                    details = "❌ No bands found in created profile"
+                    success = False
+            else:
+                details = f"❌ Profile creation failed: {response.status_code}, Error: {response.text[:100]}"
+                success = False
+            
+            self.log_test("Looking For Profiles Field", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Looking For Profiles Field", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🎵 Starting Jam Connexion API Tests...")

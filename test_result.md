@@ -708,6 +708,51 @@ test_plan:
         agent: "testing"
         comment: "✅ CODE ANALYSIS CONFIRMED - Jam duplication button successfully implemented. VERIFICATION: Lines 723-737 show duplicateJam function that copies all parameters except date/time (sets them to empty strings). Lines 1261-1272 show Plus icon button on jam cards with proper onClick handler calling duplicateJam(jam). Line 736 shows toast message 'Paramètres du bœuf copiés ! Entrez la nouvelle date et heure.' Button positioned next to delete button as specified. Implementation matches all requirements."
 
+  - task: "Calendar Event Click to View Details (New Feature)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/Calendar.jsx, /app/frontend/src/pages/VenueDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Feature implemented: Click on calendar events (concerts and jams) to view details in modal"
+      - working: true
+        agent: "testing"
+        comment: "✅ FEATURE 1 VALIDATED BY CODE ANALYSIS - Calendar event click functionality properly implemented. VERIFICATION: Calendar.jsx lines 80-92 show events are clickable with cursor-pointer class and hover effects (bg-green-500/30 for concerts, bg-purple-500/30 for jams). VenueDashboard.jsx handleDateClick function (lines 586-650) handles calendar date clicks, checks eventsByDate for event type, finds corresponding concert/jam, and opens event details modal with setShowEventDetailsModal(true). Implementation allows clicking on both green concert dates and purple jam dates to view event details."
+
+  - task: "Group Names Display on Calendar (New Feature)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/Calendar.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Feature implemented: Concert dates on calendar now display group/band names with truncation"
+      - working: true
+        agent: "testing"
+        comment: "✅ FEATURE 2 VALIDATED BY CODE ANALYSIS - Group names display on calendar properly implemented. VERIFICATION: Calendar.jsx lines 65-88 show concert lookup for each date (concerts.find(c => c.date === dateStr)), band names extraction (concert.bands.map(b => b.name).join(', ')), and truncation logic (bandNames.length > 20 ? bandNames.substring(0, 20) + '...' : bandNames). Lines 127-131 show eventInfo display in small text element with truncate class. Concert dates (green) will show preview of band names, truncated with '...' if longer than 20 characters."
+
+  - task: "Member Count Display in Concerts (New Feature)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/VenueDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Feature implemented: Concert cards and modals now display member count per group and total musicians"
+      - working: true
+        agent: "testing"
+        comment: "✅ FEATURE 3 VALIDATED BY CODE ANALYSIS - Member count display properly implemented in multiple locations. VERIFICATION: 1) Concert Cards (lines 1367, 1390-1410): Each concert calculates totalMembers, displays individual band member counts '(X membre(s))', and shows total 'Total : X musicien(s)' in primary color. 2) Event Details Modal (lines 2389-2410): Shows each band with member count and total in blue/primary bordered box. 3) Calendar component (lines 69-73): Calculates total members for concerts. All three display locations properly show group names, individual member counts, and total musician count as specified."
+
 agent_communication:
   - agent: "main"
     message: "Système de participation aux événements implémenté. Backend prêt avec endpoints de participation. Frontend complété avec composants JoinEventButton et ParticipationBadge. Intégrations terminées sur VenueDetail, MusicianDetail et MusicianDashboard. Nécessite test complet backend + frontend pour vérifier: 1) Récupération des événements actifs, 2) Fonctionnalité rejoindre/quitter événement, 3) Affichage du badge de participation, 4) Notifications aux amis, 5) Polling automatique du statut de participation. Un test de fichier doit être créé sous /app/backend/tests/test_event_participation.py pour tester les nouveaux endpoints."

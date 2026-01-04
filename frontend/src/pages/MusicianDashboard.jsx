@@ -1921,7 +1921,11 @@ export default function MusicianDashboard() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {subscriptions.map((sub) => (
-                  <Link key={sub.venue_id} to={`/venue/${sub.venue_id}`} className="card-venue p-5 block">
+                  <div 
+                    key={sub.venue_id} 
+                    onClick={() => fetchVenueEvents(sub.venue_id, sub.venue_name)}
+                    className="card-venue p-5 cursor-pointer hover:scale-105 transition-transform"
+                  >
                     <div className="flex items-center gap-4">
                       {sub.venue_image ? (
                         <img src={sub.venue_image} alt="" className="w-14 h-14 rounded-xl object-cover" />
@@ -1933,7 +1937,7 @@ export default function MusicianDashboard() {
                         <p className="text-sm text-muted-foreground">{sub.city}</p>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             )}

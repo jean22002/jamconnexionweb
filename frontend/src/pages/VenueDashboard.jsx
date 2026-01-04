@@ -77,12 +77,18 @@ export default function VenueDashboard() {
   const [eventsByDate, setEventsByDate] = useState({}); // Nouveau : {date: type} où type = 'concert' ou 'jam'
   const [planningForm, setPlanningForm] = useState({
     date: '',
-    time: '',
-    title: '',
+    music_styles: [],
     description: '',
-    expectedBandStyle: '',
-    expectedAttendance: '',
-    payment: ''
+    artist_categories: [],
+    num_bands_needed: 1,
+    // Catering
+    has_catering: false,
+    catering_drinks: 0,
+    catering_respect: false,
+    catering_tbd: false,
+    // Accommodation
+    has_accommodation: false,
+    accommodation_capacity: 0
   });
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
   const [notificationTarget, setNotificationTarget] = useState("subscribers"); // 'subscribers' or 'nearby'

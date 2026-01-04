@@ -3062,7 +3062,6 @@ export default function MusicianDashboard() {
                   </div>
                 </div>
 
-                {/* Bouton réinitialiser */}
                 <Button 
                   variant="outline" 
                   className="mt-4"

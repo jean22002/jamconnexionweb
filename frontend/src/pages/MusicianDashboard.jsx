@@ -2974,7 +2974,29 @@ export default function MusicianDashboard() {
                 <p className="text-sm text-muted-foreground mb-4">
                   Découvrez les groupes de musique de votre région et contactez-les directement
                 </p>
-                
+
+                {/* Mode de recherche */}
+                <div className="flex gap-4 mb-6">
+                  <Button
+                    variant={bandSearchMode === "filters" ? "default" : "outline"}
+                    onClick={() => setBandSearchMode("filters")}
+                    className="flex-1"
+                  >
+                    <Search className="w-4 h-4 mr-2" />
+                    Filtres
+                  </Button>
+                  <Button
+                    variant={bandSearchMode === "geolocation" ? "default" : "outline"}
+                    onClick={() => setBandSearchMode("geolocation")}
+                    className="flex-1"
+                  >
+                    <MapPin className="w-4 h-4 mr-2" />
+                    Géolocalisation
+                  </Button>
+                </div>
+
+                {bandSearchMode === "filters" ? (
+                  <div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Localisation */}
                   <div className="space-y-2">

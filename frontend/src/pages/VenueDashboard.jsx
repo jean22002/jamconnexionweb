@@ -719,6 +719,23 @@ export default function VenueDashboard() {
     }
   };
 
+  // Duplicate Jam - Copie tous les paramètres sauf date et heure
+  const duplicateJam = (jam) => {
+    setJamForm({
+      date: "", // Vide pour que l'utilisateur entre une nouvelle date
+      start_time: "", // Vide pour que l'utilisateur entre une nouvelle heure
+      end_time: "", // Vide
+      music_styles: [...jam.music_styles],
+      rules: jam.rules || "",
+      has_instruments: jam.has_instruments || false,
+      has_pa_system: jam.has_pa_system || false,
+      instruments_available: [...(jam.instruments_available || [])],
+      additional_info: jam.additional_info || ""
+    });
+    setShowJamDialog(true);
+    toast.info("Paramètres du bœuf copiés ! Entrez la nouvelle date et heure.");
+  };
+
   // Create Concert
   const createConcert = async () => {
     try {

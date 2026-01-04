@@ -243,6 +243,12 @@ export default function MusicianDashboard() {
   const [lastSearchTime, setLastSearchTime] = useState(null);
   const searchTimeoutRef = useRef(null);
 
+  // Venue events modal states
+  const [showVenueEventsModal, setShowVenueEventsModal] = useState(false);
+  const [selectedVenue, setSelectedVenue] = useState(null);
+  const [venueEvents, setVenueEvents] = useState({ concerts: [], jams: [] });
+  const [loadingVenueEvents, setLoadingVenueEvents] = useState(false);
+
   // Auto geolocation hook
   const { 
     position: geoPosition, 

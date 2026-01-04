@@ -390,6 +390,17 @@ export default function MusicianDashboard() {
     is_public: true
   });
 
+  // State for solo profile
+  const [soloProfile, setSoloProfile] = useState({
+    has_solo: false,
+    band_type: "",
+    repertoire_type: "",
+    show_duration: "",
+    music_styles: [],
+    description: "",
+    looking_for_concerts: true
+  });
+
   const fetchData = useCallback(async (retryCount = 0) => {
     const MAX_RETRIES = 3;
     console.log('[MusicianDashboard] fetchData called (attempt', retryCount + 1, '/', MAX_RETRIES + 1, '), API endpoint:', `${API}/venues`);

@@ -245,29 +245,47 @@ export default function VenueDashboard() {
   };
 
   const geocodeAddress = async () => {
-    if (!formData.address || !formData.city) {
-      toast.error("Entrez une adresse et une ville");
+    if (!formData.city) {
+      toast.error("Entrez au moins une ville");
       return;
     }
     try {
-      const query = `${formData.address}, ${formData.postal_code} ${formData.city}, France`;
+      const query = `${formData.address ? formData.address + ', ' : ''}${formData.postal_code ? formData.postal_code + ' ' : ''}${formData.city}, France`;
       const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
       const data = await response.json();
       if (data.length > 0) {
         const result = data[0];
-        // Auto-remplir l'adresse avec le résultat complet de la géolocalisation
-        const fullAddress = result.display_name.split(',')[0] + ', ' + result.display_name.split(',')[1];
-        setFormData({ 
-          ...formData, 
-          latitude: parseFloat(result.lat), 
-          longitude: parseFloat(result.lon),
-          address: fullAddress.trim() // Remplacer l'adresse par celle trouvée
-        });
-        toast.success("Coordonnées et adresse complétées!");
+        const lat = parseFloat(result.lat);
+        const lon = parseFloat(result.lon);
+        
+        // Utiliser le géocodage inversé pour obtenir département et région
+        const cityData = await reverseGeocode(lat, lon);
+        
+        if (cityData) {
+          setFormData({ 
+            ...formData, 
+            latitude: lat, 
+            longitude: lon,
+            city: cityData.city,
+            postal_code: cityData.postalCode,
+            department: `${cityData.department} - ${cityData.departmentName}`,
+            region: cityData.region
+          });
+          toast.success("📍 Adresse géolocalisée avec succès!");
+        } else {
+          // Si le géocodage inversé échoue, on met juste les coordonnées
+          setFormData({ 
+            ...formData, 
+            latitude: lat, 
+            longitude: lon
+          });
+          toast.success("Coordonnées trouvées!");
+        }
       } else {
         toast.error("Adresse non trouvée");
       }
     } catch (error) {
+      console.error('Geocoding error:', error);
       toast.error("Erreur géolocalisation");
     }
   };

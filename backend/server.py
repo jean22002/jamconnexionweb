@@ -2018,8 +2018,21 @@ async def accept_application(app_id: str, current_user: dict = Depends(get_curre
     if not slot:
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    # Update application status
     await db.applications.update_one({"id": app_id}, {"$set": {"status": "accepted"}})
-    await db.planning_slots.update_one({"id": slot["id"]}, {"$set": {"is_open": False}})
+    
+    # Count accepted applications for this slot
+    accepted_count = await db.applications.count_documents({
+        "planning_slot_id": slot["id"],
+        "status": "accepted"
+    })
+    
+    # Get number of bands needed (default to 1 if not set)
+    num_bands_needed = slot.get("num_bands_needed", 1)
+    
+    # Close slot only if we have enough accepted bands
+    if accepted_count >= num_bands_needed:
+        await db.planning_slots.update_one({"id": slot["id"]}, {"$set": {"is_open": False}})
     
     # Notify musician
     musician = await db.musicians.find_one({"id": app["musician_id"]}, {"_id": 0})

@@ -14,7 +14,7 @@ import { Slider } from "../components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { ProfileImageUpload, BandImageUpload } from "../components/ui/image-upload";
-import { CityAutocomplete } from "../components/CityAutocomplete";
+import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
 import { 
   Music, MapPin, LogOut, Search, Guitar, Users,
   Globe, Instagram, Facebook, Phone, User, Loader2, Navigation, X,

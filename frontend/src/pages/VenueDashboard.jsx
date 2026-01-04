@@ -26,6 +26,19 @@ import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Liste des instruments de base pour les bœufs
+const INSTRUMENTS_BASE = [
+  "Batterie",
+  "Basse",
+  "Guitare électrique",
+  "Guitare acoustique",
+  "Piano",
+  "Clavier/Synthé",
+  "Micro",
+  "Ampli guitare",
+  "Ampli basse"
+];
+
 export default function VenueDashboard() {
   const { user, token, logout, refreshUser } = useAuth();
   const [profile, setProfile] = useState(null);

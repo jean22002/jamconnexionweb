@@ -1116,23 +1116,37 @@ export default function MusicianDashboard() {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>Facebook</Label>
-                          <Input value={profileForm.facebook} onChange={(e) => setProfileForm({ ...profileForm, facebook: e.target.value })} className="bg-black/20 border-white/10" />
+                          <Input value={profileForm.facebook} onChange={(e) => setProfileForm({ ...profileForm, facebook: e.target.value })} className="bg-black/20 border-white/10" placeholder="https://facebook.com/..." />
                         </div>
                         <div className="space-y-2">
                           <Label>Instagram</Label>
-                          <Input value={profileForm.instagram} onChange={(e) => setProfileForm({ ...profileForm, instagram: e.target.value })} className="bg-black/20 border-white/10" />
+                          <Input value={profileForm.instagram} onChange={(e) => setProfileForm({ ...profileForm, instagram: e.target.value })} className="bg-black/20 border-white/10" placeholder="https://instagram.com/..." />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>YouTube</Label>
-                          <Input value={profileForm.youtube} onChange={(e) => setProfileForm({ ...profileForm, youtube: e.target.value })} className="bg-black/20 border-white/10" />
+                          <Input value={profileForm.youtube} onChange={(e) => setProfileForm({ ...profileForm, youtube: e.target.value })} className="bg-black/20 border-white/10" placeholder="https://youtube.com/..." />
                         </div>
                         <div className="space-y-2">
                           <Label>Bandcamp</Label>
-                          <Input value={profileForm.bandcamp} onChange={(e) => setProfileForm({ ...profileForm, bandcamp: e.target.value })} className="bg-black/20 border-white/10" />
+                          <Input value={profileForm.bandcamp} onChange={(e) => setProfileForm({ ...profileForm, bandcamp: e.target.value })} className="bg-black/20 border-white/10" placeholder="https://bandcamp.com/..." />
                         </div>
+                      </div>
+
+                      {/* Aperçu des liens */}
+                      <div className="p-4 bg-black/10 rounded-lg border border-white/10">
+                        <Label className="text-sm mb-2 block">Aperçu de vos liens :</Label>
+                        <SocialLinks 
+                          facebook={profileForm.facebook}
+                          instagram={profileForm.instagram}
+                          youtube={profileForm.youtube}
+                          bandcamp={profileForm.bandcamp}
+                        />
+                        {!profileForm.facebook && !profileForm.instagram && !profileForm.youtube && !profileForm.bandcamp && (
+                          <p className="text-xs text-muted-foreground">Aucun lien ajouté</p>
+                        )}
                       </div>
                     </TabsContent>
 

@@ -1932,6 +1932,22 @@ export default function VenueDashboard() {
                     </div>
 
                     <div className="space-y-2">
+                      <Label>Nombre de groupes souhaités pour ce créneau *</Label>
+                      <select 
+                        value={planningForm.num_bands_needed} 
+                        onChange={(e) => setPlanningForm({ ...planningForm, num_bands_needed: parseInt(e.target.value) })}
+                        className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white"
+                      >
+                        <option value="1">1 groupe</option>
+                        <option value="2">2 groupes</option>
+                        <option value="3">3 groupes ou plus</option>
+                      </select>
+                      <p className="text-xs text-muted-foreground">
+                        Le créneau restera ouvert aux candidatures tant que le nombre de groupes demandés n'aura pas été atteint
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
                       <Label>Style de groupe recherché</Label>
                       <Input
                         type="text"

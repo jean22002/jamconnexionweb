@@ -2590,44 +2590,101 @@ async def mark_message_read(message_id: str, current_user: dict = Depends(get_cu
 # ============= BANDS DIRECTORY =============
 
 @api_router.get("/bands")
-async def get_bands_directory(department: Optional[str] = None, city: Optional[str] = None):
+async def get_bands_directory(
+    department: Optional[str] = None, 
+    city: Optional[str] = None,
+    music_style: Optional[str] = None,
+    band_type: Optional[str] = None,
+    repertoire_type: Optional[str] = None,
+    looking_for_members: Optional[bool] = None
+):
     """Get public bands directory with optional filters"""
-    query = {"has_band": True, "band.is_public": True}
+    # Get all musicians with bands
+    musicians = await db.musicians.find({}, {"_id": 0}).to_list(2000)
     
-    musicians = await db.musicians.find(query, {"_id": 0}).to_list(1000)
-    
-    # Filter and structure band data
-    bands = []
+    # Extract all bands from all musicians
+    all_bands = []
     for musician in musicians:
-        if musician.get("band"):
+        # Check new format (multiple bands)
+        if musician.get("bands"):
+            for band in musician["bands"]:
+                if band.get("is_public", True):  # Only public bands
+                    # Apply filters
+                    if department and band.get("department") != department:
+                        continue
+                    if city and band.get("city", "").lower() != city.lower():
+                        continue
+                    if music_style and music_style not in band.get("music_styles", []):
+                        continue
+                    if band_type and band.get("band_type") != band_type:
+                        continue
+                    if repertoire_type and band.get("repertoire_type") != repertoire_type:
+                        continue
+                    if looking_for_members is not None and band.get("looking_for_members", False) != looking_for_members:
+                        continue
+                    
+                    all_bands.append({
+                        "id": f"{musician['id']}-{band.get('name', '')}",
+                        "musician_id": musician["id"],
+                        "musician_user_id": musician["user_id"],
+                        "musician_name": musician.get("pseudo", ""),
+                        "name": band.get("name"),
+                        "photo": band.get("photo"),
+                        "description": band.get("description"),
+                        "members_count": band.get("members_count"),
+                        "music_styles": band.get("music_styles", []),
+                        "band_type": band.get("band_type"),
+                        "repertoire_type": band.get("repertoire_type"),
+                        "show_duration": band.get("show_duration"),
+                        "city": band.get("city"),
+                        "department": band.get("department"),
+                        "region": band.get("region"),
+                        "facebook": band.get("facebook"),
+                        "instagram": band.get("instagram"),
+                        "youtube": band.get("youtube"),
+                        "website": band.get("website"),
+                        "bandcamp": band.get("bandcamp"),
+                        "looking_for_concerts": band.get("looking_for_concerts", True),
+                        "looking_for_members": band.get("looking_for_members", False),
+                        "looking_for_profiles": band.get("looking_for_profiles", []),
+                        "has_sound_engineer": band.get("has_sound_engineer", False),
+                        "admin_id": band.get("admin_id")
+                    })
+        
+        # Check old format (single band) for backward compatibility
+        elif musician.get("band") and musician.get("has_band"):
             band = musician["band"]
-            # Apply filters
-            if department and musician.get("department") != department:
-                continue
-            if city and musician.get("city", "").lower() != city.lower():
-                continue
-            
-            bands.append({
-                "id": musician["id"],
-                "musician_id": musician["id"],
-                "musician_user_id": musician["user_id"],
-                "name": band.get("name"),
-                "photo": band.get("photo"),
-                "description": band.get("description"),
-                "members_count": band.get("members_count"),
-                "music_styles": band.get("music_styles", []),
-                "city": musician.get("city"),
-                "department": musician.get("department"),
-                "facebook": band.get("facebook"),
-                "instagram": band.get("instagram"),
-                "youtube": band.get("youtube"),
-                "website": band.get("website"),
-                "bandcamp": band.get("bandcamp"),
-                "looking_for_concerts": band.get("looking_for_concerts", True),
-                "looking_for_members": band.get("looking_for_members", False)
-            })
+            if band.get("is_public", True):
+                # Apply filters
+                if department and musician.get("department") != department:
+                    continue
+                if city and musician.get("city", "").lower() != city.lower():
+                    continue
+                if music_style and music_style not in band.get("music_styles", []):
+                    continue
+                
+                all_bands.append({
+                    "id": musician["id"],
+                    "musician_id": musician["id"],
+                    "musician_user_id": musician["user_id"],
+                    "musician_name": musician.get("pseudo", ""),
+                    "name": band.get("name"),
+                    "photo": band.get("photo"),
+                    "description": band.get("description"),
+                    "members_count": band.get("members_count"),
+                    "music_styles": band.get("music_styles", []),
+                    "city": musician.get("city"),
+                    "department": musician.get("department"),
+                    "facebook": band.get("facebook"),
+                    "instagram": band.get("instagram"),
+                    "youtube": band.get("youtube"),
+                    "website": band.get("website"),
+                    "bandcamp": band.get("bandcamp"),
+                    "looking_for_concerts": band.get("looking_for_concerts", True),
+                    "looking_for_members": band.get("looking_for_members", False)
+                })
     
-    return bands
+    return all_bands
 
 @api_router.get("/bands/departments")
 async def get_bands_by_department():

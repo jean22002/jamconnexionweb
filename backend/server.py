@@ -2005,6 +2005,63 @@ async def broadcast_notification_to_nearby_musicians(
         "recipients_count": notification_count
     }
 
+@api_router.post("/venues/me/notify-subscribers")
+async def notify_subscribers(
+    data: BroadcastNotificationRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Send notification to subscribers (Jacks) only"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can send notifications to subscribers")
+    
+    # Check if venue has active subscription
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+    if not user or user.get("subscription_status") not in ["active", "trial"]:
+        raise HTTPException(status_code=403, detail="Active subscription required to send notifications")
+    
+    # Get venue profile
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    venue_name = venue["name"]
+    
+    # Get all subscribers
+    subscriptions = await db.subscriptions.find({"venue_id": venue["id"]}, {"_id": 0}).to_list(1000)
+    
+    # Send notifications to each subscriber
+    notification_count = 0
+    for sub in subscriptions:
+        await create_notification(
+            user_id=sub["user_id"],
+            notif_type="venue_notification",
+            title=f"💌 Message de {venue_name}",
+            message=data.message,
+            link=f"/venue/{venue['id']}"
+        )
+        notification_count += 1
+    
+    # Save to broadcast history
+    broadcast_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    broadcast_doc = {
+        "id": broadcast_id,
+        "venue_id": venue["id"],
+        "venue_name": venue_name,
+        "message": data.message,
+        "recipients_count": notification_count,
+        "target": "subscribers",
+        "created_at": now
+    }
+    
+    await db.broadcast_notifications.insert_one(broadcast_doc)
+    
+    return {
+        "message": "Notification sent to subscribers",
+        "recipients_count": notification_count
+    }
+
 @api_router.get("/venues/me/broadcast-history")
 async def get_broadcast_history(current_user: dict = Depends(get_current_user)):
     """Get venue's broadcast notification history"""

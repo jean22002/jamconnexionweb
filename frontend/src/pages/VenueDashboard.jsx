@@ -1751,10 +1751,10 @@ export default function VenueDashboard() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <MapPin className="w-4 h-4 text-secondary" />
-                            <span className="font-semibold">Musiciens à proximité (50 km)</span>
+                            <span className="font-semibold">Musiciens à proximité (100 km)</span>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Estimation : {nearbyMusiciansCount} musicien{nearbyMusiciansCount > 1 ? 's' : ''} dans un rayon de 50 km
+                            Estimation : {nearbyMusiciansCount} musicien{nearbyMusiciansCount > 1 ? 's' : ''} dans un rayon de 100 km
                           </p>
                         </div>
                       </div>

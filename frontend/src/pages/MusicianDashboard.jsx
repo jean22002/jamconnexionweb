@@ -1150,6 +1150,201 @@ export default function MusicianDashboard() {
                   </Button>
                 </DialogContent>
               </Dialog>
+
+              {/* Dialog de gestion de groupe */}
+              <Dialog open={showBandDialog} onOpenChange={setShowBandDialog}>
+                <DialogContent className="glassmorphism border-white/10 max-w-3xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="font-heading">
+                      {editingBandIndex !== null ? "Modifier le groupe" : "Ajouter un groupe"}
+                    </DialogTitle>
+                  </DialogHeader>
+
+                  <div className="space-y-4 mt-4">
+                    {/* Nom et Photo */}
+                    <div className="space-y-2">
+                      <Label>Nom du groupe *</Label>
+                      <Input 
+                        value={currentBand.name} 
+                        onChange={(e) => setCurrentBand({ ...currentBand, name: e.target.value })}
+                        className="bg-black/20 border-white/10"
+                        placeholder="Ex: The Rolling Stones"
+                      />
+                    </div>
+
+                    {/* Type de groupe */}
+                    <div className="space-y-2">
+                      <Label>Type de groupe</Label>
+                      <Select 
+                        value={currentBand.band_type} 
+                        onValueChange={(value) => setCurrentBand({ ...currentBand, band_type: value })}
+                      >
+                        <SelectTrigger className="bg-black/20 border-white/10">
+                          <SelectValue placeholder="Sélectionnez le type" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border-white/10">
+                          {BAND_TYPES.map((type) => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Type de répertoire */}
+                    <div className="space-y-2">
+                      <Label>Type de répertoire</Label>
+                      <Select 
+                        value={currentBand.repertoire_type} 
+                        onValueChange={(value) => setCurrentBand({ ...currentBand, repertoire_type: value })}
+                      >
+                        <SelectTrigger className="bg-black/20 border-white/10">
+                          <SelectValue placeholder="Sélectionnez" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border-white/10">
+                          {REPERTOIRE_TYPES.map((type) => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Durée du show */}
+                    <div className="space-y-2">
+                      <Label>Durée du show</Label>
+                      <Select 
+                        value={currentBand.show_duration} 
+                        onValueChange={(value) => setCurrentBand({ ...currentBand, show_duration: value })}
+                      >
+                        <SelectTrigger className="bg-black/20 border-white/10">
+                          <SelectValue placeholder="Sélectionnez" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border-white/10 max-h-[300px]">
+                          {SHOW_DURATIONS.map((duration) => (
+                            <SelectItem key={duration} value={duration}>{duration}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Description */}
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Textarea 
+                        value={currentBand.description || ""} 
+                        onChange={(e) => setCurrentBand({ ...currentBand, description: e.target.value })}
+                        className="bg-black/20 border-white/10" 
+                        rows={3}
+                        placeholder="Décrivez votre groupe..."
+                      />
+                    </div>
+
+                    {/* Nombre de membres */}
+                    <div className="space-y-2">
+                      <Label>Nombre de membres</Label>
+                      <Input 
+                        type="number" 
+                        value={currentBand.members_count || ""} 
+                        onChange={(e) => setCurrentBand({ ...currentBand, members_count: parseInt(e.target.value) || null })}
+                        className="bg-black/20 border-white/10"
+                      />
+                    </div>
+
+                    {/* Styles musicaux */}
+                    <div className="space-y-2">
+                      <Label>Styles musicaux</Label>
+                      <Input 
+                        placeholder="Appuyez sur Entrée pour ajouter" 
+                        onKeyPress={(e) => { 
+                          if (e.key === 'Enter' && e.target.value) { 
+                            setCurrentBand({ 
+                              ...currentBand, 
+                              music_styles: [...(currentBand.music_styles || []), e.target.value] 
+                            }); 
+                            e.target.value = ''; 
+                          } 
+                        }}
+                        className="bg-black/20 border-white/10"
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        {currentBand.music_styles?.map((s, i) => (
+                          <span key={i} className="px-2 py-1 bg-primary/20 text-primary rounded-full text-xs flex items-center gap-1">
+                            {s}
+                            <button onClick={() => setCurrentBand({ 
+                              ...currentBand, 
+                              music_styles: currentBand.music_styles.filter((_, idx) => idx !== i) 
+                            })}>
+                              <X className="w-3 h-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Disponibilités */}
+                    <div className="space-y-3">
+                      <Label>Disponibilités</Label>
+                      <div className="flex items-center gap-2">
+                        <Switch 
+                          checked={currentBand.looking_for_concerts !== false} 
+                          onCheckedChange={(checked) => setCurrentBand({ ...currentBand, looking_for_concerts: checked })}
+                        />
+                        <Label className="text-sm">🎤 Cherche des concerts</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch 
+                          checked={currentBand.looking_for_members || false} 
+                          onCheckedChange={(checked) => setCurrentBand({ ...currentBand, looking_for_members: checked })}
+                        />
+                        <Label className="text-sm">👥 Cherche des membres</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch 
+                          checked={currentBand.is_public !== false} 
+                          onCheckedChange={(checked) => setCurrentBand({ ...currentBand, is_public: checked })}
+                        />
+                        <Label className="text-sm">👁️ Visible dans le répertoire public</Label>
+                      </div>
+                    </div>
+
+                    {/* Réseaux sociaux */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Facebook</Label>
+                        <Input 
+                          value={currentBand.facebook || ""} 
+                          onChange={(e) => setCurrentBand({ ...currentBand, facebook: e.target.value })}
+                          className="bg-black/20 border-white/10"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Instagram</Label>
+                        <Input 
+                          value={currentBand.instagram || ""} 
+                          onChange={(e) => setCurrentBand({ ...currentBand, instagram: e.target.value })}
+                          className="bg-black/20 border-white/10"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Boutons */}
+                    <div className="flex gap-3 pt-4">
+                      <Button 
+                        onClick={handleSaveBand}
+                        className="flex-1 bg-primary hover:bg-primary/90 rounded-full"
+                      >
+                        {editingBandIndex !== null ? "Mettre à jour" : "Ajouter"}
+                      </Button>
+                      <Button
+                        onClick={() => setShowBandDialog(false)}
+                        variant="outline"
+                        className="flex-1 rounded-full border-white/20"
+                      >
+                        Annuler
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
               
               <Button variant="ghost" onClick={logout} className="text-destructive hover:text-destructive/80" data-testid="logout-btn">
                 <LogOut className="w-4 h-4" />

@@ -288,6 +288,14 @@ class PlanningSlot(BaseModel):
     description: Optional[str] = None
     is_open: bool = True
     artist_categories: List[str] = []  # Types recherchés: groupe compos, reprise, tribute, etc.
+    # Catering
+    has_catering: bool = False
+    catering_drinks: Optional[int] = 0
+    catering_respect: bool = False
+    catering_tbd: bool = False
+    # Accommodation
+    has_accommodation: bool = False
+    accommodation_capacity: Optional[int] = 0
 
 class PlanningSlotResponse(BaseModel):
     id: str

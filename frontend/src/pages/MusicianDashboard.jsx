@@ -275,7 +275,14 @@ export default function MusicianDashboard() {
   // Bands
   const [bands, setBands] = useState([]);
   const [bandsLoading, setBandsLoading] = useState(false);
-  const [bandFilters, setBandFilters] = useState({ department: "", city: "" });
+  const [bandFilters, setBandFilters] = useState({ 
+    department: "", 
+    city: "", 
+    musicStyle: "", 
+    bandType: "",
+    repertoireType: "",
+    lookingForMembers: false
+  });
   const [showMessageDialog, setShowMessageDialog] = useState(false);
   const [selectedBand, setSelectedBand] = useState(null);
   const [messageForm, setMessageForm] = useState({ subject: "", content: "" });

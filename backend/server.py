@@ -2596,9 +2596,12 @@ async def get_bands_directory(
     music_style: Optional[str] = None,
     band_type: Optional[str] = None,
     repertoire_type: Optional[str] = None,
-    looking_for_members: Optional[bool] = None
+    looking_for_members: Optional[bool] = None,
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
+    radius: Optional[float] = None
 ):
-    """Get public bands directory with optional filters"""
+    """Get public bands directory with optional filters or geolocation"""
     # Get all musicians with bands
     musicians = await db.musicians.find({}, {"_id": 0}).to_list(2000)
     
@@ -2609,11 +2612,13 @@ async def get_bands_directory(
         if musician.get("bands"):
             for band in musician["bands"]:
                 if band.get("is_public", True):  # Only public bands
-                    # Apply filters
-                    if department and band.get("department") != department:
-                        continue
-                    if city and band.get("city", "").lower() != city.lower():
-                        continue
+                    # Apply text filters (only if not using geolocation)
+                    if not (latitude and longitude and radius):
+                        if department and band.get("department") != department:
+                            continue
+                        if city and band.get("city", "").lower() != city.lower():
+                            continue
+                    
                     if music_style and music_style not in band.get("music_styles", []):
                         continue
                     if band_type and band.get("band_type") != band_type:
@@ -2623,7 +2628,7 @@ async def get_bands_directory(
                     if looking_for_members is not None and band.get("looking_for_members", False) != looking_for_members:
                         continue
                     
-                    all_bands.append({
+                    band_data = {
                         "id": f"{musician['id']}-{band.get('name', '')}",
                         "musician_id": musician["id"],
                         "musician_user_id": musician["user_id"],
@@ -2649,21 +2654,50 @@ async def get_bands_directory(
                         "looking_for_profiles": band.get("looking_for_profiles", []),
                         "has_sound_engineer": band.get("has_sound_engineer", False),
                         "admin_id": band.get("admin_id")
-                    })
+                    }
+                    
+                    # Calculate distance if geolocation mode
+                    if latitude and longitude and radius:
+                        band_lat = musician.get("latitude")
+                        band_lon = musician.get("longitude")
+                        
+                        if band_lat and band_lon:
+                            from math import radians, sin, cos, sqrt, atan2
+                            
+                            lat1, lon1 = radians(latitude), radians(longitude)
+                            lat2, lon2 = radians(band_lat), radians(band_lon)
+                            
+                            dlat = lat2 - lat1
+                            dlon = lon2 - lon1
+                            
+                            a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+                            c = 2 * atan2(sqrt(a), sqrt(1-a))
+                            distance_km = 6371 * c
+                            
+                            if distance_km <= radius:
+                                band_data["distance_km"] = round(distance_km, 1)
+                                all_bands.append(band_data)
+                        else:
+                            # Skip bands without location in geolocation mode
+                            continue
+                    else:
+                        all_bands.append(band_data)
         
         # Check old format (single band) for backward compatibility
         elif musician.get("band") and musician.get("has_band"):
             band = musician["band"]
             if band.get("is_public", True):
                 # Apply filters
-                if department and musician.get("department") != department:
-                    continue
-                if city and musician.get("city", "").lower() != city.lower():
-                    continue
+                if not (latitude and longitude and radius):
+                    if department and musician.get("department") != department:
+                        continue
+                    if city and musician.get("city", "").lower() != city.lower():
+                        continue
+                
                 if music_style and music_style not in band.get("music_styles", []):
                     continue
                 
-                all_bands.append({
+                band_data = {
                     "id": musician["id"],
                     "musician_id": musician["id"],
                     "musician_user_id": musician["user_id"],
@@ -2682,7 +2716,37 @@ async def get_bands_directory(
                     "bandcamp": band.get("bandcamp"),
                     "looking_for_concerts": band.get("looking_for_concerts", True),
                     "looking_for_members": band.get("looking_for_members", False)
-                })
+                }
+                
+                # Calculate distance if geolocation mode
+                if latitude and longitude and radius:
+                    band_lat = musician.get("latitude")
+                    band_lon = musician.get("longitude")
+                    
+                    if band_lat and band_lon:
+                        from math import radians, sin, cos, sqrt, atan2
+                        
+                        lat1, lon1 = radians(latitude), radians(longitude)
+                        lat2, lon2 = radians(band_lat), radians(band_lon)
+                        
+                        dlat = lat2 - lat1
+                        dlon = lon2 - lon1
+                        
+                        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+                        c = 2 * atan2(sqrt(a), sqrt(1-a))
+                        distance_km = 6371 * c
+                        
+                        if distance_km <= radius:
+                            band_data["distance_km"] = round(distance_km, 1)
+                            all_bands.append(band_data)
+                    else:
+                        continue
+                else:
+                    all_bands.append(band_data)
+    
+    # Sort by distance if in geolocation mode
+    if latitude and longitude and radius:
+        all_bands.sort(key=lambda x: x.get("distance_km", float('inf')))
     
     return all_bands
 

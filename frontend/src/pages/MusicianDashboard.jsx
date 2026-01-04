@@ -667,7 +667,9 @@ export default function MusicianDashboard() {
         looking_for_concerts: true,
         looking_for_members: false,
         looking_for_profiles: [],
-        is_public: true
+        is_public: true,
+        is_admin: false,
+        admin_id: null
       });
       setEditingBandIndex(null);
     }

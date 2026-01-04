@@ -70,6 +70,12 @@ export default function VenueDashboard() {
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
   const [notificationTarget, setNotificationTarget] = useState("subscribers"); // 'subscribers' or 'nearby'
   
+  // Event details modal states
+  const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedEventType, setSelectedEventType] = useState(null); // 'concert', 'jam', or 'planning'
+  const [isEditingEvent, setIsEditingEvent] = useState(false);
+  
   // Reviews
   const [reviews, setReviews] = useState([]);
   const [averageRating, setAverageRating] = useState(0);

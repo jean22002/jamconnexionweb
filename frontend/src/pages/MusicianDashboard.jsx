@@ -584,6 +584,26 @@ export default function MusicianDashboard() {
     }
   };
 
+  const handleSubscribe = async (venueId) => {
+    try {
+      await axios.post(`${API}/venues/${venueId}/subscribe`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Connecté à l'établissement!");
+      fetchFriends(); // Refresh pour mettre à jour subscriptions
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur");
+    }
+  };
+
+  const handleUnsubscribe = async (venueId) => {
+    try {
+      await axios.delete(`${API}/venues/${venueId}/unsubscribe`, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Déconnecté de l'établissement!");
+      fetchFriends(); // Refresh pour mettre à jour subscriptions
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur");
+    }
+  };
+
   const acceptFriendRequest = async (requestId) => {
     try {
       await axios.post(`${API}/friends/accept/${requestId}`, {}, { headers: { Authorization: `Bearer ${token}` } });

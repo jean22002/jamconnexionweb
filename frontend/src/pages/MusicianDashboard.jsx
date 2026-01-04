@@ -1123,6 +1123,167 @@ export default function MusicianDashboard() {
                       </div>
                     </TabsContent>
 
+                    {/* Onglet Solo */}
+                    <TabsContent value="solo" className="space-y-4 mt-4">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                          <Switch 
+                            checked={soloProfile.has_solo} 
+                            onCheckedChange={(checked) => setSoloProfile({ ...soloProfile, has_solo: checked })}
+                          />
+                          <Label>Je joue aussi en solo</Label>
+                        </div>
+
+                        {soloProfile.has_solo && (
+                          <div className="space-y-4 p-4 glassmorphism rounded-xl">
+                            {/* Type de performance */}
+                            <div className="space-y-2">
+                              <Label>Type de performance</Label>
+                              <Select 
+                                value={soloProfile.band_type} 
+                                onValueChange={(value) => setSoloProfile({ ...soloProfile, band_type: value })}
+                              >
+                                <SelectTrigger className="bg-black/20 border-white/10">
+                                  <SelectValue placeholder="Sélectionnez" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-background border-white/10">
+                                  <SelectItem value="Solo acoustique">Solo acoustique</SelectItem>
+                                  <SelectItem value="Solo électro acoustique">Solo électro acoustique</SelectItem>
+                                  <SelectItem value="Solo avec boucles">Solo avec boucles</SelectItem>
+                                  <SelectItem value="DJ Set">DJ Set</SelectItem>
+                                  <SelectItem value="Autre">Autre</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {/* Type de répertoire */}
+                            <div className="space-y-2">
+                              <Label>Type de répertoire</Label>
+                              <Select 
+                                value={soloProfile.repertoire_type} 
+                                onValueChange={(value) => setSoloProfile({ ...soloProfile, repertoire_type: value })}
+                              >
+                                <SelectTrigger className="bg-black/20 border-white/10">
+                                  <SelectValue placeholder="Sélectionnez" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-background border-white/10">
+                                  {REPERTOIRE_TYPES.map((type) => (
+                                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {/* Durée du show */}
+                            <div className="space-y-2">
+                              <Label>Durée du show</Label>
+                              <Select 
+                                value={soloProfile.show_duration} 
+                                onValueChange={(value) => setSoloProfile({ ...soloProfile, show_duration: value })}
+                              >
+                                <SelectTrigger className="bg-black/20 border-white/10">
+                                  <SelectValue placeholder="Sélectionnez" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-background border-white/10 max-h-[300px]">
+                                  {SHOW_DURATIONS.map((duration) => (
+                                    <SelectItem key={duration} value={duration}>{duration}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {/* Description */}
+                            <div className="space-y-2">
+                              <Label>Description de votre performance solo</Label>
+                              <Textarea 
+                                value={soloProfile.description || ""} 
+                                onChange={(e) => setSoloProfile({ ...soloProfile, description: e.target.value })}
+                                className="bg-black/20 border-white/10" 
+                                rows={3}
+                                placeholder="Décrivez votre univers musical en solo..."
+                              />
+                            </div>
+
+                            {/* Styles musicaux */}
+                            <div className="space-y-2">
+                              <Label>Styles musicaux</Label>
+                              <div className="grid grid-cols-2 gap-3 p-4 bg-black/10 rounded-lg max-h-[200px] overflow-y-auto">
+                                {MUSIC_STYLES_LIST.map((style) => (
+                                  <div key={style} className="flex items-center space-x-2">
+                                    <input
+                                      type="checkbox"
+                                      id={`solo-style-${style}`}
+                                      checked={soloProfile.music_styles?.includes(style) || false}
+                                      onChange={(e) => {
+                                        const currentStyles = soloProfile.music_styles || [];
+                                        if (e.target.checked) {
+                                          setSoloProfile({ 
+                                            ...soloProfile, 
+                                            music_styles: [...currentStyles, style] 
+                                          });
+                                        } else {
+                                          setSoloProfile({ 
+                                            ...soloProfile, 
+                                            music_styles: currentStyles.filter(s => s !== style) 
+                                          });
+                                        }
+                                      }}
+                                      className="w-4 h-4 text-primary bg-black/20 border-white/10 rounded focus:ring-primary focus:ring-2"
+                                    />
+                                    <Label 
+                                      htmlFor={`solo-style-${style}`} 
+                                      className="text-sm font-normal cursor-pointer"
+                                    >
+                                      {style}
+                                    </Label>
+                                  </div>
+                                ))}
+                              </div>
+                              {soloProfile.music_styles && soloProfile.music_styles.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {soloProfile.music_styles.map((s, i) => (
+                                    <span key={i} className="px-2 py-1 bg-primary/20 text-primary rounded-full text-xs flex items-center gap-1">
+                                      {s}
+                                      <button onClick={() => setSoloProfile({ 
+                                        ...soloProfile, 
+                                        music_styles: soloProfile.music_styles.filter(style => style !== s) 
+                                      })}>
+                                        <X className="w-3 h-3" />
+                                      </button>
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Disponibilité */}
+                            <div className="flex items-center gap-2">
+                              <Switch 
+                                checked={soloProfile.looking_for_concerts !== false} 
+                                onCheckedChange={(checked) => setSoloProfile({ ...soloProfile, looking_for_concerts: checked })}
+                              />
+                              <Label className="text-sm">🎤 Cherche des concerts en solo</Label>
+                            </div>
+
+                            {/* Récapitulatif */}
+                            {soloProfile.band_type && (
+                              <div className="mt-4 p-4 bg-primary/10 rounded-xl border border-primary/20">
+                                <h4 className="font-semibold mb-2">Votre profil solo :</h4>
+                                <div className="space-y-1 text-sm">
+                                  <p>• Type : {soloProfile.band_type}</p>
+                                  {soloProfile.repertoire_type && <p>• Répertoire : {soloProfile.repertoire_type}</p>}
+                                  {soloProfile.show_duration && <p>• Durée : {soloProfile.show_duration}</p>}
+                                  {soloProfile.music_styles.length > 0 && (
+                                    <p>• Styles : {soloProfile.music_styles.join(', ')}</p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </TabsContent>
+
                     {/* Onglet Groupe */}
                     <TabsContent value="band" className="space-y-4 mt-4">
                       <div className="flex items-center justify-between mb-4">

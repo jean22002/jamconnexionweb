@@ -162,6 +162,23 @@ export default function VenueDashboard() {
       setJams(jamsRes.data);
       setConcerts(concertsRes.data);
       setPlanningSlots(planningRes.data);
+      
+      // Construire le tableau des dates réservées
+      const bookedDatesArray = [
+        ...jamsRes.data.map(j => j.date),
+        ...concertsRes.data.map(c => c.date)
+      ];
+      setBookedDates(bookedDatesArray);
+      
+      // Construire l'objet des événements par date avec leur type
+      const eventsMap = {};
+      jamsRes.data.forEach(jam => {
+        eventsMap[jam.date] = 'jam'; // Mauve pour les bœufs
+      });
+      concertsRes.data.forEach(concert => {
+        eventsMap[concert.date] = 'concert'; // Vert pour les concerts
+      });
+      setEventsByDate(eventsMap);
     } catch (error) {
       console.error("Error:", error);
     }

@@ -1883,8 +1883,8 @@ async def get_venue_subscribers(current_user: dict = Depends(get_current_user)):
     if not venue:
         raise HTTPException(status_code=404, detail="Venue profile not found")
     
-    # Get all subscriptions for this venue
-    subscriptions = await db.subscriptions.find({"venue_id": venue["id"]}, {"_id": 0}).to_list(1000)
+    # Get all subscriptions for this venue from the CORRECT collection
+    subscriptions = await db.venue_subscriptions.find({"venue_id": venue["id"]}, {"_id": 0}).to_list(1000)
     
     # Get musician profiles for each subscriber
     subscribers = []

@@ -1257,16 +1257,30 @@ export default function VenueDashboard() {
                           <p className="font-heading font-semibold text-lg">{jam.date}</p>
                           <p className="text-muted-foreground">{jam.start_time} - {jam.end_time}</p>
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteJam(jam.id);
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              duplicateJam(jam);
+                            }}
+                            className="hover:bg-primary/20"
+                            title="Dupliquer ce bœuf"
+                          >
+                            <Plus className="w-4 h-4 text-primary" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteJam(jam.id);
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
+                        </div>
                       </div>
                       <div className="flex flex-wrap gap-2 mt-3">
                         {jam.music_styles.map((s, i) => <span key={i} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">{s}</span>)}

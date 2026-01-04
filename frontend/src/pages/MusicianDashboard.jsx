@@ -1749,12 +1749,67 @@ export default function MusicianDashboard() {
                           ⚠️ Activez cette option pour recevoir des notifications lorsqu'un établissement cherche ce type de profil ou ces styles musicaux
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Switch 
-                          checked={currentBand.looking_for_members || false} 
-                          onCheckedChange={(checked) => setCurrentBand({ ...currentBand, looking_for_members: checked })}
-                        />
-                        <Label className="text-sm">👥 Cherche des membres</Label>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Switch 
+                            checked={currentBand.looking_for_members || false} 
+                            onCheckedChange={(checked) => setCurrentBand({ ...currentBand, looking_for_members: checked, looking_for_profiles: checked ? currentBand.looking_for_profiles : [] })}
+                          />
+                          <Label className="text-sm">👥 Cherche des membres</Label>
+                        </div>
+
+                        {currentBand.looking_for_members && (
+                          <div className="space-y-2 pl-6 border-l-2 border-primary/30">
+                            <Label className="text-sm">Profils recherchés</Label>
+                            <div className="grid grid-cols-2 gap-3">
+                              {['Chanteur(se)', 'Guitariste', 'Bassiste', 'Batteur', 'Claviériste', 'Autre'].map((profile) => (
+                                <div key={profile} className="flex items-center space-x-2">
+                                  <input
+                                    type="checkbox"
+                                    id={`profile-${profile}`}
+                                    checked={currentBand.looking_for_profiles?.includes(profile) || false}
+                                    onChange={(e) => {
+                                      const currentProfiles = currentBand.looking_for_profiles || [];
+                                      if (e.target.checked) {
+                                        setCurrentBand({ 
+                                          ...currentBand, 
+                                          looking_for_profiles: [...currentProfiles, profile] 
+                                        });
+                                      } else {
+                                        setCurrentBand({ 
+                                          ...currentBand, 
+                                          looking_for_profiles: currentProfiles.filter(p => p !== profile) 
+                                        });
+                                      }
+                                    }}
+                                    className="w-4 h-4 text-primary bg-black/20 border-white/10 rounded focus:ring-primary focus:ring-2"
+                                  />
+                                  <Label 
+                                    htmlFor={`profile-${profile}`} 
+                                    className="text-sm font-normal cursor-pointer select-none"
+                                  >
+                                    {profile}
+                                  </Label>
+                                </div>
+                              ))}
+                            </div>
+                            {currentBand.looking_for_profiles && currentBand.looking_for_profiles.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {currentBand.looking_for_profiles.map((p, i) => (
+                                  <span key={i} className="px-2 py-1 bg-secondary/20 text-secondary rounded-full text-xs flex items-center gap-1">
+                                    {p}
+                                    <button onClick={() => setCurrentBand({ 
+                                      ...currentBand, 
+                                      looking_for_profiles: currentBand.looking_for_profiles.filter(prof => prof !== p) 
+                                    })}>
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <Switch 

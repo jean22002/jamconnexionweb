@@ -844,6 +844,9 @@ export default function MusicianDashboard() {
     setLoadingVenueEvents(true);
     setShowVenueEventsModal(true);
     
+    // Vider les anciens événements pour montrer un chargement frais
+    setVenueEvents({ concerts: [], jams: [] });
+    
     try {
       const [concertsRes, jamsRes] = await Promise.all([
         axios.get(`${API}/venues/${venueId}/concerts`, {
@@ -864,6 +867,16 @@ export default function MusicianDashboard() {
     } finally {
       setLoadingVenueEvents(false);
     }
+  };
+  
+  // Fonction pour fermer la modale et nettoyer les données
+  const closeVenueEventsModal = () => {
+    setShowVenueEventsModal(false);
+    // Vider les événements quand on ferme la modale
+    setTimeout(() => {
+      setVenueEvents({ concerts: [], jams: [] });
+      setSelectedVenue(null);
+    }, 300); // Petit délai pour l'animation de fermeture
   };
 
   const acceptFriendRequest = async (requestId) => {

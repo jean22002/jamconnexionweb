@@ -1098,14 +1098,9 @@ export default function VenueDashboard() {
                           label="Ville"
                           placeholder="Ex: Narbonne"
                         />
-                        <div className="flex gap-2">
-                          <Button type="button" onClick={geocodeAddress} variant="outline" className="border-white/20 flex-1">
-                            <MapPin className="w-4 h-4 mr-2" /> Géolocaliser l'adresse
-                          </Button>
-                          <Button type="button" onClick={useMyLocation} variant="outline" className="border-white/20 flex-1">
-                            📍 Ma position GPS
-                          </Button>
-                        </div>
+                        <Button type="button" onClick={geocodeAddress} variant="outline" className="border-white/20 w-full">
+                          <MapPin className="w-4 h-4 mr-2" /> Géolocaliser l'adresse
+                        </Button>
                       </>
                     ) : (
                       <div className="space-y-2">

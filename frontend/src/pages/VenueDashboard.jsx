@@ -1455,6 +1455,111 @@ export default function VenueDashboard() {
                         <Label>Description</Label>
                         <Textarea value={concertForm.description} onChange={(e) => setConcertForm({ ...concertForm, description: e.target.value })} className="bg-black/20 border-white/10" rows={2} />
                       </div>
+
+                      {/* Catering Section */}
+                      <div className="space-y-3 p-4 bg-black/10 rounded-lg border border-white/10">
+                        <Label className="text-base flex items-center gap-2">
+                          🍽️ Catering <span className="text-xs text-muted-foreground">(la ration pour les ménestrels)</span>
+                        </Label>
+                        
+                        <div className="flex items-center gap-2">
+                          <Switch 
+                            checked={concertForm.has_catering || false} 
+                            onCheckedChange={(c) => setConcertForm({ ...concertForm, has_catering: c, catering_drinks: c ? concertForm.catering_drinks : 0 })} 
+                          />
+                          <Label>Restauration disponible</Label>
+                        </div>
+
+                        {concertForm.has_catering && (
+                          <div className="space-y-3 pl-6 border-l-2 border-primary/30">
+                            <div className="space-y-2">
+                              <Label>Boissons (nombre)</Label>
+                              <Select 
+                                value={concertForm.catering_drinks?.toString() || "0"} 
+                                onValueChange={(value) => setConcertForm({ ...concertForm, catering_drinks: parseInt(value) })}
+                              >
+                                <SelectTrigger className="bg-black/20 border-white/10">
+                                  <SelectValue placeholder="Sélectionnez" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-background border-white/10">
+                                  {[...Array(11)].map((_, i) => (
+                                    <SelectItem key={i} value={i.toString()}>{i === 0 ? "Aucune" : `${i} boisson${i > 1 ? 's' : ''}`}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                id="concert-catering-respect"
+                                checked={concertForm.catering_respect || false}
+                                onChange={(e) => setConcertForm({ ...concertForm, catering_respect: e.target.checked })}
+                                className="w-4 h-4 text-primary bg-black/20 border-white/10 rounded"
+                              />
+                              <Label htmlFor="concert-catering-respect" className="text-sm">
+                                Ne pas abuser de la gentillesse du patron
+                              </Label>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                id="concert-catering-tbd"
+                                checked={concertForm.catering_tbd || false}
+                                onChange={(e) => setConcertForm({ ...concertForm, catering_tbd: e.target.checked })}
+                                className="w-4 h-4 text-primary bg-black/20 border-white/10 rounded"
+                              />
+                              <Label htmlFor="concert-catering-tbd" className="text-sm">
+                                À définir
+                              </Label>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Accommodation Section */}
+                      <div className="space-y-3 p-4 bg-black/10 rounded-lg border border-white/10">
+                        <Label className="text-base flex items-center gap-2">
+                          🛏️ Hébergement possible
+                        </Label>
+                        
+                        <div className="flex items-center gap-2">
+                          <Switch 
+                            checked={concertForm.has_accommodation || false} 
+                            onCheckedChange={(c) => setConcertForm({ ...concertForm, has_accommodation: c, accommodation_capacity: c ? concertForm.accommodation_capacity : 0 })} 
+                          />
+                          <Label>Hébergement disponible</Label>
+                        </div>
+
+                        {concertForm.has_accommodation && (
+                          <div className="space-y-2 pl-6 border-l-2 border-primary/30">
+                            <Label>Nombre de personnes</Label>
+                            <div className="grid grid-cols-5 gap-2">
+                              {[...Array(10)].map((_, i) => {
+                                const capacity = i + 1;
+                                return (
+                                  <button
+                                    key={capacity}
+                                    type="button"
+                                    onClick={() => setConcertForm({ ...concertForm, accommodation_capacity: capacity })}
+                                    className={`
+                                      p-2 rounded-lg border-2 transition-all font-semibold
+                                      ${concertForm.accommodation_capacity === capacity 
+                                        ? 'bg-primary/20 border-primary text-primary' 
+                                        : 'bg-black/20 border-white/10 hover:border-white/30'
+                                      }
+                                    `}
+                                  >
+                                    {capacity}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
                       <Button onClick={createConcert} className="w-full bg-primary hover:bg-primary/90 rounded-full">Créer</Button>
                     </div>
                   </DialogContent>

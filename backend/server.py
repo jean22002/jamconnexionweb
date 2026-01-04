@@ -335,6 +335,22 @@ class ConcertApplicationResponse(BaseModel):
     status: str  # pending, accepted, rejected
     created_at: str
 
+# Band Join Request - Requête pour rejoindre un groupe
+class BandJoinRequest(BaseModel):
+    band_name: str  # Nom du groupe à rejoindre
+    message: Optional[str] = None  # Message pour l'administrateur
+    musician_name: str  # Nom du musicien qui fait la demande
+
+class BandJoinRequestResponse(BaseModel):
+    id: str
+    band_name: str
+    musician_id: str  # ID du musicien qui fait la demande
+    musician_name: str
+    admin_id: str  # ID de l'administrateur du groupe
+    message: Optional[str] = None
+    status: str  # pending, accepted, rejected
+    created_at: str
+
 # Subscription to venue
 class VenueSubscription(BaseModel):
     venue_id: str

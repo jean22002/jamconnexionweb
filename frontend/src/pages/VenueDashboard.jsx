@@ -272,13 +272,21 @@ export default function VenueDashboard() {
 
     setSendingBroadcast(true);
     try {
+      const endpoint = notificationTarget === 'subscribers' 
+        ? `${API}/venues/me/notify-subscribers`
+        : `${API}/venues/me/broadcast-notification`;
+      
       const response = await axios.post(
-        `${API}/venues/me/broadcast-notification`,
-        { message: broadcastMessage },
+        endpoint,
+        { 
+          message: broadcastMessage,
+          radius: notificationTarget === 'nearby' ? 50 : undefined  // 50 km pour les musiciens proches
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      toast.success(`Notification envoyée à ${response.data.recipients_count} musicien(s) ! 🎵`);
+      const targetText = notificationTarget === 'subscribers' ? 'abonné(s)' : 'musicien(s)';
+      toast.success(`Notification envoyée à ${response.data.recipients_count} ${targetText} ! 🎵`);
       setBroadcastMessage("");
       fetchBroadcastHistory();
     } catch (error) {

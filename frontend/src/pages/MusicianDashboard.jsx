@@ -1535,6 +1535,34 @@ export default function MusicianDashboard() {
                       />
                     </div>
 
+                    {/* Switch Administrateur - uniquement lors de la création */}
+                    {editingBandIndex === null && (
+                      <div className="p-4 bg-primary/10 rounded-lg border border-primary/30">
+                        <div className="flex items-start gap-3">
+                          <Switch 
+                            checked={currentBand.is_admin || false} 
+                            onCheckedChange={(checked) => setCurrentBand({ ...currentBand, is_admin: checked })}
+                          />
+                          <div className="flex-1">
+                            <Label className="cursor-pointer text-base">👑 Je suis l'administrateur de ce groupe</Label>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              En tant qu'administrateur, vous serez le seul à pouvoir modifier les informations du groupe. 
+                              Vous recevrez également les notifications des établissements et pourrez communiquer avec eux.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Affichage si édition par non-admin */}
+                    {editingBandIndex !== null && currentBand.admin_id && currentBand.admin_id !== user?.id && (
+                      <div className="p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
+                        <p className="text-sm text-yellow-400">
+                          ⚠️ Vous n'êtes pas l'administrateur de ce groupe. Seul l'administrateur peut modifier ces informations.
+                        </p>
+                      </div>
+                    )}
+
                     {/* Quartier général */}
                     <div className="p-4 glassmorphism rounded-xl space-y-4">
                       <div className="flex items-center gap-2 mb-2">

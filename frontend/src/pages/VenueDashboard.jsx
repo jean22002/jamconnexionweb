@@ -629,7 +629,7 @@ export default function VenueDashboard() {
         payment: ''
       });
       fetchPlanningSlots();
-      fetchBookedDates();
+      fetchEvents();
     } catch (error) {
       toast.error("Erreur lors de la création du créneau");
       console.error(error);

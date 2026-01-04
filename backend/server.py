@@ -1033,6 +1033,30 @@ async def get_my_venue(current_user: dict = Depends(get_current_user)):
     
     return VenueProfileResponse(**venue, subscription_status=current_user.get("subscription_status"), subscribers_count=subscribers_count)
 
+@api_router.get("/venues/me/jams", response_model=List[JamEventResponse])
+async def get_my_venue_jams(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venue accounts can access this")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    jams = await db.jams.find({"venue_id": venue["id"]}, {"_id": 0}).sort("date", 1).to_list(100)
+    return [JamEventResponse(**j) for j in jams]
+
+@api_router.get("/venues/me/concerts", response_model=List[ConcertEventResponse])
+async def get_my_venue_concerts(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venue accounts can access this")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    concerts = await db.concerts.find({"venue_id": venue["id"]}, {"_id": 0}).sort("date", 1).to_list(100)
+    return [ConcertEventResponse(**c) for c in concerts]
+
 @api_router.get("/venues", response_model=List[VenueProfileResponse])
 async def list_venues(city: Optional[str] = None, style: Optional[str] = None):
     query = {}

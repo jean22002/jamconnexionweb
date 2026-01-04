@@ -617,42 +617,107 @@ export default function VenueDetail() {
 
             {/* Application Dialog */}
             <Dialog open={showApplyDialog} onOpenChange={setShowApplyDialog}>
-              <DialogContent className="glassmorphism border-white/10 max-w-lg max-h-[90vh] overflow-y-auto">
+              <DialogContent className="glassmorphism border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader><DialogTitle>Postuler pour le {selectedSlot?.date}</DialogTitle></DialogHeader>
                 <div className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label>Nom du groupe/artiste *</Label>
-                    <Input value={applicationForm.band_name} onChange={(e) => setApplicationForm({ ...applicationForm, band_name: e.target.value })} className="bg-black/20 border-white/10" />
+                    <Label>Sélectionnez votre groupe ou profil solo *</Label>
+                    <select 
+                      value={selectedBandOrSolo} 
+                      onChange={(e) => handleBandSelection(e.target.value)}
+                      className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white"
+                    >
+                      <option value="">-- Choisissez --</option>
+                      <option value="solo">🎤 Mon profil Solo</option>
+                      {musicianProfile?.bands?.map((band, idx) => (
+                        <option key={idx} value={band.name}>
+                          🎸 {band.name}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-muted-foreground">
+                      Vous ne pouvez postuler qu'avec vos propres groupes ou votre profil solo
+                    </p>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Style musical *</Label>
-                    <Input value={applicationForm.music_style} onChange={(e) => setApplicationForm({ ...applicationForm, music_style: e.target.value })} className="bg-black/20 border-white/10" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Description / Présentation</Label>
-                    <Textarea value={applicationForm.description} onChange={(e) => setApplicationForm({ ...applicationForm, description: e.target.value })} className="bg-black/20 border-white/10" rows={3} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Photo (URL)</Label>
-                    <Input value={applicationForm.band_photo} onChange={(e) => setApplicationForm({ ...applicationForm, band_photo: e.target.value })} className="bg-black/20 border-white/10" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Email</Label>
-                      <Input type="email" value={applicationForm.contact_email} onChange={(e) => setApplicationForm({ ...applicationForm, contact_email: e.target.value })} className="bg-black/20 border-white/10" />
+
+                  {/* Display band/solo card if selected */}
+                  {selectedBandOrSolo && applicationForm.band_name && (
+                    <div className="p-4 bg-black/20 border border-white/10 rounded-xl space-y-3">
+                      <div className="flex items-start gap-4">
+                        {applicationForm.band_photo ? (
+                          <img 
+                            src={applicationForm.band_photo} 
+                            alt={applicationForm.band_name}
+                            className="w-20 h-20 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center">
+                            <Music className="w-10 h-10 text-primary" />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <h3 className="font-heading font-semibold text-lg">{applicationForm.band_name}</h3>
+                          {applicationForm.music_style && (
+                            <p className="text-sm text-primary">{applicationForm.music_style}</p>
+                          )}
+                          {selectedBandOrSolo !== "solo" && musicianProfile?.bands && (
+                            (() => {
+                              const band = musicianProfile.bands.find(b => b.name === selectedBandOrSolo);
+                              return band && (
+                                <div className="flex flex-wrap gap-2 mt-1 text-xs text-muted-foreground">
+                                  {band.band_type && <span>• {band.band_type}</span>}
+                                  {band.members_count && <span>• {band.members_count} membres</span>}
+                                  {band.has_sound_engineer && <span>• Ingé son</span>}
+                                  {band.show_duration && <span>• {band.show_duration}</span>}
+                                </div>
+                              );
+                            })()
+                          )}
+                        </div>
+                      </div>
+                      {applicationForm.description && (
+                        <p className="text-sm text-muted-foreground">{applicationForm.description}</p>
+                      )}
+                      {(applicationForm.links.facebook || applicationForm.links.instagram || applicationForm.links.youtube) && (
+                        <div className="flex gap-2">
+                          {applicationForm.links.facebook && (
+                            <a href={applicationForm.links.facebook} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
+                              <Facebook className="w-4 h-4" />
+                            </a>
+                          )}
+                          {applicationForm.links.instagram && (
+                            <a href={applicationForm.links.instagram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
+                              <Instagram className="w-4 h-4" />
+                            </a>
+                          )}
+                          {applicationForm.links.youtube && (
+                            <a href={applicationForm.links.youtube} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
+                              <Music className="w-4 h-4" />
+                            </a>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <div className="space-y-2">
-                      <Label>Téléphone</Label>
-                      <Input value={applicationForm.contact_phone} onChange={(e) => setApplicationForm({ ...applicationForm, contact_phone: e.target.value })} className="bg-black/20 border-white/10" />
-                    </div>
-                  </div>
+                  )}
+
                   <div className="space-y-2">
-                    <Label>Liens réseaux sociaux</Label>
-                    <Input placeholder="Facebook" value={applicationForm.links.facebook} onChange={(e) => setApplicationForm({ ...applicationForm, links: { ...applicationForm.links, facebook: e.target.value } })} className="bg-black/20 border-white/10" />
-                    <Input placeholder="Instagram" value={applicationForm.links.instagram} onChange={(e) => setApplicationForm({ ...applicationForm, links: { ...applicationForm.links, instagram: e.target.value } })} className="bg-black/20 border-white/10" />
-                    <Input placeholder="YouTube" value={applicationForm.links.youtube} onChange={(e) => setApplicationForm({ ...applicationForm, links: { ...applicationForm.links, youtube: e.target.value } })} className="bg-black/20 border-white/10" />
+                    <Label>Message supplémentaire (optionnel)</Label>
+                    <Textarea 
+                      value={applicationForm.description} 
+                      onChange={(e) => setApplicationForm({ ...applicationForm, description: e.target.value })} 
+                      className="bg-black/20 border-white/10" 
+                      rows={3}
+                      placeholder="Ajoutez un message personnalisé pour l'établissement..."
+                    />
                   </div>
-                  <Button onClick={submitApplication} className="w-full bg-secondary hover:bg-secondary/90 rounded-full">Envoyer ma candidature</Button>
+
+                  <Button 
+                    onClick={submitApplication} 
+                    className="w-full bg-secondary hover:bg-secondary/90 rounded-full"
+                    disabled={!selectedBandOrSolo}
+                  >
+                    Envoyer ma candidature
+                  </Button>
                 </div>
               </DialogContent>
             </Dialog>

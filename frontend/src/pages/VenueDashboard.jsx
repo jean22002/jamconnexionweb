@@ -1822,6 +1822,110 @@ export default function VenueDashboard() {
                       />
                     </div>
 
+                    {/* Catering Section */}
+                    <div className="space-y-3 p-4 bg-black/10 rounded-lg border border-white/10">
+                      <Label className="text-base flex items-center gap-2">
+                        🍽️ Catering <span className="text-xs text-muted-foreground">(la ration pour les ménestrels)</span>
+                      </Label>
+                      
+                      <div className="flex items-center gap-2">
+                        <Switch 
+                          checked={planningForm.has_catering || false} 
+                          onCheckedChange={(c) => setPlanningForm({ ...planningForm, has_catering: c, catering_drinks: c ? planningForm.catering_drinks : 0 })} 
+                        />
+                        <Label>Restauration disponible</Label>
+                      </div>
+
+                      {planningForm.has_catering && (
+                        <div className="space-y-3 pl-6 border-l-2 border-primary/30">
+                          <div className="space-y-2">
+                            <Label>Boissons (nombre)</Label>
+                            <Select 
+                              value={planningForm.catering_drinks?.toString() || "0"} 
+                              onValueChange={(value) => setPlanningForm({ ...planningForm, catering_drinks: parseInt(value) })}
+                            >
+                              <SelectTrigger className="bg-black/20 border-white/10">
+                                <SelectValue placeholder="Sélectionnez" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background border-white/10">
+                                {[...Array(11)].map((_, i) => (
+                                  <SelectItem key={i} value={i.toString()}>{i === 0 ? "Aucune" : `${i} boisson${i > 1 ? 's' : ''}`}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              id="planning-catering-respect"
+                              checked={planningForm.catering_respect || false}
+                              onChange={(e) => setPlanningForm({ ...planningForm, catering_respect: e.target.checked })}
+                              className="w-4 h-4 text-primary bg-black/20 border-white/10 rounded"
+                            />
+                            <Label htmlFor="planning-catering-respect" className="text-sm">
+                              Ne pas abuser de la gentillesse du patron
+                            </Label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              id="planning-catering-tbd"
+                              checked={planningForm.catering_tbd || false}
+                              onChange={(e) => setPlanningForm({ ...planningForm, catering_tbd: e.target.checked })}
+                              className="w-4 h-4 text-primary bg-black/20 border-white/10 rounded"
+                            />
+                            <Label htmlFor="planning-catering-tbd" className="text-sm">
+                              À définir
+                            </Label>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Accommodation Section */}
+                    <div className="space-y-3 p-4 bg-black/10 rounded-lg border border-white/10">
+                      <Label className="text-base flex items-center gap-2">
+                        🛏️ Hébergement possible
+                      </Label>
+                      
+                      <div className="flex items-center gap-2">
+                        <Switch 
+                          checked={planningForm.has_accommodation || false} 
+                          onCheckedChange={(c) => setPlanningForm({ ...planningForm, has_accommodation: c, accommodation_capacity: c ? planningForm.accommodation_capacity : 0 })} 
+                        />
+                        <Label>Hébergement disponible</Label>
+                      </div>
+
+                      {planningForm.has_accommodation && (
+                        <div className="space-y-2 pl-6 border-l-2 border-primary/30">
+                          <Label>Nombre de personnes</Label>
+                          <div className="grid grid-cols-5 gap-2">
+                            {[...Array(10)].map((_, i) => {
+                              const capacity = i + 1;
+                              return (
+                                <button
+                                  key={capacity}
+                                  type="button"
+                                  onClick={() => setPlanningForm({ ...planningForm, accommodation_capacity: capacity })}
+                                  className={`
+                                    p-2 rounded-lg border-2 transition-all font-semibold
+                                    ${planningForm.accommodation_capacity === capacity 
+                                      ? 'bg-primary/20 border-primary text-primary' 
+                                      : 'bg-black/20 border-white/10 hover:border-white/30'
+                                    }
+                                  `}
+                                >
+                                  {capacity}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     <div className="flex gap-3 mt-6">
                       <Button
                         onClick={handleCreatePlanningSlot}

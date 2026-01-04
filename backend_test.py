@@ -2606,7 +2606,14 @@ class JamConnexionAPITester:
             self.test_bands_data_analysis,
             self.test_bands_geolocation_search,
             self.test_create_band_without_gps,
-            self.test_geolocation_excludes_no_gps_bands
+            self.test_geolocation_excludes_no_gps_bands,
+            # Bands Geolocation Search Fix Tests (LATEST)
+            self.test_create_musicians_with_bands_for_geolocation,
+            self.test_bands_geolocation_search_paris_100km,
+            self.test_bands_geolocation_search_paris_500km,
+            self.test_bands_geolocation_search_lyon_100km,
+            self.test_bands_geolocation_precision_verification,
+            self.test_bands_geolocation_on_the_fly_geocoding
         ]
         
         for test in tests:

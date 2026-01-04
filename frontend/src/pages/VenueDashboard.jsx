@@ -1000,7 +1000,12 @@ export default function VenueDashboard() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input placeholder="Ville" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" data-testid="venue-city" />
-                    {editing && <Button type="button" onClick={geocodeAddress} variant="outline" className="border-white/20"><MapPin className="w-4 h-4 mr-2" /> Géolocaliser</Button>}
+                    {editing && (
+                      <div className="flex gap-2">
+                        <Button type="button" onClick={geocodeAddress} variant="outline" className="border-white/20 flex-1"><MapPin className="w-4 h-4 mr-2" /> Géolocaliser</Button>
+                        <Button type="button" onClick={useMyLocation} variant="outline" className="border-white/20 flex-1">📍 Ma position</Button>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

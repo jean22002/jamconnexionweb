@@ -666,6 +666,7 @@ export default function MusicianDashboard() {
         bandcamp: "",
         looking_for_concerts: true,
         looking_for_members: false,
+        looking_for_profiles: [],
         is_public: true
       });
       setEditingBandIndex(null);

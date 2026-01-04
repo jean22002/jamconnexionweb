@@ -1180,12 +1180,53 @@ export default function VenueDashboard() {
                       {jamForm.has_instruments && (
                         <div className="space-y-2">
                           <Label>Instruments disponibles</Label>
-                          <Input placeholder="Entrée pour ajouter" onKeyPress={(e) => { if (e.key === 'Enter') { addToList('instruments_available', e.target.value, jamForm, setJamForm); e.target.value = ''; } }} className="bg-black/20 border-white/10" />
-                          <div className="flex flex-wrap gap-2">
-                            {jamForm.instruments_available.map((s, i) => (
-                              <span key={i} className="px-2 py-1 bg-secondary/20 text-secondary rounded-full text-xs flex items-center gap-1">{s}<button onClick={() => removeFromList('instruments_available', s, jamForm, setJamForm)}><X className="w-3 h-3" /></button></span>
+                          <div className="grid grid-cols-2 gap-3 p-4 bg-black/10 rounded-lg">
+                            {INSTRUMENTS_BASE.map((instrument) => (
+                              <div key={instrument} className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  id={`instrument-${instrument}`}
+                                  checked={jamForm.instruments_available?.includes(instrument) || false}
+                                  onChange={(e) => {
+                                    const currentInstruments = jamForm.instruments_available || [];
+                                    if (e.target.checked) {
+                                      setJamForm({ 
+                                        ...jamForm, 
+                                        instruments_available: [...currentInstruments, instrument] 
+                                      });
+                                    } else {
+                                      setJamForm({ 
+                                        ...jamForm, 
+                                        instruments_available: currentInstruments.filter(i => i !== instrument) 
+                                      });
+                                    }
+                                  }}
+                                  className="w-4 h-4 text-primary bg-black/20 border-white/10 rounded focus:ring-primary focus:ring-2"
+                                />
+                                <Label 
+                                  htmlFor={`instrument-${instrument}`} 
+                                  className="text-sm font-normal cursor-pointer select-none"
+                                >
+                                  {instrument}
+                                </Label>
+                              </div>
                             ))}
                           </div>
+                          {jamForm.instruments_available && jamForm.instruments_available.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {jamForm.instruments_available.map((s, i) => (
+                                <span key={i} className="px-2 py-1 bg-secondary/20 text-secondary rounded-full text-xs flex items-center gap-1">
+                                  {s}
+                                  <button onClick={() => setJamForm({ 
+                                    ...jamForm, 
+                                    instruments_available: jamForm.instruments_available.filter(inst => inst !== s) 
+                                  })}>
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
                       <div className="space-y-2">

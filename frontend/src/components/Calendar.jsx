@@ -2,7 +2,7 @@ import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
 
-const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, eventsByDate = {}, concerts = [], jams = [] }) => {
+const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, eventsByDate = {}, concerts = [], jams = [], planningSlots = [] }) => {
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -65,6 +65,7 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
     // Trouver le concert correspondant à cette date pour afficher les groupes
     const concert = concerts.find(c => c.date === dateStr);
     const jam = jams.find(j => j.date === dateStr);
+    const planningSlot = planningSlots.find(p => p.date === dateStr);
     
     // Calculer le nombre total de membres pour les concerts
     let totalMembers = 0;
@@ -72,12 +73,26 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
       totalMembers = concert.bands.reduce((sum, band) => sum + (band.members_count || 0), 0);
     }
     
+    // Vérifier si le créneau a des candidatures acceptées
+    const hasAcceptedApplications = planningSlot && planningSlot.accepted_bands_count > 0;
+    const isSlotComplete = planningSlot && !planningSlot.is_open && planningSlot.accepted_bands_count >= planningSlot.num_bands_needed;
+    
     // Définir les couleurs selon le type d'événement
     let colorClasses = '';
     let label = '';
     let eventInfo = '';
     
-    if (eventType === 'concert') {
+    if (isSlotComplete) {
+      // Rouge pour les créneaux complets avec toutes les candidatures acceptées
+      colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 hover:bg-red-500/30 cursor-pointer';
+      label = 'Complet';
+      eventInfo = `${planningSlot.accepted_bands_count}/${planningSlot.num_bands_needed} groupes`;
+    } else if (hasAcceptedApplications) {
+      // Orange pour les créneaux partiellement remplis
+      colorClasses = 'bg-orange-500/20 text-orange-400 border-2 border-orange-500/40 hover:bg-orange-500/30 cursor-pointer';
+      label = 'En cours';
+      eventInfo = `${planningSlot.accepted_bands_count}/${planningSlot.num_bands_needed} groupes`;
+    } else if (eventType === 'concert') {
       // Vert pour les concerts - maintenant cliquable
       colorClasses = 'bg-green-500/20 text-green-400 border-2 border-green-500/40 hover:bg-green-500/30 cursor-pointer';
       label = 'Concert';

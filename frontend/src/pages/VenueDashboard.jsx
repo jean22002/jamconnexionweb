@@ -519,19 +519,52 @@ export default function VenueDashboard() {
     return bookedDates.includes(dateStr);
   };
 
-  const handleDateClick = (date) => {
+  const handleDateClick = async (date) => {
     const dateStr = date.toISOString().split('T')[0];
-    if (isDateBooked(dateStr)) {
-      toast.info("Cette date est déjà réservée");
-      return;
+    
+    // Vérifier s'il y a un événement à cette date
+    const eventType = eventsByDate[dateStr];
+    
+    if (eventType) {
+      // Il y a un événement, on l'affiche
+      try {
+        let event = null;
+        let type = null;
+        
+        if (eventType === 'concert') {
+          // Trouver le concert
+          event = concerts.find(c => c.date === dateStr);
+          type = 'concert';
+        } else if (eventType === 'jam') {
+          // Trouver le jam
+          event = jams.find(j => j.date === dateStr);
+          type = 'jam';
+        }
+        
+        if (event) {
+          setSelectedEvent(event);
+          setSelectedEventType(type);
+          setIsEditingEvent(false);
+          setShowEventDetailsModal(true);
+        }
+      } catch (error) {
+        console.error("Error loading event details:", error);
+        toast.error("Erreur lors du chargement de l'événement");
+      }
+    } else {
+      // Pas d'événement, créer un nouveau créneau de planning
+      if (isDateBooked(dateStr)) {
+        toast.info("Cette date est déjà réservée");
+        return;
+      }
+      setSelectedDate(date);
+      setPlanningForm({
+        ...planningForm,
+        date: dateStr,
+        time: ''
+      });
+      setShowPlanningModal(true);
     }
-    setSelectedDate(date);
-    setPlanningForm({
-      ...planningForm,
-      date: dateStr,
-      time: ''
-    });
-    setShowPlanningModal(true);
   };
 
   const handleCreatePlanningSlot = async () => {

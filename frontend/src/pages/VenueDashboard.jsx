@@ -232,8 +232,16 @@ export default function VenueDashboard() {
       const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
       const data = await response.json();
       if (data.length > 0) {
-        setFormData({ ...formData, latitude: parseFloat(data[0].lat), longitude: parseFloat(data[0].lon) });
-        toast.success("Coordonnées trouvées!");
+        const result = data[0];
+        // Auto-remplir l'adresse avec le résultat complet de la géolocalisation
+        const fullAddress = result.display_name.split(',')[0] + ', ' + result.display_name.split(',')[1];
+        setFormData({ 
+          ...formData, 
+          latitude: parseFloat(result.lat), 
+          longitude: parseFloat(result.lon),
+          address: fullAddress.trim() // Remplacer l'adresse par celle trouvée
+        });
+        toast.success("Coordonnées et adresse complétées!");
       } else {
         toast.error("Adresse non trouvée");
       }

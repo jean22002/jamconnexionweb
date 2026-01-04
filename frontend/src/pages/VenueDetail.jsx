@@ -45,6 +45,8 @@ export default function VenueDetail() {
     links: { facebook: "", instagram: "", youtube: "" },
     contact_email: "", contact_phone: ""
   });
+  const [musicianProfile, setMusicianProfile] = useState(null);
+  const [selectedBandOrSolo, setSelectedBandOrSolo] = useState("");
   const [activeEvents, setActiveEvents] = useState([]);
   const [currentParticipation, setCurrentParticipation] = useState(null);
   const [reviews, setReviews] = useState([]);

@@ -315,6 +315,9 @@ export default function VenueDashboard() {
       fetchBroadcastHistory();
       fetchSubscribers(); // Rafraîchir les abonnés
     }
+    if (activeTab === "jacks" && profile) {
+      fetchSubscribers(); // Rafraîchir les abonnés quand on ouvre l'onglet Jacks
+    }
   }, [activeTab, profile]);
 
   // Reviews Management

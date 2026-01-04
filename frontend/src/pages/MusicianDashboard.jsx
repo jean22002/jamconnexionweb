@@ -3099,7 +3099,7 @@ export default function MusicianDashboard() {
                   <X className="w-4 h-4 mr-2" />
                   Réinitialiser les filtres
                 </Button>
-                </div>
+                  </div>
                 ) : (
                   /* Mode géolocalisation */
                   <div className="space-y-6">
@@ -3130,6 +3130,7 @@ export default function MusicianDashboard() {
                     )}
                   </div>
                 )}
+              </div>
 
               {/* Bands List */}
               {bandsLoading ? (

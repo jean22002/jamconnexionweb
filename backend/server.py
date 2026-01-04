@@ -15,6 +15,8 @@ import jwt
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutSessionRequest
 import math
 import aiofiles
+import httpx
+from math import radians, sin, cos, sqrt, atan2
 
 ROOT_DIR = Path(__file__).parent
 UPLOADS_DIR = ROOT_DIR / "uploads"

@@ -411,8 +411,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "CityAutocomplete - Musician Profile"
-    - "CityAutocomplete - Venue Profile"
     - "Review System - Frontend VenueDetail"
     - "Review System - Frontend VenueDashboard"
   stuck_tasks: []

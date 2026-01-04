@@ -351,6 +351,24 @@ export default function MusicianDashboard() {
   // State for managing multiple bands
   const [editingBandIndex, setEditingBandIndex] = useState(null);
   const [showBandDialog, setShowBandDialog] = useState(false);
+  const [currentBand, setCurrentBand] = useState({
+    name: "",
+    photo: "",
+    description: "",
+    members_count: null,
+    music_styles: [],
+    band_type: "",
+    repertoire_type: "",
+    show_duration: "",
+    facebook: "",
+    instagram: "",
+    youtube: "",
+    website: "",
+    bandcamp: "",
+    looking_for_concerts: true,
+    looking_for_members: false,
+    is_public: true
+  });
 
   const fetchData = useCallback(async (retryCount = 0) => {
     const MAX_RETRIES = 3;

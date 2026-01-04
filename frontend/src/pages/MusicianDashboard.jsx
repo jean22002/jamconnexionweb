@@ -1485,6 +1485,58 @@ export default function MusicianDashboard() {
                       />
                     </div>
 
+                    {/* Quartier général */}
+                    <div className="p-4 glassmorphism rounded-xl space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <MapPin className="w-5 h-5 text-primary" />
+                        <Label className="text-lg font-semibold">Quartier général</Label>
+                      </div>
+
+                      <CityAutocomplete
+                        value={currentBand.city}
+                        onSelect={(cityData) => {
+                          setCurrentBand({
+                            ...currentBand,
+                            city: cityData.city,
+                            postal_code: cityData.postalCode,
+                            department: cityData.department,
+                            department_name: cityData.departmentName,
+                            region: cityData.region
+                          });
+                        }}
+                        label="Ville du groupe"
+                        placeholder="Ex: Narbonne"
+                      />
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Département</Label>
+                          <Input
+                            value={currentBand.department_name ? `${currentBand.department_name} (${currentBand.department})` : ''}
+                            disabled
+                            className="bg-black/10 border-white/10 text-muted-foreground"
+                            placeholder="Auto-rempli"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Région</Label>
+                          <Input
+                            value={currentBand.region || ''}
+                            disabled
+                            className="bg-black/10 border-white/10 text-muted-foreground"
+                            placeholder="Auto-rempli"
+                          />
+                        </div>
+                      </div>
+
+                      {currentBand.city && (
+                        <p className="text-xs text-primary flex items-center gap-2">
+                          <MapPin className="w-3 h-3" />
+                          Basé à {currentBand.city}, {currentBand.department_name} ({currentBand.region})
+                        </p>
+                      )}
+                    </div>
+
                     {/* Type de groupe */}
                     <div className="space-y-2">
                       <Label>Type de groupe</Label>

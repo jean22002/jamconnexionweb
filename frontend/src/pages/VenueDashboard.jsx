@@ -199,36 +199,6 @@ export default function VenueDashboard() {
     fetchEvents();
   }, [fetchProfile, fetchMusicians, fetchEvents]);
 
-  // Fetch booked dates for calendar
-  const fetchBookedDates = useCallback(async () => {
-    if (!token) return;
-    try {
-      const [jamsRes, concertsRes] = await Promise.all([
-        axios.get(`${API}/venues/me/jams`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API}/venues/me/concerts`, { headers: { Authorization: `Bearer ${token}` } })
-      ]);
-      
-      // Construire le tableau des dates réservées (pour rétrocompatibilité)
-      const bookedDatesArray = [
-        ...jamsRes.data.map(j => j.date),
-        ...concertsRes.data.map(c => c.date)
-      ];
-      setBookedDates(bookedDatesArray);
-      
-      // Construire l'objet des événements par date avec leur type
-      const eventsMap = {};
-      jamsRes.data.forEach(jam => {
-        eventsMap[jam.date] = 'jam'; // Mauve pour les bœufs
-      });
-      concertsRes.data.forEach(concert => {
-        eventsMap[concert.date] = 'concert'; // Vert pour les concerts
-      });
-      setEventsByDate(eventsMap);
-    } catch (error) {
-      console.error("Error fetching booked dates:", error);
-    }
-  }, [token]);
-
   useEffect(() => {
     if (profile) fetchEvents();
   }, [profile, fetchEvents]);

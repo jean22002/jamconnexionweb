@@ -66,6 +66,7 @@ export default function VenueDashboard() {
     payment: ''
   });
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
+  const [notificationTarget, setNotificationTarget] = useState("subscribers"); // 'subscribers' or 'nearby'
   
   // Reviews
   const [reviews, setReviews] = useState([]);

@@ -58,8 +58,35 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates }) => 
     const date = new Date(year, month, day);
     const dateStr = date.toISOString().split('T')[0];
     const isBooked = isDateBooked(dateStr);
+    const eventType = eventsByDate[dateStr]; // 'concert', 'jam', ou undefined
     const isPast = isPastDate(date);
     const isToday = new Date().toDateString() === date.toDateString();
+    
+    // Définir les couleurs selon le type d'événement
+    let colorClasses = '';
+    let label = '';
+    
+    if (eventType === 'concert') {
+      // Vert pour les concerts
+      colorClasses = 'bg-green-500/20 text-green-400 border-2 border-green-500/40 cursor-not-allowed';
+      label = 'Concert';
+    } else if (eventType === 'jam') {
+      // Mauve pour les bœufs
+      colorClasses = 'bg-purple-500/20 text-purple-400 border-2 border-purple-500/40 cursor-not-allowed';
+      label = 'Bœuf';
+    } else if (isBooked) {
+      // Rouge pour autres réservations (au cas où)
+      colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 cursor-not-allowed';
+      label = 'Réservé';
+    } else if (isPast) {
+      // Gris pour le passé
+      colorClasses = 'bg-muted/20 text-muted-foreground cursor-not-allowed opacity-40';
+      label = '';
+    } else {
+      // Bleu pour les jours libres
+      colorClasses = 'bg-blue-500/20 text-blue-400 border-2 border-blue-500/40 hover:bg-blue-500/30 hover:border-blue-500/60 cursor-pointer';
+      label = 'Libre';
+    }
     
     calendarDays.push(
       <button
@@ -68,13 +95,7 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates }) => 
         disabled={isPast || isBooked}
         className={`
           aspect-square p-2 rounded-lg font-semibold transition-all
-          ${
-            isBooked
-              ? 'bg-red-500/20 text-red-400 border-2 border-red-500/40 cursor-not-allowed'
-              : isPast
-              ? 'bg-muted/20 text-muted-foreground cursor-not-allowed opacity-40'
-              : 'bg-blue-500/20 text-blue-400 border-2 border-blue-500/40 hover:bg-blue-500/30 hover:border-blue-500/60 cursor-pointer'
-          }
+          ${colorClasses}
           ${
             isToday && !isBooked
               ? 'ring-2 ring-primary'
@@ -85,7 +106,7 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates }) => 
         <div className="text-center">
           <div className="text-lg">{day}</div>
           <div className="text-[10px] mt-1 font-normal">
-            {isBooked ? 'Réservé' : isPast ? '' : 'Libre'}
+            {label}
           </div>
         </div>
       </button>

@@ -581,6 +581,10 @@ export default function MusicianDashboard() {
       const params = new URLSearchParams();
       if (bandFilters.department) params.append('department', bandFilters.department);
       if (bandFilters.city) params.append('city', bandFilters.city);
+      if (bandFilters.musicStyle) params.append('music_style', bandFilters.musicStyle);
+      if (bandFilters.bandType) params.append('band_type', bandFilters.bandType);
+      if (bandFilters.repertoireType) params.append('repertoire_type', bandFilters.repertoireType);
+      if (bandFilters.lookingForMembers) params.append('looking_for_members', 'true');
       
       const response = await axios.get(`${API}/bands?${params.toString()}`);
       setBands(response.data);

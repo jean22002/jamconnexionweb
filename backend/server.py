@@ -2812,6 +2812,173 @@ async def get_bands_by_department():
     
     return departments
 
+# ============= BAND JOIN REQUESTS =============
+
+@api_router.post("/bands/join-requests")
+async def create_band_join_request(data: Dict[str, Any], current_user: dict = Depends(get_current_user)):
+    """Create a request to join a band"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can request to join bands")
+    
+    # Get current musician profile
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Find the target musician who owns the band
+    target_musician = await db.musicians.find_one({"id": data["musician_id"]}, {"_id": 0})
+    if not target_musician:
+        raise HTTPException(status_code=404, detail="Target musician not found")
+    
+    # Find the specific band
+    target_band = None
+    if target_musician.get("bands"):
+        for band in target_musician["bands"]:
+            if band.get("name") == data["band_name"]:
+                target_band = band
+                break
+    
+    if not target_band:
+        raise HTTPException(status_code=404, detail="Band not found")
+    
+    # Check if admin_id exists, otherwise the band owner is the admin
+    admin_id = target_band.get("admin_id") or data["musician_id"]
+    
+    # Check if request already exists
+    existing = await db.band_join_requests.find_one({
+        "musician_id": musician["id"],
+        "band_name": data["band_name"],
+        "admin_id": admin_id,
+        "status": "pending"
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="You already have a pending request for this band")
+    
+    # Create the request
+    request_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    request_doc = {
+        "id": request_id,
+        "musician_id": musician["id"],
+        "musician_user_id": musician["user_id"],
+        "musician_name": musician.get("pseudo", current_user["name"]),
+        "musician_image": musician.get("profile_image"),
+        "band_name": data["band_name"],
+        "band_owner_id": data["musician_id"],
+        "admin_id": admin_id,
+        "message": data.get("message", ""),
+        "status": "pending",
+        "created_at": now
+    }
+    
+    await db.band_join_requests.insert_one(request_doc)
+    
+    # Get admin's user_id for notification
+    admin_musician = await db.musicians.find_one({"id": admin_id}, {"_id": 0})
+    if admin_musician:
+        admin_user_id = admin_musician.get("user_id")
+        # Create notification for admin
+        await create_notification(
+            admin_user_id,
+            "band_join_request",
+            "Demande pour rejoindre votre groupe",
+            f"{musician.get('pseudo', current_user['name'])} souhaite rejoindre '{data['band_name']}'",
+            f"/musician/{musician['id']}"
+        )
+    
+    return {"message": "Band join request sent", "request_id": request_id}
+
+@api_router.get("/bands/join-requests")
+async def get_band_join_requests(current_user: dict = Depends(get_current_user)):
+    """Get all join requests for bands where current user is admin"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can view band join requests")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Get all pending requests where current musician is the admin
+    requests = await db.band_join_requests.find({
+        "admin_id": musician["id"],
+        "status": "pending"
+    }, {"_id": 0}).to_list(100)
+    
+    return requests
+
+@api_router.put("/bands/join-requests/{request_id}/accept")
+async def accept_band_join_request(request_id: str, current_user: dict = Depends(get_current_user)):
+    """Accept a band join request"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can accept band join requests")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Get the request
+    request = await db.band_join_requests.find_one({"id": request_id}, {"_id": 0})
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+    
+    # Check if current user is the admin
+    if request["admin_id"] != musician["id"]:
+        raise HTTPException(status_code=403, detail="Only the band admin can accept this request")
+    
+    # Update request status
+    await db.band_join_requests.update_one(
+        {"id": request_id},
+        {"$set": {"status": "accepted", "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    # Send notification to requester
+    await create_notification(
+        request["musician_user_id"],
+        "band_join_accepted",
+        "Demande acceptée !",
+        f"Votre demande pour rejoindre '{request['band_name']}' a été acceptée",
+        f"/musician/{request['band_owner_id']}"
+    )
+    
+    return {"message": "Request accepted"}
+
+@api_router.put("/bands/join-requests/{request_id}/reject")
+async def reject_band_join_request(request_id: str, current_user: dict = Depends(get_current_user)):
+    """Reject a band join request"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can reject band join requests")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Get the request
+    request = await db.band_join_requests.find_one({"id": request_id}, {"_id": 0})
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+    
+    # Check if current user is the admin
+    if request["admin_id"] != musician["id"]:
+        raise HTTPException(status_code=403, detail="Only the band admin can reject this request")
+    
+    # Update request status
+    await db.band_join_requests.update_one(
+        {"id": request_id},
+        {"$set": {"status": "rejected", "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    # Send notification to requester
+    await create_notification(
+        request["musician_user_id"],
+        "band_join_rejected",
+        "Demande refusée",
+        f"Votre demande pour rejoindre '{request['band_name']}' a été refusée",
+        None
+    )
+    
+    return {"message": "Request rejected"}
+
 # ============= PAYMENT ROUTES =============
 
 SUBSCRIPTION_PRICE = 10.00

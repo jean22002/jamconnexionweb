@@ -540,16 +540,37 @@ export default function VenueDetail() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {jams.map((jam) => (
                   <div key={jam.id} className="glassmorphism rounded-xl p-5">
-                    <p className="font-heading font-semibold text-lg">{jam.date}</p>
-                    <p className="text-muted-foreground">{jam.start_time} - {jam.end_time}</p>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <p className="font-heading font-semibold text-lg">{jam.date}</p>
+                        <p className="text-muted-foreground">{jam.start_time} - {jam.end_time}</p>
+                      </div>
+                      {jam.participants_count !== undefined && (
+                        <div className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm font-semibold flex items-center gap-1">
+                          <Users className="w-4 h-4" />
+                          {jam.participants_count}
+                        </div>
+                      )}
+                    </div>
                     <div className="flex flex-wrap gap-2 mt-3">
                       {jam.music_styles.map((s, i) => <span key={i} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">{s}</span>)}
                     </div>
-                    {jam.has_instruments && <p className="text-sm text-secondary mt-2">Instruments sur place</p>}
-                    {jam.has_pa_system && <p className="text-sm text-secondary">Sono disponible</p>}
+                    {jam.has_instruments && <p className="text-sm text-secondary mt-2">🎸 Instruments sur place</p>}
+                    {jam.has_pa_system && <p className="text-sm text-secondary">🔊 Sono disponible</p>}
                     {jam.rules && (
                       <div className="mt-3 pt-3 border-t border-white/10">
                         <p className="text-sm text-muted-foreground"><strong>Règlement:</strong> {jam.rules}</p>
+                      </div>
+                    )}
+                    {user?.role === "musician" && (
+                      <div className="mt-4">
+                        <JoinEventButton 
+                          event={{ ...jam, event_type: 'jam' }}
+                          venueId={id}
+                          token={token}
+                          currentParticipation={currentParticipation}
+                          onParticipationChange={handleParticipationChange}
+                        />
                       </div>
                     )}
                   </div>

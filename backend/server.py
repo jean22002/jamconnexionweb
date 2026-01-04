@@ -80,6 +80,14 @@ class BandInfo(BaseModel):
     band_type: Optional[str] = None  # duo acoustique, trio acoustique, duo electro acoustique, trio electro acoustique, groupe de reprise, groupe tribute
     repertoire_type: Optional[str] = None  # compos ou reprises
     show_duration: Optional[str] = None  # 30mn, 45mn, 1h, 1h15, etc.
+    admin_id: Optional[str] = None  # ID du musicien administrateur du groupe
+    has_sound_engineer: bool = False  # Le groupe possède son propre ingénieur son
+    # Location info
+    city: Optional[str] = None
+    postal_code: Optional[str] = None
+    department: Optional[str] = None
+    department_name: Optional[str] = None
+    region: Optional[str] = None
 
 # Musician Concert
 class MusicianConcert(BaseModel):

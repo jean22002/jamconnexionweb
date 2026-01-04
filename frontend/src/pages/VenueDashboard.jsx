@@ -1113,7 +1113,12 @@ export default function VenueDashboard() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Département</Label>
-                      <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })} disabled={!editing}>
+                      <Select 
+                        key={`dept-${formData.department}`} 
+                        value={formData.department} 
+                        onValueChange={(value) => setFormData({ ...formData, department: value })} 
+                        disabled={!editing}
+                      >
                         <SelectTrigger className="bg-black/20 border-white/10 disabled:opacity-70">
                           <SelectValue placeholder="Sélectionnez un département" />
                         </SelectTrigger>
@@ -1128,7 +1133,12 @@ export default function VenueDashboard() {
                     </div>
                     <div className="space-y-2">
                       <Label>Région</Label>
-                      <Select value={formData.region} onValueChange={(value) => setFormData({ ...formData, region: value })} disabled={!editing}>
+                      <Select 
+                        key={`region-${formData.region}`}
+                        value={formData.region} 
+                        onValueChange={(value) => setFormData({ ...formData, region: value })} 
+                        disabled={!editing}
+                      >
                         <SelectTrigger className="bg-black/20 border-white/10 disabled:opacity-70">
                           <SelectValue placeholder="Sélectionnez une région" />
                         </SelectTrigger>

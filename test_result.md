@@ -561,11 +561,58 @@ test_plan:
         agent: "testing"
         comment: "✅ BUG FIXES VALIDÉS PAR ANALYSE DE CODE - Les deux corrections ont été implémentées correctement dans MusicianDashboard.jsx. DÉTAILS: ✅ BUG 1 - Map Visibility: Classe z-0 appliquée ligne 1157 au conteneur de carte (.relative z-0), garantit que la carte reste derrière le modal profil, ✅ BUG 2 - Notification Spam: Logic corrigée lignes 286-291, toast n'apparaît que si previousCount === 0 (première découverte), durée 3000ms, ID unique 'nearby-venues-initial' pour éviter doublons. LIMITATION: Tests UI automatisés incomplets à cause de problèmes d'authentification backend, mais implémentation code 100% conforme aux spécifications. LES DEUX BUG FIXES SONT CORRECTEMENT IMPLÉMENTÉS."
 
+  - task: "Calendar Date Click to View/Edit Event (Feature 1)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/VenueDashboard.jsx, /app/frontend/src/components/Calendar.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Feature 1 implemented: Click on calendar date to view/edit event in Venue Dashboard Planning tab"
+      - working: true
+        agent: "testing"
+        comment: "✅ FEATURE 1 VALIDATED - Calendar date click functionality working correctly. Tests performed: ✅ Venue login successful (venue@test.com), ✅ Planning tab navigation working, ✅ Calendar component loaded with events visible (green concerts on Jan 9 & 16, purple jams on Jan 12 & 19), ✅ Calendar shows proper color coding (green=concerts, purple=jams, blue=libre), ✅ Event buttons clickable on calendar dates, ✅ Modal opens when clicking on event dates, ✅ Edit functionality accessible through 'Modifier' button. Calendar implementation uses handleDateClick function that checks eventsByDate and opens event details modal for existing events."
+
+  - task: "Event Cards Click to Edit (Feature 2)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/VenueDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Feature 2 implemented: Click on event cards in Bœufs and Concerts tabs to edit events"
+      - working: true
+        agent: "testing"
+        comment: "✅ FEATURE 2 VALIDATED - Event cards click to edit functionality working correctly. Tests performed: ✅ Bœufs tab accessible with jam cards visible, ✅ Concerts tab accessible with concert cards visible, ✅ Event cards have cursor-pointer class indicating clickability, ✅ Cards use handleEditEvent function when clicked, ✅ Edit modals open when clicking on event cards, ✅ Trash icons still functional with stopPropagation to prevent edit modal. Implementation uses onClick handlers on card containers that call handleEditEvent(event, type) to open edit modals."
+
+  - task: "View Venue Events from Subscriptions (Feature 3)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/MusicianDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Feature 3 implemented: View venue events from subscriptions in Musician Dashboard Connexions tab"
+      - working: "NA"
+        agent: "testing"
+        comment: "⚠️ FEATURE 3 PARTIALLY TESTED - Unable to complete full test due to session timeout issues during testing. OBSERVED: ✅ Musician Dashboard accessible, ✅ Connexions tab present (renamed from Abonnements), ✅ Code analysis shows fetchVenueEvents function implemented to load venue events modal, ✅ Modal structure includes concerts and jams sections. LIMITATION: Could not test complete flow due to authentication session expiring during extended testing. Feature appears implemented based on code structure but requires dedicated testing session."
+
 agent_communication:
   - agent: "main"
     message: "Système de participation aux événements implémenté. Backend prêt avec endpoints de participation. Frontend complété avec composants JoinEventButton et ParticipationBadge. Intégrations terminées sur VenueDetail, MusicianDetail et MusicianDashboard. Nécessite test complet backend + frontend pour vérifier: 1) Récupération des événements actifs, 2) Fonctionnalité rejoindre/quitter événement, 3) Affichage du badge de participation, 4) Notifications aux amis, 5) Polling automatique du statut de participation. Un test de fichier doit être créé sous /app/backend/tests/test_event_participation.py pour tester les nouveaux endpoints."
   - agent: "testing"
     message: "🎯 BACKEND PARTICIPATION SYSTEM - TESTS COMPLETS RÉUSSIS (28/28 - 100%) - Tous les endpoints de participation aux événements fonctionnent parfaitement. Tests détaillés effectués: ✅ Création événements actifs avec timing correct, ✅ Récupération événements actifs par établissement, ✅ Sécurité: authentification requise pour participation, ✅ Participation musicien avec création participation record, ✅ Prévention double participation, ✅ Récupération participation active (privée et publique), ✅ Liste participants événement, ✅ Notifications automatiques aux amis lors participation, ✅ Fonctionnalité quitter événement, ✅ Nettoyage automatique participations. La fonction is_event_active() avec buffer 30min fonctionne correctement. Système prêt pour tests frontend. BACKEND PARTICIPATION: ENTIÈREMENT FONCTIONNEL."
+  - agent: "testing"
+    message: "🎯 3 NEW EVENT MANAGEMENT FEATURES TESTED - RESULTS: ✅ FEATURE 1 (Calendar Date Click): Fully functional - calendar shows events with proper color coding, clicking dates opens event details modal with edit functionality. ✅ FEATURE 2 (Event Cards Click): Fully functional - both Bœufs and Concerts tabs have clickable cards that open edit modals, trash icons still work independently. ⚠️ FEATURE 3 (Venue Events from Subscriptions): Implementation verified through code analysis but full UI testing limited by session timeouts. All 3 features appear to be properly implemented according to specifications."
   - agent: "main"
     message: "NOUVELLES FONCTIONNALITÉS IMPLÉMENTÉES: 1) NOTIFICATIONS GÉOGRAPHIQUES - Établissements peuvent envoyer des notifications à tous les musiciens dans un rayon de 100km. Backend: 3 endpoints créés (broadcast, history, count). Frontend: Nouvel onglet dans VenueDashboard avec formulaire et historique. 2) SYSTÈME D'AVIS - Musiciens peuvent noter établissements (1-5 étoiles + commentaire). Établissements peuvent répondre et toggle visibilité. Backend: 7 endpoints créés (create, list, rating, respond, report, visibility, my reviews). Frontend: Onglet Avis sur VenueDetail (affichage + formulaire) et VenueDashboard (gestion). Composant StarRating créé. BESOIN TESTS COMPLETS backend + frontend pour ces 2 nouvelles fonctionnalités."
   - agent: "testing"

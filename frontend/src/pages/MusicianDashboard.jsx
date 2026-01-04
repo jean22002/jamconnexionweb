@@ -3127,16 +3127,29 @@ export default function MusicianDashboard() {
                           </span>
                         )}
                       </div>
-                      <Button
-                        onClick={() => {
-                          setSelectedBand(band);
-                          setShowMessageDialog(true);
-                        }}
-                        className="w-full bg-primary hover:bg-primary/90 rounded-full gap-2"
-                      >
-                        <Send className="w-4 h-4" />
-                        Contacter
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => {
+                            setSelectedBand(band);
+                            setShowBandDetailsDialog(true);
+                          }}
+                          variant="outline"
+                          className="flex-1 border-white/20"
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Voir profil
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setSelectedBand(band);
+                            setShowMessageDialog(true);
+                          }}
+                          className="flex-1 bg-primary hover:bg-primary/90 rounded-full"
+                        >
+                          <Send className="w-4 h-4 mr-2" />
+                          Contacter
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>

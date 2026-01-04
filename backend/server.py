@@ -1989,6 +1989,32 @@ async def accept_application(app_id: str, current_user: dict = Depends(get_curre
             f"/venue/{venue['id']}"
         )
     
+    # NOUVELLE FONCTIONNALITÉ : Trouver l'administrateur du groupe et le notifier
+    band_name = app.get("band_name")
+    if band_name:
+        # Rechercher le groupe dans tous les profils de musiciens
+        all_musicians = await db.musicians.find({}, {"_id": 0, "bands": 1, "user_id": 1, "pseudo": 1}).to_list(1000)
+        
+        for m in all_musicians:
+            if m.get("bands"):
+                for band in m["bands"]:
+                    if band.get("name") == band_name and band.get("admin_id"):
+                        # Trouvé l'administrateur du groupe !
+                        admin_id = band["admin_id"]
+                        
+                        # Récupérer le profil admin complet
+                        admin_musician = await db.musicians.find_one({"id": admin_id}, {"_id": 0})
+                        if admin_musician:
+                            # Envoyer une notification à l'administrateur du groupe
+                            await create_notification(
+                                admin_musician["user_id"], 
+                                "band_concert_confirmed",
+                                f"🎉 Concert confirmé pour {band_name}",
+                                f"{venue['name']} a validé votre groupe pour le {slot['date']}. Vous pouvez maintenant communiquer avec l'établissement.",
+                                f"/venue/{venue['id']}"
+                            )
+                        break
+    
     return {"message": "Application accepted"}
 
 @api_router.post("/applications/{app_id}/reject")

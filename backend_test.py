@@ -1342,6 +1342,321 @@ class JamConnexionAPITester:
             self.log_test("Get Venue My Reviews", False, f"Error: {str(e)}")
             return False
 
+    # ============= PUT ENDPOINTS TESTS (NEVER TESTED BEFORE) =============
+
+    def test_put_jam_update(self):
+        """Test PUT /api/jams/{jam_id} - Update a jam event"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # First create a jam to update
+            jam_data = {
+                "date": "2024-12-28",
+                "start_time": "19:00",
+                "end_time": "22:00",
+                "music_styles": ["Jazz", "Blues"],
+                "rules": "Original rules for testing",
+                "has_instruments": True,
+                "has_pa_system": True,
+                "instruments_available": ["Piano", "Drums"],
+                "additional_info": "Original info"
+            }
+            
+            # Create the jam
+            create_response = requests.post(f"{self.base_url}/jams", json=jam_data, headers=headers, timeout=10)
+            if create_response.status_code != 200:
+                self.log_test("PUT Jam Update - Setup", False, f"Failed to create jam: {create_response.status_code}")
+                return False
+            
+            created_jam = create_response.json()
+            jam_id = created_jam.get('id')
+            
+            # Now update the jam with new data
+            updated_jam_data = {
+                "date": "2024-12-28",
+                "start_time": "20:00",  # Changed time
+                "end_time": "23:30",    # Changed time
+                "music_styles": ["Jazz", "Blues", "Funk"],  # Added style
+                "rules": "Updated rules: Bring your own cables!",  # Changed rules
+                "has_instruments": True,
+                "has_pa_system": False,  # Changed
+                "instruments_available": ["Piano", "Drums", "Bass"],  # Added instrument
+                "additional_info": "Updated info: Special guest tonight!"  # Changed info
+            }
+            
+            # Update the jam
+            response = requests.put(f"{self.base_url}/jams/{jam_id}", json=updated_jam_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                updated_jam = response.json()
+                details = f"Jam updated successfully, ID: {jam_id}"
+                
+                # Verify the changes were applied
+                if (updated_jam.get('start_time') == "20:00" and 
+                    updated_jam.get('end_time') == "23:30" and
+                    "Funk" in updated_jam.get('music_styles', []) and
+                    updated_jam.get('has_pa_system') == False and
+                    "Updated rules" in updated_jam.get('rules', '') and
+                    "Bass" in updated_jam.get('instruments_available', [])):
+                    details += ", All changes verified"
+                else:
+                    details += ", WARNING: Some changes not applied correctly"
+                    success = False
+                
+                # Verify via GET request
+                get_response = requests.get(f"{self.base_url}/venues/{self.venue_profile_id}/jams", timeout=10)
+                if get_response.status_code == 200:
+                    jams = get_response.json()
+                    updated_jam_from_get = next((j for j in jams if j['id'] == jam_id), None)
+                    if updated_jam_from_get and updated_jam_from_get.get('start_time') == "20:00":
+                        details += ", Changes persisted in database"
+                    else:
+                        details += ", WARNING: Changes not persisted"
+                        success = False
+                
+                self.updated_jam_id = jam_id  # Store for potential cleanup
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("PUT Jam Update", success, details)
+            return success
+        except Exception as e:
+            self.log_test("PUT Jam Update", False, f"Error: {str(e)}")
+            return False
+
+    def test_put_concert_update(self):
+        """Test PUT /api/concerts/{concert_id} - Update a concert event"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # First create a concert to update
+            concert_data = {
+                "date": "2024-12-29",
+                "start_time": "20:00",
+                "title": "Original Concert Title",
+                "description": "Original description",
+                "bands": [
+                    {
+                        "name": "Original Band",
+                        "photo": "https://example.com/original.jpg",
+                        "facebook": "https://facebook.com/originalband"
+                    }
+                ],
+                "price": "10€"
+            }
+            
+            # Create the concert
+            create_response = requests.post(f"{self.base_url}/concerts", json=concert_data, headers=headers, timeout=10)
+            if create_response.status_code != 200:
+                self.log_test("PUT Concert Update - Setup", False, f"Failed to create concert: {create_response.status_code}")
+                return False
+            
+            created_concert = create_response.json()
+            concert_id = created_concert.get('id')
+            
+            # Now update the concert with new data
+            updated_concert_data = {
+                "date": "2024-12-29",
+                "start_time": "21:30",  # Changed time
+                "title": "Updated Concert Title - Special Edition",  # Changed title
+                "description": "Updated description with more details about this amazing show",  # Changed description
+                "bands": [
+                    {
+                        "name": "Updated Band Name",  # Changed band name
+                        "photo": "https://example.com/updated.jpg",  # Changed photo
+                        "facebook": "https://facebook.com/updatedband",  # Changed facebook
+                        "instagram": "@updatedband"  # Added instagram
+                    },
+                    {
+                        "name": "Second Band Added",  # Added second band
+                        "photo": "https://example.com/second.jpg"
+                    }
+                ],
+                "price": "15€"  # Changed price
+            }
+            
+            # Update the concert
+            response = requests.put(f"{self.base_url}/concerts/{concert_id}", json=updated_concert_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                updated_concert = response.json()
+                details = f"Concert updated successfully, ID: {concert_id}"
+                
+                # Verify the changes were applied
+                bands = updated_concert.get('bands', [])
+                if (updated_concert.get('start_time') == "21:30" and 
+                    "Updated Concert Title" in updated_concert.get('title', '') and
+                    "Updated description" in updated_concert.get('description', '') and
+                    updated_concert.get('price') == "15€" and
+                    len(bands) == 2 and
+                    bands[0].get('name') == "Updated Band Name"):
+                    details += ", All changes verified"
+                else:
+                    details += ", WARNING: Some changes not applied correctly"
+                    success = False
+                
+                # Verify via GET request
+                get_response = requests.get(f"{self.base_url}/venues/{self.venue_profile_id}/concerts", timeout=10)
+                if get_response.status_code == 200:
+                    concerts = get_response.json()
+                    updated_concert_from_get = next((c for c in concerts if c['id'] == concert_id), None)
+                    if updated_concert_from_get and updated_concert_from_get.get('start_time') == "21:30":
+                        details += ", Changes persisted in database"
+                    else:
+                        details += ", WARNING: Changes not persisted"
+                        success = False
+                
+                self.updated_concert_id = concert_id  # Store for potential cleanup
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("PUT Concert Update", success, details)
+            return success
+        except Exception as e:
+            self.log_test("PUT Concert Update", False, f"Error: {str(e)}")
+            return False
+
+    def test_put_jam_unauthorized(self):
+        """Test PUT jam without authentication (should fail)"""
+        try:
+            # Try to update without token
+            update_data = {
+                "date": "2024-12-30",
+                "start_time": "20:00",
+                "end_time": "23:00",
+                "music_styles": ["Rock"]
+            }
+            
+            response = requests.put(f"{self.base_url}/jams/fake-id", json=update_data, timeout=10)
+            success = response.status_code == 401
+            
+            if success:
+                details = "Correctly rejected unauthorized request"
+            else:
+                details = f"Unexpected status: {response.status_code}, Expected: 401"
+            
+            self.log_test("PUT Jam Unauthorized", success, details)
+            return success
+        except Exception as e:
+            self.log_test("PUT Jam Unauthorized", False, f"Error: {str(e)}")
+            return False
+
+    def test_put_concert_unauthorized(self):
+        """Test PUT concert without authentication (should fail)"""
+        try:
+            # Try to update without token
+            update_data = {
+                "date": "2024-12-30",
+                "start_time": "20:00",
+                "title": "Unauthorized Update"
+            }
+            
+            response = requests.put(f"{self.base_url}/concerts/fake-id", json=update_data, timeout=10)
+            success = response.status_code == 401
+            
+            if success:
+                details = "Correctly rejected unauthorized request"
+            else:
+                details = f"Unexpected status: {response.status_code}, Expected: 401"
+            
+            self.log_test("PUT Concert Unauthorized", success, details)
+            return success
+        except Exception as e:
+            self.log_test("PUT Concert Unauthorized", False, f"Error: {str(e)}")
+            return False
+
+    def test_put_jam_not_found(self):
+        """Test PUT jam with non-existent ID (should fail)"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            update_data = {
+                "date": "2024-12-30",
+                "start_time": "20:00",
+                "end_time": "23:00",
+                "music_styles": ["Rock"]
+            }
+            
+            response = requests.put(f"{self.base_url}/jams/non-existent-id", json=update_data, headers=headers, timeout=10)
+            success = response.status_code == 404
+            
+            if success:
+                details = "Correctly returned 404 for non-existent jam"
+            else:
+                details = f"Unexpected status: {response.status_code}, Expected: 404"
+            
+            self.log_test("PUT Jam Not Found", success, details)
+            return success
+        except Exception as e:
+            self.log_test("PUT Jam Not Found", False, f"Error: {str(e)}")
+            return False
+
+    def test_put_concert_not_found(self):
+        """Test PUT concert with non-existent ID (should fail)"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            update_data = {
+                "date": "2024-12-30",
+                "start_time": "20:00",
+                "title": "Non-existent Concert"
+            }
+            
+            response = requests.put(f"{self.base_url}/concerts/non-existent-id", json=update_data, headers=headers, timeout=10)
+            success = response.status_code == 404
+            
+            if success:
+                details = "Correctly returned 404 for non-existent concert"
+            else:
+                details = f"Unexpected status: {response.status_code}, Expected: 404"
+            
+            self.log_test("PUT Concert Not Found", success, details)
+            return success
+        except Exception as e:
+            self.log_test("PUT Concert Not Found", False, f"Error: {str(e)}")
+            return False
+
+    def test_put_jam_invalid_data(self):
+        """Test PUT jam with invalid data (should fail)"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Create a jam first
+            jam_data = {
+                "date": "2024-12-30",
+                "start_time": "20:00",
+                "end_time": "23:00",
+                "music_styles": ["Jazz"]
+            }
+            
+            create_response = requests.post(f"{self.base_url}/jams", json=jam_data, headers=headers, timeout=10)
+            if create_response.status_code == 200:
+                jam_id = create_response.json().get('id')
+                
+                # Try to update with invalid data
+                invalid_data = {
+                    "date": "invalid-date-format",  # Invalid date
+                    "start_time": "25:00",  # Invalid time
+                    "end_time": "23:00"
+                }
+                
+                response = requests.put(f"{self.base_url}/jams/{jam_id}", json=invalid_data, headers=headers, timeout=10)
+                success = response.status_code == 400
+                
+                if success:
+                    details = "Correctly rejected invalid data"
+                else:
+                    details = f"Unexpected status: {response.status_code}, Expected: 400"
+            else:
+                success = False
+                details = "Failed to create jam for test"
+            
+            self.log_test("PUT Jam Invalid Data", success, details)
+            return success
+        except Exception as e:
+            self.log_test("PUT Jam Invalid Data", False, f"Error: {str(e)}")
+            return False
+
     def test_list_venues(self):
         """Test listing venues"""
         try:

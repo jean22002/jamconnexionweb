@@ -411,9 +411,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "VenueDetail - Bouton Se connecter"
-    - "Proximity Alerts - Backend"
-    - "Messaging System - MessagesImproved Interface"
+    - "CityAutocomplete - Musician Profile"
+    - "CityAutocomplete - Venue Profile"
     - "Review System - Frontend VenueDetail"
     - "Review System - Frontend VenueDashboard"
   stuck_tasks: []

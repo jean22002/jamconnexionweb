@@ -1119,7 +1119,7 @@ export default function VenueDashboard() {
                         </SelectTrigger>
                         <SelectContent className="bg-background border-white/10 max-h-[300px]">
                           {DEPARTEMENTS_FRANCE.map((dept) => (
-                            <SelectItem key={dept.code} value={dept.code}>
+                            <SelectItem key={dept.code} value={`${dept.code} - ${dept.nom}`}>
                               {dept.code} - {dept.nom}
                             </SelectItem>
                           ))}

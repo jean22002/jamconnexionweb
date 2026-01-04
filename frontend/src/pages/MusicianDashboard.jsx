@@ -322,6 +322,7 @@ export default function MusicianDashboard() {
     city: "", department: "", region: "", phone: "", website: "", facebook: "", instagram: "", youtube: "", bandcamp: "",
     has_band: false,
     band: { name: "", photo: "", facebook: "", instagram: "", youtube: "", website: "", bandcamp: "" },
+    bands: [], // Multiple bands support
     concerts: []
   });
 

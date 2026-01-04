@@ -1907,6 +1907,21 @@ async def create_application(data: ConcertApplication, current_user: dict = Depe
     if not musician:
         raise HTTPException(status_code=404, detail="Musician profile not found")
     
+    # Validate that the band belongs to the musician or is their solo profile
+    band_name = data.band_name
+    is_solo = band_name == musician.get("pseudo") or "solo" in band_name.lower()
+    
+    if not is_solo:
+        # Check if band exists in musician's bands
+        musician_bands = musician.get("bands", [])
+        band_exists = any(band.get("name") == band_name for band in musician_bands)
+        
+        if not band_exists:
+            raise HTTPException(
+                status_code=403, 
+                detail="Vous ne pouvez postuler qu'avec vos propres groupes ou votre profil solo"
+            )
+    
     slot = await db.planning_slots.find_one({"id": data.planning_slot_id}, {"_id": 0})
     if not slot or not slot.get("is_open", True):
         raise HTTPException(status_code=404, detail="Planning slot not found or closed")

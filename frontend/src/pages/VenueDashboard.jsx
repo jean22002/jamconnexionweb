@@ -56,7 +56,8 @@ export default function VenueDashboard() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [showPlanningModal, setShowPlanningModal] = useState(false);
-  const [bookedDates, setBookedDates] = useState([]);
+  const [bookedDates, setBookedDates] = useState([]); // Ancien système simple
+  const [eventsByDate, setEventsByDate] = useState({}); // Nouveau : {date: type} où type = 'concert' ou 'jam'
   const [planningForm, setPlanningForm] = useState({
     date: '',
     time: '',
@@ -184,11 +185,22 @@ export default function VenueDashboard() {
         axios.get(`${API}/venues/me/concerts`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       
+      // Construire le tableau des dates réservées (pour rétrocompatibilité)
       const bookedDatesArray = [
         ...jamsRes.data.map(j => j.date),
         ...concertsRes.data.map(c => c.date)
       ];
       setBookedDates(bookedDatesArray);
+      
+      // Construire l'objet des événements par date avec leur type
+      const eventsMap = {};
+      jamsRes.data.forEach(jam => {
+        eventsMap[jam.date] = 'jam'; // Mauve pour les bœufs
+      });
+      concertsRes.data.forEach(concert => {
+        eventsMap[concert.date] = 'concert'; // Vert pour les concerts
+      });
+      setEventsByDate(eventsMap);
     } catch (error) {
       console.error("Error fetching booked dates:", error);
     }

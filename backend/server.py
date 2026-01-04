@@ -185,6 +185,8 @@ class VenueProfileResponse(BaseModel):
     cover_image: Optional[str] = None
     address: str
     city: str
+    department: Optional[str] = None
+    region: Optional[str] = None
     postal_code: str
     latitude: float
     longitude: float

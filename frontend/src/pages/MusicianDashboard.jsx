@@ -3409,9 +3409,24 @@ export default function MusicianDashboard() {
       <Dialog open={showVenueEventsModal} onOpenChange={closeVenueEventsModal}>
         <DialogContent className="glassmorphism border-white/10 max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-heading text-2xl">
-              {selectedVenue?.name} - Événements
-            </DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="font-heading text-2xl">
+                {selectedVenue?.name} - Événements
+              </DialogTitle>
+              <Button
+                onClick={() => selectedVenue && fetchVenueEvents(selectedVenue.id, selectedVenue.name)}
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                disabled={loadingVenueEvents}
+              >
+                {loadingVenueEvents ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  "🔄 Rafraîchir"
+                )}
+              </Button>
+            </div>
           </DialogHeader>
 
           {loadingVenueEvents ? (

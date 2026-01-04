@@ -221,6 +221,65 @@ export default function VenueDetail() {
     }
     setSelectedSlot(slot);
     setShowApplyDialog(true);
+    // Load musician profile to get bands
+    if (!musicianProfile && token) {
+      fetchMusicianProfile();
+    }
+  };
+
+  const fetchMusicianProfile = async () => {
+    try {
+      const response = await axios.get(`${API}/musicians/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMusicianProfile(response.data);
+    } catch (error) {
+      console.error("Error fetching musician profile:", error);
+    }
+  };
+
+  const handleBandSelection = (value) => {
+    setSelectedBandOrSolo(value);
+    
+    if (value === "solo") {
+      // Fill form with solo profile data
+      const soloProfile = musicianProfile?.solo_profile || {};
+      setApplicationForm({
+        band_name: `${musicianProfile?.pseudo || "Artiste solo"}`,
+        band_photo: musicianProfile?.profile_image || "",
+        description: soloProfile.bio || musicianProfile?.bio || "",
+        music_style: soloProfile.music_styles?.join(", ") || musicianProfile?.music_styles?.join(", ") || "",
+        links: {
+          facebook: soloProfile.facebook || musicianProfile?.facebook || "",
+          instagram: soloProfile.instagram || musicianProfile?.instagram || "",
+          youtube: soloProfile.youtube || musicianProfile?.youtube || "",
+          website: soloProfile.website || musicianProfile?.website || "",
+          bandcamp: soloProfile.bandcamp || musicianProfile?.bandcamp || ""
+        },
+        contact_email: musicianProfile?.email || "",
+        contact_phone: musicianProfile?.phone || ""
+      });
+    } else {
+      // Find selected band and fill form with band data
+      const selectedBand = musicianProfile?.bands?.find(b => b.name === value);
+      if (selectedBand) {
+        setApplicationForm({
+          band_name: selectedBand.name,
+          band_photo: selectedBand.photo || "",
+          description: selectedBand.bio || "",
+          music_style: selectedBand.music_styles?.join(", ") || "",
+          links: {
+            facebook: selectedBand.facebook || "",
+            instagram: selectedBand.instagram || "",
+            youtube: selectedBand.youtube || "",
+            website: selectedBand.website || "",
+            bandcamp: selectedBand.bandcamp || ""
+          },
+          contact_email: musicianProfile?.email || "",
+          contact_phone: musicianProfile?.phone || ""
+        });
+      }
+    }
   };
 
   const handleParticipationChange = () => {

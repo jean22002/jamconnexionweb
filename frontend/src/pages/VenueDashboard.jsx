@@ -694,6 +694,42 @@ export default function VenueDashboard() {
     }
   };
 
+  // Fonctions pour éditer les événements
+  const handleEditEvent = (event, type) => {
+    setSelectedEvent(event);
+    setSelectedEventType(type);
+    setIsEditingEvent(true);
+    setShowEventDetailsModal(true);
+  };
+
+  const handleUpdateEvent = async () => {
+    try {
+      if (selectedEventType === 'concert') {
+        await axios.put(
+          `${API}/concerts/${selectedEvent.id}`,
+          selectedEvent,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        toast.success("Concert mis à jour");
+      } else if (selectedEventType === 'jam') {
+        await axios.put(
+          `${API}/jams/${selectedEvent.id}`,
+          selectedEvent,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        toast.success("Bœuf mis à jour");
+      }
+      
+      setShowEventDetailsModal(false);
+      setIsEditingEvent(false);
+      fetchEvents();
+      fetchBookedDates();
+    } catch (error) {
+      console.error("Error updating event:", error);
+      toast.error("Erreur lors de la mise à jour");
+    }
+  };
+
   // View applications
   const viewApplications = async (slotId) => {
     try {

@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { VenueImageUpload } from "../components/ui/image-upload";
 import Calendar from "../components/Calendar";
+import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
 import { 
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter
 } from "../components/ui/dialog";

@@ -1653,12 +1653,24 @@ export default function MusicianDashboard() {
                     {/* Nombre de membres */}
                     <div className="space-y-2">
                       <Label>Nombre de membres</Label>
-                      <Input 
-                        type="number" 
-                        value={currentBand.members_count || ""} 
-                        onChange={(e) => setCurrentBand({ ...currentBand, members_count: parseInt(e.target.value) || null })}
-                        className="bg-black/20 border-white/10"
-                      />
+                      <Select 
+                        value={currentBand.members_count?.toString() || ""} 
+                        onValueChange={(value) => setCurrentBand({ ...currentBand, members_count: parseInt(value) })}
+                      >
+                        <SelectTrigger className="bg-black/20 border-white/10">
+                          <SelectValue placeholder="Sélectionnez le nombre" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border-white/10 max-h-[300px]">
+                          {[...Array(19)].map((_, i) => {
+                            const count = i + 2; // De 2 à 20
+                            return (
+                              <SelectItem key={count} value={count.toString()}>
+                                {count} membre{count > 1 ? 's' : ''}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     {/* Switch Ingé Son */}

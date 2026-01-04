@@ -2754,7 +2754,9 @@ class JamConnexionAPITester:
             self.test_bands_geolocation_search_paris_500km,
             self.test_bands_geolocation_search_lyon_100km,
             self.test_bands_geolocation_precision_verification,
-            self.test_bands_geolocation_on_the_fly_geocoding
+            self.test_bands_geolocation_on_the_fly_geocoding,
+            # Looking For Profiles Field Test (LATEST)
+            self.test_looking_for_profiles_field
         ]
         
         for test in tests:

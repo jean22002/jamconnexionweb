@@ -1216,6 +1216,29 @@ export default function VenueDashboard() {
           {/* Planning Tab - Calendrier Visuel */}
           <TabsContent value="planning">
             <div className="space-y-6">
+              {/* Légendes du calendrier */}
+              <div className="glassmorphism rounded-xl p-4">
+                <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Légende :</h3>
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded bg-green-500/20 border-2 border-green-500"></div>
+                    <span className="text-sm">Concert</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded bg-purple-500/20 border-2 border-purple-500"></div>
+                    <span className="text-sm">Bœuf</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded bg-blue-500/20 border-2 border-blue-500"></div>
+                    <span className="text-sm">Libre</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded bg-gray-500/20 border-2 border-gray-500"></div>
+                    <span className="text-sm">Passé</span>
+                  </div>
+                </div>
+              </div>
+
               {/* Calendrier Visuel */}
               <Calendar
                 currentMonth={currentMonth}

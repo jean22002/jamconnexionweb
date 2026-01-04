@@ -3245,6 +3245,135 @@ export default function MusicianDashboard() {
                   </div>
                 </DialogContent>
               </Dialog>
+
+              {/* Band Details Dialog */}
+              <Dialog open={showBandDetailsDialog} onOpenChange={setShowBandDetailsDialog}>
+                <DialogContent className="bg-background border-white/10 text-white max-w-2xl max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-heading">{selectedBand?.name}</DialogTitle>
+                  </DialogHeader>
+                  {selectedBand && (
+                    <div className="space-y-6">
+                      {/* Photo */}
+                      {selectedBand.photo && (
+                        <img src={selectedBand.photo} alt={selectedBand.name} className="w-full h-48 object-cover rounded-lg" />
+                      )}
+
+                      {/* Infos principales */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Type</Label>
+                          <p className="font-semibold">{selectedBand.band_type || "Non spécifié"}</p>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Répertoire</Label>
+                          <p className="font-semibold">{selectedBand.repertoire_type || "Non spécifié"}</p>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Membres</Label>
+                          <p className="font-semibold">{selectedBand.members_count || "Non spécifié"}</p>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Durée du show</Label>
+                          <p className="font-semibold">{selectedBand.show_duration || "Non spécifié"}</p>
+                        </div>
+                      </div>
+
+                      {/* Localisation */}
+                      {selectedBand.city && (
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Localisation</Label>
+                          <p className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-secondary" />
+                            {selectedBand.city}, {selectedBand.department} - {selectedBand.region}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Description */}
+                      {selectedBand.description && (
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Description</Label>
+                          <p className="text-sm">{selectedBand.description}</p>
+                        </div>
+                      )}
+
+                      {/* Styles musicaux */}
+                      {selectedBand.music_styles && selectedBand.music_styles.length > 0 && (
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Styles musicaux</Label>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {selectedBand.music_styles.map((style, i) => (
+                              <span key={i} className="px-3 py-1 bg-primary/20 text-primary rounded-full text-xs">
+                                {style}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Liens sociaux */}
+                      <div>
+                        <Label className="text-xs text-muted-foreground mb-2 block">Réseaux sociaux</Label>
+                        <SocialLinks 
+                          facebook={selectedBand.facebook}
+                          instagram={selectedBand.instagram}
+                          youtube={selectedBand.youtube}
+                          website={selectedBand.website}
+                          bandcamp={selectedBand.bandcamp}
+                        />
+                      </div>
+
+                      {/* Badges */}
+                      <div className="flex flex-wrap gap-2">
+                        {selectedBand.looking_for_concerts && (
+                          <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs flex items-center gap-1">
+                            <Music className="w-3 h-3" />
+                            Cherche des concerts
+                          </span>
+                        )}
+                        {selectedBand.looking_for_members && (
+                          <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs flex items-center gap-1">
+                            <Users className="w-3 h-3" />
+                            Cherche des membres
+                          </span>
+                        )}
+                        {selectedBand.has_sound_engineer && (
+                          <span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-xs">
+                            🎚️ Ingé son
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Profils recherchés */}
+                      {selectedBand.looking_for_profiles && selectedBand.looking_for_profiles.length > 0 && (
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Profils recherchés</Label>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {selectedBand.looking_for_profiles.map((profile, i) => (
+                              <span key={i} className="px-2 py-1 bg-secondary/20 text-secondary rounded-full text-xs">
+                                {profile}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Bouton contact */}
+                      <Button
+                        onClick={() => {
+                          setShowBandDetailsDialog(false);
+                          setShowMessageDialog(true);
+                        }}
+                        className="w-full bg-primary hover:bg-primary/90 rounded-full"
+                      >
+                        <Send className="w-4 h-4 mr-2" />
+                        Contacter ce groupe
+                      </Button>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
             </div>
           </TabsContent>
         </Tabs>

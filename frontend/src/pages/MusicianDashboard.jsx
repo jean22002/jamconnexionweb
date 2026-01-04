@@ -58,6 +58,7 @@ const MUSIC_STYLES_LIST = [
   "Blues rock",
   "Funk",
   "Jazz",
+  "Reggae",
   "Chanson française",
   "Ska",
   "Musique classique",

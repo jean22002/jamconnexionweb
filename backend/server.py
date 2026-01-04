@@ -2685,6 +2685,12 @@ async def get_bands_directory(
                         band_lat = band.get("latitude") or musician.get("latitude")
                         band_lon = band.get("longitude") or musician.get("longitude")
                         
+                        # If no coordinates but we have a city, geocode it on-the-fly
+                        if not (band_lat and band_lon):
+                            city_to_geocode = band.get("city") or musician.get("city")
+                            if city_to_geocode:
+                                band_lat, band_lon = await geocode_city(city_to_geocode)
+                        
                         if band_lat and band_lon:
                             from math import radians, sin, cos, sqrt, atan2
                             
@@ -2746,6 +2752,12 @@ async def get_bands_directory(
                 if latitude and longitude and radius:
                     band_lat = musician.get("latitude")
                     band_lon = musician.get("longitude")
+                    
+                    # If no coordinates but we have a city, geocode it on-the-fly
+                    if not (band_lat and band_lon):
+                        city_to_geocode = musician.get("city")
+                        if city_to_geocode:
+                            band_lat, band_lon = await geocode_city(city_to_geocode)
                     
                     if band_lat and band_lon:
                         from math import radians, sin, cos, sqrt, atan2

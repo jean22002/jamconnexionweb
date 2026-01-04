@@ -648,6 +648,66 @@ test_plan:
         agent: "testing"
         comment: "✅ PUT ENDPOINTS ÉVÉNEMENTS - TESTS COMPLETS RÉUSSIS (7/8 - 87.5%) - Les endpoints PUT pour jams et concerts fonctionnent parfaitement. TESTS DÉTAILLÉS EFFECTUÉS: ✅ PUT /api/jams/{jam_id}: Création jam → Modification (horaires, styles musicaux, règles, équipements) → Vérification changements appliqués → Persistance en base confirmée. ✅ PUT /api/concerts/{concert_id}: Création concert → Modification (titre, description, horaires, groupes, prix) → Vérification changements appliqués → Persistance en base confirmée. ✅ Sécurité: Authentification requise (401 sans token), ✅ Gestion erreurs: 404 pour IDs inexistants, ✅ Autorisation: Seuls les établissements propriétaires peuvent modifier leurs événements. PROBLÈME MINEUR: Validation des données invalides pas stricte (accepte dates/heures invalides). FONCTIONNALITÉS CRITIQUES 100% OPÉRATIONNELLES - Les endpoints PUT permettent la modification complète des événements avec persistance correcte."
 
+  - task: "Onglet Notifications avec icône cloche"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/VenueDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Icône cloche ajoutée à l'onglet Notifications dans VenueDashboard (ligne 962-965)"
+      - working: true
+        agent: "testing"
+        comment: "✅ CODE ANALYSIS CONFIRMED - Bell icon successfully implemented in Notifications tab. VERIFICATION: Line 962-965 in VenueDashboard.jsx shows '<Bell className=\"w-4 h-4 inline mr-1\" /> Notifications' - the Bell icon from lucide-react is properly imported and displayed next to the Notifications text in the tab. Implementation matches specifications exactly."
+
+  - task: "Rayon notifications 100km (Backend)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Rayon de notifications changé de 50km à 100km dans le backend (ligne 340)"
+      - working: true
+        agent: "testing"
+        comment: "✅ CODE ANALYSIS CONFIRMED - Notification radius successfully changed from 50km to 100km. VERIFICATION: Line 340 in /app/backend/server.py shows 'radius_km: float = 100.0' - the proximity alert system now sends notifications to venues within 100km radius instead of the previous 50km. Backend change implemented correctly."
+
+  - task: "Checkboxes instruments de base bœufs"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/VenueDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Checkboxes pour instruments de base ajoutées dans le modal de création de bœuf (lignes 1147-1180)"
+      - working: true
+        agent: "testing"
+        comment: "✅ CODE ANALYSIS CONFIRMED - Instrument checkboxes successfully implemented. VERIFICATION: Lines 27-40 define INSTRUMENTS_BASE array with 9 instruments (Batterie, Basse, Guitare électrique, Guitare acoustique, Piano, Clavier/Synthé, Micro, Ampli guitare, Ampli basse). Lines 1180-1214 show checkbox implementation that appears when 'Instruments dispo' switch is activated. Each instrument has proper checkbox with onChange handler. Implementation replaces free text field with structured checkboxes as specified."
+
+  - task: "Bouton duplication bœuf"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/VenueDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Bouton de duplication avec icône Plus ajouté sur les cartes de bœuf (lignes 1261-1272)"
+      - working: true
+        agent: "testing"
+        comment: "✅ CODE ANALYSIS CONFIRMED - Jam duplication button successfully implemented. VERIFICATION: Lines 723-737 show duplicateJam function that copies all parameters except date/time (sets them to empty strings). Lines 1261-1272 show Plus icon button on jam cards with proper onClick handler calling duplicateJam(jam). Line 736 shows toast message 'Paramètres du bœuf copiés ! Entrez la nouvelle date et heure.' Button positioned next to delete button as specified. Implementation matches all requirements."
+
 agent_communication:
   - agent: "main"
     message: "Système de participation aux événements implémenté. Backend prêt avec endpoints de participation. Frontend complété avec composants JoinEventButton et ParticipationBadge. Intégrations terminées sur VenueDetail, MusicianDetail et MusicianDashboard. Nécessite test complet backend + frontend pour vérifier: 1) Récupération des événements actifs, 2) Fonctionnalité rejoindre/quitter événement, 3) Affichage du badge de participation, 4) Notifications aux amis, 5) Polling automatique du statut de participation. Un test de fichier doit être créé sous /app/backend/tests/test_event_participation.py pour tester les nouveaux endpoints."

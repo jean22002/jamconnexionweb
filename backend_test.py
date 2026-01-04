@@ -3713,7 +3713,17 @@ class JamConnexionAPITester:
             self.test_bands_geolocation_precision_verification,
             self.test_bands_geolocation_on_the_fly_geocoding,
             # Looking For Profiles Field Test (LATEST)
-            self.test_looking_for_profiles_field
+            self.test_looking_for_profiles_field,
+            # Multi-Group Planning Slots Tests (NEW FEATURE)
+            self.test_create_multi_group_planning_slot,
+            self.test_create_musicians_for_multi_group_test,
+            self.test_first_application_multi_group,
+            self.test_second_application_multi_group,
+            self.test_accept_first_application_slot_stays_open,
+            self.test_accept_second_application_slot_closes,
+            self.test_verify_api_response_fields,
+            self.test_single_group_behavior,
+            self.test_three_plus_groups_behavior
         ]
         
         for test in tests:

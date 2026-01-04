@@ -337,7 +337,7 @@ class NotificationResponse(BaseModel):
 class NearbySearchRequest(BaseModel):
     latitude: float
     longitude: float
-    radius_km: float = 50.0
+    radius_km: float = 100.0
 
 # Review System
 class ReviewCreate(BaseModel):

@@ -429,27 +429,36 @@ export default function MusicianDashboard() {
     try {
       const response = await axios.get(`${API}/musicians/me`, { headers: { Authorization: `Bearer ${token}` } });
       setProfile(response.data);
+      
+      // Migration: si l'ancien champ 'band' existe mais pas 'bands', migrer vers bands[0]
+      const profileData = response.data;
+      let bandsArray = profileData.bands || [];
+      if (profileData.has_band && profileData.band && profileData.band.name && bandsArray.length === 0) {
+        bandsArray = [profileData.band];
+      }
+      
       setProfileForm({
-        pseudo: response.data.pseudo || "",
-        age: response.data.age || null,
-        profile_image: response.data.profile_image || "",
-        bio: response.data.bio || "",
-        instruments: response.data.instruments || [],
-        music_styles: response.data.music_styles || [],
-        experience_years: response.data.experience_years || 0,
-        experience_level: response.data.experience_level || "",
-        city: response.data.city || "",
-        department: response.data.department || "",
-        region: response.data.region || "",
-        phone: response.data.phone || "",
-        website: response.data.website || "",
-        facebook: response.data.facebook || "",
-        instagram: response.data.instagram || "",
-        youtube: response.data.youtube || "",
-        bandcamp: response.data.bandcamp || "",
-        has_band: response.data.has_band || false,
-        band: response.data.band || { name: "", photo: "", facebook: "", instagram: "", youtube: "", website: "", bandcamp: "" },
-        concerts: response.data.concerts || []
+        pseudo: profileData.pseudo || "",
+        age: profileData.age || null,
+        profile_image: profileData.profile_image || "",
+        bio: profileData.bio || "",
+        instruments: profileData.instruments || [],
+        music_styles: profileData.music_styles || [],
+        experience_years: profileData.experience_years || 0,
+        experience_level: profileData.experience_level || "",
+        city: profileData.city || "",
+        department: profileData.department || "",
+        region: profileData.region || "",
+        phone: profileData.phone || "",
+        website: profileData.website || "",
+        facebook: profileData.facebook || "",
+        instagram: profileData.instagram || "",
+        youtube: profileData.youtube || "",
+        bandcamp: profileData.bandcamp || "",
+        has_band: profileData.has_band || false,
+        band: profileData.band || { name: "", photo: "", facebook: "", instagram: "", youtube: "", website: "", bandcamp: "" },
+        bands: bandsArray,
+        concerts: profileData.concerts || []
       });
     } catch (error) {
       if (error.response?.status !== 404) console.error("Error:", error);

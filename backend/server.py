@@ -1872,6 +1872,39 @@ async def reject_application(app_id: str, current_user: dict = Depends(get_curre
     
     return {"message": "Application rejected"}
 
+@api_router.get("/venues/me/subscribers")
+async def get_venue_subscribers(current_user: dict = Depends(get_current_user)):
+    """Get list of subscribers (musicians) for current venue"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can view their subscribers")
+    
+    # Get venue profile
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Get all subscriptions for this venue
+    subscriptions = await db.subscriptions.find({"venue_id": venue["id"]}, {"_id": 0}).to_list(1000)
+    
+    # Get musician profiles for each subscriber
+    subscribers = []
+    for sub in subscriptions:
+        musician = await db.musicians.find_one({"user_id": sub["user_id"]}, {"_id": 0})
+        if musician:
+            subscribers.append({
+                "id": musician.get("id"),
+                "user_id": musician.get("user_id"),
+                "pseudo": musician.get("pseudo", "Musicien"),
+                "profile_image": musician.get("profile_image"),
+                "city": musician.get("city"),
+                "department": musician.get("department"),
+                "instruments": musician.get("instruments", []),
+                "music_styles": musician.get("music_styles", []),
+                "subscribed_at": sub.get("created_at")
+            })
+    
+    return subscribers
+
 # ============= NOTIFICATIONS =============
 
 async def create_notification(user_id: str, notif_type: str, title: str, message: str, link: Optional[str] = None):

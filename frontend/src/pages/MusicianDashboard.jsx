@@ -1270,12 +1270,17 @@ export default function MusicianDashboard() {
                             </div>
 
                             {/* Disponibilité */}
-                            <div className="flex items-center gap-2">
-                              <Switch 
-                                checked={soloProfile.looking_for_concerts !== false} 
-                                onCheckedChange={(checked) => setSoloProfile({ ...soloProfile, looking_for_concerts: checked })}
-                              />
-                              <Label className="text-sm">🎤 Cherche des concerts en solo</Label>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Switch 
+                                  checked={soloProfile.looking_for_concerts !== false} 
+                                  onCheckedChange={(checked) => setSoloProfile({ ...soloProfile, looking_for_concerts: checked })}
+                                />
+                                <Label className="text-sm">🎤 Cherche des concerts en solo</Label>
+                              </div>
+                              <p className="text-xs text-muted-foreground ml-6 italic">
+                                ⚠️ Activez cette option pour recevoir des notifications lorsqu'un établissement cherche ce type de profil ou ces styles musicaux
+                              </p>
                             </div>
 
                             {/* Récapitulatif */}

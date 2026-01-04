@@ -3477,9 +3477,17 @@ export default function MusicianDashboard() {
                             <p className="font-heading font-semibold text-lg">Bœuf Musical</p>
                             <p className="text-sm text-muted-foreground">{jam.date}</p>
                           </div>
-                          <span className="px-2 py-1 bg-purple-500/20 text-purple-400 text-xs rounded-full">
-                            Bœuf
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-1 bg-purple-500/20 text-purple-400 text-xs rounded-full">
+                              Bœuf
+                            </span>
+                            {jam.participants_count !== undefined && (
+                              <span className="px-2 py-1 bg-purple-500/20 text-purple-400 text-xs rounded-full flex items-center gap-1">
+                                <Users className="w-3 h-3" />
+                                {jam.participants_count}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">
                           {jam.start_time} - {jam.end_time}
@@ -3504,6 +3512,15 @@ export default function MusicianDashboard() {
                         {jam.rules && (
                           <p className="text-sm mt-2 text-muted-foreground">{jam.rules}</p>
                         )}
+                        <div className="mt-4">
+                          <JoinEventButton 
+                            event={{ ...jam, event_type: 'jam' }}
+                            venueId={jam.venue_id}
+                            token={token}
+                            currentParticipation={null}
+                            onParticipationChange={() => {}}
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>

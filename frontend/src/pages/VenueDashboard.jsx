@@ -758,7 +758,6 @@ export default function VenueDashboard() {
       setShowEventDetailsModal(false);
       setIsEditingEvent(false);
       fetchEvents();
-      fetchBookedDates();
     } catch (error) {
       console.error("Error updating event:", error);
       toast.error("Erreur lors de la mise à jour");

@@ -582,12 +582,23 @@ export default function MusicianDashboard() {
     setBandsLoading(true);
     try {
       const params = new URLSearchParams();
-      if (bandFilters.department) params.append('department', bandFilters.department);
-      if (bandFilters.city) params.append('city', bandFilters.city);
-      if (bandFilters.musicStyle) params.append('music_style', bandFilters.musicStyle);
-      if (bandFilters.bandType) params.append('band_type', bandFilters.bandType);
-      if (bandFilters.repertoireType) params.append('repertoire_type', bandFilters.repertoireType);
-      if (bandFilters.lookingForMembers) params.append('looking_for_members', 'true');
+      
+      // Mode filtres classiques
+      if (bandSearchMode === "filters") {
+        if (bandFilters.department) params.append('department', bandFilters.department);
+        if (bandFilters.city) params.append('city', bandFilters.city);
+        if (bandFilters.musicStyle) params.append('music_style', bandFilters.musicStyle);
+        if (bandFilters.bandType) params.append('band_type', bandFilters.bandType);
+        if (bandFilters.repertoireType) params.append('repertoire_type', bandFilters.repertoireType);
+        if (bandFilters.lookingForMembers) params.append('looking_for_members', 'true');
+      }
+      
+      // Mode géolocalisation
+      if (bandSearchMode === "geolocation" && geoPosition) {
+        params.append('latitude', geoPosition.latitude);
+        params.append('longitude', geoPosition.longitude);
+        params.append('radius', bandSearchRadius);
+      }
       
       const response = await axios.get(`${API}/bands?${params.toString()}`);
       setBands(response.data);
@@ -629,7 +640,7 @@ export default function MusicianDashboard() {
     if (activeTab === "bands") {
       fetchBands();
     }
-  }, [activeTab, bandFilters]);
+  }, [activeTab, bandFilters, bandSearchMode, bandSearchRadius, geoPosition]);
 
   // Toggle geolocation tracking
   const toggleGeolocation = () => {

@@ -815,27 +815,33 @@ test_plan:
 
   - task: "VenueDashboard - Toast Import Fix"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/VenueDashboard.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Bug corrigé: import { toast } from 'sonner' ajouté ligne 26. L'erreur 'Can't find variable: toast' dans la géolocalisation devrait être résolue"
+      - working: true
+        agent: "testing"
+        comment: "✅ TOAST IMPORT FIX VALIDÉ - Code analysis confirms toast import is correctly implemented. VERIFICATION: Line 26 shows 'import { toast } from \"sonner\";' and multiple toast usages throughout the file (lines 228, 232, 244, 249, 266, 268, 271, 278, 282, 312, 325, 328, 333, etc.). The geolocation function useMyLocation() (lines 276-336) properly uses toast.info('Localisation en cours...') and toast.success() for location feedback. NO MORE 'Can't find variable: toast' errors should occur."
 
   - task: "VenueDashboard - Equipment Switches Edit Mode"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/VenueDashboard.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Switches Scène/Sono/Ingé son (lignes 1161-1163) sont désactivés par défaut (editing=false). Ils doivent s'activer quand l'utilisateur clique sur 'Modifier' et devenir cliquables"
+      - working: true
+        agent: "testing"
+        comment: "✅ EQUIPMENT SWITCHES EDIT MODE VALIDÉ - Code analysis confirms switches are correctly implemented with edit mode control. VERIFICATION: Lines 1161-1163 show all three switches (Scène, Ingé son, Sono) with 'disabled={!editing}' property. When editing=false (default), switches are disabled. When user clicks 'Modifier' button (line 1009), editing becomes true and switches become enabled/clickable. When user clicks 'Sauvegarder' (line 1013), editing returns to false and switches become disabled again. The edit/non-edit mode functionality is correctly implemented."
 
 agent_communication:
   - agent: "main"

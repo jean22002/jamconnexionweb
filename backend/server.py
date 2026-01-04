@@ -1859,7 +1859,7 @@ async def create_planning_slot(data: PlanningSlot, current_user: dict = Depends(
     await notify_venue_subscribers(venue["id"], "planning_slot", f"Date disponible chez {venue['name']}", 
                                    f"Le {data.date} - {styles}", f"/venue/{venue['id']}")
     
-    return PlanningSlotResponse(**slot_doc, applications_count=0)
+    return PlanningSlotResponse(**slot_doc, applications_count=0, accepted_bands_count=0)
 
 @api_router.get("/planning", response_model=List[PlanningSlotResponse])
 async def list_planning_slots(venue_id: Optional[str] = None, is_open: bool = True):

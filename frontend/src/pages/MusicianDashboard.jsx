@@ -30,10 +30,14 @@ import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 const BAND_TYPES = [
   "Duo acoustique",
   "Trio acoustique",
+  "Quatuor acoustique",
   "Duo electro acoustique",
   "Trio electro acoustique",
+  "Quatuor électro acoustique",
   "Groupe de reprise",
-  "Groupe tribute"
+  "Groupe tribute",
+  "Groupe de compos",
+  "Autre"
 ];
 
 const REPERTOIRE_TYPES = ["Compos", "Reprises"];
@@ -44,6 +48,22 @@ const SHOW_DURATIONS = [
   "3h", "3h15", "3h30", "3h45", 
   "4h", "4h15", "4h30", "4h45", 
   "5h", "5h15", "5h30", "5h45", "6h"
+];
+
+const MUSIC_STYLES_LIST = [
+  "Rock",
+  "Métal",
+  "Hard rock",
+  "Blues",
+  "Blues rock",
+  "Funk",
+  "Jazz",
+  "Chanson française",
+  "Ska",
+  "Musique classique",
+  "Rockabilly",
+  "Pop rock",
+  "Autre"
 ];
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;

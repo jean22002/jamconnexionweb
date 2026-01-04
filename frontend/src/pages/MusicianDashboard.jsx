@@ -1357,33 +1357,54 @@ export default function MusicianDashboard() {
 
                     {/* Styles musicaux */}
                     <div className="space-y-2">
-                      <Label>Styles musicaux</Label>
-                      <Input 
-                        placeholder="Appuyez sur Entrée pour ajouter" 
-                        onKeyPress={(e) => { 
-                          if (e.key === 'Enter' && e.target.value) { 
-                            setCurrentBand({ 
-                              ...currentBand, 
-                              music_styles: [...(currentBand.music_styles || []), e.target.value] 
-                            }); 
-                            e.target.value = ''; 
-                          } 
-                        }}
-                        className="bg-black/20 border-white/10"
-                      />
-                      <div className="flex flex-wrap gap-2">
-                        {currentBand.music_styles?.map((s, i) => (
-                          <span key={i} className="px-2 py-1 bg-primary/20 text-primary rounded-full text-xs flex items-center gap-1">
-                            {s}
-                            <button onClick={() => setCurrentBand({ 
-                              ...currentBand, 
-                              music_styles: currentBand.music_styles.filter((_, idx) => idx !== i) 
-                            })}>
-                              <X className="w-3 h-3" />
-                            </button>
-                          </span>
+                      <Label>Styles musicaux du groupe</Label>
+                      <div className="grid grid-cols-2 gap-3 p-4 glassmorphism rounded-lg max-h-[200px] overflow-y-auto">
+                        {MUSIC_STYLES_LIST.map((style) => (
+                          <div key={style} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id={`band-style-${style}`}
+                              checked={currentBand.music_styles?.includes(style) || false}
+                              onChange={(e) => {
+                                const currentStyles = currentBand.music_styles || [];
+                                if (e.target.checked) {
+                                  setCurrentBand({ 
+                                    ...currentBand, 
+                                    music_styles: [...currentStyles, style] 
+                                  });
+                                } else {
+                                  setCurrentBand({ 
+                                    ...currentBand, 
+                                    music_styles: currentStyles.filter(s => s !== style) 
+                                  });
+                                }
+                              }}
+                              className="w-4 h-4 text-primary bg-black/20 border-white/10 rounded focus:ring-primary focus:ring-2"
+                            />
+                            <Label 
+                              htmlFor={`band-style-${style}`} 
+                              className="text-sm font-normal cursor-pointer"
+                            >
+                              {style}
+                            </Label>
+                          </div>
                         ))}
                       </div>
+                      {currentBand.music_styles && currentBand.music_styles.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {currentBand.music_styles.map((s, i) => (
+                            <span key={i} className="px-2 py-1 bg-primary/20 text-primary rounded-full text-xs flex items-center gap-1">
+                              {s}
+                              <button onClick={() => setCurrentBand({ 
+                                ...currentBand, 
+                                music_styles: currentBand.music_styles.filter((_, idx) => idx !== i) 
+                              })}>
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* Disponibilités */}

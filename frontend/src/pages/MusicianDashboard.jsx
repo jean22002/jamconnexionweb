@@ -2079,6 +2079,119 @@ export default function MusicianDashboard() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Modale des événements d'un établissement */}
+      <Dialog open={showVenueEventsModal} onOpenChange={setShowVenueEventsModal}>
+        <DialogContent className="glassmorphism border-white/10 max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-2xl">
+              {selectedVenue?.name} - Événements
+            </DialogTitle>
+          </DialogHeader>
+
+          {loadingVenueEvents ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="space-y-6 mt-4">
+              {/* Concerts */}
+              <div>
+                <h3 className="font-heading text-xl mb-4 flex items-center gap-2">
+                  <Music className="w-5 h-5 text-primary" />
+                  Concerts ({venueEvents.concerts.length})
+                </h3>
+                {venueEvents.concerts.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-6">Aucun concert à venir</p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {venueEvents.concerts.map((concert) => (
+                      <div key={concert.id} className="glassmorphism rounded-xl p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <p className="font-heading font-semibold text-lg">{concert.title || "Concert"}</p>
+                            <p className="text-sm text-muted-foreground">{concert.date}</p>
+                          </div>
+                          <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">
+                            Concert
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {concert.start_time} - {concert.end_time}
+                        </p>
+                        {concert.description && (
+                          <p className="text-sm mt-2">{concert.description}</p>
+                        )}
+                        {concert.price && (
+                          <p className="text-sm text-secondary mt-2">{concert.price}</p>
+                        )}
+                        {concert.bands && concert.bands.length > 0 && (
+                          <div className="mt-3">
+                            <p className="text-xs text-muted-foreground mb-1">Artistes:</p>
+                            {concert.bands.map((band, i) => (
+                              <p key={i} className="text-sm">{band.name}</p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Bœufs */}
+              <div>
+                <h3 className="font-heading text-xl mb-4 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-purple-400" />
+                  Bœufs ({venueEvents.jams.length})
+                </h3>
+                {venueEvents.jams.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-6">Aucun bœuf à venir</p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {venueEvents.jams.map((jam) => (
+                      <div key={jam.id} className="glassmorphism rounded-xl p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <p className="font-heading font-semibold text-lg">Bœuf Musical</p>
+                            <p className="text-sm text-muted-foreground">{jam.date}</p>
+                          </div>
+                          <span className="px-2 py-1 bg-purple-500/20 text-purple-400 text-xs rounded-full">
+                            Bœuf
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {jam.start_time} - {jam.end_time}
+                        </p>
+                        {jam.music_styles && jam.music_styles.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {jam.music_styles.map((style, i) => (
+                              <span key={i} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">
+                                {style}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <div className="mt-3 space-y-1">
+                          {jam.has_instruments && (
+                            <p className="text-xs text-secondary">✓ Instruments disponibles</p>
+                          )}
+                          {jam.has_pa_system && (
+                            <p className="text-xs text-secondary">✓ Sonorisation</p>
+                          )}
+                        </div>
+                        {jam.rules && (
+                          <p className="text-sm mt-2 text-muted-foreground">{jam.rules}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

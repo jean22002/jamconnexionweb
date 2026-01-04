@@ -327,6 +327,10 @@ export default function MusicianDashboard() {
   });
 
   const [newConcert, setNewConcert] = useState({ date: "", venue_id: "", venue_name: "", city: "", description: "" });
+  
+  // State for managing multiple bands
+  const [editingBandIndex, setEditingBandIndex] = useState(null);
+  const [showBandDialog, setShowBandDialog] = useState(false);
 
   const fetchData = useCallback(async (retryCount = 0) => {
     const MAX_RETRIES = 3;

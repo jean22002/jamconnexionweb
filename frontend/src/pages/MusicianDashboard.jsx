@@ -3445,6 +3445,15 @@ export default function MusicianDashboard() {
                             ))}
                           </div>
                         )}
+                        <div className="mt-4">
+                          <JoinEventButton 
+                            event={{ ...concert, event_type: 'concert' }}
+                            venueId={concert.venue_id}
+                            token={token}
+                            currentParticipation={null}
+                            onParticipationChange={() => {}}
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>

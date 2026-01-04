@@ -680,6 +680,17 @@ export default function MusicianDashboard() {
       return;
     }
 
+    // Si c'est une nouvelle création et que is_admin est activé, enregistrer l'admin_id
+    if (editingBandIndex === null && currentBand.is_admin) {
+      currentBand.admin_id = user.id;
+    }
+
+    // Vérifier si l'utilisateur est admin avant de permettre la modification
+    if (editingBandIndex !== null && currentBand.admin_id && currentBand.admin_id !== user.id) {
+      toast.error("Seul l'administrateur du groupe peut modifier ces informations");
+      return;
+    }
+
     if (editingBandIndex !== null) {
       // Update existing band
       const newBands = [...profileForm.bands];
@@ -716,7 +727,9 @@ export default function MusicianDashboard() {
       looking_for_members: false,
       looking_for_profiles: [],
       is_public: true,
-      has_sound_engineer: false
+      has_sound_engineer: false,
+      is_admin: false,
+      admin_id: null
     });
   };
 

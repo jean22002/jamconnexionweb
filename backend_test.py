@@ -3068,6 +3068,552 @@ class JamConnexionAPITester:
             self.log_test("Looking For Profiles Field", False, f"Error: {str(e)}")
             return False
 
+    # ============= MULTI-GROUP PLANNING SLOTS TESTS =============
+    
+    def test_create_multi_group_planning_slot(self):
+        """Test creating a planning slot that requires multiple groups"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Create planning slot requiring 2 groups
+            planning_data = {
+                "date": "2025-01-15",
+                "music_styles": ["Rock", "Pop"],
+                "description": "Concert avec 2 groupes en première partie",
+                "is_open": True,
+                "num_bands_needed": 2,  # NEW FIELD - requires 2 groups
+                "artist_categories": ["groupe compos", "groupe reprise"]
+            }
+            
+            response = requests.post(f"{self.base_url}/planning", json=planning_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                planning_response = response.json()
+                self.multi_group_slot_id = planning_response.get('id')
+                num_bands = planning_response.get('num_bands_needed', 1)
+                accepted_bands = planning_response.get('accepted_bands_count', 0)
+                is_open = planning_response.get('is_open', False)
+                
+                details = f"Multi-group slot created: {self.multi_group_slot_id}, Needs: {num_bands} groups, Accepted: {accepted_bands}, Open: {is_open}"
+                
+                # Verify the slot has correct fields
+                if num_bands != 2:
+                    success = False
+                    details += f" - ERROR: Expected 2 groups, got {num_bands}"
+                elif accepted_bands != 0:
+                    success = False
+                    details += f" - ERROR: Expected 0 accepted, got {accepted_bands}"
+                elif not is_open:
+                    success = False
+                    details += " - ERROR: Slot should be open initially"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Create Multi-Group Planning Slot", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Create Multi-Group Planning Slot", False, f"Error: {str(e)}")
+            return False
+
+    def test_create_musicians_for_multi_group_test(self):
+        """Create two additional musicians for multi-group testing"""
+        try:
+            # Create first musician
+            test_data1 = {
+                "email": f"musician_group1_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Musician Group 1",
+                "role": "musician"
+            }
+            
+            response1 = requests.post(f"{self.base_url}/auth/register", json=test_data1, timeout=10)
+            if response1.status_code != 200:
+                self.log_test("Create Musicians for Multi-Group Test", False, "Failed to create first musician")
+                return False
+                
+            musician1_data = response1.json()
+            self.musician1_token = musician1_data.get('token')
+            self.musician1_user = musician1_data.get('user')
+            
+            # Create profile for first musician
+            profile_data1 = {
+                "pseudo": "RockBand1",
+                "instruments": ["Guitar", "Vocals"],
+                "music_styles": ["Rock"],
+                "bands": [{
+                    "name": "The Rock Stars",
+                    "music_styles": ["Rock", "Pop"],
+                    "band_type": "groupe de reprise",
+                    "show_duration": "45mn"
+                }]
+            }
+            headers1 = {'Authorization': f'Bearer {self.musician1_token}'}
+            profile_response1 = requests.post(f"{self.base_url}/musicians", json=profile_data1, headers=headers1, timeout=10)
+            
+            if profile_response1.status_code != 200:
+                self.log_test("Create Musicians for Multi-Group Test", False, "Failed to create first musician profile")
+                return False
+            
+            musician1_profile = profile_response1.json()
+            self.musician1_profile_id = musician1_profile.get('id')
+            
+            # Create second musician
+            test_data2 = {
+                "email": f"musician_group2_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Musician Group 2",
+                "role": "musician"
+            }
+            
+            response2 = requests.post(f"{self.base_url}/auth/register", json=test_data2, timeout=10)
+            if response2.status_code != 200:
+                self.log_test("Create Musicians for Multi-Group Test", False, "Failed to create second musician")
+                return False
+                
+            musician2_data = response2.json()
+            self.musician2_token = musician2_data.get('token')
+            self.musician2_user = musician2_data.get('user')
+            
+            # Create profile for second musician
+            profile_data2 = {
+                "pseudo": "PopBand2",
+                "instruments": ["Piano", "Vocals"],
+                "music_styles": ["Pop"],
+                "bands": [{
+                    "name": "The Pop Collective",
+                    "music_styles": ["Pop", "Rock"],
+                    "band_type": "groupe compos",
+                    "show_duration": "1h"
+                }]
+            }
+            headers2 = {'Authorization': f'Bearer {self.musician2_token}'}
+            profile_response2 = requests.post(f"{self.base_url}/musicians", json=profile_data2, headers=headers2, timeout=10)
+            
+            if profile_response2.status_code != 200:
+                self.log_test("Create Musicians for Multi-Group Test", False, "Failed to create second musician profile")
+                return False
+            
+            musician2_profile = profile_response2.json()
+            self.musician2_profile_id = musician2_profile.get('id')
+            
+            details = f"Created 2 musicians: {self.musician1_profile_id} (The Rock Stars), {self.musician2_profile_id} (The Pop Collective)"
+            self.log_test("Create Musicians for Multi-Group Test", True, details)
+            return True
+            
+        except Exception as e:
+            self.log_test("Create Musicians for Multi-Group Test", False, f"Error: {str(e)}")
+            return False
+
+    def test_first_application_multi_group(self):
+        """Test first application to multi-group slot"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician1_token}'}
+            
+            # Submit first application
+            application_data = {
+                "planning_slot_id": self.multi_group_slot_id,
+                "band_name": "The Rock Stars",
+                "description": "Groupe de rock énergique avec 5 ans d'expérience",
+                "music_style": "Rock",
+                "contact_email": "rockstars@test.com",
+                "contact_phone": "+33123456789"
+            }
+            
+            response = requests.post(f"{self.base_url}/applications", json=application_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                app_response = response.json()
+                self.application1_id = app_response.get('id')
+                details = f"First application submitted: {self.application1_id} for {app_response.get('band_name')}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("First Application Multi-Group", success, details)
+            return success
+        except Exception as e:
+            self.log_test("First Application Multi-Group", False, f"Error: {str(e)}")
+            return False
+
+    def test_second_application_multi_group(self):
+        """Test second application to multi-group slot"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician2_token}'}
+            
+            # Submit second application
+            application_data = {
+                "planning_slot_id": self.multi_group_slot_id,
+                "band_name": "The Pop Collective",
+                "description": "Groupe pop avec compositions originales",
+                "music_style": "Pop",
+                "contact_email": "popcollective@test.com",
+                "contact_phone": "+33987654321"
+            }
+            
+            response = requests.post(f"{self.base_url}/applications", json=application_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                app_response = response.json()
+                self.application2_id = app_response.get('id')
+                details = f"Second application submitted: {self.application2_id} for {app_response.get('band_name')}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Second Application Multi-Group", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Second Application Multi-Group", False, f"Error: {str(e)}")
+            return False
+
+    def test_accept_first_application_slot_stays_open(self):
+        """Test accepting first application - slot should stay open"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Accept first application
+            response = requests.post(f"{self.base_url}/applications/{self.application1_id}/accept", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                details = "First application accepted"
+                
+                # Check slot status - should still be open
+                response = requests.get(f"{self.base_url}/planning", timeout=10)
+                if response.status_code == 200:
+                    slots = response.json()
+                    multi_slot = None
+                    for slot in slots:
+                        if slot.get('id') == self.multi_group_slot_id:
+                            multi_slot = slot
+                            break
+                    
+                    if multi_slot:
+                        is_open = multi_slot.get('is_open', False)
+                        accepted_count = multi_slot.get('accepted_bands_count', 0)
+                        needed_count = multi_slot.get('num_bands_needed', 1)
+                        
+                        details += f", Slot status: Open={is_open}, Accepted={accepted_count}/{needed_count}"
+                        
+                        # CRITICAL VERIFICATION: Slot should remain open
+                        if not is_open:
+                            success = False
+                            details += " - ERROR: Slot should remain OPEN after first acceptance"
+                        elif accepted_count != 1:
+                            success = False
+                            details += f" - ERROR: Expected 1 accepted band, got {accepted_count}"
+                    else:
+                        success = False
+                        details += " - ERROR: Could not find slot in response"
+                else:
+                    success = False
+                    details += f" - ERROR: Failed to get planning slots: {response.status_code}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Accept First Application - Slot Stays Open", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Accept First Application - Slot Stays Open", False, f"Error: {str(e)}")
+            return False
+
+    def test_accept_second_application_slot_closes(self):
+        """Test accepting second application - slot should close"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Accept second application
+            response = requests.post(f"{self.base_url}/applications/{self.application2_id}/accept", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                details = "Second application accepted"
+                
+                # Check slot status - should now be closed
+                response = requests.get(f"{self.base_url}/planning?is_open=false", timeout=10)
+                if response.status_code == 200:
+                    closed_slots = response.json()
+                    multi_slot = None
+                    for slot in closed_slots:
+                        if slot.get('id') == self.multi_group_slot_id:
+                            multi_slot = slot
+                            break
+                    
+                    if multi_slot:
+                        is_open = multi_slot.get('is_open', True)
+                        accepted_count = multi_slot.get('accepted_bands_count', 0)
+                        needed_count = multi_slot.get('num_bands_needed', 1)
+                        
+                        details += f", Slot status: Open={is_open}, Accepted={accepted_count}/{needed_count}"
+                        
+                        # CRITICAL VERIFICATION: Slot should now be closed
+                        if is_open:
+                            success = False
+                            details += " - ERROR: Slot should be CLOSED after reaching required bands"
+                        elif accepted_count != 2:
+                            success = False
+                            details += f" - ERROR: Expected 2 accepted bands, got {accepted_count}"
+                    else:
+                        success = False
+                        details += " - ERROR: Could not find closed slot"
+                else:
+                    success = False
+                    details += f" - ERROR: Failed to get closed planning slots: {response.status_code}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Accept Second Application - Slot Closes", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Accept Second Application - Slot Closes", False, f"Error: {str(e)}")
+            return False
+
+    def test_verify_api_response_fields(self):
+        """Test that all required fields are present in API responses"""
+        try:
+            # Get planning slots and verify fields
+            response = requests.get(f"{self.base_url}/planning?is_open=false", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                slots = response.json()
+                multi_slot = None
+                for slot in slots:
+                    if slot.get('id') == self.multi_group_slot_id:
+                        multi_slot = slot
+                        break
+                
+                if multi_slot:
+                    required_fields = ['num_bands_needed', 'accepted_bands_count', 'is_open', 'applications_count']
+                    missing_fields = []
+                    
+                    for field in required_fields:
+                        if field not in multi_slot:
+                            missing_fields.append(field)
+                    
+                    if missing_fields:
+                        success = False
+                        details = f"Missing fields: {missing_fields}"
+                    else:
+                        details = f"All required fields present: num_bands_needed={multi_slot['num_bands_needed']}, accepted_bands_count={multi_slot['accepted_bands_count']}, is_open={multi_slot['is_open']}, applications_count={multi_slot['applications_count']}"
+                else:
+                    success = False
+                    details = "Could not find test slot in response"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Verify API Response Fields", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Verify API Response Fields", False, f"Error: {str(e)}")
+            return False
+
+    def test_single_group_behavior(self):
+        """Test normal behavior for single group slots"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Create single group slot (default behavior)
+            planning_data = {
+                "date": "2025-01-20",
+                "music_styles": ["Jazz"],
+                "description": "Concert solo - un seul groupe",
+                "is_open": True,
+                "num_bands_needed": 1  # Single group
+            }
+            
+            response = requests.post(f"{self.base_url}/planning", json=planning_data, headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Single Group Behavior", False, f"Failed to create single slot: {response.status_code}")
+                return False
+            
+            single_slot = response.json()
+            single_slot_id = single_slot.get('id')
+            
+            # Submit application
+            app_data = {
+                "planning_slot_id": single_slot_id,
+                "band_name": "Solo Jazz Band",
+                "description": "Groupe de jazz expérimenté",
+                "music_style": "Jazz",
+                "contact_email": "jazz@test.com"
+            }
+            
+            musician_headers = {'Authorization': f'Bearer {self.musician_token}'}
+            app_response = requests.post(f"{self.base_url}/applications", json=app_data, headers=musician_headers, timeout=10)
+            if app_response.status_code != 200:
+                self.log_test("Single Group Behavior", False, f"Failed to create application: {app_response.status_code}")
+                return False
+            
+            application = app_response.json()
+            app_id = application.get('id')
+            
+            # Accept application - slot should close immediately
+            accept_response = requests.post(f"{self.base_url}/applications/{app_id}/accept", headers=headers, timeout=10)
+            success = accept_response.status_code == 200
+            
+            if success:
+                # Verify slot is closed
+                slots_response = requests.get(f"{self.base_url}/planning?is_open=false", timeout=10)
+                if slots_response.status_code == 200:
+                    closed_slots = slots_response.json()
+                    found_closed = False
+                    for slot in closed_slots:
+                        if slot.get('id') == single_slot_id and not slot.get('is_open', True):
+                            found_closed = True
+                            break
+                    
+                    if found_closed:
+                        details = "Single group slot correctly closed immediately after acceptance"
+                    else:
+                        success = False
+                        details = "Single group slot should have closed immediately"
+                else:
+                    success = False
+                    details = f"Failed to verify closure: {slots_response.status_code}"
+            else:
+                details = f"Status: {accept_response.status_code}, Error: {accept_response.text[:100]}"
+            
+            self.log_test("Single Group Behavior", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Single Group Behavior", False, f"Error: {str(e)}")
+            return False
+
+    def test_three_plus_groups_behavior(self):
+        """Test behavior for slots requiring 3+ groups"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Create 3+ groups slot
+            planning_data = {
+                "date": "2025-01-25",
+                "music_styles": ["Rock", "Pop", "Jazz"],
+                "description": "Festival avec 3 groupes ou plus",
+                "is_open": True,
+                "num_bands_needed": 3  # Requires 3 groups
+            }
+            
+            response = requests.post(f"{self.base_url}/planning", json=planning_data, headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Three Plus Groups Behavior", False, f"Failed to create 3+ slot: {response.status_code}")
+                return False
+            
+            three_slot = response.json()
+            three_slot_id = three_slot.get('id')
+            
+            # Create third musician for this test
+            test_data3 = {
+                "email": f"musician_group3_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Musician Group 3",
+                "role": "musician"
+            }
+            
+            response3 = requests.post(f"{self.base_url}/auth/register", json=test_data3, timeout=10)
+            if response3.status_code != 200:
+                self.log_test("Three Plus Groups Behavior", False, "Failed to create third musician")
+                return False
+            
+            musician3_data = response3.json()
+            musician3_token = musician3_data.get('token')
+            
+            # Create profile for third musician
+            profile_data3 = {
+                "pseudo": "JazzBand3",
+                "instruments": ["Saxophone"],
+                "music_styles": ["Jazz"],
+                "bands": [{
+                    "name": "The Jazz Trio",
+                    "music_styles": ["Jazz"],
+                    "band_type": "groupe compos"
+                }]
+            }
+            headers3 = {'Authorization': f'Bearer {musician3_token}'}
+            requests.post(f"{self.base_url}/musicians", json=profile_data3, headers=headers3, timeout=10)
+            
+            # Submit 3 applications
+            applications = []
+            musicians = [
+                (self.musician1_token, "The Rock Stars", "Rock"),
+                (self.musician2_token, "The Pop Collective", "Pop"),
+                (musician3_token, "The Jazz Trio", "Jazz")
+            ]
+            
+            for i, (token, band_name, style) in enumerate(musicians):
+                app_data = {
+                    "planning_slot_id": three_slot_id,
+                    "band_name": band_name,
+                    "description": f"Application {i+1} pour festival",
+                    "music_style": style,
+                    "contact_email": f"band{i+1}@test.com"
+                }
+                
+                app_headers = {'Authorization': f'Bearer {token}'}
+                app_response = requests.post(f"{self.base_url}/applications", json=app_data, headers=app_headers, timeout=10)
+                if app_response.status_code == 200:
+                    applications.append(app_response.json().get('id'))
+            
+            if len(applications) != 3:
+                self.log_test("Three Plus Groups Behavior", False, f"Only created {len(applications)} applications")
+                return False
+            
+            # Accept first 2 applications - slot should stay open
+            for i in range(2):
+                accept_response = requests.post(f"{self.base_url}/applications/{applications[i]}/accept", headers=headers, timeout=10)
+                if accept_response.status_code != 200:
+                    self.log_test("Three Plus Groups Behavior", False, f"Failed to accept application {i+1}")
+                    return False
+            
+            # Verify slot is still open after 2 acceptances
+            slots_response = requests.get(f"{self.base_url}/planning", timeout=10)
+            if slots_response.status_code == 200:
+                open_slots = slots_response.json()
+                still_open = False
+                for slot in open_slots:
+                    if slot.get('id') == three_slot_id and slot.get('is_open', False):
+                        if slot.get('accepted_bands_count', 0) == 2:
+                            still_open = True
+                        break
+                
+                if not still_open:
+                    self.log_test("Three Plus Groups Behavior", False, "Slot should still be open after 2/3 acceptances")
+                    return False
+            
+            # Accept third application - slot should close
+            accept_response = requests.post(f"{self.base_url}/applications/{applications[2]}/accept", headers=headers, timeout=10)
+            success = accept_response.status_code == 200
+            
+            if success:
+                # Verify slot is now closed
+                closed_response = requests.get(f"{self.base_url}/planning?is_open=false", timeout=10)
+                if closed_response.status_code == 200:
+                    closed_slots = closed_response.json()
+                    found_closed = False
+                    for slot in closed_slots:
+                        if slot.get('id') == three_slot_id and not slot.get('is_open', True):
+                            if slot.get('accepted_bands_count', 0) == 3:
+                                found_closed = True
+                            break
+                    
+                    if found_closed:
+                        details = "3+ groups slot correctly closed after accepting 3rd application"
+                    else:
+                        success = False
+                        details = "3+ groups slot should have closed after 3rd acceptance"
+                else:
+                    success = False
+                    details = f"Failed to verify closure: {closed_response.status_code}"
+            else:
+                details = f"Status: {accept_response.status_code}, Error: {accept_response.text[:100]}"
+            
+            self.log_test("Three Plus Groups Behavior", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Three Plus Groups Behavior", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🎵 Starting Jam Connexion API Tests...")

@@ -105,6 +105,10 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
       // Mauve pour les bœufs - maintenant cliquable
       colorClasses = 'bg-purple-500/20 text-purple-400 border-2 border-purple-500/40 hover:bg-purple-500/30 cursor-pointer';
       label = 'Bœuf';
+      // Afficher le nombre de participants si disponible
+      if (jam && jam.participants_count !== undefined) {
+        eventInfo = `${jam.participants_count} participant${jam.participants_count > 1 ? 's' : ''}`;
+      }
     } else if (isBooked) {
       // Rouge pour autres réservations (au cas où)
       colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 cursor-pointer';

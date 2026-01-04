@@ -2372,10 +2372,20 @@ export default function VenueDashboard() {
                         <Label>Artistes</Label>
                         <div className="space-y-2">
                           {selectedEvent.bands.map((band, i) => (
-                            <div key={i} className="p-3 bg-muted/30 rounded-lg">
+                            <div key={i} className="p-3 bg-muted/30 rounded-lg flex justify-between items-center">
                               <p className="font-medium">{band.name}</p>
+                              {band.members_count && (
+                                <span className="text-sm text-muted-foreground">
+                                  {band.members_count} membre{band.members_count > 1 ? 's' : ''}
+                                </span>
+                              )}
                             </div>
                           ))}
+                        </div>
+                        <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg mt-2">
+                          <p className="text-sm font-semibold text-primary">
+                            Total : {selectedEvent.bands.reduce((sum, band) => sum + (band.members_count || 0), 0)} musicien{selectedEvent.bands.reduce((sum, band) => sum + (band.members_count || 0), 0) > 1 ? 's' : ''}
+                          </p>
                         </div>
                       </div>
                     )}

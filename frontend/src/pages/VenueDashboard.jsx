@@ -383,7 +383,7 @@ export default function VenueDashboard() {
         endpoint,
         { 
           message: broadcastMessage,
-          radius: notificationTarget === 'nearby' ? 50 : undefined  // 50 km pour les musiciens proches
+          radius: notificationTarget === 'nearby' ? 100 : undefined  // 100 km pour les musiciens proches
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );

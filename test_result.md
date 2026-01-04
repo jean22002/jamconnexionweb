@@ -785,6 +785,21 @@ test_plan:
         agent: "testing"
         comment: "🎉 CORRECTION VALIDÉE - GÉOCODAGE À LA VOLÉE FONCTIONNEL! Tests complets effectués selon demande utilisateur: ✅ TEST 1 - Paris 100km: 0 groupes (normal, groupes plus éloignés), ✅ TEST 2 - Paris 500km: 4 groupes trouvés avec distances 392-497km, ✅ TEST 3 - Lyon 100km: 3 groupes Lyon trouvés à ~0.7km, ✅ TEST 4 - Précision: Toutes distances dans rayon spécifié, tri par distance correct, ✅ TEST 5 - Géocodage: 19/19 groupes géocodés depuis noms de villes. CORRECTION IMPLÉMENTÉE: Lignes 2688-2693 et 2756-2761 server.py ajoutent géocodage automatique via geo.api.gouv.fr pour groupes avec ville seulement. RÉSULTAT: Recherche géolocalisée maintenant fonctionnelle, retourne groupes avec champ distance_km, distances cohérentes et précises. Le problème critique est RÉSOLU."
 
+  - task: "Looking For Profiles Field Fix"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Bug corrigé: le champ `looking_for_profiles` (profils de membres recherchés) n'était pas défini dans le modèle `BandInfo` du backend, ce qui empêchait sa sauvegarde. Champ ajouté ligne 101: looking_for_profiles: List[str] = []"
+      - working: true
+        agent: "testing"
+        comment: "✅ CORRECTION VALIDÉE - CHAMP LOOKING_FOR_PROFILES ENTIÈREMENT FONCTIONNEL! Tests complets effectués: ✅ Création compte musicien avec groupe ayant looking_for_members=true, ✅ Sauvegarde initiale du champ looking_for_profiles=['Batteur', 'Guitariste'] via PUT /api/musicians, ✅ Vérification persistance par GET /api/musicians/me - champ présent et valeurs correctes, ✅ Modification du champ (ajout 'Bassiste') via PUT /api/musicians, ✅ Vérification finale de persistance - modifications bien enregistrées. RÉSULTAT: Le champ looking_for_profiles est maintenant correctement sauvegardé et récupéré pour les groupes recherchant de nouveaux membres. Bug complètement résolu."
+
 agent_communication:
   - agent: "main"
     message: "Système de participation aux événements implémenté. Backend prêt avec endpoints de participation. Frontend complété avec composants JoinEventButton et ParticipationBadge. Intégrations terminées sur VenueDetail, MusicianDetail et MusicianDashboard. Nécessite test complet backend + frontend pour vérifier: 1) Récupération des événements actifs, 2) Fonctionnalité rejoindre/quitter événement, 3) Affichage du badge de participation, 4) Notifications aux amis, 5) Polling automatique du statut de participation. Un test de fichier doit être créé sous /app/backend/tests/test_event_participation.py pour tester les nouveaux endpoints."

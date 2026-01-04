@@ -195,6 +195,66 @@ backend:
         agent: "testing"
         comment: "🎉 CRÉNEAUX MULTI-GROUPES - NOUVELLE FONCTIONNALITÉ ENTIÈREMENT VALIDÉE (9/9 - 100%) - Le système de créneaux ouverts multi-groupes fonctionne parfaitement selon toutes les spécifications demandées. TESTS EXHAUSTIFS RÉUSSIS: ✅ TEST 1 - Création créneau 2 groupes: num_bands_needed=2, is_open=true, accepted_bands_count=0, ✅ TEST 2 - Première candidature: Application soumise avec succès (The Rock Stars), ✅ TEST 3 - Première acceptation: Créneau reste OUVERT (is_open=true), compteur 1/2 groupes, ✅ TEST 4 - Deuxième candidature: Application soumise avec succès (The Pop Collective), ✅ TEST 5 - Deuxième acceptation: Créneau se FERME automatiquement (is_open=false), compteur 2/2 groupes, ✅ TEST 6 - Champs API: Tous les champs requis présents (num_bands_needed, accepted_bands_count, is_open, applications_count), ✅ TEST 7 - Comportement 1 groupe: Fermeture immédiate après première acceptation (comportement standard), ✅ TEST 8 - Comportement 3+ groupes: Reste ouvert après 2 acceptations, se ferme après la 3ème, ✅ TEST 9 - Logique backend: Endpoint d'acceptation ne ferme le créneau qu'après avoir atteint num_bands_needed. NOUVELLE FONCTIONNALITÉ MULTI-GROUPES 100% OPÉRATIONNELLE!"
 
+  - task: "Jam Improvements - Participants Count API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NOUVELLES AMÉLIORATIONS BŒUFS IMPLÉMENTÉES - Ajout du champ participants_count dans JamEventResponse. Modification des endpoints GET /api/jams et GET /api/venues/{venue_id}/jams pour inclure le compteur de participants. Suppression des sections Catering et Hébergement du formulaire de création de bœuf."
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPTEUR PARTICIPANTS API - FONCTIONNEL APRÈS CORRECTION - Tests complets réussis. RÉSULTATS: ✅ GET /api/jams inclut participants_count: 0 initialement, ✅ GET /api/venues/{venue_id}/jams inclut participants_count: 0 initialement, ✅ Compteur s'incrémente correctement à 1 après qu'un musicien rejoint le bœuf. CORRECTION APPLIQUÉE: Changement de 'is_active' vers 'active' dans les requêtes MongoDB pour correspondre au schéma de données réel. L'API participants_count fonctionne parfaitement."
+
+  - task: "Jam Improvements - Join Button Functionality"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NOUVELLES AMÉLIORATIONS BŒUFS IMPLÉMENTÉES - Ajout du bouton 'Je participe' (JoinEventButton) sur chaque carte de bœuf pour les musiciens. Fonctionnalité de rejoindre/quitter les bœufs actifs."
+      - working: true
+        agent: "testing"
+        comment: "✅ BOUTON 'JE PARTICIPE' - FONCTIONNEL - Tests complets réussis. RÉSULTATS: ✅ Musicien peut rejoindre un bœuf actif avec succès, ✅ Participation confirmée active dans l'API, ✅ Musicien peut quitter le bœuf avec succès, ✅ Participation correctement désactivée après avoir quitté. La fonctionnalité de participation aux bœufs fonctionne parfaitement côté backend."
+
+  - task: "Jam Improvements - Security Musician Only"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NOUVELLES AMÉLIORATIONS BŒUFS IMPLÉMENTÉES - Sécurité pour que seuls les musiciens voient et utilisent le bouton 'Je participe'. Les établissements ne peuvent pas rejoindre leurs propres bœufs."
+      - working: true
+        agent: "testing"
+        comment: "✅ SÉCURITÉ MUSICIENS UNIQUEMENT - FONCTIONNEL - Tests de sécurité réussis. RÉSULTATS: ✅ Établissement correctement rejeté lors de tentative de rejoindre son propre bœuf (403 Forbidden), ✅ Musicien peut rejoindre le bœuf avec succès. La sécurité est correctement implémentée côté backend."
+
+  - task: "Jam Improvements - Participants Counter Updates"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NOUVELLES AMÉLIORATIONS BŒUFS IMPLÉMENTÉES - Système de compteur de participants qui se met à jour automatiquement quand les musiciens rejoignent/quittent les bœufs."
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPTEUR PARTICIPANTS DYNAMIQUE - FONCTIONNEL - Tests complets réussis. RÉSULTATS: ✅ Compteur initial: 0 participants, ✅ Après 1er musicien rejoint: 1 participant, ✅ Après 2ème musicien rejoint: 2 participants, ✅ Après 1er musicien quitte: 1 participant. Le système de compteur dynamique fonctionne parfaitement avec mise à jour en temps réel."
+
 frontend:
   - task: "Landing Page & Auth Forms"
     implemented: true

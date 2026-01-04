@@ -1436,12 +1436,32 @@ async def list_jam_events(venue_id: Optional[str] = None, date_from: Optional[st
         query["date"] = {"$gte": date_from}
     
     jams = await db.jams.find(query, {"_id": 0}).sort("date", 1).to_list(100)
-    return [JamEventResponse(**j) for j in jams]
+    
+    result = []
+    for jam in jams:
+        participants_count = await db.event_participations.count_documents({
+            "event_id": jam["id"],
+            "event_type": "jam",
+            "is_active": True
+        })
+        result.append(JamEventResponse(**jam, participants_count=participants_count))
+    
+    return result
 
 @api_router.get("/venues/{venue_id}/jams", response_model=List[JamEventResponse])
 async def get_venue_jams(venue_id: str):
     jams = await db.jams.find({"venue_id": venue_id}, {"_id": 0}).sort("date", 1).to_list(100)
-    return [JamEventResponse(**j) for j in jams]
+    
+    result = []
+    for jam in jams:
+        participants_count = await db.event_participations.count_documents({
+            "event_id": jam["id"],
+            "event_type": "jam",
+            "is_active": True
+        })
+        result.append(JamEventResponse(**jam, participants_count=participants_count))
+    
+    return result
 
 @api_router.delete("/jams/{jam_id}")
 async def delete_jam_event(jam_id: str, current_user: dict = Depends(get_current_user)):

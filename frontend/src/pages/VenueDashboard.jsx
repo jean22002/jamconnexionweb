@@ -762,7 +762,10 @@ export default function VenueDashboard() {
             <TabsTrigger value="jams" className="rounded-full">Boeufs</TabsTrigger>
             <TabsTrigger value="concerts" className="rounded-full">Concerts</TabsTrigger>
             <TabsTrigger value="planning" className="rounded-full">Planning</TabsTrigger>
-            <TabsTrigger value="jacks" className="rounded-full">Jacks</TabsTrigger>
+            <TabsTrigger value="jacks" className="rounded-full">
+              <Plug className="w-4 h-4 inline mr-1" />
+              Jacks
+            </TabsTrigger>
             <TabsTrigger value="notifications" className="rounded-full">Notifications</TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-full">Avis</TabsTrigger>
             <TabsTrigger value="bands" className="rounded-full">Groupes</TabsTrigger>
@@ -1313,7 +1316,7 @@ export default function VenueDashboard() {
           <TabsContent value="jacks">
             <div className="glassmorphism rounded-2xl p-6">
               <h2 className="font-heading font-semibold text-2xl mb-6 flex items-center gap-2">
-                <Heart className="w-6 h-6 text-primary" />
+                <Plug className="w-6 h-6 text-primary" />
                 Jacks - Abonnés ({subscribers.length})
               </h2>
               
@@ -1393,7 +1396,7 @@ export default function VenueDashboard() {
                         />
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <Heart className="w-4 h-4 text-primary" />
+                            <Plug className="w-4 h-4 text-primary" />
                             <span className="font-semibold">Mes Jacks (Abonnés)</span>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">

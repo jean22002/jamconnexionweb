@@ -265,6 +265,18 @@ export default function VenueDashboard() {
     }
   };
 
+  const fetchSubscribers = async () => {
+    try {
+      const response = await axios.get(`${API}/venues/me/subscribers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSubscribers(response.data || []);
+    } catch (error) {
+      console.error("Error fetching subscribers:", error);
+      setSubscribers([]);
+    }
+  };
+
   const sendBroadcastNotification = async () => {
     if (!broadcastMessage.trim()) {
       toast.error("Entrez un message");

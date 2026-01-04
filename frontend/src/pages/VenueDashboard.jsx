@@ -1464,12 +1464,75 @@ export default function VenueDashboard() {
                       <div className="space-y-2">
                         <Label>Groupes / Artistes</Label>
                         <div className="p-4 border border-white/10 rounded-xl space-y-3">
-                          <Input placeholder="Nom du groupe" value={newBand.name} onChange={(e) => setNewBand({ ...newBand, name: e.target.value })} className="bg-black/20 border-white/10" />
+                          <div className="relative">
+                            <Input 
+                              placeholder="Nom du groupe (commencez à taper pour rechercher)" 
+                              value={newBand.name} 
+                              onChange={(e) => setNewBand({ ...newBand, name: e.target.value })} 
+                              onFocus={() => {
+                                if (bandSuggestions.length > 0) setShowBandSuggestions(true);
+                              }}
+                              className="bg-black/20 border-white/10" 
+                            />
+                            
+                            {/* Suggestions dropdown */}
+                            {showBandSuggestions && bandSuggestions.length > 0 && (
+                              <div className="absolute z-50 w-full mt-1 bg-background border border-white/10 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                {bandSuggestions.map((band, idx) => (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => {
+                                      setNewBand({ 
+                                        ...newBand, 
+                                        name: band.name,
+                                        members_count: band.members_count || 0
+                                      });
+                                      setShowBandSuggestions(false);
+                                      toast.success(`Groupe "${band.name}" sélectionné`);
+                                    }}
+                                    className="w-full px-4 py-3 text-left hover:bg-white/5 transition-colors border-b border-white/5 last:border-0"
+                                  >
+                                    <div className="flex items-start justify-between">
+                                      <div>
+                                        <p className="font-semibold text-white">{band.name}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                          {band.band_type && `${band.band_type} • `}
+                                          {band.members_count && `${band.members_count} membres • `}
+                                          {band.musician_name && `Créé par ${band.musician_name}`}
+                                        </p>
+                                        {band.music_styles && band.music_styles.length > 0 && (
+                                          <div className="flex flex-wrap gap-1 mt-1">
+                                            {band.music_styles.slice(0, 3).map((style, i) => (
+                                              <span key={i} className="px-1.5 py-0.5 bg-primary/20 text-primary text-xs rounded">
+                                                {style}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          
                           <select value={newBand.musician_id} onChange={(e) => setNewBand({ ...newBand, musician_id: e.target.value })} className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white">
                             <option value="">Lier à un musicien (optionnel)</option>
                             {musicians.map(m => <option key={m.id} value={m.id}>{m.pseudo}</option>)}
                           </select>
-                          <Button type="button" onClick={addBandToConcert} variant="outline" className="w-full border-white/20">Ajouter le groupe</Button>
+                          <Button 
+                            type="button" 
+                            onClick={() => {
+                              addBandToConcert();
+                              setShowBandSuggestions(false);
+                            }} 
+                            variant="outline" 
+                            className="w-full border-white/20"
+                          >
+                            Ajouter le groupe
+                          </Button>
                         </div>
                         <div className="space-y-2">
                           {concertForm.bands.map((band, i) => (

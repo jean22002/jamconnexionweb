@@ -1281,7 +1281,7 @@ async def create_jam_event(data: JamEvent, current_user: dict = Depends(get_curr
     await notify_venue_subscribers(venue["id"], "jam_event", f"Nouveau boeuf musical chez {venue['name']}", 
                                    f"Le {data.date} de {data.start_time} à {data.end_time}", f"/venue/{venue['id']}")
     
-    # NOUVELLE FONCTIONNALITÉ : Alerter les établissements dans un rayon de 50km
+    # NOUVELLE FONCTIONNALITÉ : Alerter les établissements dans un rayon de 100km
     try:
         all_venues = await db.venues.find({}, {"_id": 0}).to_list(1000)
         
@@ -1309,7 +1309,7 @@ async def create_jam_event(data: JamEvent, current_user: dict = Depends(get_curr
             c = 2 * atan2(sqrt(a), sqrt(1-a))
             distance_km = 6371 * c
             
-            if distance_km <= 50:
+            if distance_km <= 100:
                 nearby_venues.append({
                     "venue": other_venue,
                     "distance_km": round(distance_km, 1)

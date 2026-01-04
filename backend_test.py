@@ -1342,6 +1342,404 @@ class JamConnexionAPITester:
             self.log_test("Get Venue My Reviews", False, f"Error: {str(e)}")
             return False
 
+    # ============= BAND JOIN REQUEST TESTS =============
+
+    def test_setup_band_join_scenario(self):
+        """Setup scenario for band join request tests"""
+        try:
+            # Create Musician A (band owner) with a band looking for members
+            test_data_a = {
+                "email": f"musician_a_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Musicien A",
+                "role": "musician"
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/register", json=test_data_a, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Setup Band Join Scenario", False, "Failed to create Musician A")
+                return False
+                
+            musician_a_data = response.json()
+            self.musician_a_token = musician_a_data.get('token')
+            self.musician_a_user = musician_a_data.get('user')
+            
+            # Create profile for Musician A with a band
+            profile_data_a = {
+                "pseudo": "RockLeader",
+                "instruments": ["Guitar", "Vocals"],
+                "music_styles": ["Rock", "Blues"],
+                "has_band": True,
+                "bands": [{
+                    "name": "The Rockers",
+                    "description": "Groupe de rock cherchant nouveaux membres",
+                    "members_count": 3,
+                    "music_styles": ["Rock", "Blues"],
+                    "looking_for_members": True,
+                    "looking_for_profiles": ["Batteur", "Bassiste"],
+                    "admin_id": None  # Will be set after profile creation
+                }]
+            }
+            
+            headers_a = {'Authorization': f'Bearer {self.musician_a_token}'}
+            profile_response = requests.post(f"{self.base_url}/musicians", json=profile_data_a, headers=headers_a, timeout=10)
+            
+            if profile_response.status_code != 200:
+                self.log_test("Setup Band Join Scenario", False, "Failed to create Musician A profile")
+                return False
+                
+            musician_a_profile = profile_response.json()
+            self.musician_a_profile_id = musician_a_profile.get('id')
+            
+            # Update band with admin_id
+            profile_data_a["bands"][0]["admin_id"] = self.musician_a_profile_id
+            requests.put(f"{self.base_url}/musicians", json=profile_data_a, headers=headers_a, timeout=10)
+            
+            # Create Musician B (wants to join)
+            test_data_b = {
+                "email": f"musician_b_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Musicien B",
+                "role": "musician"
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/register", json=test_data_b, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Setup Band Join Scenario", False, "Failed to create Musician B")
+                return False
+                
+            musician_b_data = response.json()
+            self.musician_b_token = musician_b_data.get('token')
+            self.musician_b_user = musician_b_data.get('user')
+            
+            # Create profile for Musician B
+            profile_data_b = {
+                "pseudo": "DrummerBob",
+                "instruments": ["Drums"],
+                "music_styles": ["Rock", "Jazz"],
+                "experience_years": 5
+            }
+            
+            headers_b = {'Authorization': f'Bearer {self.musician_b_token}'}
+            profile_response = requests.post(f"{self.base_url}/musicians", json=profile_data_b, headers=headers_b, timeout=10)
+            
+            if profile_response.status_code != 200:
+                self.log_test("Setup Band Join Scenario", False, "Failed to create Musician B profile")
+                return False
+                
+            musician_b_profile = profile_response.json()
+            self.musician_b_profile_id = musician_b_profile.get('id')
+            
+            success = True
+            details = f"Setup complete - Musician A: {self.musician_a_profile_id} (band owner), Musician B: {self.musician_b_profile_id} (wants to join)"
+            
+            self.log_test("Setup Band Join Scenario", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Setup Band Join Scenario", False, f"Error: {str(e)}")
+            return False
+
+    def test_create_band_join_request(self):
+        """Test creating a band join request"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_b_token}'}
+            request_data = {
+                "musician_id": self.musician_a_profile_id,
+                "band_name": "The Rockers",
+                "message": "Je suis batteur avec 5 ans d'expérience"
+            }
+            
+            response = requests.post(f"{self.base_url}/bands/join-requests", json=request_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                join_response = response.json()
+                self.band_join_request_id = join_response.get('request_id')
+                details = f"Join request created successfully, ID: {self.band_join_request_id}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Create Band Join Request", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Create Band Join Request", False, f"Error: {str(e)}")
+            return False
+
+    def test_notification_created_for_admin(self):
+        """Test that notification is created for band admin"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_a_token}'}
+            response = requests.get(f"{self.base_url}/notifications/unread-count", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                count_data = response.json()
+                unread_count = count_data.get('count', 0)
+                if unread_count > 0:
+                    details = f"Notification created for admin - {unread_count} unread notifications"
+                else:
+                    details = "No notifications found for admin"
+                    success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Notification Created for Admin", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Notification Created for Admin", False, f"Error: {str(e)}")
+            return False
+
+    def test_list_band_join_requests_admin(self):
+        """Test listing join requests as band admin"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_a_token}'}
+            response = requests.get(f"{self.base_url}/bands/join-requests", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                requests_data = response.json()
+                if len(requests_data) > 0:
+                    request = requests_data[0]
+                    details = f"Found {len(requests_data)} join request(s) - From: {request.get('musician_name')}, Band: {request.get('band_name')}, Status: {request.get('status')}"
+                else:
+                    details = "No join requests found"
+                    success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("List Band Join Requests (Admin)", success, details)
+            return success
+        except Exception as e:
+            self.log_test("List Band Join Requests (Admin)", False, f"Error: {str(e)}")
+            return False
+
+    def test_prevent_duplicate_join_request(self):
+        """Test preventing duplicate join requests"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_b_token}'}
+            request_data = {
+                "musician_id": self.musician_a_profile_id,
+                "band_name": "The Rockers",
+                "message": "Tentative de doublon"
+            }
+            
+            response = requests.post(f"{self.base_url}/bands/join-requests", json=request_data, headers=headers, timeout=10)
+            success = response.status_code == 400
+            
+            if success:
+                details = "Correctly prevented duplicate join request"
+            else:
+                details = f"Unexpected status: {response.status_code}, Expected: 400"
+            
+            self.log_test("Prevent Duplicate Join Request", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Prevent Duplicate Join Request", False, f"Error: {str(e)}")
+            return False
+
+    def test_accept_band_join_request(self):
+        """Test accepting a band join request"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_a_token}'}
+            response = requests.put(f"{self.base_url}/bands/join-requests/{self.band_join_request_id}/accept", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                details = "Join request accepted successfully"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Accept Band Join Request", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Accept Band Join Request", False, f"Error: {str(e)}")
+            return False
+
+    def test_notification_sent_to_requester_accept(self):
+        """Test that notification is sent to requester when accepted"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_b_token}'}
+            response = requests.get(f"{self.base_url}/notifications/unread-count", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                count_data = response.json()
+                unread_count = count_data.get('count', 0)
+                if unread_count > 0:
+                    details = f"Notification sent to requester - {unread_count} unread notifications"
+                else:
+                    details = "No notifications found for requester"
+                    success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Notification Sent to Requester (Accept)", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Notification Sent to Requester (Accept)", False, f"Error: {str(e)}")
+            return False
+
+    def test_create_second_join_request_for_rejection(self):
+        """Create a second join request to test rejection"""
+        try:
+            # Create another musician for rejection test
+            test_data_c = {
+                "email": f"musician_c_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Musicien C",
+                "role": "musician"
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/register", json=test_data_c, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Create Second Join Request for Rejection", False, "Failed to create Musician C")
+                return False
+                
+            musician_c_data = response.json()
+            self.musician_c_token = musician_c_data.get('token')
+            
+            # Create profile for Musician C
+            profile_data_c = {
+                "pseudo": "BassPlayer",
+                "instruments": ["Bass"],
+                "music_styles": ["Rock"]
+            }
+            
+            headers_c = {'Authorization': f'Bearer {self.musician_c_token}'}
+            profile_response = requests.post(f"{self.base_url}/musicians", json=profile_data_c, headers=headers_c, timeout=10)
+            
+            if profile_response.status_code != 200:
+                self.log_test("Create Second Join Request for Rejection", False, "Failed to create Musician C profile")
+                return False
+                
+            musician_c_profile = profile_response.json()
+            self.musician_c_profile_id = musician_c_profile.get('id')
+            
+            # Create join request
+            request_data = {
+                "musician_id": self.musician_a_profile_id,
+                "band_name": "The Rockers",
+                "message": "Je suis bassiste intéressé par votre groupe"
+            }
+            
+            response = requests.post(f"{self.base_url}/bands/join-requests", json=request_data, headers=headers_c, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                join_response = response.json()
+                self.second_join_request_id = join_response.get('request_id')
+                details = f"Second join request created for rejection test, ID: {self.second_join_request_id}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Create Second Join Request for Rejection", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Create Second Join Request for Rejection", False, f"Error: {str(e)}")
+            return False
+
+    def test_reject_band_join_request(self):
+        """Test rejecting a band join request"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_a_token}'}
+            response = requests.put(f"{self.base_url}/bands/join-requests/{self.second_join_request_id}/reject", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                details = "Join request rejected successfully"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Reject Band Join Request", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Reject Band Join Request", False, f"Error: {str(e)}")
+            return False
+
+    def test_notification_sent_to_requester_reject(self):
+        """Test that notification is sent to requester when rejected"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_c_token}'}
+            response = requests.get(f"{self.base_url}/notifications/unread-count", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                count_data = response.json()
+                unread_count = count_data.get('count', 0)
+                if unread_count > 0:
+                    details = f"Notification sent to requester - {unread_count} unread notifications"
+                else:
+                    details = "No notifications found for requester"
+                    success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Notification Sent to Requester (Reject)", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Notification Sent to Requester (Reject)", False, f"Error: {str(e)}")
+            return False
+
+    def test_venue_cannot_create_join_request(self):
+        """Test that venues cannot create join requests"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            request_data = {
+                "musician_id": self.musician_a_profile_id,
+                "band_name": "The Rockers",
+                "message": "Venue trying to join band"
+            }
+            
+            response = requests.post(f"{self.base_url}/bands/join-requests", json=request_data, headers=headers, timeout=10)
+            success = response.status_code == 403
+            
+            if success:
+                details = "Correctly rejected venue request to join band"
+            else:
+                details = f"Unexpected status: {response.status_code}, Expected: 403"
+            
+            self.log_test("Venue Cannot Create Join Request", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Venue Cannot Create Join Request", False, f"Error: {str(e)}")
+            return False
+
+    def test_non_admin_cannot_accept_reject(self):
+        """Test that non-admin musicians cannot accept/reject requests"""
+        try:
+            # Try to accept with Musician B (not admin)
+            headers = {'Authorization': f'Bearer {self.musician_b_token}'}
+            
+            # Create a new request first
+            headers_c = {'Authorization': f'Bearer {self.musician_c_token}'}
+            request_data = {
+                "musician_id": self.musician_a_profile_id,
+                "band_name": "The Rockers",
+                "message": "Another test request"
+            }
+            
+            response = requests.post(f"{self.base_url}/bands/join-requests", json=request_data, headers=headers_c, timeout=10)
+            if response.status_code == 200:
+                test_request_id = response.json().get('request_id')
+                
+                # Try to accept with non-admin
+                response = requests.put(f"{self.base_url}/bands/join-requests/{test_request_id}/accept", headers=headers, timeout=10)
+                success = response.status_code == 403
+                
+                if success:
+                    details = "Correctly rejected non-admin attempt to accept request"
+                else:
+                    details = f"Unexpected status: {response.status_code}, Expected: 403"
+            else:
+                success = False
+                details = "Failed to create test request"
+            
+            self.log_test("Non-Admin Cannot Accept/Reject", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Non-Admin Cannot Accept/Reject", False, f"Error: {str(e)}")
+            return False
+
     # ============= BANDS GEOLOCATION SEARCH TESTS =============
     
     def test_bands_geolocation_paris_100km(self):

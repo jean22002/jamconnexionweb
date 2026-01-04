@@ -111,7 +111,8 @@ class MusicianProfile(BaseModel):
     bandcamp: Optional[str] = None
     # Band info
     has_band: bool = False
-    band: Optional[BandInfo] = None
+    band: Optional[BandInfo] = None  # Deprecated - kept for backwards compatibility
+    bands: List[BandInfo] = []  # Multiple bands support
     # Concerts
     concerts: List[MusicianConcert] = []
 

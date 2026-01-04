@@ -565,7 +565,7 @@ export default function VenueDetail() {
                     {user?.role === "musician" && (
                       <div className="mt-4">
                         <JoinEventButton 
-                          event={{ ...jam, event_type: 'jam' }}
+                          event={{ ...jam, type: 'jam' }}
                           venueId={id}
                           token={token}
                           currentParticipation={currentParticipation}

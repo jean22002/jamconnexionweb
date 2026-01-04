@@ -1448,10 +1448,7 @@ export default function MusicianDashboard() {
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="font-heading text-lg">Mes Groupes</h3>
                         <Button 
-                          onClick={() => {
-                            setEditingBandIndex(null);
-                            setShowBandDialog(true);
-                          }}
+                          onClick={() => handleOpenBandDialog(null)}
                           className="bg-primary hover:bg-primary/90 rounded-full"
                         >
                           <Plus className="w-4 h-4 mr-2" />

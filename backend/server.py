@@ -1544,7 +1544,7 @@ async def get_active_events(venue_id: str):
             participants_count = await db.event_participations.count_documents({
                 "event_id": jam["id"],
                 "event_type": "jam",
-                "active": True
+                "is_active": True
             })
             active_events.append({
                 "id": jam["id"],

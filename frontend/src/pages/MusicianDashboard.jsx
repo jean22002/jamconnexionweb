@@ -24,7 +24,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useAutoGeolocation } from "../hooks/useGeolocation";
 import { toast } from "sonner";
-import ParticipationBadge from "../components/ParticipationBadge";
+import SocialLinks from "../components/SocialLinks";
 import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 
 // Options pour les groupes
@@ -1514,6 +1514,16 @@ export default function MusicianDashboard() {
                                   ))}
                                 </div>
                               )}
+
+                              {/* Liens sociaux */}
+                              <SocialLinks 
+                                facebook={band.facebook}
+                                instagram={band.instagram}
+                                youtube={band.youtube}
+                                website={band.website}
+                                bandcamp={band.bandcamp}
+                                className="mt-3"
+                              />
                             </div>
                           ))}
                         </div>

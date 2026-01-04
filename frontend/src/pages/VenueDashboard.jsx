@@ -751,6 +751,34 @@ export default function VenueDashboard() {
     }
   };
 
+  // Search bands with debounce
+  const searchBands = async (query) => {
+    if (query.length < 2) {
+      setBandSuggestions([]);
+      setShowBandSuggestions(false);
+      return;
+    }
+    
+    try {
+      const response = await axios.get(`${API}/bands/search?query=${encodeURIComponent(query)}&limit=5`);
+      setBandSuggestions(response.data);
+      setShowBandSuggestions(true);
+    } catch (error) {
+      console.error("Error searching bands:", error);
+    }
+  };
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (newBand.name) {
+        searchBands(newBand.name);
+      }
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [newBand.name]);
+
   // Create Planning Slot
   const createPlanningSlot = async () => {
     try {

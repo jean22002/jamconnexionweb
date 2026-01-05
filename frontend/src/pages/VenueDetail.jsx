@@ -623,11 +623,42 @@ export default function VenueDetail() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {planningSlots.map((slot) => (
                   <div key={slot.id} className="glassmorphism rounded-xl p-5">
-                    <p className="font-heading font-semibold text-lg">{slot.date}</p>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {slot.music_styles.map((s, i) => <span key={i} className="px-2 py-1 bg-secondary/20 text-secondary text-xs rounded-full">{s}</span>)}
+                    <div className="space-y-3">
+                      <div>
+                        <p className="font-heading font-semibold text-lg">{slot.date}</p>
+                        {slot.time && <p className="text-primary text-sm">🕐 {slot.time}</p>}
+                        {slot.title && <p className="text-sm font-medium mt-1">{slot.title}</p>}
+                      </div>
+                      
+                      {slot.music_styles && slot.music_styles.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {slot.music_styles.map((s, i) => <span key={i} className="px-2 py-1 bg-secondary/20 text-secondary text-xs rounded-full">{s}</span>)}
+                        </div>
+                      )}
+                      
+                      <div className="space-y-1 text-sm">
+                        {slot.expected_band_style && (
+                          <p className="text-muted-foreground">🎸 Style recherché: {slot.expected_band_style}</p>
+                        )}
+                        {slot.expected_attendance > 0 && (
+                          <p className="text-muted-foreground">👥 Affluence: ~{slot.expected_attendance} personnes</p>
+                        )}
+                        {slot.payment && (
+                          <p className="text-green-400">💰 {slot.payment}</p>
+                        )}
+                        {slot.has_catering && (
+                          <p className="text-muted-foreground">🍽️ Catering disponible</p>
+                        )}
+                        {slot.has_accommodation && (
+                          <p className="text-muted-foreground">🛏️ Hébergement disponible</p>
+                        )}
+                      </div>
+                      
+                      {slot.description && (
+                        <p className="text-sm text-muted-foreground border-t border-white/10 pt-3">{slot.description}</p>
+                      )}
                     </div>
-                    {slot.description && <p className="text-sm text-muted-foreground mt-2">{slot.description}</p>}
+                    
                     <Button onClick={() => openApplyDialog(slot)} className="w-full mt-4 bg-secondary hover:bg-secondary/90 rounded-full gap-2" data-testid={`apply-btn-${slot.id}`}>
                       <Send className="w-4 h-4" /> Postuler
                     </Button>

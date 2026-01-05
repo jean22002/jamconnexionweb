@@ -4687,7 +4687,15 @@ class JamConnexionAPITester:
             self.test_jam_participants_count_api,
             self.test_jam_join_button_functionality,
             self.test_jam_security_musician_only,
-            self.test_jam_participants_counter_updates
+            self.test_jam_participants_counter_updates,
+            # NEW NOTIFICATION SYSTEM TESTS
+            self.test_notification_system_setup,
+            self.test_create_planning_slot_tomorrow,
+            self.test_notification_application_rejection,
+            self.test_notification_concert_cancellation,
+            self.test_notification_accepted_application_cancellation,
+            self.test_notification_slot_reopening,
+            self.test_notification_no_notification_if_not_accepted
         ]
         
         for test in tests:

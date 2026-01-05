@@ -550,14 +550,14 @@ class JamConnexionAPITester:
             return False
 
     def test_planning_slot_musician_view_bug_fix(self):
-        """Test Bug Fix: Musician can see all planning slot details"""
+        """Test Bug Fix: Musician can see all planning slot details - RETESTING AFTER BACKEND MODEL FIXES"""
         try:
             # Test that musicians can see all the details when viewing venue planning slots
             if not hasattr(self, 'complete_planning_slot_id'):
-                self.log_test("Planning Slot Musician View Bug Fix", False, "No complete planning slot created in previous test")
+                self.log_test("Planning Slot Musician Visibility - Frontend Bug Fix", False, "No complete planning slot created in previous test")
                 return False
             
-            # Get venue planning slots (public endpoint)
+            # Get venue planning slots (public endpoint that musicians use)
             response = requests.get(f"{self.base_url}/venues/{self.venue_profile_id}/planning", timeout=10)
             success = response.status_code == 200
             
@@ -570,18 +570,23 @@ class JamConnexionAPITester:
                         break
                 
                 if our_slot:
-                    # Check that musicians can see all the important details
+                    # Check that musicians can see all the important details (based on corrected PlanningSlotResponse model)
                     visible_fields = []
                     expected_visible_fields = {
-                        'date': '2025-01-20',
-                        'time': '20:00', 
-                        'title': 'Soirée Rock Progressive',
+                        'date': '2025-01-25',
+                        'time': '21:00', 
+                        'title': 'Grande Soirée Rock',
                         'expected_band_style': 'Rock',
-                        'expected_attendance': 150,
-                        'payment': '300€',
+                        'expected_attendance': 200,
+                        'payment': '400€',
                         'has_catering': True,
+                        'catering_drinks': 6,
+                        'catering_respect': True,
+                        'catering_tbd': False,
                         'has_accommodation': True,
-                        'description': 'Concert rock avec ambiance progressive'
+                        'accommodation_capacity': 6,
+                        'accommodation_tbd': False,
+                        'description': 'Concert rock progressif avec ambiance electrique'
                     }
                     
                     missing_for_musicians = []
@@ -595,17 +600,17 @@ class JamConnexionAPITester:
                         details = f"❌ MUSICIANS CANNOT SEE: {', '.join(missing_for_musicians)}"
                         success = False
                     else:
-                        details = f"✅ MUSICIANS CAN SEE ALL DETAILS: {', '.join(visible_fields)}"
+                        details = f"✅ MUSICIANS CAN SEE ALL DETAILS - BACKEND RESPONSE MODEL FIXED! Fields: {', '.join(visible_fields)}"
                 else:
                     details = "❌ Could not find complete planning slot in venue planning"
                     success = False
             else:
                 details = f"❌ Failed to get venue planning: {response.status_code}"
             
-            self.log_test("Planning Slot Musician View Bug Fix", success, details)
+            self.log_test("Planning Slot Musician Visibility - Frontend Bug Fix", success, details)
             return success
         except Exception as e:
-            self.log_test("Planning Slot Musician View Bug Fix", False, f"Error: {str(e)}")
+            self.log_test("Planning Slot Musician Visibility - Frontend Bug Fix", False, f"Error: {str(e)}")
             return False
 
     def test_notifications(self):

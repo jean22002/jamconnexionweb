@@ -1569,7 +1569,7 @@ export default function VenueDashboard() {
                   <DialogContent className="glassmorphism border-white/10 max-w-lg max-h-[90vh] overflow-y-auto">
                     <DialogHeader><DialogTitle>Créer un concert</DialogTitle></DialogHeader>
                     <div className="space-y-4 mt-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-3 gap-4">
                         <div className="space-y-2">
                           <Label>Date</Label>
                           <Input 
@@ -1582,11 +1582,19 @@ export default function VenueDashboard() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label>Heure</Label>
+                          <Label>Heure début</Label>
                           <TimeSelect
                             value={concertForm.start_time}
                             onChange={(value) => setConcertForm({ ...concertForm, start_time: value })}
-                            placeholder="Heure du concert"
+                            placeholder="Heure de début"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Heure fin</Label>
+                          <TimeSelect
+                            value={concertForm.end_time}
+                            onChange={(value) => setConcertForm({ ...concertForm, end_time: value })}
+                            placeholder="Heure de fin"
                           />
                         </div>
                       </div>

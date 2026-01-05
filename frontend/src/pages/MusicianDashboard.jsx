@@ -3465,13 +3465,21 @@ export default function MusicianDashboard() {
                     {venueEvents.concerts.map((concert) => (
                       <div key={concert.id} className="glassmorphism rounded-xl p-4">
                         <div className="flex items-start justify-between mb-2">
-                          <div>
+                          <div className="flex-1">
                             <p className="font-heading font-semibold text-lg">{concert.title || "Concert"}</p>
                             <p className="text-sm text-muted-foreground">{concert.date}</p>
                           </div>
-                          <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">
-                            Concert
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">
+                              Concert
+                            </span>
+                            {concert.participants_count !== undefined && concert.participants_count > 0 && (
+                              <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full flex items-center gap-1">
+                                <Users className="w-3 h-3" />
+                                {concert.participants_count}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">
                           {concert.start_time} - {concert.end_time}

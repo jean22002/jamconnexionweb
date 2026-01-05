@@ -1911,6 +1911,18 @@ export default function VenueDashboard() {
                     <span className="text-sm">Bœuf</span>
                   </div>
                   <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded bg-yellow-500/20 border-2 border-yellow-500"></div>
+                    <span className="text-sm">Ouvert</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded bg-orange-500/20 border-2 border-orange-500"></div>
+                    <span className="text-sm">En cours</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded bg-red-500/20 border-2 border-red-500"></div>
+                    <span className="text-sm">Complet</span>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded bg-blue-500/20 border-2 border-blue-500"></div>
                     <span className="text-sm">Libre</span>
                   </div>

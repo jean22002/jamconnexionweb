@@ -255,6 +255,36 @@ backend:
         agent: "testing"
         comment: "✅ COMPTEUR PARTICIPANTS DYNAMIQUE - FONCTIONNEL - Tests complets réussis. RÉSULTATS: ✅ Compteur initial: 0 participants, ✅ Après 1er musicien rejoint: 1 participant, ✅ Après 2ème musicien rejoint: 2 participants, ✅ Après 1er musicien quitte: 1 participant. Le système de compteur dynamique fonctionne parfaitement avec mise à jour en temps réel."
 
+  - task: "Planning Slots Complete Data Storage - Backend Bug Fix"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Bug fix applied: Modified handleCreatePlanningSlot in VenueDashboard.jsx to send ALL fields including catering and accommodation data to backend"
+      - working: false
+        agent: "testing"
+        comment: "❌ BUG CONFIRMED - Backend PlanningSlot model missing critical fields. TESTS PERFORMED: ✅ Created planning slot with ALL frontend fields (time, title, expected_band_style, expected_attendance, payment, catering, accommodation), ❌ Backend only saves fields that exist in PlanningSlot model, ignoring: time, title, expected_band_style, expected_attendance, payment, accommodation_tbd. MISSING FIELDS IN BACKEND MODEL: time, title, expected_band_style, expected_attendance, payment, accommodation_tbd. MISSING FIELDS IN RESPONSE MODEL: All catering/accommodation fields missing from PlanningSlotResponse. ROOT CAUSE: Backend PlanningSlot and PlanningSlotResponse models incomplete - missing fields that frontend sends."
+
+  - task: "Planning Slots Musician Visibility - Frontend Bug Fix"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/VenueDetail.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Bug fix applied: Enhanced display of planning slots in VenueDetail.jsx to show all details (time, payment, catering, accommodation) to musicians"
+      - working: false
+        agent: "testing"
+        comment: "❌ BUG CONFIRMED - Musicians cannot see planning slot details because backend doesn't return them. TESTS PERFORMED: ✅ Retrieved venue planning slots via GET /api/venues/{venue_id}/planning, ❌ Response missing all enhanced fields: time, title, expected_band_style, expected_attendance, payment, has_catering, has_accommodation. CAUSE: Backend PlanningSlotResponse model doesn't include these fields, so they're never returned to frontend even if stored. Frontend fix ineffective without backend model updates."
+
 frontend:
   - task: "Landing Page & Auth Forms"
     implemented: true

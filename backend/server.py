@@ -1840,7 +1840,17 @@ async def list_concert_events(venue_id: Optional[str] = None, date_from: Optiona
 @api_router.get("/venues/{venue_id}/concerts", response_model=List[ConcertEventResponse])
 async def get_venue_concerts(venue_id: str):
     concerts = await db.concerts.find({"venue_id": venue_id}, {"_id": 0}).sort("date", 1).to_list(100)
-    return [ConcertEventResponse(**c) for c in concerts]
+    
+    # Add participants count for each concert
+    result = []
+    for concert in concerts:
+        participants_count = await db.event_participations.count_documents({
+            "event_id": concert["id"],
+            "event_type": "concert"
+        })
+        result.append(ConcertEventResponse(**concert, participants_count=participants_count))
+    
+    return result
 
 @api_router.delete("/concerts/{concert_id}")
 async def delete_concert_event(concert_id: str, current_user: dict = Depends(get_current_user)):

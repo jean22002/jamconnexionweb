@@ -170,7 +170,7 @@ class BugFixTester:
                 initial_count = response.json().get('count', 0)
             
             # Step 4: Venue accepts the application
-            response = requests.put(f"{self.base_url}/applications/{application_id}/accept", headers=headers_venue, timeout=15)
+            response = requests.post(f"{self.base_url}/applications/{application_id}/accept", headers=headers_venue, timeout=15)
             if response.status_code != 200:
                 self.log_test("Notification System Workflow", False, f"Failed to accept application: {response.status_code} - {response.text[:200]}")
                 return False

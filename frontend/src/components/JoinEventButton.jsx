@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Radio, Loader2, LogOut } from "lucide-react";
 import axios from "axios";
@@ -15,6 +15,11 @@ export default function JoinEventButton({
 }) {
   const [loading, setLoading] = useState(false);
   const [localParticipating, setLocalParticipating] = useState(false);
+  
+  // Sync local state with prop when it changes
+  useEffect(() => {
+    setLocalParticipating(!!currentParticipation);
+  }, [currentParticipation]);
   
   // Check if already participating in THIS event
   // currentParticipation is either the participation object for this event, or null/undefined

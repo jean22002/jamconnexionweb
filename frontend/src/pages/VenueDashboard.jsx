@@ -1467,9 +1467,14 @@ export default function VenueDashboard() {
                       onClick={() => handleEditEvent(jam, 'jam')}
                     >
                       <div className="flex items-start justify-between">
-                        <div>
+                        <div className="flex-1">
                           <p className="font-heading font-semibold text-lg">{jam.date}</p>
                           <p className="text-muted-foreground">{jam.start_time} - {jam.end_time}</p>
+                          {jam.participants_count > 0 && (
+                            <p className="text-green-400 text-sm mt-1">
+                              👥 {jam.participants_count} participant{jam.participants_count > 1 ? 's' : ''}
+                            </p>
+                          )}
                         </div>
                         <div className="flex gap-1">
                           <Button 

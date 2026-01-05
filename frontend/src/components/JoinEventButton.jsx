@@ -33,7 +33,8 @@ export default function JoinEventButton({
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      toast.success(`Vous participez au boeuf chez ${response.data.venue_name} ! 🎵`);
+      const eventTypeLabel = event.type === 'concert' ? 'concert' : 'boeuf';
+      toast.success(`Vous participez au ${eventTypeLabel} chez ${response.data.venue_name} ! 🎵`);
       
       // Notify parent to refresh participation status
       if (onParticipationChange) {

@@ -2760,6 +2760,28 @@ async def mark_message_read(message_id: str, current_user: dict = Depends(get_cu
     
     return {"message": "Message marqué comme lu"}
 
+@api_router.delete("/messages/conversation/{partner_id}")
+async def delete_conversation(partner_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete all messages in a conversation with a specific user"""
+    # Delete all messages sent by current user to partner
+    result1 = await db.messages.delete_many({
+        "sender_id": current_user["id"],
+        "recipient_id": partner_id
+    })
+    
+    # Delete all messages received from partner
+    result2 = await db.messages.delete_many({
+        "sender_id": partner_id,
+        "recipient_id": current_user["id"]
+    })
+    
+    total_deleted = result1.deleted_count + result2.deleted_count
+    
+    return {
+        "message": "Conversation supprimée",
+        "deleted_count": total_deleted
+    }
+
 # ============= BANDS DIRECTORY =============
 
 @api_router.get("/bands")

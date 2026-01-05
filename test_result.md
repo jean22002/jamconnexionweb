@@ -521,9 +521,7 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus:
-    - "Planning Slots Complete Data Storage - Backend Bug Fix"
-    - "Planning Slots Musician Visibility - Frontend Bug Fix"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

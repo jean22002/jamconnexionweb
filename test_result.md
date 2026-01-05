@@ -889,6 +889,30 @@ test_plan:
         agent: "testing"
         comment: "✅ VALIDATION PAR ANALYSE DE CODE - CityAutocomplete entièrement implémenté selon spécifications. DÉTAILS: ✅ Composant CityAutocomplete intégré lignes 1038-1051 VenueDashboard.jsx, ✅ Callback onSelect met à jour city, postal_code, department, region, ✅ Bouton GPS 'Ma position GPS' présent lignes 1056-1058, ✅ Fonction useMyLocation lignes 273-333 pour géolocalisation automatique, ✅ API geo.api.gouv.fr utilisée via reverseGeocode, ✅ Auto-remplissage complet des champs d'adresse. LIMITATION: Tests UI automatisés incomplets à cause de problèmes d'authentification, mais implémentation code 100% conforme aux spécifications demandées."
 
+  - task: "Menu déroulant départements - Frontend"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/MusicianDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NOUVELLE FONCTIONNALITÉ P1 IMPLÉMENTÉE - Transformé le champ de saisie texte 'Département' en un Select avec menu déroulant dans le répertoire des groupes. Le menu affiche tous les départements français depuis DEPARTEMENTS_FRANCE (code + nom). Format d'affichage: '75 - Paris', '13 - Bouches-du-Rhône', etc. Localisation: /app/frontend/src/pages/MusicianDashboard.jsx lignes ~3036-3053."
+
+  - task: "Suppression conversation messagerie - Frontend"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/MessagesImproved.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NOUVELLE FONCTIONNALITÉ P1 IMPLÉMENTÉE - Ajouté un bouton avec icône corbeille (Trash2) dans le header du chat. Ajouté une confirmation avant suppression. Après suppression: retour à la liste des conversations, rechargement automatique. Localisation: /app/frontend/src/pages/MessagesImproved.jsx"
+
   - task: "MusicianDashboard - Bouton Je participe dans onglet Connexions"
     implemented: true
     working: true

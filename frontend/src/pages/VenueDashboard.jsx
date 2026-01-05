@@ -1582,7 +1582,7 @@ export default function VenueDashboard() {
                         {concertForm.has_catering && (
                           <div className="space-y-3 pl-6 border-l-2 border-primary/30">
                             <div className="space-y-2">
-                              <Label>Boissons (nombre)</Label>
+                              <Label>Boissons par personne</Label>
                               <Select 
                                 value={concertForm.catering_drinks?.toString() || "0"} 
                                 onValueChange={(value) => setConcertForm({ ...concertForm, catering_drinks: parseInt(value) })}

@@ -3021,28 +3021,151 @@ export default function VenueDashboard() {
                       />
                     </div>
 
-                    {selectedEvent.bands && selectedEvent.bands.length > 0 && (
-                      <div className="space-y-2">
-                        <Label>Artistes</Label>
-                        <div className="space-y-2">
-                          {selectedEvent.bands.map((band, i) => (
-                            <div key={i} className="p-3 bg-muted/30 rounded-lg flex justify-between items-center">
-                              <p className="font-medium">{band.name}</p>
-                              {band.members_count && (
-                                <span className="text-sm text-muted-foreground">
-                                  {band.members_count} membre{band.members_count > 1 ? 's' : ''}
-                                </span>
+                    {/* Section Artistes/Groupes */}
+                    <div className="space-y-2">
+                      <Label>Artistes / Groupes</Label>
+                      
+                      {isEditingEvent ? (
+                        // Mode édition : permettre d'ajouter/supprimer des groupes
+                        <div className="space-y-3">
+                          {/* Formulaire d'ajout de groupe */}
+                          <div className="p-4 border border-white/10 rounded-xl space-y-3">
+                            <div className="relative">
+                              <Input 
+                                placeholder="Nom du groupe (commencez à taper pour rechercher)" 
+                                value={newBand.name} 
+                                onChange={(e) => setNewBand({ ...newBand, name: e.target.value })} 
+                                onFocus={() => {
+                                  if (bandSuggestions.length > 0) setShowBandSuggestions(true);
+                                }}
+                                className="bg-black/20 border-white/10" 
+                              />
+                              
+                              {/* Suggestions dropdown */}
+                              {showBandSuggestions && bandSuggestions.length > 0 && (
+                                <div className="absolute z-50 w-full mt-1 bg-background border border-white/10 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                  {bandSuggestions.map((band, idx) => (
+                                    <button
+                                      key={idx}
+                                      type="button"
+                                      onClick={() => {
+                                        setNewBand({ 
+                                          ...newBand, 
+                                          name: band.name,
+                                          members_count: band.members_count || 0
+                                        });
+                                        setShowBandSuggestions(false);
+                                        toast.success(`Groupe "${band.name}" sélectionné`);
+                                      }}
+                                      className="w-full px-4 py-3 text-left hover:bg-white/5 transition-colors border-b border-white/5 last:border-0"
+                                    >
+                                      <div className="flex items-start justify-between">
+                                        <div>
+                                          <p className="font-semibold text-white">{band.name}</p>
+                                          <p className="text-xs text-muted-foreground">
+                                            {band.members_count && `${band.members_count} membres`}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </button>
+                                  ))}
+                                </div>
                               )}
                             </div>
-                          ))}
+                            
+                            <div className="space-y-2">
+                              <Label>Nombre de membres du groupe</Label>
+                              <Input 
+                                type="number" 
+                                min="1"
+                                placeholder="Ex: 4" 
+                                value={newBand.members_count || ""} 
+                                onChange={(e) => setNewBand({ ...newBand, members_count: parseInt(e.target.value) || 0 })} 
+                                className="bg-black/20 border-white/10" 
+                              />
+                            </div>
+                            
+                            <Button 
+                              type="button" 
+                              onClick={() => {
+                                if (newBand.name) {
+                                  setSelectedEvent({ 
+                                    ...selectedEvent, 
+                                    bands: [...(selectedEvent.bands || []), { ...newBand }] 
+                                  });
+                                  setNewBand({ name: "", musician_id: "", members_count: 0, photo: "", facebook: "", instagram: "" });
+                                  setShowBandSuggestions(false);
+                                }
+                              }} 
+                              variant="outline" 
+                              className="w-full border-white/20"
+                            >
+                              Ajouter le groupe
+                            </Button>
+                          </div>
+                          
+                          {/* Liste des groupes */}
+                          {selectedEvent.bands && selectedEvent.bands.length > 0 && (
+                            <div className="space-y-2">
+                              {selectedEvent.bands.map((band, i) => (
+                                <div key={i} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                                  <div className="flex-1">
+                                    <p className="font-medium">{band.name}</p>
+                                    {band.members_count && (
+                                      <span className="text-sm text-muted-foreground">
+                                        {band.members_count} membre{band.members_count > 1 ? 's' : ''}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => {
+                                      setSelectedEvent({ 
+                                        ...selectedEvent, 
+                                        bands: selectedEvent.bands.filter((_, idx) => idx !== i) 
+                                      });
+                                    }}
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {/* Total des musiciens */}
+                          {selectedEvent.bands && selectedEvent.bands.length > 0 && (
+                            <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                              <p className="text-sm font-semibold text-primary">
+                                Total : {selectedEvent.bands.reduce((sum, band) => sum + (band.members_count || 0), 0)} musicien{selectedEvent.bands.reduce((sum, band) => sum + (band.members_count || 0), 0) > 1 ? 's' : ''}
+                              </p>
+                            </div>
+                          )}
                         </div>
-                        <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg mt-2">
-                          <p className="text-sm font-semibold text-primary">
-                            Total : {selectedEvent.bands.reduce((sum, band) => sum + (band.members_count || 0), 0)} musicien{selectedEvent.bands.reduce((sum, band) => sum + (band.members_count || 0), 0) > 1 ? 's' : ''}
-                          </p>
-                        </div>
-                      </div>
-                    )}
+                      ) : (
+                        // Mode lecture seule : affichage simple
+                        selectedEvent.bands && selectedEvent.bands.length > 0 && (
+                          <div className="space-y-2">
+                            {selectedEvent.bands.map((band, i) => (
+                              <div key={i} className="p-3 bg-muted/30 rounded-lg flex justify-between items-center">
+                                <p className="font-medium">{band.name}</p>
+                                {band.members_count && (
+                                  <span className="text-sm text-muted-foreground">
+                                    {band.members_count} membre{band.members_count > 1 ? 's' : ''}
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                            <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg mt-2">
+                              <p className="text-sm font-semibold text-primary">
+                                Total : {selectedEvent.bands.reduce((sum, band) => sum + (band.members_count || 0), 0)} musicien{selectedEvent.bands.reduce((sum, band) => sum + (band.members_count || 0), 0) > 1 ? 's' : ''}
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
                   </>
                 )}
 

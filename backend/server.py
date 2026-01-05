@@ -2167,6 +2167,54 @@ async def reject_application(app_id: str, current_user: dict = Depends(get_curre
     
     return {"message": "Application rejected"}
 
+@api_router.delete("/applications/{app_id}")
+async def delete_application(app_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete an application (for venue to cancel an accepted application)"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can delete applications")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    app = await db.applications.find_one({"id": app_id}, {"_id": 0})
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+    
+    slot = await db.planning_slots.find_one({"id": app["planning_slot_id"], "venue_id": venue["id"]}, {"_id": 0})
+    if not slot:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # If the application was accepted, notify the musician about cancellation
+    if app.get("status") == "accepted":
+        musician = await db.musicians.find_one({"id": app["musician_id"]}, {"_id": 0})
+        if musician:
+            await create_notification(
+                musician["user_id"],
+                "application_cancelled",
+                "Candidature annulée",
+                f"Votre candidature acceptée pour le {slot['date']} chez {venue['name']} a été annulée par l'établissement.",
+                None
+            )
+        
+        # Reopen slot if it was closed due to this application
+        accepted_count = await db.applications.count_documents({
+            "planning_slot_id": slot["id"],
+            "status": "accepted"
+        })
+        
+        # After deleting this one, check if we need to reopen
+        if accepted_count - 1 < slot.get("num_bands_needed", 1):
+            await db.planning_slots.update_one(
+                {"id": slot["id"]},
+                {"$set": {"is_open": True}}
+            )
+    
+    # Delete the application
+    await db.applications.delete_one({"id": app_id})
+    
+    return {"message": "Application deleted"}
+
 @api_router.get("/venues/me/subscribers")
 async def get_venue_subscribers(current_user: dict = Depends(get_current_user)):
     """Get list of subscribers (musicians) for current venue"""

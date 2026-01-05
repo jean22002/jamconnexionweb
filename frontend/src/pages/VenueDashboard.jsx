@@ -990,6 +990,7 @@ export default function VenueDashboard() {
 
   // Fonctions pour éditer les événements
   const handleEditEvent = (event, type) => {
+    console.log('🎵 handleEditEvent appelé avec:', { event, type, eventDate: event.date });
     setSelectedEvent(event);
     setSelectedEventType(type);
     setIsEditingEvent(true);

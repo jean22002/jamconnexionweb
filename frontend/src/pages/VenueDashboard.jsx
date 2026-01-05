@@ -2010,6 +2010,8 @@ export default function VenueDashboard() {
                             has_accommodation: false,
                             accommodation_capacity: 0
                           });
+                          // Rafraîchir les créneaux pour s'assurer qu'il n'y a pas de données fantômes
+                          fetchPlanningSlots();
                         }}
                         variant="outline"
                         className="rounded-full border-red-500/30 text-red-400 hover:bg-red-500/10"

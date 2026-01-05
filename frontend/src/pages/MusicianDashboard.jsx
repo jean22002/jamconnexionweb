@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import JoinEventButton from "../components/JoinEventButton";
 import SocialLinks from "../components/SocialLinks";
 import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
+import { MUSIC_STYLES_LIST } from "../data/music-styles";
 
 // Options pour les groupes
 const BAND_TYPES = [

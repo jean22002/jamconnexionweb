@@ -247,7 +247,8 @@ export default function VenueDashboard() {
     fetchProfile();
     fetchMusicians();
     fetchEvents();
-  }, [fetchProfile, fetchMusicians, fetchEvents]);
+    fetchNotifications();
+  }, [fetchProfile, fetchMusicians, fetchEvents, fetchNotifications]);
 
   useEffect(() => {
     if (profile) fetchEvents();

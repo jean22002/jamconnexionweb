@@ -1836,6 +1836,11 @@ export default function VenueDashboard() {
                                 <span className="text-xs font-semibold text-primary">
                                   Total : {totalMembers} musicien{totalMembers > 1 ? 's' : ''}
                                 </span>
+                                {(totalMembers + (concert.participants_count || 0)) > 0 && (
+                                  <p className="text-xs font-semibold text-green-400 mt-1">
+                                    {totalMembers + (concert.participants_count || 0)} : minimum de personnes étrangères à l'établissement
+                                  </p>
+                                )}
                               </div>
                             )}
                           </div>

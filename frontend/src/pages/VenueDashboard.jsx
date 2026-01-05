@@ -2954,7 +2954,15 @@ export default function VenueDashboard() {
         </Tabs>
 
         {/* Modale d'affichage/édition d'événement */}
-        <Dialog open={showEventDetailsModal} onOpenChange={setShowEventDetailsModal}>
+        <Dialog open={showEventDetailsModal} onOpenChange={(open) => {
+          setShowEventDetailsModal(open);
+          if (!open) {
+            // Réinitialiser l'état quand la modale se ferme
+            setSelectedEvent(null);
+            setSelectedEventType(null);
+            setIsEditingEvent(false);
+          }
+        }}>
           <DialogContent className="glassmorphism border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="font-heading">

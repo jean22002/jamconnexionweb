@@ -50,6 +50,7 @@ export default function VenueDetail() {
   const [activeEvents, setActiveEvents] = useState([]);
   const [currentParticipation, setCurrentParticipation] = useState(null);
   const [myParticipations, setMyParticipations] = useState([]);
+  const [loadingParticipations, setLoadingParticipations] = useState(true); // Track if participations are still loading
   const [reviews, setReviews] = useState([]);
   const [averageRating, setAverageRating] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);

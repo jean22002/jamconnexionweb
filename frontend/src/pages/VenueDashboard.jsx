@@ -3004,29 +3004,45 @@ export default function VenueDashboard() {
                       onChange={(e) => setSelectedEvent({ ...selectedEvent, date: e.target.value })}
                       className="bg-black/20 border-white/10"
                       disabled={!isEditingEvent}
+                      onKeyDown={(e) => e.preventDefault()}
+                      style={{ caretColor: 'transparent' }}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Horaire de début</Label>
-                    <Input
-                      type="time"
-                      value={selectedEvent.start_time || ''}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, start_time: e.target.value })}
-                      className="bg-black/20 border-white/10"
-                      disabled={!isEditingEvent}
-                    />
+                    {isEditingEvent ? (
+                      <TimeSelect
+                        value={selectedEvent.start_time || ''}
+                        onChange={(value) => setSelectedEvent({ ...selectedEvent, start_time: value })}
+                        placeholder="Heure de début"
+                      />
+                    ) : (
+                      <Input
+                        type="text"
+                        value={selectedEvent.start_time || ''}
+                        className="bg-black/20 border-white/10"
+                        disabled
+                      />
+                    )}
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label>Horaire de fin</Label>
-                  <Input
-                    type="time"
-                    value={selectedEvent.end_time || ''}
-                    onChange={(e) => setSelectedEvent({ ...selectedEvent, end_time: e.target.value })}
-                    className="bg-black/20 border-white/10"
-                    disabled={!isEditingEvent}
-                  />
+                  {isEditingEvent ? (
+                    <TimeSelect
+                      value={selectedEvent.end_time || ''}
+                      onChange={(value) => setSelectedEvent({ ...selectedEvent, end_time: value })}
+                      placeholder="Heure de fin"
+                    />
+                  ) : (
+                    <Input
+                      type="text"
+                      value={selectedEvent.end_time || ''}
+                      className="bg-black/20 border-white/10"
+                      disabled
+                    />
+                  )}
                 </div>
 
                 {/* Champs spécifiques au Concert */}

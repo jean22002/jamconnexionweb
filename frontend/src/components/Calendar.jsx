@@ -76,6 +76,7 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
     // Vérifier si le créneau a des candidatures acceptées
     const hasAcceptedApplications = planningSlot && planningSlot.accepted_bands_count > 0;
     const isSlotComplete = planningSlot && !planningSlot.is_open && planningSlot.accepted_bands_count >= planningSlot.num_bands_needed;
+    const isOpenSlot = planningSlot && planningSlot.is_open && !hasAcceptedApplications;
     
     // Définir les couleurs selon le type d'événement
     let colorClasses = '';
@@ -92,6 +93,11 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
       colorClasses = 'bg-orange-500/20 text-orange-400 border-2 border-orange-500/40 hover:bg-orange-500/30 cursor-pointer';
       label = 'En cours';
       eventInfo = `${planningSlot.accepted_bands_count}/${planningSlot.num_bands_needed} groupes`;
+    } else if (isOpenSlot) {
+      // Jaune pour les créneaux ouverts sans candidature
+      colorClasses = 'bg-yellow-500/20 text-yellow-400 border-2 border-yellow-500/40 hover:bg-yellow-500/30 cursor-pointer';
+      label = 'Ouvert';
+      eventInfo = `0/${planningSlot.num_bands_needed} groupe${planningSlot.num_bands_needed > 1 ? 's' : ''}`;
     } else if (eventType === 'concert') {
       // Vert pour les concerts - maintenant cliquable
       colorClasses = 'bg-green-500/20 text-green-400 border-2 border-green-500/40 hover:bg-green-500/30 cursor-pointer';

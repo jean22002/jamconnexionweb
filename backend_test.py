@@ -459,6 +459,155 @@ class JamConnexionAPITester:
             self.log_test("Planning and Applications", False, f"Error: {str(e)}")
             return False
 
+    def test_planning_slot_complete_data_bug_fix(self):
+        """Test Bug Fix: Planning slot with ALL fields (catering, accommodation, etc.)"""
+        try:
+            headers_venue = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Test 1: Create planning slot with ALL fields as sent by frontend
+            complete_planning_data = {
+                "date": "2025-01-20",
+                "time": "20:00",
+                "title": "Soirée Rock Progressive",
+                "description": "Concert rock avec ambiance progressive",
+                "expected_band_style": "Rock",
+                "expected_attendance": 150,
+                "payment": "300€",
+                "num_bands_needed": 2,
+                "has_catering": True,
+                "catering_drinks": 5,
+                "catering_respect": True,
+                "catering_tbd": False,
+                "has_accommodation": True,
+                "accommodation_capacity": 4,
+                "accommodation_tbd": False,
+                "music_styles": ["Rock", "Progressive"],
+                "is_open": True
+            }
+            
+            response = requests.post(f"{self.base_url}/planning", json=complete_planning_data, headers=headers_venue, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                planning_response = response.json()
+                self.complete_planning_slot_id = planning_response.get('id')
+                details = f"Complete planning slot created: {planning_response.get('date')}"
+                
+                # Test 2: Retrieve the planning slot and verify ALL fields are saved
+                response = requests.get(f"{self.base_url}/planning", timeout=10)
+                if response.status_code == 200:
+                    all_slots = response.json()
+                    # Find our slot
+                    our_slot = None
+                    for slot in all_slots:
+                        if slot.get('id') == self.complete_planning_slot_id:
+                            our_slot = slot
+                            break
+                    
+                    if our_slot:
+                        # Check if all critical fields are present
+                        missing_fields = []
+                        expected_fields = {
+                            'time': '20:00',
+                            'title': 'Soirée Rock Progressive', 
+                            'expected_band_style': 'Rock',
+                            'expected_attendance': 150,
+                            'payment': '300€',
+                            'num_bands_needed': 2,
+                            'has_catering': True,
+                            'catering_drinks': 5,
+                            'catering_respect': True,
+                            'catering_tbd': False,
+                            'has_accommodation': True,
+                            'accommodation_capacity': 4,
+                            'accommodation_tbd': False
+                        }
+                        
+                        for field, expected_value in expected_fields.items():
+                            if field not in our_slot:
+                                missing_fields.append(f"{field} (missing)")
+                            elif our_slot.get(field) != expected_value:
+                                missing_fields.append(f"{field} (expected: {expected_value}, got: {our_slot.get(field)})")
+                        
+                        if missing_fields:
+                            details += f" ❌ MISSING/INCORRECT FIELDS: {', '.join(missing_fields)}"
+                            success = False
+                        else:
+                            details += " ✅ ALL FIELDS CORRECTLY SAVED AND RETRIEVED"
+                    else:
+                        details += " ❌ Could not find created slot in list"
+                        success = False
+                else:
+                    details += f" ❌ Failed to retrieve slots: {response.status_code}"
+                    success = False
+            else:
+                details = f"❌ Failed to create slot: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Planning Slot Complete Data Bug Fix", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Planning Slot Complete Data Bug Fix", False, f"Error: {str(e)}")
+            return False
+
+    def test_planning_slot_musician_view_bug_fix(self):
+        """Test Bug Fix: Musician can see all planning slot details"""
+        try:
+            # Test that musicians can see all the details when viewing venue planning slots
+            if not hasattr(self, 'complete_planning_slot_id'):
+                self.log_test("Planning Slot Musician View Bug Fix", False, "No complete planning slot created in previous test")
+                return False
+            
+            # Get venue planning slots (public endpoint)
+            response = requests.get(f"{self.base_url}/venues/{self.venue_profile_id}/planning", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                venue_slots = response.json()
+                our_slot = None
+                for slot in venue_slots:
+                    if slot.get('id') == self.complete_planning_slot_id:
+                        our_slot = slot
+                        break
+                
+                if our_slot:
+                    # Check that musicians can see all the important details
+                    visible_fields = []
+                    expected_visible_fields = {
+                        'date': '2025-01-20',
+                        'time': '20:00', 
+                        'title': 'Soirée Rock Progressive',
+                        'expected_band_style': 'Rock',
+                        'expected_attendance': 150,
+                        'payment': '300€',
+                        'has_catering': True,
+                        'has_accommodation': True,
+                        'description': 'Concert rock avec ambiance progressive'
+                    }
+                    
+                    missing_for_musicians = []
+                    for field, expected_value in expected_visible_fields.items():
+                        if field in our_slot and our_slot.get(field) == expected_value:
+                            visible_fields.append(field)
+                        else:
+                            missing_for_musicians.append(f"{field} (expected: {expected_value}, got: {our_slot.get(field)})")
+                    
+                    if missing_for_musicians:
+                        details = f"❌ MUSICIANS CANNOT SEE: {', '.join(missing_for_musicians)}"
+                        success = False
+                    else:
+                        details = f"✅ MUSICIANS CAN SEE ALL DETAILS: {', '.join(visible_fields)}"
+                else:
+                    details = "❌ Could not find complete planning slot in venue planning"
+                    success = False
+            else:
+                details = f"❌ Failed to get venue planning: {response.status_code}"
+            
+            self.log_test("Planning Slot Musician View Bug Fix", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Planning Slot Musician View Bug Fix", False, f"Error: {str(e)}")
+            return False
+
     def test_notifications(self):
         """Test notification system"""
         try:

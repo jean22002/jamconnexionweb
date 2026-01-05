@@ -189,6 +189,8 @@ export default function VenueDashboard() {
         axios.get(`${API}/venues/${profile.id}/concerts`),
         axios.get(`${API}/venues/${profile.id}/planning`)
       ]);
+      console.log('🎵 Concerts récupérés du backend:', concertsRes.data);
+      console.log('🎵 Premier concert (si existe):', concertsRes.data[0]);
       setJams(jamsRes.data);
       setConcerts(concertsRes.data);
       setPlanningSlots(planningRes.data);

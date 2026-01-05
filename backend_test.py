@@ -4912,6 +4912,9 @@ class JamConnexionAPITester:
             self.test_jam_events,
             self.test_concert_events,
             self.test_planning_and_applications,
+            # BUG FIX TESTS - Planning Slots Complete Data (Review Request)
+            self.test_planning_slot_complete_data_bug_fix,
+            self.test_planning_slot_musician_view_bug_fix,
             self.test_notifications,
             # Event Participation Tests
             self.test_create_active_jam_event,

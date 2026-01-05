@@ -16,7 +16,8 @@ export default function JoinEventButton({
   const [loading, setLoading] = useState(false);
   
   // Check if already participating in THIS event
-  const isParticipating = currentParticipation && currentParticipation.event_id === event.id;
+  // currentParticipation is either the participation object for this event, or null/undefined
+  const isParticipating = !!currentParticipation;
 
   const handleJoin = async () => {
     if (!token) {

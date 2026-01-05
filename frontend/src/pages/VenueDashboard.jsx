@@ -2020,11 +2020,10 @@ export default function VenueDashboard() {
 
                     <div className="space-y-2">
                       <Label>Heure du concert</Label>
-                      <Input
-                        type="time"
+                      <TimeSelect
                         value={planningForm.time}
-                        onChange={(e) => setPlanningForm({ ...planningForm, time: e.target.value })}
-                        className="bg-black/20 border-white/10"
+                        onChange={(value) => setPlanningForm({ ...planningForm, time: value })}
+                        placeholder="Heure du concert"
                       />
                     </div>
 

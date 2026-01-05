@@ -182,6 +182,27 @@ export default function MessagesImproved() {
     }
   };
 
+  const deleteConversation = async (partnerId) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette conversation ? Cette action est irréversible.')) {
+      return;
+    }
+
+    try {
+      await axios.delete(
+        `${API}/messages/conversation/${partnerId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success('Conversation supprimée');
+      setSelectedConversation(null);
+      setMessages([]);
+      fetchConversations();
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+      toast.error('Erreur lors de la suppression de la conversation');
+    }
+  };
+
   const searchUsers = async (query) => {
     if (!query.trim()) {
       setSearchResults([]);

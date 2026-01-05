@@ -704,6 +704,7 @@ export default function VenueDashboard() {
       );
       toast.success("Créneau créé avec succès ! Les groupes peuvent maintenant postuler.");
       setShowPlanningModal(false);
+      setEditingPlanningSlotId(null);
       setPlanningForm({
         date: '',
         time: '',
@@ -718,6 +719,39 @@ export default function VenueDashboard() {
     } catch (error) {
       toast.error("Erreur lors de la création du créneau");
       console.error(error);
+    }
+  };
+
+  const handleDeletePlanningSlot = async () => {
+    if (!editingPlanningSlotId) return;
+    
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce créneau ?")) {
+      return;
+    }
+    
+    try {
+      await axios.delete(`${API}/planning/${editingPlanningSlotId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      toast.success("Créneau supprimé!");
+      setShowPlanningModal(false);
+      setSelectedDate(null);
+      setEditingPlanningSlotId(null);
+      setPlanningForm({
+        date: '',
+        time: '',
+        title: '',
+        description: '',
+        expectedBandStyle: '',
+        expectedAttendance: '',
+        payment: ''
+      });
+      fetchPlanningSlots();
+      fetchEvents();
+    } catch (error) {
+      console.error("Error deleting planning slot:", error);
+      toast.error(error.response?.data?.detail || "Erreur lors de la suppression");
     }
   };
 

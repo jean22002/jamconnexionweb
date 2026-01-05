@@ -282,6 +282,7 @@ class JamEventResponse(BaseModel):
 class ConcertBand(BaseModel):
     name: str
     musician_id: Optional[str] = None  # Link to musician if registered
+    members_count: Optional[int] = None  # Number of band members
     photo: Optional[str] = None
     facebook: Optional[str] = None
     instagram: Optional[str] = None

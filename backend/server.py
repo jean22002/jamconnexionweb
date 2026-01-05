@@ -1758,14 +1758,6 @@ async def get_my_participations(current_user: dict = Depends(get_current_user)):
     return participations
 
 # ============= CONCERT EVENTS =============
-        "event_type": participation["event_type"],
-        "venue_id": participation["venue_id"],
-        "venue_name": participation["venue_name"],
-        "event_date": participation["event_date"],
-        "event_start": participation["event_start"],
-        "event_end": participation["event_end"],
-        "joined_at": participation["joined_at"]
-    }
 
 @api_router.get("/musicians/{musician_id}/current-participation")
 async def get_musician_participation(musician_id: str):

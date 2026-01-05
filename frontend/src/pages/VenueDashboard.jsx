@@ -2199,8 +2199,13 @@ export default function VenueDashboard() {
                               setEditingPlanningSlotId(null);
                               setPlanningForm({
                                 date: '',
+                                time: '',
+                                title: '',
                                 music_styles: [],
                                 description: '',
+                                expectedBandStyle: '',
+                                expectedAttendance: '',
+                                payment: '',
                                 artist_categories: [],
                                 num_bands_needed: 1,
                                 has_catering: false,
@@ -2208,7 +2213,8 @@ export default function VenueDashboard() {
                                 catering_respect: false,
                                 catering_tbd: false,
                                 has_accommodation: false,
-                                accommodation_capacity: 0
+                                accommodation_capacity: 0,
+                                accommodation_tbd: false
                               });
                               fetchPlanningSlots();
                             }}

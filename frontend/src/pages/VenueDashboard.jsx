@@ -908,7 +908,7 @@ export default function VenueDashboard() {
       await axios.post(`${API}/concerts`, concertForm, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Concert créé!");
       setShowConcertDialog(false);
-      setConcertForm({ date: "", start_time: "", title: "", description: "", bands: [], price: "" });
+      setConcertForm({ date: "", start_time: "", end_time: "", title: "", description: "", bands: [], price: "" });
       fetchEvents();
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur");

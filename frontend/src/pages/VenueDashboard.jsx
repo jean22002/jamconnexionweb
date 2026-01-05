@@ -1994,6 +1994,8 @@ export default function VenueDashboard() {
                       <Button
                         onClick={() => {
                           setShowPlanningModal(false);
+                          // Réinitialiser la date sélectionnée pour que le calendrier redevienne libre
+                          setSelectedDate(null);
                           // Réinitialiser le formulaire
                           setPlanningForm({
                             date: '',

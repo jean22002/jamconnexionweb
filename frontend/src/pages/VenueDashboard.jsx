@@ -656,8 +656,13 @@ export default function VenueDashboard() {
         setEditingPlanningSlotId(planningSlot.id); // Tracker qu'on édite
         setPlanningForm({
           date: planningSlot.date,
+          time: planningSlot.time || '',
+          title: planningSlot.title || '',
           music_styles: planningSlot.music_styles || [],
           description: planningSlot.description || '',
+          expectedBandStyle: planningSlot.expected_band_style || '',
+          expectedAttendance: planningSlot.expected_attendance || '',
+          payment: planningSlot.payment || '',
           artist_categories: planningSlot.artist_categories || [],
           num_bands_needed: planningSlot.num_bands_needed || 1,
           has_catering: planningSlot.has_catering || false,
@@ -665,7 +670,8 @@ export default function VenueDashboard() {
           catering_respect: planningSlot.catering_respect || false,
           catering_tbd: planningSlot.catering_tbd || false,
           has_accommodation: planningSlot.has_accommodation || false,
-          accommodation_capacity: planningSlot.accommodation_capacity || 0
+          accommodation_capacity: planningSlot.accommodation_capacity || 0,
+          accommodation_tbd: planningSlot.accommodation_tbd || false
         });
         setSelectedDate(date);
         setShowPlanningModal(true);

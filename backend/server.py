@@ -1173,7 +1173,17 @@ async def get_my_venue_concerts(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="Venue profile not found")
     
     concerts = await db.concerts.find({"venue_id": venue["id"]}, {"_id": 0}).sort("date", 1).to_list(100)
-    return [ConcertEventResponse(**c) for c in concerts]
+    
+    # Add participants count for each concert
+    result = []
+    for concert in concerts:
+        participants_count = await db.event_participations.count_documents({
+            "event_id": concert["id"],
+            "event_type": "concert"
+        })
+        result.append(ConcertEventResponse(**concert, participants_count=participants_count))
+    
+    return result
 
 @api_router.get("/venues", response_model=List[VenueProfileResponse])
 async def list_venues(city: Optional[str] = None, style: Optional[str] = None):

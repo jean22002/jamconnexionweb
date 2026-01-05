@@ -3,32 +3,32 @@
     "total_tests": 4,
     "passed_tests": 3,
     "success_rate": 75.0,
-    "timestamp": "2026-01-05T12:46:57.732578"
+    "timestamp": "2026-01-05T12:47:35.097391"
   },
   "test_results": [
     {
       "test": "Frontend Compilation Check",
       "success": true,
       "details": "\u2705 Frontend server is responding (compilation successful)",
-      "timestamp": "2026-01-05T12:46:57.254478"
+      "timestamp": "2026-01-05T12:47:34.564424"
     },
     {
       "test": "Musician Dashboard Navigation",
       "success": true,
       "details": "\u2705 All dashboard API endpoints accessible: Profil \u2713, Recherche \u2713, Connexions \u2713, Notifications \u2713",
-      "timestamp": "2026-01-05T12:46:57.500531"
+      "timestamp": "2026-01-05T12:47:34.773921"
     },
     {
       "test": "Notification System Workflow",
       "success": false,
-      "details": "Failed to apply: 403 - {\"detail\":\"Vous ne pouvez postuler qu'avec vos propres groupes ou votre profil solo\"}",
-      "timestamp": "2026-01-05T12:46:57.593146"
+      "details": "Failed to accept application: 405 - {\"detail\":\"Method Not Allowed\"}",
+      "timestamp": "2026-01-05T12:47:34.924544"
     },
     {
       "test": "DELETE /api/notifications Endpoint",
       "success": true,
       "details": "\u2705 Successfully cleared 0 notifications",
-      "timestamp": "2026-01-05T12:46:57.731378"
+      "timestamp": "2026-01-05T12:47:35.094980"
     }
   ]
 }

@@ -1972,6 +1972,44 @@ async def get_venue_planning(venue_id: str):
     
     return result
 
+@api_router.put("/planning/{slot_id}", response_model=PlanningSlotResponse)
+async def update_planning_slot(slot_id: str, data: PlanningSlot, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update planning slots")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Verify the slot belongs to this venue
+    existing_slot = await db.planning_slots.find_one({"id": slot_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not existing_slot:
+        raise HTTPException(status_code=404, detail="Planning slot not found")
+    
+    # Update the slot with new data
+    update_data = {
+        **data.model_dump(),
+        "venue_id": venue["id"],
+        "venue_name": venue["name"]
+    }
+    
+    await db.planning_slots.update_one(
+        {"id": slot_id, "venue_id": venue["id"]},
+        {"$set": update_data}
+    )
+    
+    # Get updated slot
+    updated_slot = await db.planning_slots.find_one({"id": slot_id}, {"_id": 0})
+    
+    # Count applications
+    apps_count = await db.applications.count_documents({"planning_slot_id": slot_id})
+    accepted_count = await db.applications.count_documents({
+        "planning_slot_id": slot_id,
+        "status": "accepted"
+    })
+    
+    return PlanningSlotResponse(**updated_slot, applications_count=apps_count, accepted_bands_count=accepted_count)
+
 @api_router.delete("/planning/{slot_id}")
 async def delete_planning_slot(slot_id: str, current_user: dict = Depends(get_current_user)):
     venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})

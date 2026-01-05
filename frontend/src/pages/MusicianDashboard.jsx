@@ -3526,7 +3526,7 @@ export default function MusicianDashboard() {
                             venueId={concert.venue_id}
                             token={token}
                             currentParticipation={null}
-                            onParticipationChange={() => {}}
+                            onParticipationChange={refreshVenueEvents}
                           />
                         </div>
                       </div>

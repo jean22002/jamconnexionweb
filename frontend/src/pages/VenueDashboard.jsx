@@ -771,6 +771,59 @@ export default function VenueDashboard() {
     }
   };
 
+  const handleUpdatePlanningSlot = async () => {
+    if (!editingPlanningSlotId) return;
+    
+    try {
+      await axios.put(
+        `${API}/planning/${editingPlanningSlotId}`,
+        {
+          date: planningForm.date,
+          time: planningForm.time,
+          title: planningForm.title,
+          description: planningForm.description,
+          expected_band_style: planningForm.expectedBandStyle,
+          expected_attendance: parseInt(planningForm.expectedAttendance) || 0,
+          payment: planningForm.payment,
+          num_bands_needed: planningForm.num_bands_needed || 1,
+          has_catering: planningForm.has_catering || false,
+          catering_drinks: planningForm.catering_drinks || 0,
+          catering_respect: planningForm.catering_respect || false,
+          catering_tbd: planningForm.catering_tbd || false,
+          has_accommodation: planningForm.has_accommodation || false,
+          accommodation_capacity: planningForm.accommodation_capacity || 0,
+          accommodation_tbd: planningForm.accommodation_tbd || false
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Créneau mis à jour avec succès !");
+      setShowPlanningModal(false);
+      setEditingPlanningSlotId(null);
+      setPlanningForm({
+        date: '',
+        time: '',
+        title: '',
+        description: '',
+        expectedBandStyle: '',
+        expectedAttendance: '',
+        payment: '',
+        num_bands_needed: 1,
+        has_catering: false,
+        catering_drinks: 0,
+        catering_respect: false,
+        catering_tbd: false,
+        has_accommodation: false,
+        accommodation_capacity: 0,
+        accommodation_tbd: false
+      });
+      fetchPlanningSlots();
+      fetchEvents();
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour du créneau");
+      console.error(error);
+    }
+  };
+
   // Fetch planning slots
   const fetchPlanningSlots = async () => {
     if (!profile) return;

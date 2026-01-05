@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { 
-  ArrowLeft, Loader2, Send, Search, Music, User, Plus, X, MessageCircle
+  ArrowLeft, Loader2, Send, Search, Music, User, Plus, X, MessageCircle, Trash2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';

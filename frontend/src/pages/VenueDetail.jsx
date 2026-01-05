@@ -172,7 +172,11 @@ export default function VenueDetail() {
   }, [id]);
 
   const fetchCurrentParticipation = useCallback(async () => {
-    if (!token || !user || user.role !== "musician") return;
+    if (!token || !user || user.role !== "musician") {
+      setLoadingParticipations(false);
+      return;
+    }
+    setLoadingParticipations(true);
     try {
       // Fetch current live participation (for jams)
       const currentRes = await axios.get(`${API}/musicians/me/current-participation`, {
@@ -187,6 +191,8 @@ export default function VenueDetail() {
       setMyParticipations(allRes.data || []);
     } catch (error) {
       console.error("Error fetching participation:", error);
+    } finally {
+      setLoadingParticipations(false);
     }
   }, [token, user]);
 

@@ -1354,7 +1354,32 @@ export default function VenueDashboard() {
                 <h2 className="font-heading font-semibold text-xl">Boeufs Musicaux</h2>
                 <Dialog open={showJamDialog} onOpenChange={setShowJamDialog}>
                   <DialogTrigger asChild>
-                    <Button className="bg-primary hover:bg-primary/90 rounded-full gap-2"><Plus className="w-4 h-4" /> Nouveau boeuf</Button>
+                    <Button 
+                      className="bg-primary hover:bg-primary/90 rounded-full gap-2"
+                      onClick={() => {
+                        // Réinitialiser le formulaire pour un nouveau bœuf
+                        setJamForm({
+                          date: '',
+                          start_time: '',
+                          end_time: '',
+                          description: '',
+                          music_styles: [],
+                          rules: '',
+                          has_instruments: false,
+                          instruments_available: [],
+                          has_pa_system: false,
+                          has_catering: false,
+                          catering_drinks: 0,
+                          catering_respect: false,
+                          catering_tbd: false,
+                          has_accommodation: false,
+                          accommodation_capacity: 0,
+                          accommodation_tbd: false
+                        });
+                      }}
+                    >
+                      <Plus className="w-4 h-4" /> Nouveau boeuf
+                    </Button>
                   </DialogTrigger>
                   <DialogContent className="glassmorphism border-white/10 max-w-lg max-h-[90vh] overflow-y-auto">
                     <DialogHeader><DialogTitle>Créer un boeuf musical</DialogTitle></DialogHeader>

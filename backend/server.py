@@ -1594,22 +1594,26 @@ async def get_active_events(venue_id: str):
 
 @api_router.post("/events/{event_id}/join")
 async def join_event(event_id: str, event_type: str = "jam", current_user: dict = Depends(get_current_user)):
-    """Join an active event and notify friends"""
+    """Join an event and notify friends"""
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can join events")
     
     # Find the event
     if event_type == "jam":
         event = await db.jams.find_one({"id": event_id}, {"_id": 0})
+    elif event_type == "concert":
+        event = await db.concerts.find_one({"id": event_id}, {"_id": 0})
     else:
         event = await db.concerts.find_one({"id": event_id}, {"_id": 0})
     
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
-    # Check if event is active
-    if not is_event_active(event["date"], event["start_time"], event.get("end_time", "23:59")):
-        raise HTTPException(status_code=400, detail="Event is not currently active")
+    # For jams, check if event is currently active
+    # For concerts, allow participation in advance
+    if event_type == "jam":
+        if not is_event_active(event["date"], event["start_time"], event.get("end_time", "23:59")):
+            raise HTTPException(status_code=400, detail="Event is not currently active")
     
     # Get musician profile
     musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
@@ -1636,7 +1640,7 @@ async def join_event(event_id: str, event_type: str = "jam", current_user: dict 
         "venue_id": event["venue_id"],
         "venue_name": event["venue_name"],
         "event_date": event["date"],
-        "event_start": event["start_time"],
+        "event_start": event.get("start_time", ""),
         "event_end": event.get("end_time", "23:59"),
         "musician_id": musician["id"],
         "musician_user_id": current_user["id"],

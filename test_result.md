@@ -257,7 +257,7 @@ backend:
 
   - task: "Planning Slots Complete Data Storage - Backend Bug Fix"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
@@ -269,10 +269,13 @@ backend:
       - working: false
         agent: "testing"
         comment: "❌ BUG CONFIRMED - Backend PlanningSlot model missing critical fields. TESTS PERFORMED: ✅ Created planning slot with ALL frontend fields (time, title, expected_band_style, expected_attendance, payment, catering, accommodation), ❌ Backend only saves fields that exist in PlanningSlot model, ignoring: time, title, expected_band_style, expected_attendance, payment, accommodation_tbd. MISSING FIELDS IN BACKEND MODEL: time, title, expected_band_style, expected_attendance, payment, accommodation_tbd. MISSING FIELDS IN RESPONSE MODEL: All catering/accommodation fields missing from PlanningSlotResponse. ROOT CAUSE: Backend PlanningSlot and PlanningSlotResponse models incomplete - missing fields that frontend sends."
+      - working: true
+        agent: "testing"
+        comment: "✅ BUG FIXED - BACKEND MODELS CORRECTED! COMPREHENSIVE TESTS PASSED (2/2 - 100%). RESULTS: ✅ TEST 1 - Complete data storage: Created planning slot with ALL fields (time: '21:00', title: 'Grande Soirée Rock', expected_band_style: 'Rock', expected_attendance: 200, payment: '400€', num_bands_needed: 2, has_catering: true, catering_drinks: 6, catering_respect: true, catering_tbd: false, has_accommodation: true, accommodation_capacity: 6, accommodation_tbd: false), ✅ All fields correctly saved and retrieved from backend, ✅ TEST 2 - Musician visibility: Musicians can now see ALL enriched fields via GET /api/venues/{venue_id}/planning endpoint. BACKEND PYDANTIC MODELS FIXED: PlanningSlot and PlanningSlotResponse models now include all missing fields (time, title, expected_band_style, expected_attendance, payment, accommodation_tbd, and all catering/accommodation fields). Complete data storage and musician visibility now working perfectly!"
 
   - task: "Planning Slots Musician Visibility - Frontend Bug Fix"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/pages/VenueDetail.jsx"
     stuck_count: 0
     priority: "high"
@@ -284,6 +287,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "❌ BUG CONFIRMED - Musicians cannot see planning slot details because backend doesn't return them. TESTS PERFORMED: ✅ Retrieved venue planning slots via GET /api/venues/{venue_id}/planning, ❌ Response missing all enhanced fields: time, title, expected_band_style, expected_attendance, payment, has_catering, has_accommodation. CAUSE: Backend PlanningSlotResponse model doesn't include these fields, so they're never returned to frontend even if stored. Frontend fix ineffective without backend model updates."
+      - working: true
+        agent: "testing"
+        comment: "✅ BUG FIXED - MUSICIAN VISIBILITY RESTORED! COMPREHENSIVE TESTS PASSED. RESULTS: ✅ Musicians can now see ALL planning slot details via GET /api/venues/{venue_id}/planning, ✅ All enriched fields visible: date, time, title, expected_band_style, expected_attendance, payment, has_catering, catering_drinks, catering_respect, catering_tbd, has_accommodation, accommodation_capacity, accommodation_tbd, description. ROOT CAUSE RESOLVED: Backend PlanningSlotResponse model was missing fields, now corrected. Musicians can see complete planning slot information including catering and accommodation details as intended."
 
 frontend:
   - task: "Landing Page & Auth Forms"

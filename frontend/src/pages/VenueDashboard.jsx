@@ -142,7 +142,7 @@ export default function VenueDashboard() {
   });
 
   const [concertForm, setConcertForm] = useState({
-    date: "", start_time: "", title: "", description: "",
+    date: "", start_time: "", end_time: "", title: "", description: "",
     bands: [], price: ""
   });
 

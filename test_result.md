@@ -291,6 +291,21 @@ backend:
         agent: "testing"
         comment: "✅ BUG FIXED - MUSICIAN VISIBILITY RESTORED! COMPREHENSIVE TESTS PASSED. RESULTS: ✅ Musicians can now see ALL planning slot details via GET /api/venues/{venue_id}/planning, ✅ All enriched fields visible: date, time, title, expected_band_style, expected_attendance, payment, has_catering, catering_drinks, catering_respect, catering_tbd, has_accommodation, accommodation_capacity, accommodation_tbd, description. ROOT CAUSE RESOLVED: Backend PlanningSlotResponse model was missing fields, now corrected. Musicians can see complete planning slot information including catering and accommodation details as intended."
 
+  - task: "Planning Slots Title and Time Persistence Bug Fix"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/VenueDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Bug fix applied: Corrected frontend form handling to properly save and retrieve title and time fields in planning slots. Fixed initial planningForm state, added proper mapping during editing, and completed all form resets."
+      - working: true
+        agent: "testing"
+        comment: "🎉 BUG FIX VALIDÉ - TITRE ET HEURE CORRECTEMENT SAUVEGARDÉS! TESTS COMPLETS RÉUSSIS (3/3 - 100%). RÉSULTATS DÉTAILLÉS: ✅ TEST 1 - Création avec titre et heure: Créneau créé avec time='21:30' et title='Soirée Blues Rock' correctement sauvegardés via API, ✅ TEST 2 - Modification et persistance: Créneau initial (time='20:00', title='Concert Rock') modifié vers (time='21:00', title='Grande Soirée Rock') avec persistance confirmée, ✅ TEST 3 - Tous les champs persistants: Créneau complet avec TOUS les champs (date, time, title, description, expected_band_style, expected_attendance, payment, catering, accommodation) correctement sauvegardés et récupérés. CAUSE RACINE RÉSOLUE: Le frontend ne remplissait pas correctement le formulaire lors de l'édition d'un créneau existant. Maintenant tous les champs sont présents dans l'état initial et mappés correctement lors de l'édition."
+
 frontend:
   - task: "Landing Page & Auth Forms"
     implemented: true

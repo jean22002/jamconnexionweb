@@ -139,7 +139,7 @@ export default function VenueDashboard() {
     bands: [], price: ""
   });
 
-  const [newBand, setNewBand] = useState({ name: "", musician_id: "", photo: "", facebook: "", instagram: "" });
+  const [newBand, setNewBand] = useState({ name: "", musician_id: "", members_count: 0, photo: "", facebook: "", instagram: "" });
 
   const fetchProfile = useCallback(async () => {
     try {

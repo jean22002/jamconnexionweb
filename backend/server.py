@@ -1816,6 +1816,33 @@ async def delete_concert_event(concert_id: str, current_user: dict = Depends(get
     if not venue:
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    # Récupérer le concert avant de le supprimer pour notifier les groupes
+    concert = await db.concerts.find_one({"id": concert_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not concert:
+        raise HTTPException(status_code=404, detail="Concert event not found")
+    
+    # Notifier tous les groupes qui devaient jouer
+    if concert.get("bands"):
+        for band_info in concert["bands"]:
+            band_name = band_info.get("name")
+            if band_name:
+                # Trouver le musicien propriétaire du groupe
+                musicians = await db.musicians.find({}, {"_id": 0}).to_list(1000)
+                for musician in musicians:
+                    if musician.get("bands"):
+                        for band in musician["bands"]:
+                            if band.get("name") == band_name:
+                                # Notifier le propriétaire du groupe
+                                await create_notification(
+                                    musician["user_id"],
+                                    "concert_cancelled",
+                                    "Concert annulé",
+                                    f"Le concert du {concert['date']} chez {venue['name']} a été annulé.",
+                                    None
+                                )
+                                break
+    
+    # Supprimer le concert
     result = await db.concerts.delete_one({"id": concert_id, "venue_id": venue["id"]})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Concert event not found")

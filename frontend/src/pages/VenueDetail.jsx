@@ -285,6 +285,7 @@ export default function VenueDetail() {
   const handleParticipationChange = () => {
     fetchCurrentParticipation();
     fetchActiveEvents();
+    fetchEvents(); // Rafraîchir les concerts pour mettre à jour le compteur
   };
 
   const submitReview = async () => {

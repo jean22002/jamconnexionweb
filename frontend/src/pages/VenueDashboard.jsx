@@ -1840,7 +1840,7 @@ export default function VenueDashboard() {
                             )}
                           </div>
                         )}
-                        {concert.price && <p className="text-sm text-secondary mt-2">{concert.price}</p>}
+                        {concert.price && <p className="text-sm text-secondary mt-2">{concert.price}€</p>}
                       </div>
                     );
                   })}

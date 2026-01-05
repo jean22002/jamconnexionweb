@@ -4361,10 +4361,11 @@ class JamConnexionAPITester:
                     success = True
                     
                     # Check that slot is reopened
-                    response = requests.get(f"{self.base_url}/planning/{slot_id}", timeout=10)
+                    response = requests.get(f"{self.base_url}/venues/{self.test_bar_profile_id}/planning", timeout=10)
                     if response.status_code == 200:
-                        slot_data = response.json()
-                        if slot_data.get('is_open'):
+                        slots = response.json()
+                        updated_slot = next((s for s in slots if s['id'] == slot_id), None)
+                        if updated_slot and updated_slot.get('is_open'):
                             details += " ✅ Slot correctly reopened"
                         else:
                             details += " ❌ Slot not reopened"

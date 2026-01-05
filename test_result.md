@@ -516,8 +516,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Menu déroulant départements - Frontend"
-    - "Suppression conversation messagerie - Frontend"
+    - "Planning Slots Complete Data Storage - Backend Bug Fix"
+    - "Planning Slots Musician Visibility - Frontend Bug Fix"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

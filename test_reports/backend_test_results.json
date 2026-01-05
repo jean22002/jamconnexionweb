@@ -1,532 +1,574 @@
 {
   "summary": {
-    "total_tests": 87,
-    "passed_tests": 75,
-    "success_rate": 86.20689655172413,
-    "timestamp": "2026-01-04T22:40:10.434532"
+    "total_tests": 94,
+    "passed_tests": 82,
+    "success_rate": 87.2340425531915,
+    "timestamp": "2026-01-05T11:56:17.807610"
   },
   "test_results": [
     {
       "test": "Health Check",
       "success": true,
       "details": "Status: 200, Response: healthy",
-      "timestamp": "2026-01-04T22:38:13.756368"
+      "timestamp": "2026-01-05T11:54:03.085612"
     },
     {
       "test": "Register Musician",
       "success": true,
-      "details": "User ID: cdea3483-e45e-4b99-b639-0fb3c07de179, Role: musician",
-      "timestamp": "2026-01-04T22:38:14.026585"
+      "details": "User ID: 16f88cdc-2cbc-48f5-8278-fa4d40268c21, Role: musician",
+      "timestamp": "2026-01-05T11:54:03.359704"
     },
     {
       "test": "Register Venue",
       "success": true,
-      "details": "User ID: cf414824-83d2-46b0-bd0f-295a3ab97cf8, Trial: trial",
-      "timestamp": "2026-01-04T22:38:14.286067"
+      "details": "User ID: b0bab071-4bbb-4bcd-bdb0-22c12dd02103, Trial: trial",
+      "timestamp": "2026-01-05T11:54:03.621591"
     },
     {
       "test": "Login",
       "success": true,
       "details": "Login successful for musician",
-      "timestamp": "2026-01-04T22:38:14.551111"
+      "timestamp": "2026-01-05T11:54:03.906745"
     },
     {
       "test": "Auth Me",
       "success": true,
       "details": "User: Test Musician, Role: musician",
-      "timestamp": "2026-01-04T22:38:14.590015"
+      "timestamp": "2026-01-05T11:54:03.967700"
     },
     {
       "test": "Create Venue Profile",
       "success": true,
-      "details": "Venue ID: 80eb679e-b121-4084-90f0-ec9bd8287950, Name: Test Jazz Club",
-      "timestamp": "2026-01-04T22:38:14.627156"
+      "details": "Venue ID: dfe9388a-f7d4-4a69-966c-72cdf712b1cb, Name: Test Jazz Club",
+      "timestamp": "2026-01-05T11:54:04.017268"
     },
     {
       "test": "Create Enhanced Musician Profile",
       "success": true,
-      "details": "Musician ID: fceb41b3-4901-47a2-bf28-695db027e040, Pseudo: JazzMaster, Band: True",
-      "timestamp": "2026-01-04T22:38:14.663226"
+      "details": "Musician ID: cb3eda28-27f6-4634-aa13-3ba739ca92be, Pseudo: JazzMaster, Band: True",
+      "timestamp": "2026-01-05T11:54:04.057008"
     },
     {
       "test": "List Venues",
       "success": true,
-      "details": "Found 18 venues",
-      "timestamp": "2026-01-04T22:38:14.727100"
+      "details": "Found 22 venues",
+      "timestamp": "2026-01-05T11:54:04.115170"
     },
     {
       "test": "Nearby Venues Search",
       "success": true,
-      "details": "Found 17 nearby venues",
-      "timestamp": "2026-01-04T22:38:14.783230"
+      "details": "Found 21 nearby venues",
+      "timestamp": "2026-01-05T11:54:04.169509"
     },
     {
       "test": "Get Venue Profile",
       "success": true,
       "details": "Venue: Test Jazz Club, City: Paris",
-      "timestamp": "2026-01-04T22:38:14.863988"
+      "timestamp": "2026-01-05T11:54:04.202502"
     },
     {
       "test": "Friend Request System",
       "success": true,
       "details": "Friend request sent successfully, Received 1 friend request(s), Friend request accepted",
-      "timestamp": "2026-01-04T22:38:15.334694"
+      "timestamp": "2026-01-05T11:54:04.668488"
     },
     {
       "test": "Venue Subscription System",
       "success": true,
       "details": "Subscription successful, Subscribed: True, Total subscriptions: 1",
-      "timestamp": "2026-01-04T22:38:15.480027"
+      "timestamp": "2026-01-05T11:54:04.822933"
     },
     {
       "test": "Jam Events",
       "success": true,
-      "details": "Jam created: 2024-12-20 at Test Jazz Club, Total jams: 65",
-      "timestamp": "2026-01-04T22:38:15.598846"
+      "details": "Jam created: 2024-12-20 at Test Jazz Club, Total jams: 84",
+      "timestamp": "2026-01-05T11:54:04.980029"
     },
     {
       "test": "Concert Events",
       "success": true,
-      "details": "Concert created: Christmas Jazz Night on 2024-12-25, Total concerts: 21",
-      "timestamp": "2026-01-04T22:38:15.670789"
+      "details": "Concert created: Christmas Jazz Night on 2024-12-25, Total concerts: 22",
+      "timestamp": "2026-01-05T11:54:05.055146"
     },
     {
       "test": "Planning and Applications",
       "success": true,
       "details": "Planning slot created for 2024-12-30",
-      "timestamp": "2026-01-04T22:38:15.743114"
+      "timestamp": "2026-01-05T11:54:05.126830"
     },
     {
       "test": "Notifications",
       "success": true,
       "details": "Retrieved 4 notifications, Unread: 4",
-      "timestamp": "2026-01-04T22:38:15.814551"
+      "timestamp": "2026-01-05T11:54:05.211845"
     },
     {
       "test": "Create Active Jam Event",
       "success": true,
-      "details": "Active jam created: 2026-01-04 22:23-00:38 at Test Jazz Club",
-      "timestamp": "2026-01-04T22:38:15.856666"
+      "details": "Active jam created: 2026-01-05 11:39-13:54 at Test Jazz Club",
+      "timestamp": "2026-01-05T11:54:05.302350"
     },
     {
       "test": "Get Active Events",
       "success": true,
       "details": "Found 1 active events, Event: jam at Test Jazz Club, Participants: 0",
-      "timestamp": "2026-01-04T22:38:15.894473"
+      "timestamp": "2026-01-05T11:54:05.341634"
     },
     {
       "test": "Join Event Without Auth",
       "success": true,
       "details": "Correctly rejected unauthenticated request",
-      "timestamp": "2026-01-04T22:38:15.929340"
+      "timestamp": "2026-01-05T11:54:05.374735"
     },
     {
       "test": "Join Event as Musician",
       "success": true,
-      "details": "Successfully joined event at Test Jazz Club, Participation ID: 82cdc515-df75-48cc-9ba5-51591ccbe9e3",
-      "timestamp": "2026-01-04T22:38:15.968495"
+      "details": "Successfully joined event at Test Jazz Club, Participation ID: cd8afb66-a315-4d7d-824c-fd87e7cf394b",
+      "timestamp": "2026-01-05T11:54:05.419270"
     },
     {
       "test": "Double Participation Prevention",
       "success": true,
       "details": "Correctly prevented double participation",
-      "timestamp": "2026-01-04T22:38:16.050301"
+      "timestamp": "2026-01-05T11:54:05.457098"
     },
     {
       "test": "Get My Current Participation",
       "success": true,
       "details": "Current participation: jam at Test Jazz Club",
-      "timestamp": "2026-01-04T22:38:16.085686"
+      "timestamp": "2026-01-05T11:54:05.532812"
     },
     {
       "test": "Get Musician Participation (Public)",
       "success": true,
       "details": "Public participation view: jam at Test Jazz Club",
-      "timestamp": "2026-01-04T22:38:16.118481"
+      "timestamp": "2026-01-05T11:54:05.569788"
     },
     {
       "test": "Get Event Participants",
       "success": true,
       "details": "Found 1 participants, First participant: JazzMaster",
-      "timestamp": "2026-01-04T22:38:16.152430"
+      "timestamp": "2026-01-05T11:54:05.644814"
     },
     {
       "test": "Create Second Musician for Friends",
       "success": true,
-      "details": "Friend musician created: cb4f84ad-a59c-40ea-b1b6-ba64de8dcd87, Profile: 086d3f7c-efd4-4d91-88f0-189cb7b29255",
-      "timestamp": "2026-01-04T22:38:16.565651"
+      "details": "Friend musician created: 48ff32f4-93ef-4df3-b691-62355e70a23e, Profile: 127b7562-5289-4511-9d6a-6250678de1d9",
+      "timestamp": "2026-01-05T11:54:06.069154"
     },
     {
       "test": "Friend Notifications on Participation",
       "success": true,
       "details": "Notification count increased from 1 to 2",
-      "timestamp": "2026-01-04T22:38:17.760162"
+      "timestamp": "2026-01-05T11:54:07.307235"
     },
     {
       "test": "Leave Event",
       "success": true,
       "details": "Successfully left event, Participation correctly deactivated",
-      "timestamp": "2026-01-04T22:38:17.873233"
+      "timestamp": "2026-01-05T11:54:07.384988"
     },
     {
       "test": "Participation After Leaving",
       "success": true,
       "details": "No active participation found (correct after leaving)",
-      "timestamp": "2026-01-04T22:38:17.907039"
+      "timestamp": "2026-01-05T11:54:07.420315"
     },
     {
       "test": "Broadcast Notification Without Auth",
       "success": true,
       "details": "Correctly rejected unauthenticated request",
-      "timestamp": "2026-01-04T22:38:17.942919"
+      "timestamp": "2026-01-05T11:54:07.472485"
     },
     {
       "test": "Broadcast Notification as Musician",
       "success": true,
       "details": "Correctly rejected musician request (only venues allowed)",
-      "timestamp": "2026-01-04T22:38:17.979065"
+      "timestamp": "2026-01-05T11:54:07.506817"
     },
     {
       "test": "Broadcast Notification (Venue Subscribed)",
       "success": true,
       "details": "Broadcast sent successfully, ID: None, Musicians notified: 0",
-      "timestamp": "2026-01-04T22:38:18.050776"
+      "timestamp": "2026-01-05T11:54:07.592639"
     },
     {
       "test": "Get Broadcast History",
       "success": true,
       "details": "Retrieved 1 broadcast notifications, Latest: '\ud83c\udfb5 Jam session ce soir \u00e0 20h! Venez nombreux avec v...'",
-      "timestamp": "2026-01-04T22:38:18.092274"
+      "timestamp": "2026-01-05T11:54:07.666897"
     },
     {
       "test": "Get Nearby Musicians Count",
       "success": true,
-      "details": "Found 93 musicians within 100km radius",
-      "timestamp": "2026-01-04T22:38:18.129674"
+      "details": "Found 116 musicians within 100km radius",
+      "timestamp": "2026-01-05T11:54:07.698807"
     },
     {
       "test": "Create Review Without Participation",
       "success": true,
       "details": "Correctly rejected review without participation",
-      "timestamp": "2026-01-04T22:38:18.498662"
+      "timestamp": "2026-01-05T11:54:08.076366"
     },
     {
       "test": "Create Participation for Review",
       "success": true,
       "details": "Created participation for review testing",
-      "timestamp": "2026-01-04T22:38:18.657430"
+      "timestamp": "2026-01-05T11:54:08.187847"
     },
     {
       "test": "Create Review With Participation",
       "success": true,
-      "details": "Review created successfully, ID: a172cb5d-fda5-42f3-bb6a-2cd1ccb561c1, Rating: 4",
-      "timestamp": "2026-01-04T22:38:19.154705"
+      "details": "Review created successfully, ID: 4d3308fc-cee8-4ecb-b5f1-7357273c37f8, Rating: 4",
+      "timestamp": "2026-01-05T11:54:08.681778"
     },
     {
       "test": "Create Duplicate Review",
       "success": true,
       "details": "Correctly prevented duplicate review",
-      "timestamp": "2026-01-04T22:38:19.192132"
+      "timestamp": "2026-01-05T11:54:08.746365"
     },
     {
       "test": "Invalid Rating Review",
       "success": true,
       "details": "Correctly rejected invalid rating (6/5)",
-      "timestamp": "2026-01-04T22:38:19.480532"
+      "timestamp": "2026-01-05T11:54:09.089140"
     },
     {
       "test": "Get Venue Reviews",
       "success": true,
       "details": "Retrieved 1 reviews, First review: 4/5 stars",
-      "timestamp": "2026-01-04T22:38:19.515349"
+      "timestamp": "2026-01-05T11:54:09.123318"
     },
     {
       "test": "Get Venue Average Rating",
       "success": true,
       "details": "Average rating: 4.0/5, Total reviews: 1",
-      "timestamp": "2026-01-04T22:38:19.549075"
+      "timestamp": "2026-01-05T11:54:09.198853"
     },
     {
       "test": "Venue Respond to Review",
       "success": true,
       "details": "Venue response added successfully",
-      "timestamp": "2026-01-04T22:38:19.584293"
+      "timestamp": "2026-01-05T11:54:09.236339"
     },
     {
       "test": "Report Review",
       "success": true,
       "details": "Review reported successfully",
-      "timestamp": "2026-01-04T22:38:19.622623"
+      "timestamp": "2026-01-05T11:54:09.314016"
     },
     {
       "test": "Toggle Reviews Visibility",
       "success": true,
       "details": "Reviews visibility turned off, Public reviews correctly hidden, Reviews visibility restored",
-      "timestamp": "2026-01-04T22:38:19.769560"
+      "timestamp": "2026-01-05T11:54:09.424712"
     },
     {
       "test": "Get Venue My Reviews",
       "success": false,
       "details": "Status: 404, Error: {\"detail\":\"Venue not found\"}",
-      "timestamp": "2026-01-04T22:38:19.803734"
+      "timestamp": "2026-01-05T11:54:09.457874"
     },
     {
       "test": "Setup Band Join Scenario",
       "success": true,
-      "details": "Setup complete - Musician A: 2a482ce2-2674-44d4-b1d7-5c819f898946 (band owner), Musician B: 440a7b08-a94a-429f-aff2-3be45db9e2e6 (wants to join)",
-      "timestamp": "2026-01-04T22:38:20.426582"
+      "details": "Setup complete - Musician A: e9ac93ca-7c53-4b34-900d-bccd67f56252 (band owner), Musician B: 59cf8d1e-df8b-406f-9145-6be9c9cbf6b0 (wants to join)",
+      "timestamp": "2026-01-05T11:54:10.156802"
     },
     {
       "test": "Create Band Join Request",
       "success": true,
-      "details": "Join request created successfully, ID: a2e3816d-5810-4499-b0fb-bf153570096a",
-      "timestamp": "2026-01-04T22:38:20.462527"
+      "details": "Join request created successfully, ID: c1e9e01c-8880-4d70-8d56-5e89b26545ef",
+      "timestamp": "2026-01-05T11:54:10.197804"
     },
     {
       "test": "Notification Created for Admin",
       "success": true,
       "details": "Notification created for admin - 1 unread notifications",
-      "timestamp": "2026-01-04T22:38:20.535013"
+      "timestamp": "2026-01-05T11:54:10.233189"
     },
     {
       "test": "List Band Join Requests (Admin)",
       "success": true,
       "details": "Found 1 join request(s) - From: DrummerBob, Band: The Rockers, Status: pending",
-      "timestamp": "2026-01-04T22:38:20.570724"
+      "timestamp": "2026-01-05T11:54:10.264888"
     },
     {
       "test": "Prevent Duplicate Join Request",
       "success": true,
       "details": "Correctly prevented duplicate join request",
-      "timestamp": "2026-01-04T22:38:20.650700"
+      "timestamp": "2026-01-05T11:54:10.299942"
     },
     {
       "test": "Accept Band Join Request",
       "success": true,
       "details": "Join request accepted successfully",
-      "timestamp": "2026-01-04T22:38:20.688455"
+      "timestamp": "2026-01-05T11:54:10.345478"
     },
     {
       "test": "Notification Sent to Requester (Accept)",
       "success": true,
       "details": "Notification sent to requester - 1 unread notifications",
-      "timestamp": "2026-01-04T22:38:20.741491"
+      "timestamp": "2026-01-05T11:54:10.380739"
     },
     {
       "test": "Create Second Join Request for Rejection",
       "success": true,
-      "details": "Second join request created for rejection test, ID: f4f670ec-6ce6-491b-b251-bc8cec8e3d6c",
-      "timestamp": "2026-01-04T22:38:21.090979"
+      "details": "Second join request created for rejection test, ID: f1b2deda-f5d0-4a8f-96d6-80633e5da11b",
+      "timestamp": "2026-01-05T11:54:10.768067"
     },
     {
       "test": "Reject Band Join Request",
       "success": true,
       "details": "Join request rejected successfully",
-      "timestamp": "2026-01-04T22:38:21.139642"
+      "timestamp": "2026-01-05T11:54:10.803584"
     },
     {
       "test": "Notification Sent to Requester (Reject)",
       "success": true,
       "details": "Notification sent to requester - 1 unread notifications",
-      "timestamp": "2026-01-04T22:38:21.175428"
+      "timestamp": "2026-01-05T11:54:10.837163"
     },
     {
       "test": "Venue Cannot Create Join Request",
       "success": true,
       "details": "Correctly rejected venue request to join band",
-      "timestamp": "2026-01-04T22:38:21.209890"
+      "timestamp": "2026-01-05T11:54:10.870595"
     },
     {
       "test": "Non-Admin Cannot Accept/Reject",
       "success": true,
       "details": "Correctly rejected non-admin attempt to accept request",
-      "timestamp": "2026-01-04T22:38:21.297838"
+      "timestamp": "2026-01-05T11:54:10.946471"
     },
     {
       "test": "PUT Jam Update",
       "success": true,
-      "details": "Jam updated successfully, ID: 6ce88a01-8b56-4c72-aed1-7dc2d3c6177f, All changes verified, Changes persisted in database",
-      "timestamp": "2026-01-04T22:38:21.430720"
+      "details": "Jam updated successfully, ID: b2e6b94d-85f8-48cd-97c8-f0e9a8344a85, All changes verified, Changes persisted in database",
+      "timestamp": "2026-01-05T11:54:11.079707"
     },
     {
       "test": "PUT Concert Update",
       "success": true,
-      "details": "Concert updated successfully, ID: cc61f1ef-d25a-4d3d-88a6-03ae51b8d38d, All changes verified, Changes persisted in database",
-      "timestamp": "2026-01-04T22:38:21.539801"
+      "details": "Concert updated successfully, ID: 1a6aef3f-564e-4ca3-9f8f-5be552ffec03, All changes verified, Changes persisted in database",
+      "timestamp": "2026-01-05T11:54:11.224950"
     },
     {
       "test": "PUT Jam Unauthorized",
       "success": true,
       "details": "Correctly rejected unauthorized request",
-      "timestamp": "2026-01-04T22:38:21.574039"
+      "timestamp": "2026-01-05T11:54:11.263652"
     },
     {
       "test": "PUT Concert Unauthorized",
       "success": true,
       "details": "Correctly rejected unauthorized request",
-      "timestamp": "2026-01-04T22:38:21.606294"
+      "timestamp": "2026-01-05T11:54:11.297165"
     },
     {
       "test": "PUT Jam Not Found",
       "success": true,
       "details": "Correctly returned 404 for non-existent jam",
-      "timestamp": "2026-01-04T22:38:21.644998"
+      "timestamp": "2026-01-05T11:54:11.333440"
     },
     {
       "test": "PUT Concert Not Found",
       "success": true,
       "details": "Correctly returned 404 for non-existent concert",
-      "timestamp": "2026-01-04T22:38:21.687716"
+      "timestamp": "2026-01-05T11:54:11.371589"
     },
     {
       "test": "PUT Jam Invalid Data",
       "success": false,
       "details": "Unexpected status: 200, Expected: 400",
-      "timestamp": "2026-01-04T22:38:21.783370"
+      "timestamp": "2026-01-05T11:54:11.447779"
     },
     {
       "test": "Bands Data Analysis",
       "success": true,
-      "details": "Data analysis: 97 musicians, 43 have bands, 43 total bands. GPS: 0, City only: 37, No location: 6",
-      "timestamp": "2026-01-04T22:38:21.884737"
+      "details": "Data analysis: 100 musicians, 46 have bands, 46 total bands. GPS: 0, City only: 40, No location: 6",
+      "timestamp": "2026-01-05T11:54:11.534432"
     },
     {
       "test": "Bands Geolocation Search",
       "success": false,
       "details": "Error: HTTPSConnectionPool(host='jamlink-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)",
-      "timestamp": "2026-01-04T22:38:31.922915"
+      "timestamp": "2026-01-05T11:54:21.567582"
     },
     {
       "test": "Create Band Without GPS",
       "success": true,
       "details": "Created band without GPS: Test Band No GPS in Lyon",
-      "timestamp": "2026-01-04T22:38:32.236184"
+      "timestamp": "2026-01-05T11:54:21.879592"
     },
     {
       "test": "Geolocation Excludes No-GPS Bands",
       "success": false,
       "details": "Error: HTTPSConnectionPool(host='jamlink-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)",
-      "timestamp": "2026-01-04T22:38:42.309449"
+      "timestamp": "2026-01-05T11:54:31.957388"
     },
     {
       "test": "Create Musicians with Bands for Geolocation",
       "success": true,
       "details": "Created 5 musicians with bands in different cities",
-      "timestamp": "2026-01-04T22:38:43.898246"
+      "timestamp": "2026-01-05T11:54:35.472751"
     },
     {
       "test": "Bands Geolocation Search - Paris 100km",
       "success": false,
       "details": "Error: HTTPSConnectionPool(host='jamlink-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=15)",
-      "timestamp": "2026-01-04T22:38:58.939228"
+      "timestamp": "2026-01-05T11:54:50.511843"
     },
     {
       "test": "Bands Geolocation Search - Paris 500km",
       "success": false,
       "details": "Error: HTTPSConnectionPool(host='jamlink-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=15)",
-      "timestamp": "2026-01-04T22:39:13.995809"
+      "timestamp": "2026-01-05T11:55:05.569669"
     },
     {
       "test": "Bands Geolocation Search - Lyon 100km",
       "success": false,
       "details": "Error: HTTPSConnectionPool(host='jamlink-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=15)",
-      "timestamp": "2026-01-04T22:39:29.079568"
+      "timestamp": "2026-01-05T11:55:20.639797"
     },
     {
       "test": "Bands Geolocation Precision Verification",
       "success": false,
-      "details": "Error: HTTPSConnectionPool(host='jamlink-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=15)",
-      "timestamp": "2026-01-04T22:39:44.132875"
+      "details": "Error: HTTPSConnectionPool(host='jamlink-1.preview.emergentagent.com', port=443): Max retries exceeded with url: /api/bands?latitude=48.8566&longitude=2.3522&radius=50 (Caused by ConnectTimeoutError(<HTTPSConnection(host='jamlink-1.preview.emergentagent.com', port=443) at 0xf80860694750>, 'Connection to jamlink-1.preview.emergentagent.com timed out. (connect timeout=15)'))",
+      "timestamp": "2026-01-05T11:55:35.672557"
     },
     {
       "test": "Bands Geolocation On-the-fly Geocoding",
       "success": false,
-      "details": "Error: HTTPSConnectionPool(host='jamlink-1.preview.emergentagent.com', port=443): Max retries exceeded with url: /api/bands (Caused by ConnectTimeoutError(<HTTPSConnection(host='jamlink-1.preview.emergentagent.com', port=443) at 0xf8cbdac92950>, 'Connection to jamlink-1.preview.emergentagent.com timed out. (connect timeout=10)'))",
-      "timestamp": "2026-01-04T22:39:54.192614"
+      "details": "Error: HTTPSConnectionPool(host='jamlink-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=20)",
+      "timestamp": "2026-01-05T11:56:06.019811"
     },
     {
       "test": "Looking For Profiles Field",
       "success": true,
       "details": "\u2705 Initial save successful: ['Batteur', 'Guitariste'], \u2705 Persistence verified: ['Batteur', 'Guitariste'], \u2705 Modification successful: ['Batteur', 'Guitariste', 'Bassiste'], \u2705 Final persistence verified: ['Batteur', 'Guitariste', 'Bassiste']",
-      "timestamp": "2026-01-04T22:39:54.645886"
+      "timestamp": "2026-01-05T11:56:06.504941"
     },
     {
       "test": "Create Multi-Group Planning Slot",
       "success": true,
-      "details": "Multi-group slot created: b1d73719-8755-4073-99d1-e7313c3f8074, Needs: 2 groups, Accepted: 0, Open: True",
-      "timestamp": "2026-01-04T22:39:54.694439"
+      "details": "Multi-group slot created: e2a7216e-37cc-4f3a-afb6-59309c6535dd, Needs: 2 groups, Accepted: 0, Open: True",
+      "timestamp": "2026-01-05T11:56:06.546686"
     },
     {
       "test": "Create Musicians for Multi-Group Test",
       "success": true,
-      "details": "Created 2 musicians: 6a2da07a-e874-4d72-9543-9640c77ffb51 (The Rock Stars), 68b17ac7-0bb6-4ff6-ad02-095438492190 (The Pop Collective)",
-      "timestamp": "2026-01-04T22:39:55.284472"
+      "details": "Created 2 musicians: 38fcc176-2b82-469f-b586-02051eec6f6c (The Rock Stars), a3f4e70f-2e28-4c80-ba12-80059cc04e12 (The Pop Collective)",
+      "timestamp": "2026-01-05T11:56:07.198057"
     },
     {
       "test": "First Application Multi-Group",
       "success": true,
-      "details": "First application submitted: b46327b4-f768-4451-a977-0a4450427ce7 for The Rock Stars",
-      "timestamp": "2026-01-04T22:39:55.322754"
+      "details": "First application submitted: 75534f58-8ff0-4c2e-ae91-f96a53d7777e for The Rock Stars",
+      "timestamp": "2026-01-05T11:56:07.266716"
     },
     {
       "test": "Second Application Multi-Group",
       "success": true,
-      "details": "Second application submitted: 3dc355b7-c576-4c7c-87e3-10e1dd3500ca for The Pop Collective",
-      "timestamp": "2026-01-04T22:39:55.369510"
+      "details": "Second application submitted: 4083a9de-d12f-46e3-9d46-34dff759f8c7 for The Pop Collective",
+      "timestamp": "2026-01-05T11:56:07.301687"
     },
     {
       "test": "Accept First Application - Slot Stays Open",
       "success": true,
       "details": "First application accepted, Slot status: Open=True, Accepted=1/2",
-      "timestamp": "2026-01-04T22:39:55.455011"
+      "timestamp": "2026-01-05T11:56:07.427163"
     },
     {
       "test": "Accept Second Application - Slot Closes",
       "success": true,
       "details": "Second application accepted, Slot status: Open=False, Accepted=2/2",
-      "timestamp": "2026-01-04T22:39:55.536782"
+      "timestamp": "2026-01-05T11:56:07.510844"
     },
     {
       "test": "Verify API Response Fields",
       "success": true,
       "details": "All required fields present: num_bands_needed=2, accepted_bands_count=2, is_open=False, applications_count=2",
-      "timestamp": "2026-01-04T22:39:55.573570"
+      "timestamp": "2026-01-05T11:56:07.551772"
     },
     {
       "test": "Single Group Behavior",
-      "success": false,
-      "details": "Error: HTTPSConnectionPool(host='jamlink-1.preview.emergentagent.com', port=443): Max retries exceeded with url: /api/planning?is_open=false (Caused by ConnectTimeoutError(<HTTPSConnection(host='jamlink-1.preview.emergentagent.com', port=443) at 0xf8cbdacac150>, 'Connection to jamlink-1.preview.emergentagent.com timed out. (connect timeout=10)'))",
-      "timestamp": "2026-01-04T22:40:05.701424"
+      "success": true,
+      "details": "Single group slot correctly closed immediately after acceptance",
+      "timestamp": "2026-01-05T11:56:07.706768"
     },
     {
       "test": "Three Plus Groups Behavior",
       "success": true,
       "details": "3+ groups slot correctly closed after accepting 3rd application",
-      "timestamp": "2026-01-04T22:40:09.596257"
+      "timestamp": "2026-01-05T11:56:08.456139"
     },
     {
       "test": "Jam Participants Count API",
-      "success": false,
-      "details": "GET /api/jams includes participants_count: 0, GET /api/venues/{venue_id}/jams includes participants_count: 0, Failed to join event: 400",
-      "timestamp": "2026-01-04T22:40:09.787023"
+      "success": true,
+      "details": "GET /api/jams includes participants_count: 0, GET /api/venues/{venue_id}/jams includes participants_count: 0, Count increased to 1 after join",
+      "timestamp": "2026-01-05T11:56:08.728587"
     },
     {
       "test": "Jam Join Button Functionality",
-      "success": true,
-      "details": "Musician successfully joined jam: Test Jazz Club, Participation confirmed active, Successfully left jam, Participation correctly deactivated",
-      "timestamp": "2026-01-04T22:40:10.015883"
+      "success": false,
+      "details": "Musician successfully joined jam: Test Jazz Club, Participation not found or incorrect event",
+      "timestamp": "2026-01-05T11:56:08.937336"
     },
     {
       "test": "Jam Security Musician Only",
       "success": true,
       "details": "Venue correctly rejected from joining jam (403 Forbidden), Musician successfully joined jam",
-      "timestamp": "2026-01-04T22:40:10.212661"
+      "timestamp": "2026-01-05T11:56:09.082042"
     },
     {
       "test": "Jam Participants Counter Updates",
+      "success": true,
+      "details": "Initial participants count: 0, After 1st join: 1, After 2nd join: 2, After 1st leave: 1",
+      "timestamp": "2026-01-05T11:56:10.031274"
+    },
+    {
+      "test": "Notification System Setup",
+      "success": true,
+      "details": "Created: Musician A (The Rockers), Musician B (Jazz Masters), Test Bar venue",
+      "timestamp": "2026-01-05T11:56:11.513430"
+    },
+    {
+      "test": "Create Planning Slot Tomorrow",
+      "success": true,
+      "details": "Planning slot created for 2026-01-06, ID: ffa6e17f-0de7-421b-a3fd-0b52c0c996ab",
+      "timestamp": "2026-01-05T11:56:11.548693"
+    },
+    {
+      "test": "TEST 1 - Application Rejection Notification",
+      "success": true,
+      "details": "\u2705 Rejection notification received: 'Candidature non retenue' - 'Votre candidature pour le 2026-01-06 n'a pas \u00e9t\u00e9 retenue'",
+      "timestamp": "2026-01-05T11:56:12.661053"
+    },
+    {
+      "test": "TEST 2 - Concert Cancellation Notifications",
+      "success": true,
+      "details": "\u2705 Both musicians received cancellation notifications. A: 'Le concert du 2026-01-06 chez Test Bar a \u00e9t\u00e9 annul\u00e9.', B: 'Le concert du 2026-01-06 chez Test Bar a \u00e9t\u00e9 annul\u00e9.'",
+      "timestamp": "2026-01-05T11:56:13.833445"
+    },
+    {
+      "test": "TEST 3 - Accepted Application Cancellation Notification",
+      "success": true,
+      "details": "\u2705 Cancellation notification received: 'Candidature annul\u00e9e' - 'Votre candidature accept\u00e9e pour le 2026-01-07 chez Test Bar a \u00e9t\u00e9 annul\u00e9e par l'\u00e9tablissement.'",
+      "timestamp": "2026-01-05T11:56:16.173266"
+    },
+    {
+      "test": "TEST 4 - Slot Reopening After Deletion",
       "success": false,
-      "details": "Initial participants count: 0, Count after 1st join incorrect: 0 (expected 1)",
-      "timestamp": "2026-01-04T22:40:10.432237"
+      "details": "Failed to get slot data: 405",
+      "timestamp": "2026-01-05T11:56:16.627595"
+    },
+    {
+      "test": "TEST 5 - No Notification If Not Accepted",
+      "success": false,
+      "details": "\u274c Unexpected cancellation notification sent. Found 2 cancellation notifications",
+      "timestamp": "2026-01-05T11:56:17.806845"
     }
   ]
 }

@@ -3044,7 +3044,7 @@ export default function MusicianDashboard() {
                       <SelectContent className="bg-background border-white/10 max-h-[300px]">
                         {DEPARTEMENTS_FRANCE.map((dept) => (
                           <SelectItem key={dept.code} value={dept.code}>
-                            {dept.code} - {dept.name}
+                            {dept.code} - {dept.nom}
                           </SelectItem>
                         ))}
                       </SelectContent>

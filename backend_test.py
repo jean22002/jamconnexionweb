@@ -5278,6 +5278,159 @@ class JamConnexionAPITester:
             self.log_test("Concert Date Database Verification", False, f"Error: {str(e)}")
             return False
 
+    def test_concert_date_bug_reproduction(self):
+        """Test the specific bug reported by user: Concert date not saving/displaying correctly"""
+        try:
+            print("\n🔍 TESTING CONCERT DATE BUG - User reported issue")
+            print("=" * 60)
+            
+            # Step 1: Create a venue account for testing
+            test_data = {
+                "email": f"venue_date_bug_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Test Venue Date Bug",
+                "role": "venue"
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/register", json=test_data, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Concert Date Bug - Venue Registration", False, f"Failed to register venue: {response.status_code}")
+                return False
+                
+            venue_data = response.json()
+            venue_token = venue_data.get('token')
+            venue_user = venue_data.get('user')
+            
+            # Step 2: Create venue profile with all required fields
+            venue_profile_data = {
+                "name": "Test Concert Date Venue",
+                "description": "Testing concert date bug",
+                "address": "123 Test Street",
+                "city": "Paris",
+                "postal_code": "75001",
+                "latitude": 48.8566,
+                "longitude": 2.3522,
+                "phone": "+33123456789",
+                "has_stage": True,
+                "has_sound_engineer": True,
+                "equipment": ["Piano", "Drums"],
+                "music_styles": ["Rock", "Jazz"]
+            }
+            
+            headers = {'Authorization': f'Bearer {venue_token}'}
+            response = requests.post(f"{self.base_url}/venues", json=venue_profile_data, headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Concert Date Bug - Venue Profile", False, f"Failed to create venue profile: {response.status_code}")
+                return False
+                
+            venue_profile = response.json()
+            venue_id = venue_profile.get('id')
+            
+            print(f"✅ Created venue: {venue_profile.get('name')} (ID: {venue_id})")
+            
+            # Step 3: Create a concert with specific date as reported by user
+            test_date = "2025-05-20"  # User example date
+            concert_data = {
+                "date": test_date,
+                "start_time": "21:00",
+                "title": "Test Concert Date Bug",
+                "description": "Testing if concert date is saved and displayed correctly",
+                "bands": [
+                    {
+                        "name": "Test Band",
+                        "members_count": 4,
+                        "photo": "https://example.com/band.jpg"
+                    }
+                ],
+                "price": "20€"
+            }
+            
+            print(f"📅 Creating concert with date: {test_date}")
+            response = requests.post(f"{self.base_url}/concerts", json=concert_data, headers=headers, timeout=10)
+            
+            if response.status_code != 200:
+                details = f"❌ FAILED TO CREATE CONCERT: Status {response.status_code}, Error: {response.text[:200]}"
+                self.log_test("Concert Date Bug - Concert Creation", False, details)
+                return False
+            
+            concert_response = response.json()
+            concert_id = concert_response.get('id')
+            created_date = concert_response.get('date')
+            
+            print(f"✅ Concert created with ID: {concert_id}")
+            print(f"📅 Date in creation response: {created_date}")
+            
+            # Step 4: Retrieve concerts for this venue via GET /api/venues/{venue_id}/concerts
+            print(f"\n🔍 Retrieving concerts for venue {venue_id}...")
+            response = requests.get(f"{self.base_url}/venues/{venue_id}/concerts", timeout=10)
+            
+            if response.status_code != 200:
+                details = f"❌ FAILED TO RETRIEVE CONCERTS: Status {response.status_code}, Error: {response.text[:200]}"
+                self.log_test("Concert Date Bug - Concert Retrieval", False, details)
+                return False
+            
+            concerts_list = response.json()
+            print(f"✅ Retrieved {len(concerts_list)} concerts")
+            
+            # Step 5: Verify if the date field is present and correct
+            our_concert = None
+            for concert in concerts_list:
+                if concert.get('id') == concert_id:
+                    our_concert = concert
+                    break
+            
+            if not our_concert:
+                details = f"❌ CONCERT NOT FOUND in venue concerts list"
+                self.log_test("Concert Date Bug - Concert Not Found", False, details)
+                return False
+            
+            # Step 6: Check the date field specifically
+            retrieved_date = our_concert.get('date')
+            print(f"\n🔍 CRITICAL CHECK - Date field analysis:")
+            print(f"   Expected date: {test_date}")
+            print(f"   Retrieved date: {retrieved_date}")
+            print(f"   Date field present: {'date' in our_concert}")
+            print(f"   Date field type: {type(retrieved_date)}")
+            
+            # Print full concert object for debugging
+            print(f"\n📋 Full concert object:")
+            for key, value in our_concert.items():
+                print(f"   {key}: {value}")
+            
+            # Determine if this is a backend bug
+            if 'date' not in our_concert:
+                details = f"🚨 BACKEND BUG CONFIRMED: 'date' field is MISSING from concert response"
+                success = False
+            elif retrieved_date != test_date:
+                details = f"🚨 BACKEND BUG CONFIRMED: 'date' field is INCORRECT. Expected: {test_date}, Got: {retrieved_date}"
+                success = False
+            elif retrieved_date is None:
+                details = f"🚨 BACKEND BUG CONFIRMED: 'date' field is NULL/None"
+                success = False
+            else:
+                details = f"✅ BACKEND WORKING CORRECTLY: 'date' field present and correct ({retrieved_date}). Bug is likely FRONTEND."
+                success = True
+            
+            # Additional verification - check all required fields
+            required_fields = ['id', 'date', 'start_time', 'title', 'bands', 'participants_count']
+            missing_fields = []
+            for field in required_fields:
+                if field not in our_concert:
+                    missing_fields.append(field)
+            
+            if missing_fields:
+                details += f" | Missing fields: {', '.join(missing_fields)}"
+                success = False
+            
+            print(f"\n🎯 CONCLUSION: {details}")
+            
+            self.log_test("Concert Date Bug Reproduction", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Concert Date Bug Reproduction", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🎵 Starting Jam Connexion API Tests...")

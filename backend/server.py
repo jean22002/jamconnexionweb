@@ -309,8 +309,13 @@ class ConcertEventResponse(BaseModel):
 # Planning/Open dates for concerts
 class PlanningSlot(BaseModel):
     date: str
+    time: Optional[str] = None
+    title: Optional[str] = None
     music_styles: List[str] = []
     description: Optional[str] = None
+    expected_band_style: Optional[str] = None
+    expected_attendance: Optional[int] = None
+    payment: Optional[str] = None
     is_open: bool = True
     artist_categories: List[str] = []  # Types recherchés: groupe compos, reprise, tribute, etc.
     num_bands_needed: int = 1  # Nombre de groupes nécessaires pour ce créneau (1, 2, 3+)
@@ -322,20 +327,35 @@ class PlanningSlot(BaseModel):
     # Accommodation
     has_accommodation: bool = False
     accommodation_capacity: Optional[int] = 0
+    accommodation_tbd: bool = False
 
 class PlanningSlotResponse(BaseModel):
     id: str
     venue_id: str
     venue_name: str
     date: str
+    time: Optional[str] = None
+    title: Optional[str] = None
     music_styles: List[str] = []
     description: Optional[str] = None
+    expected_band_style: Optional[str] = None
+    expected_attendance: Optional[int] = None
+    payment: Optional[str] = None
     is_open: bool = True
     applications_count: int = 0
     accepted_bands_count: int = 0  # Nombre de groupes acceptés
     num_bands_needed: int = 1  # Nombre de groupes nécessaires
     created_at: str
     artist_categories: List[str] = []
+    # Catering
+    has_catering: bool = False
+    catering_drinks: Optional[int] = 0
+    catering_respect: bool = False
+    catering_tbd: bool = False
+    # Accommodation
+    has_accommodation: bool = False
+    accommodation_capacity: Optional[int] = 0
+    accommodation_tbd: bool = False
 
 # Application/Candidature
 class ConcertApplication(BaseModel):

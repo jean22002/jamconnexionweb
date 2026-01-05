@@ -1524,6 +1524,20 @@ export default function VenueDashboard() {
                             <option value="">Lier à un musicien (optionnel)</option>
                             {musicians.map(m => <option key={m.id} value={m.id}>{m.pseudo}</option>)}
                           </select>
+                          
+                          <div className="space-y-2">
+                            <Label>Nombre de membres du groupe</Label>
+                            <Input 
+                              type="number" 
+                              min="1"
+                              placeholder="Ex: 4" 
+                              value={newBand.members_count || ""} 
+                              onChange={(e) => setNewBand({ ...newBand, members_count: parseInt(e.target.value) || 0 })} 
+                              className="bg-black/20 border-white/10" 
+                            />
+                            <p className="text-xs text-muted-foreground">Pour calculer le catering total</p>
+                          </div>
+                          
                           <Button 
                             type="button" 
                             onClick={() => {

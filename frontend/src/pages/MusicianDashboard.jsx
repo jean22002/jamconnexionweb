@@ -1617,7 +1617,14 @@ export default function MusicianDashboard() {
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label>Date</Label>
-                            <Input type="date" value={newConcert.date} onChange={(e) => setNewConcert({ ...newConcert, date: e.target.value })} className="bg-black/20 border-white/10" />
+                            <Input 
+                              type="date" 
+                              value={newConcert.date} 
+                              onChange={(e) => setNewConcert({ ...newConcert, date: e.target.value })} 
+                              className="bg-black/20 border-white/10"
+                              onKeyDown={(e) => e.preventDefault()}
+                              style={{ caretColor: 'transparent' }}
+                            />
                           </div>
                           <div className="space-y-2">
                             <Label>Ville</Label>

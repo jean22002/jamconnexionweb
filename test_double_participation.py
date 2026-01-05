@@ -225,7 +225,7 @@ class DoubleParticipationTester:
                 return False
             
             # Additional verification: Check concert participants count in concert data
-            response = requests.get(f"{self.base_url}/concerts", timeout=10)
+            response = requests.get(f"{self.base_url}/venues/{bug_venue_profile_id}/concerts", timeout=10)
             if response.status_code == 200:
                 concerts = response.json()
                 our_concert = None
@@ -244,6 +244,9 @@ class DoubleParticipationTester:
                 else:
                     print("❌ Could not find our concert in concerts list")
                     return False
+            else:
+                print(f"❌ Failed to get venue concerts: {response.status_code}")
+                return False
             
             print("\n🎉 DOUBLE PARTICIPATION BUG TEST COMPLETED SUCCESSFULLY")
             print("=" * 60)

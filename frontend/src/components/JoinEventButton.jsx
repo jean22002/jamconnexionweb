@@ -14,10 +14,11 @@ export default function JoinEventButton({
   onParticipationChange 
 }) {
   const [loading, setLoading] = useState(false);
+  const [localParticipating, setLocalParticipating] = useState(false);
   
   // Check if already participating in THIS event
   // currentParticipation is either the participation object for this event, or null/undefined
-  const isParticipating = !!currentParticipation;
+  const isParticipating = !!currentParticipation || localParticipating;
 
   const handleJoin = async () => {
     if (!token) {
@@ -35,6 +36,9 @@ export default function JoinEventButton({
       
       const eventTypeLabel = event.type === 'concert' ? 'concert' : 'boeuf';
       toast.success(`Vous participez au ${eventTypeLabel} chez ${response.data.venue_name} ! 🎵`);
+      
+      // Update local state immediately for instant UI feedback
+      setLocalParticipating(true);
       
       // Notify parent to refresh participation status
       if (onParticipationChange) {
@@ -57,6 +61,9 @@ export default function JoinEventButton({
       );
       
       toast.success("Vous avez quitté l'événement");
+      
+      // Update local state immediately for instant UI feedback
+      setLocalParticipating(false);
       
       // Notify parent to refresh participation status
       if (onParticipationChange) {

@@ -606,6 +606,24 @@ export default function VenueDetail() {
                     )}
                     {concert.price && <p className="text-sm text-secondary mt-2">{concert.price}</p>}
                     {concert.description && <p className="text-sm text-muted-foreground mt-2">{concert.description}</p>}
+                    
+                    {/* Afficher le nombre de participants si > 0 */}
+                    {concert.participants_count > 0 && (
+                      <p className="text-sm text-green-400 mt-2">👥 {concert.participants_count} participant{concert.participants_count > 1 ? 's' : ''}</p>
+                    )}
+                    
+                    {/* Bouton "Je participe" pour les musiciens */}
+                    {user?.role === "musician" && (
+                      <div className="mt-4">
+                        <JoinEventButton 
+                          event={{ ...concert, type: 'concert' }}
+                          venueId={id}
+                          token={token}
+                          currentParticipation={currentParticipation}
+                          onParticipationChange={handleParticipationChange}
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

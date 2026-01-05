@@ -1130,6 +1130,88 @@ export default function VenueDashboard() {
                   <span className="text-sm">{profile.subscribers_count} abonnés</span>
                 </div>
               )}
+              
+              {/* Notifications */}
+              <Dialog open={showNotificationsDialog} onOpenChange={setShowNotificationsDialog}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10 relative">
+                    <Bell className="w-4 h-4" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="glassmorphism border-white/10 max-w-lg max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="font-heading">Notifications</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    {notifications.length > 0 ? (
+                      <>
+                        <div className="flex justify-between items-center mb-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={async () => {
+                              try {
+                                await axios.post(`${API}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                                fetchNotifications();
+                                toast.success("Toutes les notifications marquées comme lues");
+                              } catch (error) {
+                                console.error("Error marking notifications as read:", error);
+                              }
+                            }}
+                          >
+                            Tout marquer comme lu
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={async () => {
+                              if (!window.confirm("Êtes-vous sûr de vouloir effacer toutes les notifications ?")) return;
+                              try {
+                                await axios.delete(`${API}/notifications`, { headers: { Authorization: `Bearer ${token}` } });
+                                toast.success("Toutes les notifications ont été effacées");
+                                fetchNotifications();
+                              } catch (error) {
+                                console.error("Error deleting notifications:", error);
+                              }
+                            }}
+                          >
+                            Effacer tout
+                          </Button>
+                        </div>
+                        {notifications.map((notif) => (
+                          <div
+                            key={notif.id}
+                            className={`p-3 rounded-lg border ${
+                              notif.is_read ? 'bg-black/20 border-white/5' : 'bg-primary/10 border-primary/30'
+                            }`}
+                          >
+                            <p className="text-sm">{notif.message}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {new Date(notif.created_at).toLocaleDateString('fr-FR', {
+                                day: 'numeric',
+                                month: 'long',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                        ))}
+                      </>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Bell className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>Aucune notification</p>
+                      </div>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
+              
               <Link to="/messages-improved">
                 <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10">
                   <Send className="w-4 h-4" />

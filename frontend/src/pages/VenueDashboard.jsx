@@ -2026,40 +2026,80 @@ export default function VenueDashboard() {
                     </div>
 
                     <div className="flex gap-3 mt-6">
-                      <Button
-                        onClick={handleCreatePlanningSlot}
-                        className="flex-1 bg-primary hover:bg-primary/90 rounded-full"
-                      >
-                        Publier le créneau
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setShowPlanningModal(false);
-                          // Réinitialiser la date sélectionnée pour que le calendrier redevienne libre
-                          setSelectedDate(null);
-                          // Réinitialiser le formulaire
-                          setPlanningForm({
-                            date: '',
-                            music_styles: [],
-                            description: '',
-                            artist_categories: [],
-                            num_bands_needed: 1,
-                            has_catering: false,
-                            catering_drinks: 0,
-                            catering_respect: false,
-                            catering_tbd: false,
-                            has_accommodation: false,
-                            accommodation_capacity: 0
-                          });
-                          // Rafraîchir les créneaux pour s'assurer qu'il n'y a pas de données fantômes
-                          fetchPlanningSlots();
-                        }}
-                        variant="outline"
-                        className="rounded-full border-red-500/30 text-red-400 hover:bg-red-500/10"
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Annuler le créneau
-                      </Button>
+                      {editingPlanningSlotId ? (
+                        // Mode édition : boutons Supprimer et Annuler
+                        <>
+                          <Button
+                            onClick={handleDeletePlanningSlot}
+                            variant="outline"
+                            className="flex-1 rounded-full border-red-500/30 text-red-400 hover:bg-red-500/10"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Supprimer le créneau
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              setShowPlanningModal(false);
+                              setSelectedDate(null);
+                              setEditingPlanningSlotId(null);
+                              setPlanningForm({
+                                date: '',
+                                music_styles: [],
+                                description: '',
+                                artist_categories: [],
+                                num_bands_needed: 1,
+                                has_catering: false,
+                                catering_drinks: 0,
+                                catering_respect: false,
+                                catering_tbd: false,
+                                has_accommodation: false,
+                                accommodation_capacity: 0
+                              });
+                            }}
+                            variant="outline"
+                            className="rounded-full"
+                          >
+                            <X className="w-4 h-4 mr-2" />
+                            Annuler
+                          </Button>
+                        </>
+                      ) : (
+                        // Mode création : boutons Publier et Annuler
+                        <>
+                          <Button
+                            onClick={handleCreatePlanningSlot}
+                            className="flex-1 bg-primary hover:bg-primary/90 rounded-full"
+                          >
+                            Publier le créneau
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              setShowPlanningModal(false);
+                              setSelectedDate(null);
+                              setEditingPlanningSlotId(null);
+                              setPlanningForm({
+                                date: '',
+                                music_styles: [],
+                                description: '',
+                                artist_categories: [],
+                                num_bands_needed: 1,
+                                has_catering: false,
+                                catering_drinks: 0,
+                                catering_respect: false,
+                                catering_tbd: false,
+                                has_accommodation: false,
+                                accommodation_capacity: 0
+                              });
+                              fetchPlanningSlots();
+                            }}
+                            variant="outline"
+                            className="rounded-full border-red-500/30 text-red-400 hover:bg-red-500/10"
+                          >
+                            <X className="w-4 h-4 mr-2" />
+                            Annuler
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </DialogContent>

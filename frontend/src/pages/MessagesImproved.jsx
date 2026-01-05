@@ -437,10 +437,19 @@ export default function MessagesImproved() {
                       <User className="w-5 h-5 text-primary" />
                     </div>
                   )}
-                  <div>
+                  <div className="flex-1">
                     <p className="font-semibold">{selectedConversation.partnerName}</p>
                     <p className="text-xs text-muted-foreground">En ligne</p>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => deleteConversation(selectedConversation.id)}
+                    className="text-red-400 hover:text-red-500 hover:bg-red-500/10"
+                    title="Supprimer la conversation"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
                 </div>
 
                 {/* Messages */}

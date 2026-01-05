@@ -628,7 +628,7 @@ export default function VenueDetail() {
                           event={{ ...concert, type: 'concert' }}
                           venueId={id}
                           token={token}
-                          currentParticipation={currentParticipation}
+                          currentParticipation={myParticipations.find(p => p.event_id === concert.id && p.event_type === 'concert')}
                           onParticipationChange={handleParticipationChange}
                         />
                       </div>

@@ -102,10 +102,14 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
       // Vert pour les concerts - maintenant cliquable
       colorClasses = 'bg-green-500/20 text-green-400 border-2 border-green-500/40 hover:bg-green-500/30 cursor-pointer';
       label = 'Concert';
-      // Afficher les noms des groupes
-      if (concert && concert.bands && concert.bands.length > 0) {
-        const bandNames = concert.bands.map(b => b.name).join(', ');
-        eventInfo = bandNames.length > 20 ? bandNames.substring(0, 20) + '...' : bandNames;
+      // Afficher le nombre de participants et les noms des groupes
+      if (concert) {
+        if (concert.participants_count !== undefined && concert.participants_count > 0) {
+          eventInfo = `${concert.participants_count} participant${concert.participants_count > 1 ? 's' : ''}`;
+        } else if (concert.bands && concert.bands.length > 0) {
+          const bandNames = concert.bands.map(b => b.name).join(', ');
+          eventInfo = bandNames.length > 20 ? bandNames.substring(0, 20) + '...' : bandNames;
+        }
       }
     } else if (eventType === 'jam') {
       // Mauve pour les bœufs - maintenant cliquable

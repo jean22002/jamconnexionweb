@@ -3593,7 +3593,7 @@ export default function MusicianDashboard() {
                             venueId={jam.venue_id}
                             token={token}
                             currentParticipation={null}
-                            onParticipationChange={() => {}}
+                            onParticipationChange={refreshVenueEvents}
                           />
                         </div>
                       </div>

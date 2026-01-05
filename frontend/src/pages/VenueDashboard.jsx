@@ -3161,9 +3161,9 @@ export default function VenueDashboard() {
                               <p className="text-sm font-semibold text-primary">
                                 Total : {selectedEvent.bands.reduce((sum, band) => sum + (band.members_count || 0), 0)} musicien{selectedEvent.bands.reduce((sum, band) => sum + (band.members_count || 0), 0) > 1 ? 's' : ''}
                               </p>
-                              {selectedEvent.participants_count > 0 && (
+                              {(selectedEvent.bands.reduce((sum, band) => sum + (band.members_count || 0), 0) + (selectedEvent.participants_count || 0)) > 0 && (
                                 <p className="text-sm font-semibold text-green-400 mt-2">
-                                  {selectedEvent.participants_count} : total des personnes étrangères à l'établissement
+                                  {selectedEvent.bands.reduce((sum, band) => sum + (band.members_count || 0), 0) + (selectedEvent.participants_count || 0)} : minimum de personnes étrangères à l'établissement (groupes + participants)
                                 </p>
                               )}
                             </div>

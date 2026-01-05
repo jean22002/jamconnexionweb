@@ -101,6 +101,11 @@ export default function VenueDashboard() {
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
   const [notificationTarget, setNotificationTarget] = useState("subscribers"); // 'subscribers' or 'nearby'
   
+  // Notifications states (comme pour les musiciens)
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotificationsDialog, setShowNotificationsDialog] = useState(false);
+  
   // Event details modal states
   const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);

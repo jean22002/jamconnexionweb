@@ -4576,6 +4576,160 @@ class JamConnexionAPITester:
             self.log_test("TEST 5 - No Notification If Not Accepted", False, f"Error: {str(e)}")
             return False
 
+    # ============= BUG FIX VALIDATION TESTS =============
+
+    def test_notification_system_workflow(self):
+        """Test complete notification workflow: venue creates slot, musician applies, venue accepts, musician gets notification"""
+        try:
+            # Step 1: Create a planning slot
+            headers_venue = {'Authorization': f'Bearer {self.venue_token}'}
+            planning_data = {
+                "date": "2025-01-15",
+                "music_styles": ["Rock", "Pop"],
+                "description": "Looking for energetic rock band for notification test",
+                "is_open": True
+            }
+            
+            response = requests.post(f"{self.base_url}/planning", json=planning_data, headers=headers_venue, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Notification System Workflow - Create Slot", False, f"Failed to create planning slot: {response.status_code}")
+                return False
+            
+            planning_response = response.json()
+            slot_id = planning_response.get('id')
+            
+            # Step 2: Musician applies to the slot
+            headers_musician = {'Authorization': f'Bearer {self.musician_token}'}
+            application_data = {
+                "planning_slot_id": slot_id,
+                "band_name": "Test Notification Band",
+                "description": "Rock band for notification testing",
+                "music_style": "Rock",
+                "contact_email": "testband@test.com",
+                "contact_phone": "+33123456789"
+            }
+            
+            response = requests.post(f"{self.base_url}/applications", json=application_data, headers=headers_musician, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Notification System Workflow - Apply", False, f"Failed to apply: {response.status_code}")
+                return False
+            
+            app_response = response.json()
+            application_id = app_response.get('id')
+            
+            # Step 3: Check musician's notifications before acceptance
+            response = requests.get(f"{self.base_url}/notifications/unread-count", headers=headers_musician, timeout=10)
+            initial_count = 0
+            if response.status_code == 200:
+                initial_count = response.json().get('count', 0)
+            
+            # Step 4: Venue accepts the application
+            response = requests.put(f"{self.base_url}/applications/{application_id}/accept", headers=headers_venue, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Notification System Workflow - Accept", False, f"Failed to accept application: {response.status_code}")
+                return False
+            
+            # Step 5: Check musician's notifications after acceptance
+            import time
+            time.sleep(1)  # Give time for notification to be created
+            response = requests.get(f"{self.base_url}/notifications/unread-count", headers=headers_musician, timeout=10)
+            final_count = 0
+            if response.status_code == 200:
+                final_count = response.json().get('count', 0)
+            
+            # Step 6: Get the actual notifications to verify content
+            response = requests.get(f"{self.base_url}/notifications", headers=headers_musician, timeout=10)
+            notifications = []
+            if response.status_code == 200:
+                notifications = response.json()
+            
+            success = final_count > initial_count
+            if success:
+                details = f"Notification count increased from {initial_count} to {final_count}"
+                if notifications:
+                    latest_notification = notifications[0]
+                    details += f", Latest notification: '{latest_notification.get('title')}'"
+                self.notification_test_application_id = application_id  # Store for cleanup
+            else:
+                details = f"Notification count did not increase: {initial_count} -> {final_count}"
+            
+            self.log_test("Notification System Workflow", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Notification System Workflow", False, f"Error: {str(e)}")
+            return False
+
+    def test_delete_all_notifications(self):
+        """Test DELETE /api/notifications endpoint to clear all notifications"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            
+            # First, get current notification count
+            response = requests.get(f"{self.base_url}/notifications", headers=headers, timeout=10)
+            initial_notifications = []
+            if response.status_code == 200:
+                initial_notifications = response.json()
+            
+            # Delete all notifications
+            response = requests.delete(f"{self.base_url}/notifications", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                # Verify notifications are cleared
+                response = requests.get(f"{self.base_url}/notifications", headers=headers, timeout=10)
+                if response.status_code == 200:
+                    final_notifications = response.json()
+                    if len(final_notifications) == 0:
+                        details = f"Successfully cleared {len(initial_notifications)} notifications"
+                    else:
+                        details = f"WARNING: {len(final_notifications)} notifications still remain"
+                        success = False
+                else:
+                    details = f"Failed to verify deletion: {response.status_code}"
+                    success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Delete All Notifications", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Delete All Notifications", False, f"Error: {str(e)}")
+            return False
+
+    def test_musician_dashboard_navigation(self):
+        """Test that musician dashboard tabs are accessible (basic API check)"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            
+            # Test getting musician profile (Profil tab)
+            response = requests.get(f"{self.base_url}/musicians/me", headers=headers, timeout=10)
+            profile_success = response.status_code == 200
+            
+            # Test getting venues (Recherche tab)
+            response = requests.get(f"{self.base_url}/venues", timeout=10)
+            venues_success = response.status_code == 200
+            
+            # Test getting subscriptions (Connexions tab)
+            response = requests.get(f"{self.base_url}/my-subscriptions", headers=headers, timeout=10)
+            subscriptions_success = response.status_code == 200
+            
+            # Test getting notifications
+            response = requests.get(f"{self.base_url}/notifications", headers=headers, timeout=10)
+            notifications_success = response.status_code == 200
+            
+            success = profile_success and venues_success and subscriptions_success and notifications_success
+            
+            if success:
+                details = "All dashboard API endpoints accessible: Profil ✓, Recherche ✓, Connexions ✓, Notifications ✓"
+            else:
+                details = f"API access: Profil {profile_success}, Recherche {venues_success}, Connexions {subscriptions_success}, Notifications {notifications_success}"
+            
+            self.log_test("Musician Dashboard Navigation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Musician Dashboard Navigation", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🎵 Starting Jam Connexion API Tests...")

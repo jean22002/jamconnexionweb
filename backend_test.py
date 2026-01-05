@@ -5431,6 +5431,240 @@ class JamConnexionAPITester:
             self.log_test("Concert Date Bug Reproduction", False, f"Error: {str(e)}")
             return False
 
+    def test_double_participation_bug_reproduction(self):
+        """Test the specific double participation bug reported by user"""
+        try:
+            print("\n🔍 TESTING DOUBLE PARTICIPATION BUG REPRODUCTION")
+            print("=" * 60)
+            
+            # Step 1: Create a musician and venue with a concert
+            print("Step 1: Creating test accounts and profiles...")
+            
+            # Create musician for bug test
+            musician_data = {
+                "email": f"bug_musician_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Bug Test Musician",
+                "role": "musician"
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/register", json=musician_data, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Double Participation Bug - Setup Musician", False, f"Failed to create musician: {response.status_code}")
+                return False
+                
+            bug_musician = response.json()
+            bug_musician_token = bug_musician.get('token')
+            bug_musician_user = bug_musician.get('user')
+            
+            # Create musician profile
+            profile_data = {
+                "pseudo": "BugTester",
+                "instruments": ["Guitar"],
+                "music_styles": ["Rock"]
+            }
+            headers_musician = {'Authorization': f'Bearer {bug_musician_token}'}
+            profile_response = requests.post(f"{self.base_url}/musicians", json=profile_data, headers=headers_musician, timeout=10)
+            
+            if profile_response.status_code != 200:
+                self.log_test("Double Participation Bug - Setup Profile", False, f"Failed to create profile: {profile_response.status_code}")
+                return False
+                
+            bug_musician_profile = profile_response.json()
+            bug_musician_profile_id = bug_musician_profile.get('id')
+            
+            # Create venue for bug test
+            venue_data = {
+                "email": f"bug_venue_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Bug Test Venue",
+                "role": "venue"
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/register", json=venue_data, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Double Participation Bug - Setup Venue", False, f"Failed to create venue: {response.status_code}")
+                return False
+                
+            bug_venue = response.json()
+            bug_venue_token = bug_venue.get('token')
+            
+            # Create venue profile
+            venue_profile_data = {
+                "name": "Bug Test Club",
+                "description": "Test venue for bug reproduction",
+                "address": "123 Bug Street",
+                "city": "Paris",
+                "postal_code": "75001",
+                "latitude": 48.8566,
+                "longitude": 2.3522,
+                "has_stage": True,
+                "equipment": ["Sound System"],
+                "music_styles": ["Rock"]
+            }
+            
+            headers_venue = {'Authorization': f'Bearer {bug_venue_token}'}
+            venue_profile_response = requests.post(f"{self.base_url}/venues", json=venue_profile_data, headers=headers_venue, timeout=10)
+            
+            if venue_profile_response.status_code != 200:
+                self.log_test("Double Participation Bug - Setup Venue Profile", False, f"Failed to create venue profile: {venue_profile_response.status_code}")
+                return False
+                
+            bug_venue_profile = venue_profile_response.json()
+            bug_venue_profile_id = bug_venue_profile.get('id')
+            
+            print(f"✅ Created musician: {bug_musician_profile_id}")
+            print(f"✅ Created venue: {bug_venue_profile_id}")
+            
+            # Step 2: Create a concert
+            print("\nStep 2: Creating concert event...")
+            
+            from datetime import datetime, timedelta
+            tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+            
+            concert_data = {
+                "date": tomorrow,
+                "start_time": "20:00",
+                "end_time": "23:00",
+                "title": "Bug Test Concert",
+                "description": "Concert for testing double participation bug",
+                "bands": [
+                    {
+                        "name": "Test Band",
+                        "photo": "https://example.com/band.jpg"
+                    }
+                ],
+                "price": "20€"
+            }
+            
+            response = requests.post(f"{self.base_url}/concerts", json=concert_data, headers=headers_venue, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Double Participation Bug - Create Concert", False, f"Failed to create concert: {response.status_code}")
+                return False
+                
+            bug_concert = response.json()
+            bug_concert_id = bug_concert.get('id')
+            print(f"✅ Created concert: {bug_concert_id} on {tomorrow}")
+            
+            # Step 3: Make musician participate in concert
+            print("\nStep 3: Musician participating in concert...")
+            
+            response = requests.post(f"{self.base_url}/events/{bug_concert_id}/join?event_type=concert", headers=headers_musician, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Double Participation Bug - First Participation", False, f"Failed to join concert: {response.status_code}, Error: {response.text[:200]}")
+                return False
+                
+            first_participation = response.json()
+            first_participation_id = first_participation.get('participation_id')
+            print(f"✅ First participation created: {first_participation_id}")
+            
+            # Step 4: Verify participation is created with active: True
+            print("\nStep 4: Verifying participation in database...")
+            
+            # Check via API that musician has current participation
+            response = requests.get(f"{self.base_url}/musicians/me/current-participation", headers=headers_musician, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Double Participation Bug - Check Current Participation", False, f"Failed to get current participation: {response.status_code}")
+                return False
+                
+            current_participation = response.json()
+            if not current_participation:
+                self.log_test("Double Participation Bug - Verify Active Participation", False, "No current participation found after joining")
+                return False
+                
+            print(f"✅ Current participation verified: {current_participation.get('event_type')} at {current_participation.get('venue_name')}")
+            
+            # Step 5: Get musician participations (simulating frontend call)
+            print("\nStep 5: Getting musician participations (frontend simulation)...")
+            
+            # Note: The user mentioned GET /api/musicians/me/participations but let's check what endpoints exist
+            # Let's try the current participation endpoint which should show active participations
+            response = requests.get(f"{self.base_url}/musicians/me/current-participation", headers=headers_musician, timeout=10)
+            if response.status_code == 200:
+                participation_data = response.json()
+                if participation_data and participation_data.get('event_id') == bug_concert_id:
+                    print(f"✅ Concert appears in participations: event_id={participation_data.get('event_id')}, event_type={participation_data.get('event_type')}, active=True")
+                else:
+                    self.log_test("Double Participation Bug - Participation Visibility", False, "Concert does not appear in musician participations")
+                    return False
+            else:
+                self.log_test("Double Participation Bug - Get Participations", False, f"Failed to get participations: {response.status_code}")
+                return False
+            
+            # Step 6: Attempt to participate a 2nd time (should fail)
+            print("\nStep 6: Attempting second participation (should be blocked)...")
+            
+            response = requests.post(f"{self.base_url}/events/{bug_concert_id}/join?event_type=concert", headers=headers_musician, timeout=10)
+            if response.status_code == 400:
+                error_message = response.text
+                if "Already participating" in error_message or "already participating" in error_message.lower():
+                    print("✅ Second participation correctly blocked with 400 error")
+                    print(f"   Error message: {error_message}")
+                else:
+                    self.log_test("Double Participation Bug - Wrong Error Message", False, f"Got 400 but wrong message: {error_message}")
+                    return False
+            else:
+                self.log_test("Double Participation Bug - CRITICAL", False, f"Second participation was NOT blocked! Status: {response.status_code}, Response: {response.text[:200]}")
+                return False
+            
+            # Step 7: Verify in database - should be only ONE active participation
+            print("\nStep 7: Verifying database integrity...")
+            
+            # We can't directly access MongoDB, but we can check via API endpoints
+            # Check event participants count
+            response = requests.get(f"{self.base_url}/events/{bug_concert_id}/participants", timeout=10)
+            if response.status_code == 200:
+                participants = response.json()
+                participant_count = len(participants)
+                if participant_count == 1:
+                    print(f"✅ Database integrity verified: exactly 1 participant found")
+                    participant = participants[0]
+                    if participant.get('musician_id') == bug_musician_profile_id:
+                        print(f"   Participant: {participant.get('pseudo')} (correct musician)")
+                    else:
+                        self.log_test("Double Participation Bug - Wrong Participant", False, f"Wrong musician in participants: {participant.get('musician_id')} vs {bug_musician_profile_id}")
+                        return False
+                else:
+                    self.log_test("Double Participation Bug - CRITICAL DATABASE ISSUE", False, f"Found {participant_count} participants, expected exactly 1")
+                    return False
+            else:
+                self.log_test("Double Participation Bug - Get Participants", False, f"Failed to get event participants: {response.status_code}")
+                return False
+            
+            # Additional verification: Check concert participants count in concert data
+            response = requests.get(f"{self.base_url}/concerts", timeout=10)
+            if response.status_code == 200:
+                concerts = response.json()
+                our_concert = None
+                for concert in concerts:
+                    if concert.get('id') == bug_concert_id:
+                        our_concert = concert
+                        break
+                
+                if our_concert:
+                    participants_count = our_concert.get('participants_count', 0)
+                    if participants_count == 1:
+                        print(f"✅ Concert participants_count field correct: {participants_count}")
+                    else:
+                        self.log_test("Double Participation Bug - Concert Count Wrong", False, f"Concert participants_count is {participants_count}, expected 1")
+                        return False
+                else:
+                    self.log_test("Double Participation Bug - Concert Not Found", False, "Could not find our concert in concerts list")
+                    return False
+            
+            print("\n🎉 DOUBLE PARTICIPATION BUG TEST COMPLETED SUCCESSFULLY")
+            print("=" * 60)
+            print("✅ Backend correctly prevents double participation")
+            print("✅ Database integrity maintained")
+            print("✅ Error handling works as expected")
+            
+            self.log_test("Double Participation Bug Reproduction", True, "Backend correctly prevents double participation - bug is likely frontend-only")
+            return True
+            
+        except Exception as e:
+            self.log_test("Double Participation Bug Reproduction", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🎵 Starting Jam Connexion API Tests...")

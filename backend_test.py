@@ -4856,7 +4856,10 @@ class JamConnexionAPITester:
             # BUG FIX VALIDATION TESTS - Testing the specific fixes mentioned in the review request
             self.test_notification_system_workflow,
             self.test_delete_all_notifications,
-            self.test_musician_dashboard_navigation
+            self.test_musician_dashboard_navigation,
+            # NEW P1 FEATURES TESTS (Priority 1)
+            self.test_bands_directory_department_filter,
+            self.test_messaging_conversation_deletion
         ]
         
         for test in tests:

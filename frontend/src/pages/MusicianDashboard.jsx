@@ -3034,12 +3034,21 @@ export default function MusicianDashboard() {
                   {/* Localisation */}
                   <div className="space-y-2">
                     <Label>Département</Label>
-                    <Input
-                      placeholder="Ex: 75, 13, 69..."
-                      value={bandFilters.department}
-                      onChange={(e) => setBandFilters({ ...bandFilters, department: e.target.value })}
-                      className="bg-black/20 border-white/10"
-                    />
+                    <Select 
+                      value={bandFilters.department || undefined} 
+                      onValueChange={(value) => setBandFilters({ ...bandFilters, department: value })}
+                    >
+                      <SelectTrigger className="bg-black/20 border-white/10">
+                        <SelectValue placeholder="Tous les départements" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-white/10 max-h-[300px]">
+                        {DEPARTEMENTS_FRANCE.map((dept) => (
+                          <SelectItem key={dept.code} value={dept.code}>
+                            {dept.code} - {dept.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label>Ville</Label>

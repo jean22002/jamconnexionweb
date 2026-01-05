@@ -4451,10 +4451,11 @@ class JamConnexionAPITester:
                 return False
             
             # Check slot is closed (2/2 bands)
-            response = requests.get(f"{self.base_url}/planning/{slot_id}", timeout=10)
+            response = requests.get(f"{self.base_url}/venues/{self.test_bar_profile_id}/planning", timeout=10)
             if response.status_code == 200:
-                slot_data = response.json()
-                if slot_data.get('is_open'):
+                slots = response.json()
+                slot_data = next((s for s in slots if s['id'] == slot_id), None)
+                if slot_data and slot_data.get('is_open'):
                     self.log_test("TEST 4 - Slot Closure Check", False, "Slot should be closed with 2/2 bands")
                     return False
             

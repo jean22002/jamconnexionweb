@@ -56,7 +56,8 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
   // Add days of the month
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(year, month, day);
-    const dateStr = date.toISOString().split('T')[0];
+    // Format date sans conversion UTC pour éviter le décalage
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const isBooked = isDateBooked(dateStr);
     const eventType = eventsByDate[dateStr]; // 'concert', 'jam', ou undefined
     const isPast = isPastDate(date);

@@ -4852,7 +4852,11 @@ class JamConnexionAPITester:
             self.test_notification_concert_cancellation,
             self.test_notification_accepted_application_cancellation,
             self.test_notification_slot_reopening,
-            self.test_notification_no_notification_if_not_accepted
+            self.test_notification_no_notification_if_not_accepted,
+            # BUG FIX VALIDATION TESTS - Testing the specific fixes mentioned in the review request
+            self.test_notification_system_workflow,
+            self.test_delete_all_notifications,
+            self.test_musician_dashboard_navigation
         ]
         
         for test in tests:

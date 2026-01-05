@@ -5437,6 +5437,10 @@ class JamConnexionAPITester:
         print(f"Testing against: {self.base_url}")
         print("-" * 50)
         
+        # PRIORITY TEST: Concert Date Bug reported by user
+        print("\n🚨 PRIORITY: Testing Concert Date Bug reported by user")
+        self.test_concert_date_bug_reproduction()
+        
         # Initialize test variables
         self.musician_token = None
         self.venue_token = None

@@ -290,6 +290,7 @@ class ConcertBand(BaseModel):
 class ConcertEvent(BaseModel):
     date: str
     start_time: str
+    end_time: Optional[str] = None
     title: Optional[str] = None
     description: Optional[str] = None
     bands: List[ConcertBand] = []
@@ -301,6 +302,7 @@ class ConcertEventResponse(BaseModel):
     venue_name: str
     date: str
     start_time: str
+    end_time: Optional[str] = None
     title: Optional[str] = None
     description: Optional[str] = None
     bands: List[Dict[str, Any]] = []

@@ -1015,8 +1015,11 @@ export default function VenueDashboard() {
         toast.success("Bœuf mis à jour");
       }
       
+      // Réinitialiser l'état de la modale
       setShowEventDetailsModal(false);
       setIsEditingEvent(false);
+      setSelectedEvent(null);
+      setSelectedEventType(null);
       fetchEvents();
     } catch (error) {
       console.error("Error updating event:", error);

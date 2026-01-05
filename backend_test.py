@@ -4876,6 +4876,225 @@ class JamConnexionAPITester:
         
         return self.tests_passed == self.tests_run
 
+    # ============= NEW P1 FEATURES TESTS =============
+
+    def test_bands_directory_department_filter(self):
+        """Test bands directory filtering by department (P1 Feature 1)"""
+        try:
+            # First, create a musician with a band in a specific department
+            test_data = {
+                "email": f"musician_dept_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Musician Department Test",
+                "role": "musician"
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/register", json=test_data, timeout=10)
+            if response.status_code == 200:
+                dept_musician_data = response.json()
+                dept_musician_token = dept_musician_data.get('token')
+                
+                # Create musician profile with band in Paris (75)
+                profile_data = {
+                    "pseudo": "ParisRocker",
+                    "instruments": ["Guitar"],
+                    "city": "Paris",
+                    "department": "75",
+                    "bands": [{
+                        "name": "Les Rockers Parisiens",
+                        "description": "Groupe de rock parisien",
+                        "music_styles": ["Rock", "Pop"],
+                        "members_count": 4,
+                        "is_public": True,
+                        "city": "Paris",
+                        "department": "75"
+                    }]
+                }
+                
+                headers = {'Authorization': f'Bearer {dept_musician_token}'}
+                profile_response = requests.post(f"{self.base_url}/musicians", json=profile_data, headers=headers, timeout=10)
+                
+                if profile_response.status_code == 200:
+                    # Test 1: Get all bands (no filter)
+                    response = requests.get(f"{self.base_url}/bands", timeout=10)
+                    if response.status_code == 200:
+                        all_bands = response.json()
+                        all_bands_count = len(all_bands)
+                        
+                        # Test 2: Filter by department "75" (Paris)
+                        response = requests.get(f"{self.base_url}/bands?department=75", timeout=10)
+                        if response.status_code == 200:
+                            paris_bands = response.json()
+                            paris_bands_count = len(paris_bands)
+                            
+                            # Verify that our band is in the Paris results
+                            paris_band_found = any(band.get('name') == 'Les Rockers Parisiens' for band in paris_bands)
+                            
+                            # Test 3: Filter by different department "13" (Bouches-du-Rhône)
+                            response = requests.get(f"{self.base_url}/bands?department=13", timeout=10)
+                            if response.status_code == 200:
+                                marseille_bands = response.json()
+                                marseille_bands_count = len(marseille_bands)
+                                
+                                # Verify that our Paris band is NOT in Marseille results
+                                paris_band_in_marseille = any(band.get('name') == 'Les Rockers Parisiens' for band in marseille_bands)
+                                
+                                success = paris_band_found and not paris_band_in_marseille
+                                details = f"All bands: {all_bands_count}, Paris (75): {paris_bands_count}, Marseille (13): {marseille_bands_count}"
+                                if paris_band_found:
+                                    details += ", Paris band found in Paris filter ✓"
+                                if not paris_band_in_marseille:
+                                    details += ", Paris band correctly excluded from Marseille filter ✓"
+                            else:
+                                success = False
+                                details = f"Failed to get Marseille bands: {response.status_code}"
+                        else:
+                            success = False
+                            details = f"Failed to get Paris bands: {response.status_code}"
+                    else:
+                        success = False
+                        details = f"Failed to get all bands: {response.status_code}"
+                else:
+                    success = False
+                    details = f"Failed to create musician profile: {profile_response.status_code}"
+            else:
+                success = False
+                details = f"Failed to create test musician: {response.status_code}"
+            
+            self.log_test("Bands Directory Department Filter (P1)", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Bands Directory Department Filter (P1)", False, f"Error: {str(e)}")
+            return False
+
+    def test_messaging_conversation_deletion(self):
+        """Test conversation deletion in messaging system (P1 Feature 2)"""
+        try:
+            # Create two musicians for messaging test
+            musician_a_data = {
+                "email": f"musician_a_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Musician A",
+                "role": "musician"
+            }
+            
+            musician_b_data = {
+                "email": f"musician_b_{datetime.now().strftime('%H%M%S')}@test.com",
+                "password": "TestPass123!",
+                "name": "Musician B",
+                "role": "musician"
+            }
+            
+            # Register both musicians
+            response_a = requests.post(f"{self.base_url}/auth/register", json=musician_a_data, timeout=10)
+            response_b = requests.post(f"{self.base_url}/auth/register", json=musician_b_data, timeout=10)
+            
+            if response_a.status_code == 200 and response_b.status_code == 200:
+                musician_a = response_a.json()
+                musician_b = response_b.json()
+                
+                token_a = musician_a.get('token')
+                token_b = musician_b.get('token')
+                user_a_id = musician_a.get('user')['id']
+                user_b_id = musician_b.get('user')['id']
+                
+                headers_a = {'Authorization': f'Bearer {token_a}'}
+                headers_b = {'Authorization': f'Bearer {token_b}'}
+                
+                # Create profiles for both musicians
+                profile_a = {"pseudo": "MusicianA", "instruments": ["Guitar"]}
+                profile_b = {"pseudo": "MusicianB", "instruments": ["Bass"]}
+                
+                requests.post(f"{self.base_url}/musicians", json=profile_a, headers=headers_a, timeout=10)
+                requests.post(f"{self.base_url}/musicians", json=profile_b, headers=headers_b, timeout=10)
+                
+                # Test 1: Send messages between A and B
+                message_a_to_b = {
+                    "recipient_id": user_b_id,
+                    "subject": "Collaboration musicale",
+                    "content": "Salut ! Ça te dit de faire un bœuf ensemble ?"
+                }
+                
+                message_b_to_a = {
+                    "recipient_id": user_a_id,
+                    "subject": "Re: Collaboration musicale",
+                    "content": "Salut ! Oui avec plaisir, quand es-tu disponible ?"
+                }
+                
+                # Send messages
+                response = requests.post(f"{self.base_url}/messages", json=message_a_to_b, headers=headers_a, timeout=10)
+                message_1_success = response.status_code == 200
+                
+                response = requests.post(f"{self.base_url}/messages", json=message_b_to_a, headers=headers_b, timeout=10)
+                message_2_success = response.status_code == 200
+                
+                if message_1_success and message_2_success:
+                    # Test 2: Verify messages exist in inbox
+                    response = requests.get(f"{self.base_url}/messages/inbox", headers=headers_a, timeout=10)
+                    if response.status_code == 200:
+                        inbox_a_before = response.json()
+                        messages_a_before = len(inbox_a_before)
+                        
+                        response = requests.get(f"{self.base_url}/messages/inbox", headers=headers_b, timeout=10)
+                        if response.status_code == 200:
+                            inbox_b_before = response.json()
+                            messages_b_before = len(inbox_b_before)
+                            
+                            # Test 3: Delete conversation from A's side
+                            response = requests.delete(f"{self.base_url}/messages/conversation/{user_b_id}", headers=headers_a, timeout=10)
+                            
+                            if response.status_code == 200:
+                                deletion_response = response.json()
+                                deleted_count = deletion_response.get('deleted_count', 0)
+                                
+                                # Test 4: Verify messages are deleted from both sides
+                                response = requests.get(f"{self.base_url}/messages/inbox", headers=headers_a, timeout=10)
+                                if response.status_code == 200:
+                                    inbox_a_after = response.json()
+                                    messages_a_after = len(inbox_a_after)
+                                    
+                                    response = requests.get(f"{self.base_url}/messages/inbox", headers=headers_b, timeout=10)
+                                    if response.status_code == 200:
+                                        inbox_b_after = response.json()
+                                        messages_b_after = len(inbox_b_after)
+                                        
+                                        # Verify deletion worked
+                                        a_messages_deleted = messages_a_after < messages_a_before
+                                        b_messages_deleted = messages_b_after < messages_b_before
+                                        
+                                        success = deleted_count >= 2 and a_messages_deleted and b_messages_deleted
+                                        details = f"Deleted {deleted_count} messages, A: {messages_a_before}→{messages_a_after}, B: {messages_b_before}→{messages_b_after}"
+                                        
+                                        if success:
+                                            details += " ✓ Conversation deleted from both sides"
+                                    else:
+                                        success = False
+                                        details = f"Failed to get B's inbox after deletion: {response.status_code}"
+                                else:
+                                    success = False
+                                    details = f"Failed to get A's inbox after deletion: {response.status_code}"
+                            else:
+                                success = False
+                                details = f"Failed to delete conversation: {response.status_code}, Error: {response.text[:100]}"
+                        else:
+                            success = False
+                            details = f"Failed to get B's inbox before: {response.status_code}"
+                    else:
+                        success = False
+                        details = f"Failed to get A's inbox before: {response.status_code}"
+                else:
+                    success = False
+                    details = f"Failed to send messages: A→B: {message_1_success}, B→A: {message_2_success}"
+            else:
+                success = False
+                details = f"Failed to create musicians: A: {response_a.status_code}, B: {response_b.status_code}"
+            
+            self.log_test("Messaging Conversation Deletion (P1)", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Messaging Conversation Deletion (P1)", False, f"Error: {str(e)}")
+            return False
+
 def main():
     tester = JamConnexionAPITester()
     success = tester.run_all_tests()

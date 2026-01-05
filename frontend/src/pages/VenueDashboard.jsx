@@ -1776,6 +1776,11 @@ export default function VenueDashboard() {
                           <div className="flex-1">
                             <p className="font-heading font-semibold text-lg">{concert.title || "Concert"}</p>
                             <p className="text-muted-foreground">{concert.date} à {concert.start_time}</p>
+                            {concert.participants_count > 0 && (
+                              <p className="text-green-400 text-sm mt-1">
+                                👥 {concert.participants_count} participant{concert.participants_count > 1 ? 's' : ''}
+                              </p>
+                            )}
                           </div>
                           <Button 
                             variant="ghost" 

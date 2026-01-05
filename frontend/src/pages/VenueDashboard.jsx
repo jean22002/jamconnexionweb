@@ -969,7 +969,7 @@ export default function VenueDashboard() {
   const addBandToConcert = () => {
     if (newBand.name) {
       setConcertForm({ ...concertForm, bands: [...concertForm.bands, { ...newBand }] });
-      setNewBand({ name: "", musician_id: "", photo: "", facebook: "", instagram: "" });
+      setNewBand({ name: "", musician_id: "", members_count: 0, photo: "", facebook: "", instagram: "" });
     }
   };
 

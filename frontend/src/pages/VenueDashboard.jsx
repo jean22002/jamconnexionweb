@@ -1391,15 +1391,30 @@ export default function VenueDashboard() {
                       <div className="grid grid-cols-3 gap-4">
                         <div className="space-y-2">
                           <Label>Date</Label>
-                          <Input type="date" value={jamForm.date} onChange={(e) => setJamForm({ ...jamForm, date: e.target.value })} className="bg-black/20 border-white/10" />
+                          <Input 
+                            type="date" 
+                            value={jamForm.date} 
+                            onChange={(e) => setJamForm({ ...jamForm, date: e.target.value })} 
+                            className="bg-black/20 border-white/10"
+                            onKeyDown={(e) => e.preventDefault()}
+                            style={{ caretColor: 'transparent' }}
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label>Début</Label>
-                          <Input type="time" value={jamForm.start_time} onChange={(e) => setJamForm({ ...jamForm, start_time: e.target.value })} className="bg-black/20 border-white/10" />
+                          <TimeSelect
+                            value={jamForm.start_time}
+                            onChange={(value) => setJamForm({ ...jamForm, start_time: value })}
+                            placeholder="Heure de début"
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label>Fin</Label>
-                          <Input type="time" value={jamForm.end_time} onChange={(e) => setJamForm({ ...jamForm, end_time: e.target.value })} className="bg-black/20 border-white/10" />
+                          <TimeSelect
+                            value={jamForm.end_time}
+                            onChange={(value) => setJamForm({ ...jamForm, end_time: value })}
+                            placeholder="Heure de fin"
+                          />
                         </div>
                       </div>
                       <div className="space-y-2">

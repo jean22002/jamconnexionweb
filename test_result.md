@@ -754,6 +754,36 @@ test_plan:
         agent: "testing"
         comment: "✅ CODE ANALYSIS CONFIRMED - Notification radius successfully changed from 50km to 100km. VERIFICATION: Line 340 in /app/backend/server.py shows 'radius_km: float = 100.0' - the proximity alert system now sends notifications to venues within 100km radius instead of the previous 50km. Backend change implemented correctly."
 
+  - task: "Menu déroulant départements - Backend API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NOUVELLE FONCTIONNALITÉ P1 IMPLÉMENTÉE - Support backend pour le filtrage par département dans le répertoire des groupes. Endpoint GET /api/bands avec paramètre department (ex: '75' pour Paris)"
+      - working: true
+        agent: "testing"
+        comment: "✅ P1 FEATURE 1 VALIDATED - Menu déroulant départements backend API entièrement fonctionnel. TESTS DÉTAILLÉS: ✅ Création groupe test 'Les Rockers Parisiens' dans département 75 (Paris), ✅ GET /api/bands sans filtre: 103 groupes total, ✅ GET /api/bands?department=75: 1 groupe trouvé (groupe parisien présent), ✅ GET /api/bands?department=13: 0 groupe (groupe parisien correctement exclu), ✅ Filtrage par département fonctionne parfaitement selon spécifications P1."
+
+  - task: "Suppression conversation messagerie - Backend API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NOUVELLE FONCTIONNALITÉ P1 IMPLÉMENTÉE - Nouvel endpoint DELETE /api/messages/conversation/{partner_id} pour supprimer tous les messages entre l'utilisateur courant et un partenaire spécifique. Retourne le nombre de messages supprimés."
+      - working: true
+        agent: "testing"
+        comment: "✅ P1 FEATURE 2 VALIDATED - Suppression conversation messagerie backend API entièrement fonctionnel. TESTS DÉTAILLÉS: ✅ Création 2 musiciens (A et B), ✅ Envoi messages bidirectionnels (A→B et B→A), ✅ Vérification messages présents dans boîtes de réception, ✅ DELETE /api/messages/conversation/{partner_id} supprime 2 messages, ✅ Vérification suppression effective des deux côtés (A: 1→0, B: 1→0), ✅ Endpoint retourne nombre correct de messages supprimés. Fonctionnalité P1 100% opérationnelle."
+
   - task: "Checkboxes instruments de base bœufs"
     implemented: true
     working: true

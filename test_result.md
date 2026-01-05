@@ -829,6 +829,21 @@ test_plan:
         agent: "testing"
         comment: "✅ VALIDATION PAR ANALYSE DE CODE - Switch Ingé Son entièrement implémenté selon spécifications. DÉTAILS: ✅ Switch 'Je possède mon propre ingénieur son' dans profil solo (lignes 1280-1283), ✅ Switch 'Le groupe possède son propre ingénieur son' dans formulaire groupe (lignes 1670-1673), ✅ Labels cliquables avec className='cursor-pointer', ✅ Gestion d'état correcte avec onCheckedChange, ✅ Intégration dans sections appropriées avec styling cohérent (p-3 bg-black/10 rounded-lg border). LIMITATION: Tests UI automatisés incomplets à cause de problèmes d'authentification, mais implémentation code 100% conforme aux spécifications demandées."
 
+  - task: "Notification System for Musicians - Backend"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NOUVEAU SYSTÈME DE NOTIFICATIONS COMPLET IMPLÉMENTÉ - 4 nouveaux types de notifications: 1) application_rejected (refus candidature), 2) concert_cancelled (suppression concert - notifie tous les groupes), 3) application_cancelled (suppression candidature acceptée), 4) Réouverture automatique des créneaux après suppression candidature acceptée. Logique complète dans endpoints /applications/{id}/reject, /concerts/{id} DELETE, /applications/{id} DELETE"
+      - working: true
+        agent: "testing"
+        comment: "🎉 SYSTÈME DE NOTIFICATIONS ENTIÈREMENT FONCTIONNEL - Tests complets réussis (4/4 - 100%). RÉSULTATS DÉTAILLÉS: ✅ TEST 1 - Notification refus candidature: Musicien reçoit 'Candidature non retenue' avec message 'Votre candidature pour le [date] n'a pas été retenue', ✅ TEST 2 - Notification suppression concert: Les deux musiciens (The Rockers et Jazz Masters) reçoivent 'Concert annulé' avec message 'Le concert du [date] chez Test Bar a été annulé', ✅ TEST 3 - Notification candidature acceptée puis annulée: Musicien reçoit 'Candidature annulée' avec message détaillé, ✅ TEST 4 - Réouverture créneau: Créneau correctement réouvert après suppression candidature acceptée. TOUS LES TYPES DE NOTIFICATIONS FONCTIONNENT PARFAITEMENT selon spécifications demandées."
+
   - task: "Complete Address with CityAutocomplete in Venue Profile (New Feature)"
     implemented: true
     working: true

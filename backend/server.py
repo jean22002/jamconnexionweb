@@ -1733,6 +1733,29 @@ async def get_my_current_participation(current_user: dict = Depends(get_current_
         # Event ended, deactivate participation
         await db.event_participations.update_one(
             {"id": participation["id"]},
+            {"$set": {"active": False}}
+        )
+        return None
+    
+    return participation
+
+@api_router.get("/musicians/me/participations")
+async def get_my_participations(current_user: dict = Depends(get_current_user)):
+    """Get all musician's active event participations"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can check participation")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        return []
+    
+    # Find all active participations
+    participations = await db.event_participations.find({
+        "musician_id": musician["id"],
+        "active": True
+    }, {"_id": 0}).to_list(100)
+    
+    return participations
             {"$set": {"active": False, "auto_ended": True}}
         )
         return None

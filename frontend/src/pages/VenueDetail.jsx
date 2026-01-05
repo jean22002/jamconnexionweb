@@ -49,6 +49,7 @@ export default function VenueDetail() {
   const [selectedBandOrSolo, setSelectedBandOrSolo] = useState("");
   const [activeEvents, setActiveEvents] = useState([]);
   const [currentParticipation, setCurrentParticipation] = useState(null);
+  const [myParticipations, setMyParticipations] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [averageRating, setAverageRating] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);

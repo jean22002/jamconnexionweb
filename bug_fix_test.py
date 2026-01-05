@@ -59,11 +59,20 @@ class BugFixTester:
             self.musician_token = musician_response.get('token')
             self.musician_user = musician_response.get('user')
             
-            # Create musician profile
+            # Create musician profile with a band
             profile_data = {
                 "pseudo": "BugFixTester",
                 "instruments": ["Guitar"],
-                "music_styles": ["Rock"]
+                "music_styles": ["Rock"],
+                "has_band": True,
+                "bands": [{
+                    "name": "Test Notification Band",
+                    "description": "Rock band for notification testing",
+                    "music_styles": ["Rock", "Pop"],
+                    "members_count": 4,
+                    "looking_for_concerts": True,
+                    "is_public": True
+                }]
             }
             headers = {'Authorization': f'Bearer {self.musician_token}'}
             profile_response = requests.post(f"{self.base_url}/musicians", json=profile_data, headers=headers, timeout=15)

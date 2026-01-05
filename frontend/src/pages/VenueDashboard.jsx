@@ -1792,6 +1792,7 @@ export default function VenueDashboard() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {concerts.map((concert) => {
+                    console.log('🎵 Concert à afficher:', { id: concert.id, date: concert.date, title: concert.title });
                     const totalMembers = concert.bands ? concert.bands.reduce((sum, band) => sum + (band.members_count || 0), 0) : 0;
                     return (
                       <div 

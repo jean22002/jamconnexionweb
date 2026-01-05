@@ -53,37 +53,6 @@ const SHOW_DURATIONS = [
   "5h", "5h15", "5h30", "5h45", "6h"
 ];
 
-const MUSIC_STYLES_LIST = [
-  "Rock",
-  "Rock'n'roll vintage",
-  "Hard rock",
-  "Métal",
-  "Death métal",
-  "Trash métal",
-  "Metal symphonique",
-  "Blues",
-  "Blues rock",
-  "Punk",
-  "Hard core",
-  "Grunge",
-  "Funk",
-  "Jazz",
-  "Reggae",
-  "Ska",
-  "Country",
-  "Chanson française",
-  "Pop rock",
-  "Rockabilly",
-  "Synthwave",
-  "Techno",
-  "House",
-  "Trance",
-  "DJ set",
-  "Rap",
-  "Musique classique",
-  "Autre"
-];
-
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Composant réutilisable pour afficher une carte de musicien

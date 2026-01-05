@@ -2110,15 +2110,22 @@ export default function VenueDashboard() {
 
                     <div className="flex gap-3 mt-6">
                       {editingPlanningSlotId ? (
-                        // Mode édition : boutons Supprimer et Annuler
+                        // Mode édition : boutons Sauvegarder, Supprimer et Annuler
                         <>
+                          <Button
+                            onClick={handleUpdatePlanningSlot}
+                            className="flex-1 bg-primary hover:bg-primary/90 rounded-full"
+                          >
+                            <Check className="w-4 h-4 mr-2" />
+                            Sauvegarder
+                          </Button>
                           <Button
                             onClick={handleDeletePlanningSlot}
                             variant="outline"
-                            className="flex-1 rounded-full border-red-500/30 text-red-400 hover:bg-red-500/10"
+                            className="rounded-full border-red-500/30 text-red-400 hover:bg-red-500/10"
                           >
                             <Trash2 className="w-4 h-4 mr-2" />
-                            Supprimer le créneau
+                            Supprimer
                           </Button>
                           <Button
                             onClick={() => {

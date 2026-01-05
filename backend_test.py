@@ -460,26 +460,26 @@ class JamConnexionAPITester:
             return False
 
     def test_planning_slot_complete_data_bug_fix(self):
-        """Test Bug Fix: Planning slot with ALL fields (catering, accommodation, etc.)"""
+        """Test Bug Fix: Planning slot with ALL fields (catering, accommodation, etc.) - RETESTING AFTER BACKEND MODEL FIXES"""
         try:
             headers_venue = {'Authorization': f'Bearer {self.venue_token}'}
             
-            # Test 1: Create planning slot with ALL fields as sent by frontend
+            # Test 1: Create planning slot with ALL fields as mentioned in review request
             complete_planning_data = {
-                "date": "2025-01-20",
-                "time": "20:00",
-                "title": "Soirée Rock Progressive",
-                "description": "Concert rock avec ambiance progressive",
+                "date": "2025-01-25",
+                "time": "21:00",
+                "title": "Grande Soirée Rock",
+                "description": "Concert rock progressif avec ambiance electrique",
                 "expected_band_style": "Rock",
-                "expected_attendance": 150,
-                "payment": "300€",
+                "expected_attendance": 200,
+                "payment": "400€",
                 "num_bands_needed": 2,
                 "has_catering": True,
-                "catering_drinks": 5,
+                "catering_drinks": 6,
                 "catering_respect": True,
                 "catering_tbd": False,
                 "has_accommodation": True,
-                "accommodation_capacity": 4,
+                "accommodation_capacity": 6,
                 "accommodation_tbd": False,
                 "music_styles": ["Rock", "Progressive"],
                 "is_open": True
@@ -505,21 +505,21 @@ class JamConnexionAPITester:
                             break
                     
                     if our_slot:
-                        # Check if all critical fields are present
+                        # Check if all critical fields are present (based on corrected backend models)
                         missing_fields = []
                         expected_fields = {
-                            'time': '20:00',
-                            'title': 'Soirée Rock Progressive', 
+                            'time': '21:00',
+                            'title': 'Grande Soirée Rock', 
                             'expected_band_style': 'Rock',
-                            'expected_attendance': 150,
-                            'payment': '300€',
+                            'expected_attendance': 200,
+                            'payment': '400€',
                             'num_bands_needed': 2,
                             'has_catering': True,
-                            'catering_drinks': 5,
+                            'catering_drinks': 6,
                             'catering_respect': True,
                             'catering_tbd': False,
                             'has_accommodation': True,
-                            'accommodation_capacity': 4,
+                            'accommodation_capacity': 6,
                             'accommodation_tbd': False
                         }
                         
@@ -533,7 +533,7 @@ class JamConnexionAPITester:
                             details += f" ❌ MISSING/INCORRECT FIELDS: {', '.join(missing_fields)}"
                             success = False
                         else:
-                            details += " ✅ ALL FIELDS CORRECTLY SAVED AND RETRIEVED"
+                            details += " ✅ ALL FIELDS CORRECTLY SAVED AND RETRIEVED - BACKEND MODELS FIXED!"
                     else:
                         details += " ❌ Could not find created slot in list"
                         success = False
@@ -543,10 +543,10 @@ class JamConnexionAPITester:
             else:
                 details = f"❌ Failed to create slot: {response.status_code}, Error: {response.text[:100]}"
             
-            self.log_test("Planning Slot Complete Data Bug Fix", success, details)
+            self.log_test("Planning Slot Complete Data Storage - Backend Bug Fix", success, details)
             return success
         except Exception as e:
-            self.log_test("Planning Slot Complete Data Bug Fix", False, f"Error: {str(e)}")
+            self.log_test("Planning Slot Complete Data Storage - Backend Bug Fix", False, f"Error: {str(e)}")
             return False
 
     def test_planning_slot_musician_view_bug_fix(self):

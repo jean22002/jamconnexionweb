@@ -966,7 +966,31 @@ export default function MusicianDashboard() {
                   <DialogHeader>
                     <div className="flex items-center justify-between">
                       <DialogTitle className="font-heading">Notifications</DialogTitle>
-                      <Button variant="ghost" size="sm" onClick={markAllRead}>Tout lire</Button>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" onClick={markAllRead}>
+                          <Check className="w-4 h-4 mr-1" />
+                          Tout lire
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={async () => {
+                            if (!window.confirm("Êtes-vous sûr de vouloir effacer toutes les notifications ?")) return;
+                            try {
+                              await axios.delete(`${API}/notifications`, { headers: { Authorization: `Bearer ${token}` } });
+                              toast.success("Toutes les notifications ont été effacées");
+                              fetchNotifications();
+                            } catch (error) {
+                              console.error("Error deleting notifications:", error);
+                              toast.error("Erreur lors de la suppression");
+                            }
+                          }}
+                          className="text-red-400 hover:text-red-500"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Tout effacer
+                        </Button>
+                      </div>
                     </div>
                   </DialogHeader>
                   <div className="space-y-3 mt-4">

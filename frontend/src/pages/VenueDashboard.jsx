@@ -773,7 +773,17 @@ export default function VenueDashboard() {
         description: '',
         expectedBandStyle: '',
         expectedAttendance: '',
-        payment: ''
+        payment: '',
+        music_styles: [],
+        artist_categories: [],
+        num_bands_needed: 1,
+        has_catering: false,
+        catering_drinks: 0,
+        catering_respect: false,
+        catering_tbd: false,
+        has_accommodation: false,
+        accommodation_capacity: 0,
+        accommodation_tbd: false
       });
       fetchPlanningSlots();
       fetchEvents();

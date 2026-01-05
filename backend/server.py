@@ -1609,11 +1609,8 @@ async def join_event(event_id: str, event_type: str = "jam", current_user: dict 
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
-    # For jams, check if event is currently active
-    # For concerts, allow participation in advance
-    if event_type == "jam":
-        if not is_event_active(event["date"], event["start_time"], event.get("end_time", "23:59")):
-            raise HTTPException(status_code=400, detail="Event is not currently active")
+    # Allow participation in advance for both concerts and jams
+    # Users can register their interest before the event starts
     
     # Get musician profile
     musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})

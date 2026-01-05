@@ -1756,13 +1756,8 @@ async def get_my_participations(current_user: dict = Depends(get_current_user)):
     }, {"_id": 0}).to_list(100)
     
     return participations
-            {"$set": {"active": False, "auto_ended": True}}
-        )
-        return None
-    
-    return {
-        "id": participation["id"],
-        "event_id": participation["event_id"],
+
+# ============= CONCERT EVENTS =============
         "event_type": participation["event_type"],
         "venue_id": participation["venue_id"],
         "venue_name": participation["venue_name"],

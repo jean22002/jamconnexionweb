@@ -73,6 +73,7 @@ export default function VenueDashboard() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [showPlanningModal, setShowPlanningModal] = useState(false);
+  const [editingPlanningSlotId, setEditingPlanningSlotId] = useState(null); // Pour tracker si on édite un créneau existant
   const [bookedDates, setBookedDates] = useState([]); // Ancien système simple
   const [eventsByDate, setEventsByDate] = useState({}); // Nouveau : {date: type} où type = 'concert' ou 'jam'
   const [planningForm, setPlanningForm] = useState({
@@ -652,14 +653,19 @@ export default function VenueDashboard() {
       
       if (planningSlot) {
         // Il y a un créneau de planning, on l'affiche pour modification
+        setEditingPlanningSlotId(planningSlot.id); // Tracker qu'on édite
         setPlanningForm({
           date: planningSlot.date,
-          time: planningSlot.time,
-          title: planningSlot.title || '',
+          music_styles: planningSlot.music_styles || [],
           description: planningSlot.description || '',
-          expectedBandStyle: planningSlot.expectedBandStyle || '',
-          expectedAttendance: planningSlot.expectedAttendance || '',
-          payment: planningSlot.payment || ''
+          artist_categories: planningSlot.artist_categories || [],
+          num_bands_needed: planningSlot.num_bands_needed || 1,
+          has_catering: planningSlot.has_catering || false,
+          catering_drinks: planningSlot.catering_drinks || 0,
+          catering_respect: planningSlot.catering_respect || false,
+          catering_tbd: planningSlot.catering_tbd || false,
+          has_accommodation: planningSlot.has_accommodation || false,
+          accommodation_capacity: planningSlot.accommodation_capacity || 0
         });
         setSelectedDate(date);
         setShowPlanningModal(true);
@@ -669,6 +675,7 @@ export default function VenueDashboard() {
           toast.info("Cette date est déjà réservée");
           return;
         }
+        setEditingPlanningSlotId(null); // Pas d'édition
         setSelectedDate(date);
         setPlanningForm({
           ...planningForm,

@@ -4920,6 +4920,10 @@ class JamConnexionAPITester:
             # BUG FIX TESTS - Planning Slots Complete Data (Review Request)
             self.test_planning_slot_complete_data_bug_fix,
             self.test_planning_slot_musician_view_bug_fix,
+            # NEW BUG FIX TESTS - Titre et heure non sauvegardés (Latest Review Request)
+            self.test_planning_slot_title_time_bug_fix_creation,
+            self.test_planning_slot_title_time_bug_fix_persistence,
+            self.test_planning_slot_title_time_bug_fix_all_fields,
             self.test_notifications,
             # Event Participation Tests
             self.test_create_active_jam_event,

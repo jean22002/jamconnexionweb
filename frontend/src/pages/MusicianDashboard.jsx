@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { Slider } from "../components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { TimeSelect } from "../components/ui/time-select";
 import { ProfileImageUpload, BandImageUpload } from "../components/ui/image-upload";
 import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
 import { 

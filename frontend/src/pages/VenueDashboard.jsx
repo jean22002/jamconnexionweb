@@ -698,7 +698,15 @@ export default function VenueDashboard() {
           description: planningForm.description,
           expected_band_style: planningForm.expectedBandStyle,
           expected_attendance: parseInt(planningForm.expectedAttendance) || 0,
-          payment: planningForm.payment
+          payment: planningForm.payment,
+          num_bands_needed: planningForm.num_bands_needed || 1,
+          has_catering: planningForm.has_catering || false,
+          catering_drinks: planningForm.catering_drinks || 0,
+          catering_respect: planningForm.catering_respect || false,
+          catering_tbd: planningForm.catering_tbd || false,
+          has_accommodation: planningForm.has_accommodation || false,
+          accommodation_capacity: planningForm.accommodation_capacity || 0,
+          accommodation_tbd: planningForm.accommodation_tbd || false
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -712,7 +720,15 @@ export default function VenueDashboard() {
         description: '',
         expectedBandStyle: '',
         expectedAttendance: '',
-        payment: ''
+        payment: '',
+        num_bands_needed: 1,
+        has_catering: false,
+        catering_drinks: 0,
+        catering_respect: false,
+        catering_tbd: false,
+        has_accommodation: false,
+        accommodation_capacity: 0,
+        accommodation_tbd: false
       });
       fetchPlanningSlots();
       fetchEvents();

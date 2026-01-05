@@ -305,6 +305,7 @@ class ConcertEventResponse(BaseModel):
     description: Optional[str] = None
     bands: List[Dict[str, Any]] = []
     price: Optional[str] = None
+    participants_count: int = 0  # Nombre de participants (musiciens qui ont cliqué "Je participe")
     created_at: str
 
 # Planning/Open dates for concerts

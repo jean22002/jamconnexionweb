@@ -1572,11 +1572,22 @@ export default function VenueDashboard() {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>Date</Label>
-                          <Input type="date" value={concertForm.date} onChange={(e) => setConcertForm({ ...concertForm, date: e.target.value })} className="bg-black/20 border-white/10" />
+                          <Input 
+                            type="date" 
+                            value={concertForm.date} 
+                            onChange={(e) => setConcertForm({ ...concertForm, date: e.target.value })} 
+                            className="bg-black/20 border-white/10"
+                            onKeyDown={(e) => e.preventDefault()}
+                            style={{ caretColor: 'transparent' }}
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label>Heure</Label>
-                          <Input type="time" value={concertForm.start_time} onChange={(e) => setConcertForm({ ...concertForm, start_time: e.target.value })} className="bg-black/20 border-white/10" />
+                          <TimeSelect
+                            value={concertForm.start_time}
+                            onChange={(value) => setConcertForm({ ...concertForm, start_time: value })}
+                            placeholder="Heure du concert"
+                          />
                         </div>
                       </div>
                       <div className="space-y-2">

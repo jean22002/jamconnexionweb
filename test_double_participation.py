@@ -140,28 +140,44 @@ class DoubleParticipationTester:
             # Step 4: Verify participation is created with active: True
             print("\nStep 4: Verifying participation in database...")
             
-            # Check via API that musician has current participation
-            response = requests.get(f"{self.base_url}/musicians/me/current-participation", headers=headers_musician, timeout=10)
+            # Check via API that musician has participations
+            response = requests.get(f"{self.base_url}/musicians/me/participations", headers=headers_musician, timeout=10)
             if response.status_code != 200:
-                print(f"❌ Failed to get current participation: {response.status_code}")
+                print(f"❌ Failed to get participations: {response.status_code}")
                 return False
                 
-            current_participation = response.json()
-            if not current_participation:
-                print("❌ No current participation found after joining")
+            participations = response.json()
+            if not participations or len(participations) == 0:
+                print("❌ No participations found after joining")
                 return False
                 
-            print(f"✅ Current participation verified: {current_participation.get('event_type')} at {current_participation.get('venue_name')}")
+            # Find our concert participation
+            our_participation = None
+            for participation in participations:
+                if participation.get('event_id') == bug_concert_id:
+                    our_participation = participation
+                    break
+            
+            if not our_participation:
+                print("❌ Our concert participation not found in list")
+                return False
+                
+            print(f"✅ Participation verified: {our_participation.get('event_type')} at {our_participation.get('venue_name')}, active={our_participation.get('active')}")
             
             # Step 5: Get musician participations (simulating frontend call)
             print("\nStep 5: Getting musician participations (frontend simulation)...")
             
-            response = requests.get(f"{self.base_url}/musicians/me/current-participation", headers=headers_musician, timeout=10)
+            response = requests.get(f"{self.base_url}/musicians/me/participations", headers=headers_musician, timeout=10)
             if response.status_code == 200:
                 participation_data = response.json()
-                if participation_data and participation_data.get('event_id') == bug_concert_id:
-                    print(f"✅ Concert appears in participations: event_id={participation_data.get('event_id')}, event_type={participation_data.get('event_type')}, active=True")
-                else:
+                concert_found = False
+                for participation in participation_data:
+                    if participation.get('event_id') == bug_concert_id:
+                        concert_found = True
+                        print(f"✅ Concert appears in participations: event_id={participation.get('event_id')}, event_type={participation.get('event_type')}, active={participation.get('active')}")
+                        break
+                
+                if not concert_found:
                     print("❌ Concert does not appear in musician participations")
                     return False
             else:

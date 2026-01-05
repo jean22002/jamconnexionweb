@@ -5310,6 +5310,9 @@ class JamConnexionAPITester:
             self.test_venue_subscription_system,
             self.test_jam_events,
             self.test_concert_events,
+            # CRITICAL: Test the reported concert date issue
+            self.test_concert_date_saving_issue,
+            self.test_concert_date_database_verification,
             self.test_planning_and_applications,
             # BUG FIX TESTS - Planning Slots Complete Data (Review Request)
             self.test_planning_slot_complete_data_bug_fix,

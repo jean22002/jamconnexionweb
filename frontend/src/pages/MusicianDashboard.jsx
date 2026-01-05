@@ -852,6 +852,28 @@ export default function MusicianDashboard() {
       setLoadingVenueEvents(false);
     }
   };
+
+  const refreshVenueEvents = async () => {
+    if (!selectedVenue) return;
+    
+    try {
+      const [concertsRes, jamsRes] = await Promise.all([
+        axios.get(`${API}/venues/${selectedVenue.id}/concerts`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API}/venues/${selectedVenue.id}/jams`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+      
+      setVenueEvents({
+        concerts: concertsRes.data,
+        jams: jamsRes.data
+      });
+    } catch (error) {
+      console.error("Error refreshing venue events:", error);
+    }
+  };
   
   // Fonction pour fermer la modale et nettoyer les données
   const closeVenueEventsModal = () => {

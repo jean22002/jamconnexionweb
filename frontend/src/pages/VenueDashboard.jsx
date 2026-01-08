@@ -1443,6 +1443,30 @@ export default function VenueDashboard() {
                   </div>
                 </div>
 
+                <div className="space-y-4 border-t border-white/10 pt-4">
+                  <Label>Paramètres de messagerie</Label>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Switch 
+                        checked={formData.allow_messages_from === "everyone"} 
+                        onCheckedChange={(checked) => setFormData({ 
+                          ...formData, 
+                          allow_messages_from: checked ? "everyone" : "connected_only" 
+                        })} 
+                        disabled={!editing} 
+                      />
+                      <div>
+                        <Label className="cursor-pointer">Autoriser les messages de tous les musiciens</Label>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {formData.allow_messages_from === "everyone" 
+                            ? "✅ Tout musicien peut vous contacter par messagerie"
+                            : "🔒 Seuls les musiciens ayant joué dans votre établissement ou ayant été acceptés peuvent vous contacter"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label>Styles musicaux</Label>
                   {editing && <Input placeholder="Appuyez Entrée" onKeyPress={(e) => { if (e.key === 'Enter') { addToList('music_styles', e.target.value, formData, setFormData); e.target.value = ''; } }} className="bg-black/20 border-white/10" />}

@@ -1507,14 +1507,7 @@ export default function VenueDashboard() {
                     <div className="flex items-start gap-3">
                       <Switch 
                         checked={formData.allow_messages_from === "everyone"} 
-                        onCheckedChange={(checked) => {
-                          console.log('🔄 allow_messages_from changé:', checked ? 'everyone' : 'connected_only');
-                          setFormData(prev => ({ 
-                            ...prev, 
-                            allow_messages_from: checked ? "everyone" : "connected_only" 
-                          }));
-                        }} 
-                        disabled={!editing} 
+                        onCheckedChange={(checked) => toggleMessaging(checked)} 
                       />
                       <div>
                         <Label className="cursor-pointer">Autoriser les messages de tous les musiciens</Label>

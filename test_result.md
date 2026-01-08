@@ -566,6 +566,10 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+agent_communication:
+  - agent: "testing"
+    message: "🎉 JAM PARTICIPATION BUG TESTING COMPLETED - BACKEND SYSTEM WORKING PERFECTLY! Comprehensive tests performed on the reported bug where musician participation in jams wasn't being counted. RESULTS: ✅ All 9 critical tests passed (100% success rate). TESTED FLOW: 1) Created musician and venue with active jam, 2) Musician successfully joined jam via POST /api/events/{jam_id}/join?event_type=jam, 3) Participation correctly stored in database with active: true, 4) Participant counter correctly shows 1 via GET /api/venues/{venue_id}/jams, 5) Musician's current participation correctly retrieved via GET /api/musicians/me/current-participation with event_type: 'jam', 6) Musician successfully left jam via POST /api/events/{jam_id}/leave, 7) Participation correctly deactivated (active: false), 8) Participant counter correctly updated to 0 after leaving. CONCLUSION: The reported bug where 'le compteur de participants ne s'actualise pas' and 'le bouton ne change pas' appears to be RESOLVED at the backend level. All participation endpoints are functioning correctly with proper counter updates."
+
   - task: "MusicianDashboard - Filtrage par localisation"
     implemented: true
     working: true

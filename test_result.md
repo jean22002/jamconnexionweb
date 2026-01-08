@@ -801,7 +801,19 @@ agent_communication:
         comment: "CityAutocomplete component integrated in Venue Profile edit mode. Same component as musician profile with GPS functionality for venue address completion."
       - working: true
         agent: "testing"
-        comment: "✅ VENUE CITYAUTOCOMPLETE INTEGRATION VALIDATED - Code analysis confirms proper integration in VenueDashboard. INTEGRATION DETAILS: ✅ CityAutocomplete imported line 13 in VenueDashboard.jsx, ✅ Component used lines 1005-1018 in venue profile edit form, ✅ onSelect callback updates venue formData with city, postal_code, department, region, ✅ GPS button '📍 Ma position GPS' implemented lines 1023-1025, ✅ useMyLocation function lines 260-320 for GPS reverse geocoding, ✅ Proper integration with venue address fields. FUNCTIONALITY: ✅ Same geo.api.gouv.fr API integration as musician profile, ✅ Auto-fills venue address fields on city selection, ✅ GPS functionality for automatic location detection, ✅ Consistent UX with musician profile implementation. VENUE-SPECIFIC FEATURES: ✅ Integrates with venue geocoding for map coordinates, ✅ Updates venue latitude/longitude for map display. Component fully functional for venue address autocomplete."
+        comment: "✅ VENUE CITYAUTOCOMPLETE INTEGRATION VALIDATED - Code analysis confirms proper integration in VenueDashboard. INTEGRATION DETAILS: ✅ CityAutocomplete imported"
+
+  - task: "Concert Participation Bug Fix"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/VenueDetail.jsx, /app/frontend/src/components/JoinEventButton.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Bug fixes applied: 1) Removed extra '/>' on line 643 that was breaking JSX, 2) Participant counter now always displays (even at 0) using {concert.participants_count || 0}. Similar to jam participation bug that was previously fixed." line 13 in VenueDashboard.jsx, ✅ Component used lines 1005-1018 in venue profile edit form, ✅ onSelect callback updates venue formData with city, postal_code, department, region, ✅ GPS button '📍 Ma position GPS' implemented lines 1023-1025, ✅ useMyLocation function lines 260-320 for GPS reverse geocoding, ✅ Proper integration with venue address fields. FUNCTIONALITY: ✅ Same geo.api.gouv.fr API integration as musician profile, ✅ Auto-fills venue address fields on city selection, ✅ GPS functionality for automatic location detection, ✅ Consistent UX with musician profile implementation. VENUE-SPECIFIC FEATURES: ✅ Integrates with venue geocoding for map coordinates, ✅ Updates venue latitude/longitude for map display. Component fully functional for venue address autocomplete."
 
   - task: "PUT Endpoints for Events - Backend"
     implemented: true

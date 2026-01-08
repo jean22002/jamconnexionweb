@@ -586,6 +586,7 @@ export default function VenueDetail() {
                           token={token}
                           currentParticipation={myParticipations.find(p => p.event_id === jam.id && p.event_type === 'jam')}
                           onParticipationChange={handleParticipationChange}
+                          loadingParticipations={loadingParticipations}
                         />
                       </div>
                     )}

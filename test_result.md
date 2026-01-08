@@ -257,6 +257,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ COMPTEUR PARTICIPANTS DYNAMIQUE - FONCTIONNEL - Tests complets réussis. RÉSULTATS: ✅ Compteur initial: 0 participants, ✅ Après 1er musicien rejoint: 1 participant, ✅ Après 2ème musicien rejoint: 2 participants, ✅ Après 1er musicien quitte: 1 participant. Le système de compteur dynamique fonctionne parfaitement avec mise à jour en temps réel."
+      - working: true
+        agent: "testing"
+        comment: "🎯 BUG CRITIQUE TESTÉ - COMPTEUR PARTICIPANTS FONCTIONNE PARFAITEMENT! Tests exhaustifs du bug signalé par l'utilisateur 'Ça décompte plus rien'. RÉSULTATS DÉTAILLÉS (12/12 tests réussis - 100%): ✅ TEST 1 - Cycle complet participation: Musicien rejoint → compteur passe à 1, musicien quitte → compteur revient à 0, ✅ TEST 2 - Réactivation participation: Re-participation utilise MÊME participation_id (réactivation correcte au lieu de créer nouvelle participation), ✅ TEST 3 - Vérification MongoDB: Participation active: true lors du join, active: false lors du leave, ✅ TEST 4 - Logique comptage: API compte uniquement les participations avec active: true, ✅ TEST 5 - Plusieurs musiciens: 2 musiciens → compteur à 2, 1 quitte → compteur à 1, 2ème quitte → compteur à 0. CONCLUSION: Le bug signalé 'le compteur de participants ne s'actualise pas' est RÉSOLU. Tous les endpoints de participation fonctionnent correctement avec comptage précis. Cycle complet testé: 0→1→0→1→0 et multi-musiciens: 0→1→2→1→0."
 
   - task: "Planning Slots Complete Data Storage - Backend Bug Fix"
     implemented: true

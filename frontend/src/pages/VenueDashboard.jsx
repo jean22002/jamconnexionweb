@@ -281,27 +281,44 @@ export default function VenueDashboard() {
   };
 
   const geocodeAddress = async () => {
-    if (!formData.city) {
-      toast.error("Entrez au moins une ville");
+    // Vérifier qu'on a au moins une adresse OU un code postal
+    if (!formData.address && !formData.postal_code) {
+      toast.error("Entrez au moins une adresse ou un code postal");
       return;
     }
+    
     try {
-      const query = `${formData.address ? formData.address + ', ' : ''}${formData.postal_code ? formData.postal_code + ' ' : ''}${formData.city}, France`;
+      // Construire la requête avec toutes les données disponibles
+      const parts = [];
+      if (formData.address) parts.push(formData.address);
+      if (formData.postal_code) parts.push(formData.postal_code);
+      if (formData.city) parts.push(formData.city);
+      parts.push('France');
+      
+      const query = parts.join(', ');
+      console.log('🔍 Recherche géolocalisation:', query);
+      
       const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
       const data = await response.json();
+      
       if (data.length > 0) {
         const result = data[0];
         const lat = parseFloat(result.lat);
         const lon = parseFloat(result.lon);
         
-        // Utiliser le géocodage inversé pour obtenir département et région
+        console.log('✅ Coordonnées trouvées:', lat, lon);
+        
+        // Utiliser le géocodage inversé pour obtenir toutes les informations
         const cityData = await reverseGeocode(lat, lon);
         
         if (cityData) {
           console.log('🔍 Données géocodées:', cityData);
-          console.log('📝 Département formaté:', `${cityData.department} - ${cityData.departmentName}`);
-          console.log('📝 Région:', cityData.region);
+          console.log('📍 Ville:', cityData.city);
+          console.log('📍 Code postal:', cityData.postalCode);
+          console.log('📍 Département:', `${cityData.department} - ${cityData.departmentName}`);
+          console.log('📍 Région:', cityData.region);
           
+          // Mettre à jour tous les champs avec les données géocodées
           setFormData({ 
             ...formData, 
             latitude: lat, 
@@ -314,6 +331,7 @@ export default function VenueDashboard() {
           toast.success("📍 Adresse géolocalisée avec succès!");
         } else {
           // Si le géocodage inversé échoue, on met juste les coordonnées
+          console.warn('⚠️ Géocodage inversé échoué');
           setFormData({ 
             ...formData, 
             latitude: lat, 

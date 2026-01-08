@@ -1954,11 +1954,9 @@ export default function VenueDashboard() {
                               {concert.start_time}{concert.end_time ? ` - ${concert.end_time}` : ''}
                             </p>
                             {concert.title && <p className="text-sm font-medium mt-1">{concert.title}</p>}
-                            {concert.participants_count > 0 && (
-                              <p className="text-green-400 text-sm mt-1">
-                                👥 {concert.participants_count} participant{concert.participants_count > 1 ? 's' : ''}
-                              </p>
-                            )}
+                            <p className="text-green-400 text-sm mt-1">
+                              👥 {concert.participants_count || 0} participant{(concert.participants_count || 0) > 1 ? 's' : ''}
+                            </p>
                           </div>
                           <Button 
                             variant="ghost" 

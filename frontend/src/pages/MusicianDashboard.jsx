@@ -3009,7 +3009,7 @@ export default function MusicianDashboard() {
                 {subscriptions.map((sub) => (
                   <Link 
                     key={sub.venue_id} 
-                    to={`/venues/${sub.venue_id}`}
+                    to={`/venue/${sub.venue_id}`}
                     className="card-venue p-5 cursor-pointer hover:scale-105 transition-transform block"
                   >
                     <div className="flex items-center gap-4">

@@ -48,7 +48,7 @@ export default function JoinEventButton({
       
       // Notify parent to refresh participation status
       if (onParticipationChange) {
-        await onParticipationChange(true); // true = joining
+        await onParticipationChange(true, event.id, event.type); // true = joining
       }
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur lors de la participation");

@@ -11,7 +11,8 @@ export default function JoinEventButton({
   venueId, 
   token, 
   currentParticipation,
-  onParticipationChange 
+  onParticipationChange,
+  loadingParticipations = false
 }) {
   const [loading, setLoading] = useState(false);
   const [localParticipating, setLocalParticipating] = useState(false);

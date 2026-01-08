@@ -570,7 +570,7 @@ frontend:
 
   - task: "Messaging Restriction System (TÂCHE 1)"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 1
     priority: "high"
@@ -582,6 +582,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "❌ RESTRICTION MESSAGING PARTIELLEMENT FONCTIONNELLE - Tests effectués: ✅ Test 1 - allow_messages_from='everyone' fonctionne correctement (message envoyé avec succès), ❌ Test 2 - allow_messages_from='connected_only' ne bloque PAS les messages non connectés (statut 200 au lieu de 403 attendu), ❌ Test 3 - Impossible de tester avec candidature acceptée (erreur 403 lors de création d'application). PROBLÈME IDENTIFIÉ: La logique de restriction dans /api/messages (POST) ne fonctionne pas correctement - les messages sont autorisés même sans connexion. CAUSE PROBABLE: Erreur dans la vérification des conditions has_accepted_app ou has_participated dans le backend."
+      - working: true
+        agent: "testing"
+        comment: "🎉 RESTRICTION MESSAGING ENTIÈREMENT FONCTIONNELLE - Tests exhaustifs réussis (4/4 - 100%). RÉSULTATS DÉTAILLÉS: ✅ Test 1 - allow_messages_from='everyone': Musicien peut envoyer message avec succès, ✅ Test 2 - allow_messages_from='connected_only': Musicien correctement bloqué (403) sans connexion, ✅ Test 3 - Candidature acceptée: Musicien peut envoyer message après avoir candidature acceptée sur créneau de l'établissement, ✅ Test 4 - Isolation établissements: Musicien correctement bloqué (403) pour second établissement même avec candidature acceptée sur premier établissement. CORRECTIONS APPLIQUÉES EFFICACES: La logique de restriction fonctionne parfaitement - les corrections du main agent ont résolu les problèmes de vérification des candidatures acceptées et de participation aux événements. Système de restriction de messagerie 100% opérationnel selon spécifications."
 
   - task: "Application Management Interface (TÂCHE 2)"
     implemented: true

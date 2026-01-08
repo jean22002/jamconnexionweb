@@ -296,7 +296,9 @@ export default function VenueDetail() {
     }
   };
 
-  const handleParticipationChange = () => {
+  const handleParticipationChange = async () => {
+    // Attendre un court instant pour que le backend mette à jour le compteur
+    await new Promise(resolve => setTimeout(resolve, 500));
     fetchCurrentParticipation();
     fetchActiveEvents();
     fetchEvents(); // Rafraîchir les concerts pour mettre à jour le compteur

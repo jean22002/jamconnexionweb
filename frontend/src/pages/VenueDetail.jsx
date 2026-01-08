@@ -460,7 +460,7 @@ export default function VenueDetail() {
         {/* Tabs */}
         <Tabs defaultValue="info" className="w-full">
           <TabsList className="grid w-full grid-cols-7 bg-muted/50 rounded-full p-1 mb-6">
-            <TabsTrigger value="info" className="rounded-full">Infos</TabsTrigger>
+            <TabsTrigger value="info" className="rounded-full">Profil</TabsTrigger>
             <TabsTrigger value="jams" className="rounded-full">Boeufs ({jams.length})</TabsTrigger>
             <TabsTrigger value="concerts" className="rounded-full">Concerts ({concerts.length})</TabsTrigger>
             <TabsTrigger value="planning" className="rounded-full">Candidatures ({planningSlots.length})</TabsTrigger>

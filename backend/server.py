@@ -249,6 +249,7 @@ class VenueProfileResponse(BaseModel):
     subscription_status: Optional[str] = None
     subscribers_count: int = 0
     show_reviews: bool = True
+    allow_messages_from: str = "everyone"  # "everyone" or "connected_only"
     gallery: List[str] = []
 
 # Jam Event (Boeuf musical)

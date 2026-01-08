@@ -86,12 +86,12 @@ export default function JoinEventButton({
     return (
       <Button
         onClick={handleLeave}
-        disabled={loading}
+        disabled={loading || loadingParticipations}
         variant="outline"
         className="rounded-full gap-2 border-green-500/30 text-green-400 hover:bg-green-500/10"
         data-testid="leave-event-btn"
       >
-        {loading ? (
+        {loading || loadingParticipations ? (
           <Loader2 className="w-4 h-4 animate-spin" />
         ) : (
           <>
@@ -106,11 +106,11 @@ export default function JoinEventButton({
   return (
     <Button
       onClick={handleJoin}
-      disabled={loading}
+      disabled={loading || loadingParticipations}
       className="rounded-full gap-2 bg-green-500 hover:bg-green-600 text-white"
       data-testid="join-event-btn"
     >
-      {loading ? (
+      {loading || loadingParticipations ? (
         <Loader2 className="w-4 h-4 animate-spin" />
       ) : (
         <>

@@ -296,14 +296,34 @@ export default function VenueDetail() {
     }
   };
 
-  const handleParticipationChange = async () => {
-    console.log('🔄 handleParticipationChange appelé');
-    // Attendre que le backend mette à jour le compteur
-    await new Promise(resolve => setTimeout(resolve, 800));
+  const handleParticipationChange = async (isJoining = true) => {
+    console.log(`🔄 handleParticipationChange appelé (${isJoining ? 'JOIN' : 'LEAVE'})`);
+    
+    // Update counters optimistically IMMEDIATELY
+    if (isJoining) {
+      // Increment counters locally
+      setJams(prevJams => prevJams.map(j => 
+        j.id === activeEvents[0]?.id ? {...j, participants_count: (j.participants_count || 0) + 1} : j
+      ));
+      setConcerts(prevConcerts => prevConcerts.map(c => 
+        c.id === activeEvents[0]?.id ? {...c, participants_count: (c.participants_count || 0) + 1} : c
+      ));
+    } else {
+      // Decrement counters locally
+      setJams(prevJams => prevJams.map(j => 
+        j.id === activeEvents[0]?.id ? {...j, participants_count: Math.max(0, (j.participants_count || 0) - 1)} : j
+      ));
+      setConcerts(prevConcerts => prevConcerts.map(c => 
+        c.id === activeEvents[0]?.id ? {...c, participants_count: Math.max(0, (c.participants_count || 0) - 1)} : c
+      ));
+    }
+    
+    // Then fetch from backend to confirm and sync
+    await new Promise(resolve => setTimeout(resolve, 1000));
     console.log('⏰ Délai écoulé, rafraîchissement des données...');
     await fetchCurrentParticipation();
     await fetchActiveEvents();
-    await fetchEvents(); // Rafraîchir les concerts/bœufs pour mettre à jour le compteur
+    await fetchEvents(); // This will overwrite with real data from backend
     console.log('✅ Données rafraîchies');
   };
 

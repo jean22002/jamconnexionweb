@@ -26,6 +26,7 @@ import { useAuth } from "../context/AuthContext";
 import { useAutoGeolocation } from "../hooks/useGeolocation";
 import { toast } from "sonner";
 import JoinEventButton from "../components/JoinEventButton";
+import ParticipationBadge from "../components/ParticipationBadge";
 import SocialLinks from "../components/SocialLinks";
 import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 import { MUSIC_STYLES_LIST } from "../data/music-styles";

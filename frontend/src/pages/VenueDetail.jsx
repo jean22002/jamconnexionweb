@@ -297,11 +297,14 @@ export default function VenueDetail() {
   };
 
   const handleParticipationChange = async () => {
-    // Attendre un court instant pour que le backend mette à jour le compteur
-    await new Promise(resolve => setTimeout(resolve, 500));
-    fetchCurrentParticipation();
-    fetchActiveEvents();
-    fetchEvents(); // Rafraîchir les concerts pour mettre à jour le compteur
+    console.log('🔄 handleParticipationChange appelé');
+    // Attendre que le backend mette à jour le compteur
+    await new Promise(resolve => setTimeout(resolve, 800));
+    console.log('⏰ Délai écoulé, rafraîchissement des données...');
+    await fetchCurrentParticipation();
+    await fetchActiveEvents();
+    await fetchEvents(); // Rafraîchir les concerts/bœufs pour mettre à jour le compteur
+    console.log('✅ Données rafraîchies');
   };
 
   const submitReview = async () => {

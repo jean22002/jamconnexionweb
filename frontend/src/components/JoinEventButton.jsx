@@ -73,7 +73,7 @@ export default function JoinEventButton({
       
       // Notify parent to refresh participation status and wait for it
       if (onParticipationChange) {
-        await onParticipationChange();
+        await onParticipationChange(false); // false = leaving
       }
     } catch (error) {
       // Si la participation n'est pas trouvée, c'est que l'utilisateur a déjà quitté

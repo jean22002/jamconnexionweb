@@ -513,9 +513,12 @@ export default function VenueDashboard() {
       );
       setShowReviews(!showReviews);
       toast.success(showReviews ? "Avis masqués" : "Avis affichés publiquement");
-      fetchProfile();
+      // Ne pas appeler fetchProfile() pour éviter d'écraser formData en mode édition
+      if (!editing) {
+        fetchProfile();
+      }
     } catch (error) {
-      toast.error("Erreur lors de la mise à jour");
+      toast.error("Erreur lors de la modification");
     }
   };
 
@@ -537,7 +540,10 @@ export default function VenueDashboard() {
       
       setFormData(updatedData);
       toast.success("Équipement mis à jour");
-      fetchProfile();
+      // Ne pas appeler fetchProfile() pour éviter d'écraser formData en mode édition
+      if (!editing) {
+        fetchProfile();
+      }
     } catch (error) {
       toast.error("Erreur lors de la mise à jour");
       console.error("Toggle equipment error:", error.response?.data || error);
@@ -564,7 +570,10 @@ export default function VenueDashboard() {
       toast.success(allowEveryone 
         ? "Tous les musiciens peuvent vous contacter" 
         : "Seuls les musiciens connectés peuvent vous contacter");
-      fetchProfile();
+      // Ne pas appeler fetchProfile() pour éviter d'écraser formData en mode édition
+      if (!editing) {
+        fetchProfile();
+      }
     } catch (error) {
       toast.error("Erreur lors de la mise à jour");
       console.error("Toggle messaging error:", error.response?.data || error);

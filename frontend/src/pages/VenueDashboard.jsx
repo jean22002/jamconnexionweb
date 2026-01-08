@@ -2552,29 +2552,113 @@ export default function VenueDashboard() {
 
               {/* Applications Dialog */}
               <Dialog open={!!viewingApplications} onOpenChange={() => setViewingApplications(null)}>
-                <DialogContent className="glassmorphism border-white/10 max-w-lg max-h-[80vh] overflow-y-auto">
-                  <DialogHeader><DialogTitle>Candidatures</DialogTitle></DialogHeader>
+                <DialogContent className="glassmorphism border-white/10 max-w-2xl max-h-[80vh] overflow-y-auto">
+                  <DialogHeader><DialogTitle>Candidatures reçues</DialogTitle></DialogHeader>
                   <div className="space-y-4 mt-4">
                     {(!applications[viewingApplications] || applications[viewingApplications].length === 0) ? (
                       <p className="text-muted-foreground text-center py-4">Aucune candidature</p>
                     ) : applications[viewingApplications].map((app) => (
-                      <div key={app.id} className="p-4 border border-white/10 rounded-xl">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <p className="font-heading font-semibold">{app.band_name}</p>
-                            <p className="text-sm text-muted-foreground">{app.music_style}</p>
+                      <div key={app.id} className="p-5 border border-white/10 rounded-xl hover:border-primary/30 transition-all">
+                        <div className="flex items-start gap-4">
+                          {/* Photo du groupe ou profil */}
+                          {app.band_photo ? (
+                            <img src={app.band_photo} alt={app.band_name} className="w-16 h-16 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+                              <Music className="w-8 h-8 text-primary" />
+                            </div>
+                          )}
+                          
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h3 className="font-heading font-semibold text-lg">{app.band_name}</h3>
+                                <Link 
+                                  to={`/musician/${app.musician_id}`}
+                                  className="text-sm text-primary hover:underline flex items-center gap-1"
+                                  onClick={() => setViewingApplications(null)}
+                                >
+                                  <User className="w-3 h-3" />
+                                  Postulé par {app.musician_name}
+                                </Link>
+                              </div>
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${app.status === 'accepted' ? 'bg-green-500/20 text-green-400' : app.status === 'rejected' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                                {app.status === 'accepted' ? '✓ Accepté' : app.status === 'rejected' ? '✗ Refusé' : '⏳ En attente'}
+                              </span>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <p className="text-sm">
+                                <span className="text-muted-foreground">Style:</span>{' '}
+                                <span className="text-primary font-medium">{app.music_style}</span>
+                              </p>
+                              
+                              {app.description && (
+                                <p className="text-sm bg-black/20 p-3 rounded-lg border border-white/5">
+                                  {app.description}
+                                </p>
+                              )}
+                              
+                              {/* Contact info */}
+                              {(app.contact_email || app.contact_phone) && (
+                                <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                                  {app.contact_email && (
+                                    <a href={`mailto:${app.contact_email}`} className="hover:text-primary">
+                                      📧 {app.contact_email}
+                                    </a>
+                                  )}
+                                  {app.contact_phone && (
+                                    <a href={`tel:${app.contact_phone}`} className="hover:text-primary">
+                                      📞 {app.contact_phone}
+                                    </a>
+                                  )}
+                                </div>
+                              )}
+                              
+                              {/* Social links */}
+                              {app.links && Object.keys(app.links).length > 0 && (
+                                <div className="flex gap-2 mt-2">
+                                  {app.links.facebook && (
+                                    <a href={app.links.facebook} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors">
+                                      <Facebook className="w-4 h-4" />
+                                    </a>
+                                  )}
+                                  {app.links.instagram && (
+                                    <a href={app.links.instagram} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors">
+                                      <Instagram className="w-4 h-4" />
+                                    </a>
+                                  )}
+                                  {app.links.youtube && (
+                                    <a href={app.links.youtube} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors">
+                                      <Youtube className="w-4 h-4" />
+                                    </a>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Action buttons */}
+                            {app.status === 'pending' && (
+                              <div className="flex gap-2 mt-4">
+                                <Button 
+                                  onClick={() => handleApplication(app.id, 'accept')} 
+                                  className="flex-1 bg-green-500 hover:bg-green-600 rounded-full gap-2"
+                                >
+                                  <Check className="w-4 h-4" />
+                                  Accepter
+                                </Button>
+                                <Button 
+                                  onClick={() => handleApplication(app.id, 'reject')} 
+                                  variant="outline" 
+                                  className="flex-1 border-destructive text-destructive hover:bg-destructive/10 rounded-full gap-2"
+                                >
+                                  <X className="w-4 h-4" />
+                                  Refuser
+                                </Button>
+                              </div>
+                            )}
                           </div>
-                          <span className={`px-2 py-1 rounded-full text-xs ${app.status === 'accepted' ? 'bg-green-500/20 text-green-400' : app.status === 'rejected' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                            {app.status === 'accepted' ? 'Accepté' : app.status === 'rejected' ? 'Refusé' : 'En attente'}
-                          </span>
                         </div>
-                        {app.description && <p className="text-sm mt-2">{app.description}</p>}
-                        {app.status === 'pending' && (
-                          <div className="flex gap-2 mt-4">
-                            <Button onClick={() => handleApplication(app.id, 'accept')} className="flex-1 bg-green-500 hover:bg-green-600 rounded-full">Accepter</Button>
-                            <Button onClick={() => handleApplication(app.id, 'reject')} variant="outline" className="flex-1 border-destructive text-destructive rounded-full">Refuser</Button>
-                          </div>
-                        )}
                       </div>
                     ))}
                   </div>

@@ -624,10 +624,10 @@ export default function VenueDetail() {
                     {concert.price && <p className="text-sm text-secondary mt-2">{concert.price}</p>}
                     {concert.description && <p className="text-sm text-muted-foreground mt-2">{concert.description}</p>}
                     
-                    {/* Afficher le nombre de participants si > 0 */}
-                    {concert.participants_count > 0 && (
-                      <p className="text-sm text-green-400 mt-2">👥 {concert.participants_count} participant{concert.participants_count > 1 ? 's' : ''}</p>
-                    )}
+                    {/* Afficher le nombre de participants */}
+                    <p className="text-sm text-green-400 mt-2">
+                      👥 {concert.participants_count || 0} participant{(concert.participants_count || 0) > 1 ? 's' : ''}
+                    </p>
                     
                     {/* Bouton "Je participe" pour les musiciens */}
                     {user?.role === "musician" && (
@@ -639,7 +639,6 @@ export default function VenueDetail() {
                           currentParticipation={myParticipations.find(p => p.event_id === concert.id && p.event_type === 'concert')}
                           onParticipationChange={handleParticipationChange}
                           loadingParticipations={loadingParticipations}
-                        />
                         />
                       </div>
                     )}

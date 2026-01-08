@@ -88,6 +88,7 @@ export default function VenueDashboard() {
     payment: '',
     artist_categories: [],
     num_bands_needed: 1,
+    application_type: 'bands', // 'bands', 'solo', or 'both'
     // Catering
     has_catering: false,
     catering_drinks: 0,

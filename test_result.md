@@ -1139,6 +1139,18 @@ test_plan:
         agent: "testing"
         comment: "✅ NOUVELLE FONCTIONNALITÉ VALIDÉE PAR ANALYSE DE CODE COMPLÈTE - Le système de candidature aux créneaux ouverts avec sélection groupe/solo est entièrement fonctionnel selon toutes les spécifications. IMPLÉMENTATION CONFIRMÉE: ✅ Dropdown remplace le champ texte libre (lignes 625-637 VenueDetail.jsx), ✅ Options correctes: '-- Choisissez --', '🎤 Mon profil Solo', '🎸 [Nom du groupe]', ✅ Texte d'aide affiché (ligne 638-640), ✅ Fiche automatique du groupe/solo (lignes 644-700) avec photo, nom, styles, type, membres, ingé son, durée, description, liens sociaux, ✅ Validation backend (lignes 1910-1923 server.py) empêche candidature avec groupes non-possédés, ✅ Bouton désactivé sans sélection (ligne 717), ✅ Message supplémentaire optionnel (lignes 703-712), ✅ Fonction handleBandSelection (lignes 241-283) remplit automatiquement les données. LIMITATION TESTS UI: Tests automatisés incomplets à cause de problèmes d'authentification, mais analyse de code confirme implémentation 100% conforme aux spécifications demandées."
 
+  - task: "Event Participation - Double Participation Bug Fix"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/JoinEventButton.jsx, /app/frontend/src/pages/VenueDetail.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Bug fix applied: Added loadingParticipations state to track loading of participations. Buttons are disabled during initial loading and show spinner while participations aren't loaded. Backend already prevents double participation with 400 error. Fix prevents double participation after page refresh (F5) by ensuring button shows correct state after loading participations."
+
 agent_communication:
   - agent: "main"
     message: "Système de participation aux événements implémenté. Backend prêt avec endpoints de participation. Frontend complété avec composants JoinEventButton et ParticipationBadge. Intégrations terminées sur VenueDetail, MusicianDetail et MusicianDashboard. Nécessite test complet backend + frontend pour vérifier: 1) Récupération des événements actifs, 2) Fonctionnalité rejoindre/quitter événement, 3) Affichage du badge de participation, 4) Notifications aux amis, 5) Polling automatique du statut de participation. Un test de fichier doit être créé sous /app/backend/tests/test_event_participation.py pour tester les nouveaux endpoints."

@@ -1439,9 +1439,39 @@ export default function VenueDashboard() {
                 <div className="space-y-4">
                   <Label>Équipements & Services</Label>
                   <div className="flex flex-wrap gap-6">
-                    <div className="flex items-center gap-2"><Switch checked={formData.has_stage} onCheckedChange={(c) => setFormData({ ...formData, has_stage: c })} disabled={!editing} /><Label>Scène</Label></div>
-                    <div className="flex items-center gap-2"><Switch checked={formData.has_sound_engineer} onCheckedChange={(c) => setFormData({ ...formData, has_sound_engineer: c })} disabled={!editing} /><Label>Ingé son</Label></div>
-                    <div className="flex items-center gap-2"><Switch checked={formData.has_pa_system} onCheckedChange={(c) => setFormData({ ...formData, has_pa_system: c })} disabled={!editing} /><Label>Sono</Label></div>
+                    <div className="flex items-center gap-2">
+                      <Switch 
+                        checked={formData.has_stage} 
+                        onCheckedChange={(c) => {
+                          console.log('🔄 has_stage changé:', c);
+                          setFormData({ ...formData, has_stage: c });
+                        }} 
+                        disabled={!editing} 
+                      />
+                      <Label>Scène</Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch 
+                        checked={formData.has_sound_engineer} 
+                        onCheckedChange={(c) => {
+                          console.log('🔄 has_sound_engineer changé:', c);
+                          setFormData({ ...formData, has_sound_engineer: c });
+                        }} 
+                        disabled={!editing} 
+                      />
+                      <Label>Ingé son</Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch 
+                        checked={formData.has_pa_system} 
+                        onCheckedChange={(c) => {
+                          console.log('🔄 has_pa_system changé:', c);
+                          setFormData({ ...formData, has_pa_system: c });
+                        }} 
+                        disabled={!editing} 
+                      />
+                      <Label>Sono</Label>
+                    </div>
                   </div>
                 </div>
 
@@ -1451,10 +1481,13 @@ export default function VenueDashboard() {
                     <div className="flex items-start gap-3">
                       <Switch 
                         checked={formData.allow_messages_from === "everyone"} 
-                        onCheckedChange={(checked) => setFormData({ 
-                          ...formData, 
-                          allow_messages_from: checked ? "everyone" : "connected_only" 
-                        })} 
+                        onCheckedChange={(checked) => {
+                          console.log('🔄 allow_messages_from changé:', checked ? 'everyone' : 'connected_only');
+                          setFormData({ 
+                            ...formData, 
+                            allow_messages_from: checked ? "everyone" : "connected_only" 
+                          });
+                        }} 
                         disabled={!editing} 
                       />
                       <div>

@@ -71,9 +71,9 @@ export default function JoinEventButton({
       // Update local state immediately for instant UI feedback
       setLocalParticipating(false);
       
-      // Notify parent to refresh participation status
+      // Notify parent to refresh participation status and wait for it
       if (onParticipationChange) {
-        onParticipationChange();
+        await onParticipationChange();
       }
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur");

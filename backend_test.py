@@ -6127,7 +6127,13 @@ class JamConnexionAPITester:
             self.test_musician_dashboard_navigation,
             # NEW P1 FEATURES TESTS (Priority 1)
             self.test_bands_directory_department_filter,
-            self.test_messaging_conversation_deletion
+            self.test_messaging_conversation_deletion,
+            # NEW TESTS FOR REVIEW REQUEST - TÂCHE 1 & 2
+            self.test_messaging_restriction_everyone_allowed,
+            self.test_messaging_restriction_connected_only_blocked,
+            self.test_messaging_restriction_with_accepted_application,
+            self.test_application_management_interface_data,
+            self.test_application_accept_reject_functionality
         ]
         
         for test in tests:

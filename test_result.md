@@ -568,6 +568,36 @@ frontend:
         agent: "testing"
         comment: "🎉 BUG CORRECTION VALIDÉE - TESTS API COMPLETS RÉUSSIS! TESTS DÉTAILLÉS EFFECTUÉS: ✅ Test 1 - Création concert: Créé concert avec date '2025-08-01', start_time '19:00', title 'Test Correction Bug' via POST /api/concerts, date correctement sauvegardée et retournée, ✅ Test 2 - Récupération concerts: GET /api/venues/me/concerts retourne date '2025-08-01' correctement, ✅ Test 3 - Modification concert: PUT /api/concerts/{id} modifie date de '2025-08-01' vers '2025-08-15' avec succès, ✅ Test 4 - Persistance: Vérification que la date modifiée '2025-08-15' persiste correctement après modification. CORRECTIONS APPLIQUÉES PAR MAIN AGENT VALIDÉES: Les logs console pour déboguer et la réinitialisation de selectedEvent, selectedEventType, et isEditingEvent à null/false lors de la fermeture de modale fonctionnent. BACKEND API 100% FONCTIONNEL - Les corrections du main agent ont résolu le problème de date des concerts. Le bug signalé par l'utilisateur est maintenant corrigé."
 
+  - task: "Messaging Restriction System (TÂCHE 1)"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implémentation de la restriction de messagerie avec allow_messages_from. Logique: Si un musicien envoie un message à un établissement avec allow_messages_from = 'connected_only', vérification si le musicien a une candidature acceptée OU a participé à un événement de cet établissement."
+      - working: false
+        agent: "testing"
+        comment: "❌ RESTRICTION MESSAGING PARTIELLEMENT FONCTIONNELLE - Tests effectués: ✅ Test 1 - allow_messages_from='everyone' fonctionne correctement (message envoyé avec succès), ❌ Test 2 - allow_messages_from='connected_only' ne bloque PAS les messages non connectés (statut 200 au lieu de 403 attendu), ❌ Test 3 - Impossible de tester avec candidature acceptée (erreur 403 lors de création d'application). PROBLÈME IDENTIFIÉ: La logique de restriction dans /api/messages (POST) ne fonctionne pas correctement - les messages sont autorisés même sans connexion. CAUSE PROBABLE: Erreur dans la vérification des conditions has_accepted_app ou has_participated dans le backend."
+
+  - task: "Application Management Interface (TÂCHE 2)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Interface de gestion des candidatures améliorée pour inclure: nom du musicien (cliquable), photo du groupe/musicien, informations de contact (email, téléphone), liens sociaux (Facebook, Instagram, YouTube), boutons Accepter/Refuser."
+      - working: true
+        agent: "testing"
+        comment: "✅ INTERFACE CANDIDATURES MAJORITAIREMENT FONCTIONNELLE - Tests avec credentials test_venue_sw@example.com: ✅ Test 1 - Récupération applications réussie (1 application trouvée pour planning slot 42c310c4-9abd-4a80-b396-71871d756fb6), ❌ Champ manquant: band_photo (null), ✅ Autres champs présents: musician_name, contact_email, contact_phone, ✅ Test 2 - Fonctionnalité Accept/Reject opérationnelle (application 46e1a8a3-2210-4dfc-ae2b-e16a252c7f48 acceptée avec succès, statut changé à 'accepted'). PROBLÈME MINEUR: Le champ band_photo est null dans les données existantes, mais la structure API est correcte."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"

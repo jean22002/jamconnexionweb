@@ -81,7 +81,7 @@ export default function JoinEventButton({
         toast.info("Vous avez déjà quitté cet événement");
         setLocalParticipating(false);
         if (onParticipationChange) {
-          await onParticipationChange();
+          await onParticipationChange(false); // false = leaving
         }
       } else {
         toast.error(error.response?.data?.detail || "Erreur");

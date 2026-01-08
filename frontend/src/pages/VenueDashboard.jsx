@@ -502,6 +502,44 @@ export default function VenueDashboard() {
     }
   };
 
+  // Toggle functions pour les équipements (sauvegarde immédiate)
+  const toggleEquipment = async (field, currentValue) => {
+    try {
+      const newValue = !currentValue;
+      const updatedData = { ...formData, [field]: newValue };
+      
+      await axios.put(`${API}/venues`, updatedData, { 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+      
+      setFormData(updatedData);
+      toast.success("Équipement mis à jour");
+      fetchProfile();
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour");
+    }
+  };
+
+  // Toggle function pour la messagerie (sauvegarde immédiate)
+  const toggleMessaging = async (allowEveryone) => {
+    try {
+      const newValue = allowEveryone ? "everyone" : "connected_only";
+      const updatedData = { ...formData, allow_messages_from: newValue };
+      
+      await axios.put(`${API}/venues`, updatedData, { 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+      
+      setFormData(updatedData);
+      toast.success(allowEveryone 
+        ? "Tous les musiciens peuvent vous contacter" 
+        : "Seuls les musiciens connectés peuvent vous contacter");
+      fetchProfile();
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour");
+    }
+  };
+
   const respondToReview = async (reviewId) => {
     if (!responseText.trim()) {
       toast.error("Entrez une réponse");

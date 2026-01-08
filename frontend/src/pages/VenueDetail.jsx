@@ -133,9 +133,8 @@ export default function VenueDetail() {
     try {
       if (isSubscribed) {
         // Unsubscribe
-        await axios.post(
-          `${API}/venues/${id}/unsubscribe`,
-          {},
+        await axios.delete(
+          `${API}/venues/${id}/subscribe`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setIsSubscribed(false);

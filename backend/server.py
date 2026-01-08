@@ -218,6 +218,7 @@ class VenueProfile(BaseModel):
     music_styles: List[str] = []
     opening_hours: Optional[str] = None
     show_reviews: bool = True  # Toggle to show/hide reviews publicly
+    allow_messages_from: str = "everyone"  # "everyone" or "connected_only" (musiciens qui ont joué/été acceptés)
     gallery: List[str] = []  # Array of image URLs (max 20)
 
 class VenueProfileResponse(BaseModel):

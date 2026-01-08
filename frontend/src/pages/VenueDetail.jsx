@@ -296,26 +296,32 @@ export default function VenueDetail() {
     }
   };
 
-  const handleParticipationChange = async (isJoining = true) => {
-    console.log(`🔄 handleParticipationChange appelé (${isJoining ? 'JOIN' : 'LEAVE'})`);
+  const handleParticipationChange = async (isJoining = true, eventId = null, eventType = null) => {
+    console.log(`🔄 handleParticipationChange appelé (${isJoining ? 'JOIN' : 'LEAVE'}, event: ${eventId})`);
     
     // Update counters optimistically IMMEDIATELY
-    if (isJoining) {
-      // Increment counters locally
-      setJams(prevJams => prevJams.map(j => 
-        j.id === activeEvents[0]?.id ? {...j, participants_count: (j.participants_count || 0) + 1} : j
-      ));
-      setConcerts(prevConcerts => prevConcerts.map(c => 
-        c.id === activeEvents[0]?.id ? {...c, participants_count: (c.participants_count || 0) + 1} : c
-      ));
-    } else {
-      // Decrement counters locally
-      setJams(prevJams => prevJams.map(j => 
-        j.id === activeEvents[0]?.id ? {...j, participants_count: Math.max(0, (j.participants_count || 0) - 1)} : j
-      ));
-      setConcerts(prevConcerts => prevConcerts.map(c => 
-        c.id === activeEvents[0]?.id ? {...c, participants_count: Math.max(0, (c.participants_count || 0) - 1)} : c
-      ));
+    if (eventType === 'jam' || !eventType) {
+      if (isJoining) {
+        setJams(prevJams => prevJams.map(j => 
+          j.id === eventId ? {...j, participants_count: (j.participants_count || 0) + 1} : j
+        ));
+      } else {
+        setJams(prevJams => prevJams.map(j => 
+          j.id === eventId ? {...j, participants_count: Math.max(0, (j.participants_count || 0) - 1)} : j
+        ));
+      }
+    }
+    
+    if (eventType === 'concert' || !eventType) {
+      if (isJoining) {
+        setConcerts(prevConcerts => prevConcerts.map(c => 
+          c.id === eventId ? {...c, participants_count: (c.participants_count || 0) + 1} : c
+        ));
+      } else {
+        setConcerts(prevConcerts => prevConcerts.map(c => 
+          c.id === eventId ? {...c, participants_count: Math.max(0, (c.participants_count || 0) - 1)} : c
+        ));
+      }
     }
     
     // Then fetch from backend to confirm and sync

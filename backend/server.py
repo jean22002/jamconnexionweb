@@ -2835,14 +2835,26 @@ async def send_message(data: MessageCreate, current_user: dict = Depends(get_cur
                 raise HTTPException(status_code=403, detail="Profil musicien non trouvé")
             
             # Vérifier si le musicien a une candidature acceptée pour ce venue
-            has_accepted_app = await db.applications.find_one({
+            # Il faut joindre avec planning_slots pour filtrer par venue_id
+            applications_cursor = db.applications.find({
                 "musician_id": musician_profile["id"],
                 "status": "accepted"
             }, {"_id": 0})
             
+            has_accepted_app = False
+            async for app in applications_cursor:
+                slot = await db.planning_slots.find_one({
+                    "id": app["planning_slot_id"],
+                    "venue_id": venue_profile["id"]
+                }, {"_id": 0})
+                if slot:
+                    has_accepted_app = True
+                    break
+            
             # Vérifier si le musicien a participé à un événement de ce venue
+            # La table event_participations utilise 'musician_user_id', pas 'user_id'
             has_participated = await db.event_participations.find_one({
-                "user_id": current_user["id"],
+                "musician_user_id": current_user["id"],
                 "venue_id": venue_profile["id"],
                 "active": True
             }, {"_id": 0})

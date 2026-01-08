@@ -1480,33 +1480,21 @@ export default function VenueDashboard() {
                     <div className="flex items-center gap-2">
                       <Switch 
                         checked={formData.has_stage} 
-                        onCheckedChange={(c) => {
-                          console.log('🔄 has_stage changé:', c);
-                          setFormData(prev => ({ ...prev, has_stage: c }));
-                        }} 
-                        disabled={!editing} 
+                        onCheckedChange={() => toggleEquipment('has_stage', formData.has_stage)} 
                       />
                       <Label>Scène</Label>
                     </div>
                     <div className="flex items-center gap-2">
                       <Switch 
                         checked={formData.has_sound_engineer} 
-                        onCheckedChange={(c) => {
-                          console.log('🔄 has_sound_engineer changé:', c);
-                          setFormData(prev => ({ ...prev, has_sound_engineer: c }));
-                        }} 
-                        disabled={!editing} 
+                        onCheckedChange={() => toggleEquipment('has_sound_engineer', formData.has_sound_engineer)} 
                       />
                       <Label>Ingé son</Label>
                     </div>
                     <div className="flex items-center gap-2">
                       <Switch 
                         checked={formData.has_pa_system} 
-                        onCheckedChange={(c) => {
-                          console.log('🔄 has_pa_system changé:', c);
-                          setFormData(prev => ({ ...prev, has_pa_system: c }));
-                        }} 
-                        disabled={!editing} 
+                        onCheckedChange={() => toggleEquipment('has_pa_system', formData.has_pa_system)} 
                       />
                       <Label>Sono</Label>
                     </div>

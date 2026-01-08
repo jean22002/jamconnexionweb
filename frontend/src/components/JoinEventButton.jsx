@@ -76,7 +76,16 @@ export default function JoinEventButton({
         await onParticipationChange();
       }
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Erreur");
+      // Si la participation n'est pas trouvée, c'est que l'utilisateur a déjà quitté
+      if (error.response?.status === 404 && error.response?.data?.detail === "Participation not found") {
+        toast.info("Vous avez déjà quitté cet événement");
+        setLocalParticipating(false);
+        if (onParticipationChange) {
+          await onParticipationChange();
+        }
+      } else {
+        toast.error(error.response?.data?.detail || "Erreur");
+      }
     } finally {
       setLoading(false);
     }

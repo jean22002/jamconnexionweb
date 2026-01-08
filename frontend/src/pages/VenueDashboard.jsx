@@ -1424,7 +1424,6 @@ export default function VenueDashboard() {
                     <div className="space-y-2">
                       <Label>Département</Label>
                       <Select 
-                        key={`dept-${formData.department}`} 
                         value={formData.department} 
                         onValueChange={(value) => setFormData({ ...formData, department: value })} 
                         disabled={!editing}
@@ -1444,7 +1443,6 @@ export default function VenueDashboard() {
                     <div className="space-y-2">
                       <Label>Région</Label>
                       <Select 
-                        key={`region-${formData.region}`}
                         value={formData.region} 
                         onValueChange={(value) => setFormData({ ...formData, region: value })} 
                         disabled={!editing}

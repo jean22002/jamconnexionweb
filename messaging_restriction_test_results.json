@@ -1,34 +1,34 @@
 {
   "summary": {
     "total_tests": 4,
-    "passed_tests": 3,
-    "success_rate": 75.0,
-    "timestamp": "2026-01-08T22:04:01.024939"
+    "passed_tests": 4,
+    "success_rate": 100.0,
+    "timestamp": "2026-01-08T22:04:16.954371"
   },
   "test_results": [
     {
       "test": "Test 1 - Everyone Allowed",
       "success": true,
       "details": "\u2705 Musician can send message to venue with allow_messages_from='everyone'",
-      "timestamp": "2026-01-08T22:04:00.490753"
+      "timestamp": "2026-01-08T22:04:16.390061"
     },
     {
       "test": "Test 2 - Connected Only Blocked",
       "success": true,
       "details": "\u2705 Musician correctly blocked from sending message (403) when venue has allow_messages_from='connected_only'",
-      "timestamp": "2026-01-08T22:04:00.572750"
+      "timestamp": "2026-01-08T22:04:16.470846"
     },
     {
       "test": "Test 3 - With Accepted Application",
-      "success": false,
-      "details": "Failed to create application: 403, Error: {\"detail\":\"Vous ne pouvez postuler qu'avec vos propres groupes ou votre profil solo\"}",
-      "timestamp": "2026-01-08T22:04:00.682931"
+      "success": true,
+      "details": "\u2705 Musician can send message after having accepted application",
+      "timestamp": "2026-01-08T22:04:16.625588"
     },
     {
       "test": "Test 4 - Second Venue Isolation",
       "success": true,
       "details": "\u2705 Musician correctly blocked from messaging second venue (403) - venue isolation working",
-      "timestamp": "2026-01-08T22:04:01.024003"
+      "timestamp": "2026-01-08T22:04:16.953561"
     }
   ]
 }

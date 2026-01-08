@@ -54,11 +54,19 @@ class MessagingRestrictionTester:
             self.musician_token = musician_response.get('token')
             self.musician_user = musician_response.get('user')
             
-            # Create musician profile
+            # Create musician profile with band
             profile_data = {
                 "pseudo": "TestMusicianMsg",
                 "instruments": ["Guitar"],
-                "music_styles": ["Rock"]
+                "music_styles": ["Rock"],
+                "has_band": True,
+                "bands": [{
+                    "name": "Test Band for Messaging",
+                    "description": "Test band for messaging restrictions",
+                    "music_styles": ["Rock"],
+                    "members_count": 3,
+                    "looking_for_concerts": True
+                }]
             }
             headers = {'Authorization': f'Bearer {self.musician_token}'}
             response = requests.post(f"{self.base_url}/musicians", json=profile_data, headers=headers, timeout=10)

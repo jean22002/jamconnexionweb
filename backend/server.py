@@ -1621,7 +1621,7 @@ async def join_event(event_id: str, event_type: str = "jam", current_user: dict 
     if not musician:
         raise HTTPException(status_code=404, detail="Musician profile not found")
     
-    # Check if already participating
+    # Check if already participating (active)
     existing = await db.event_participations.find_one({
         "event_id": event_id,
         "musician_id": musician["id"],
@@ -1630,28 +1630,50 @@ async def join_event(event_id: str, event_type: str = "jam", current_user: dict 
     if existing:
         raise HTTPException(status_code=400, detail="Already participating in this event")
     
-    # Create participation record
-    participation_id = str(uuid.uuid4())
+    # Check if there's an inactive participation to reactivate
+    inactive_participation = await db.event_participations.find_one({
+        "event_id": event_id,
+        "musician_id": musician["id"],
+        "active": False
+    })
+    
     now = datetime.now(timezone.utc).isoformat()
     
-    participation_doc = {
-        "id": participation_id,
-        "event_id": event_id,
-        "event_type": event_type,
-        "venue_id": event["venue_id"],
-        "venue_name": event["venue_name"],
-        "event_date": event["date"],
-        "event_start": event.get("start_time", ""),
-        "event_end": event.get("end_time", "23:59"),
-        "musician_id": musician["id"],
-        "musician_user_id": current_user["id"],
-        "musician_pseudo": musician.get("pseudo", current_user["name"]),
-        "musician_image": musician.get("profile_image"),
-        "active": True,
-        "joined_at": now
-    }
-    
-    await db.event_participations.insert_one(participation_doc)
+    if inactive_participation:
+        # Reactivate the existing participation
+        await db.event_participations.update_one(
+            {"id": inactive_participation["id"]},
+            {
+                "$set": {
+                    "active": True,
+                    "joined_at": now,
+                    "left_at": None
+                }
+            }
+        )
+        participation_id = inactive_participation["id"]
+    else:
+        # Create a new participation record
+        participation_id = str(uuid.uuid4())
+        
+        participation_doc = {
+            "id": participation_id,
+            "event_id": event_id,
+            "event_type": event_type,
+            "venue_id": event["venue_id"],
+            "venue_name": event["venue_name"],
+            "event_date": event["date"],
+            "event_start": event.get("start_time", ""),
+            "event_end": event.get("end_time", "23:59"),
+            "musician_id": musician["id"],
+            "musician_user_id": current_user["id"],
+            "musician_pseudo": musician.get("pseudo", current_user["name"]),
+            "musician_image": musician.get("profile_image"),
+            "active": True,
+            "joined_at": now
+        }
+        
+        await db.event_participations.insert_one(participation_doc)
     
     # Notify all friends
     friendships = await db.friends.find({

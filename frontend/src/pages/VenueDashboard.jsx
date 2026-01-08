@@ -504,6 +504,12 @@ export default function VenueDashboard() {
 
   // Toggle functions pour les équipements (sauvegarde immédiate)
   const toggleEquipment = async (field, currentValue) => {
+    // Vérifier que le profil existe (avec les champs requis)
+    if (!profile || !formData.address || !formData.city) {
+      toast.error("Veuillez d'abord compléter votre profil (nom, ville, adresse)");
+      return;
+    }
+    
     try {
       const newValue = !currentValue;
       const updatedData = { ...formData, [field]: newValue };
@@ -517,11 +523,18 @@ export default function VenueDashboard() {
       fetchProfile();
     } catch (error) {
       toast.error("Erreur lors de la mise à jour");
+      console.error("Toggle equipment error:", error.response?.data || error);
     }
   };
 
   // Toggle function pour la messagerie (sauvegarde immédiate)
   const toggleMessaging = async (allowEveryone) => {
+    // Vérifier que le profil existe (avec les champs requis)
+    if (!profile || !formData.address || !formData.city) {
+      toast.error("Veuillez d'abord compléter votre profil (nom, ville, adresse)");
+      return;
+    }
+    
     try {
       const newValue = allowEveryone ? "everyone" : "connected_only";
       const updatedData = { ...formData, allow_messages_from: newValue };
@@ -537,6 +550,7 @@ export default function VenueDashboard() {
       fetchProfile();
     } catch (error) {
       toast.error("Erreur lors de la mise à jour");
+      console.error("Toggle messaging error:", error.response?.data || error);
     }
   };
 

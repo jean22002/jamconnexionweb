@@ -731,6 +731,21 @@ agent_communication:
         agent: "testing"
         comment: "✅ ALERTES DE PROXIMITÉ BACKEND - IMPLÉMENTATION VALIDÉE - Code vérifié dans /app/backend/server.py lignes 1186-1240. FONCTIONNALITÉS CONFIRMÉES: ✅ Déclenchement automatique lors de création de bœuf, ✅ Calcul de distance avec formule Haversine précise, ✅ Rayon de 50km respecté, ✅ Notifications envoyées aux établissements proches avec type 'nearby_jam_alert', ✅ Message détaillé incluant nom établissement, date, heure, distance en km, ✅ Titre: '🎵 Bœuf planifié à proximité', ✅ Intégration complète dans le système de notifications existant. BACKEND ENTIÈREMENT FONCTIONNEL selon spécifications."
 
+  - task: "Venue Profile Geolocation Bug Fix"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/VenueDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Bug signalé par l'utilisateur: Les champs département et région ne se mettent pas à jour et ne sont pas sauvegardés correctement après la géolocalisation via CityAutocomplete dans le profil établissement."
+      - working: true
+        agent: "testing"
+        comment: "🎉 BUG DE GÉOLOCALISATION RÉSOLU AVEC SUCCÈS! DIAGNOSTIC COMPLET EFFECTUÉ: ✅ Backend API fonctionnel (données correctement sauvegardées: department='11 - Aude', region='Occitanie' pour Narbonne), ✅ CityAutocomplete API geo.gouv.fr fonctionnelle (retourne codeDepartement='11', departement.nom='Aude', region.nom='Occitanie'), ❌ CAUSE RACINE IDENTIFIÉE: Clés dynamiques des Select Radix UI (key={`dept-${formData.department}`} et key={`region-${formData.region}`}) causaient une recréation des composants à chaque mise à jour de formData, empêchant l'affichage des valeurs. 🔧 CORRECTION APPLIQUÉE: Suppression des clés dynamiques des Select département et région dans VenueDashboard.jsx lignes 1427 et 1447. ✅ VALIDATION: Les Select affichent maintenant correctement les valeurs après géolocalisation, la sélection de nouvelles villes fonctionne, et la sauvegarde persiste les données. Bug entièrement résolu."
+
   - task: "Venue Registration Flow - 2-Step Process"
     implemented: true
     working: true

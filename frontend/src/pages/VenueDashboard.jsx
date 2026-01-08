@@ -1656,8 +1656,14 @@ export default function VenueDashboard() {
                       <div className="flex flex-wrap gap-2 mt-3">
                         {jam.music_styles.map((s, i) => <span key={i} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">{s}</span>)}
                       </div>
-                      {jam.has_instruments && <p className="text-sm text-secondary mt-2">Instruments sur place</p>}
-                      {jam.has_pa_system && <p className="text-sm text-secondary">Sono disponible</p>}
+                      
+                      {/* Informations complémentaires */}
+                      <div className="mt-3 space-y-1 text-sm">
+                        {jam.has_instruments && <p className="text-secondary">🎸 Instruments sur place</p>}
+                        {jam.has_pa_system && <p className="text-secondary">🔊 Sono disponible</p>}
+                        {jam.rules && <p className="text-muted-foreground mt-2"><strong>Règlement:</strong> {jam.rules}</p>}
+                        {jam.description && <p className="text-muted-foreground"><strong>Description:</strong> {jam.description.substring(0, 100)}{jam.description.length > 100 ? '...' : ''}</p>}
+                      </div>
                     </div>
                   ))}
                 </div>

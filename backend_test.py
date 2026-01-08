@@ -5665,6 +5665,307 @@ class JamConnexionAPITester:
             self.log_test("Double Participation Bug Reproduction", False, f"Error: {str(e)}")
             return False
 
+    # ============= MESSAGING RESTRICTION TESTS (TÂCHE 1) =============
+    
+    def test_messaging_restriction_everyone_allowed(self):
+        """Test TÂCHE 1: Messaging with allow_messages_from = 'everyone' (should work)"""
+        try:
+            # First, ensure venue has allow_messages_from = "everyone"
+            venue_headers = {'Authorization': f'Bearer {self.venue_token}'}
+            venue_update_data = {
+                "name": "Test Jazz Club",
+                "description": "A cozy jazz club for live music",
+                "address": "123 Music Street",
+                "city": "Paris",
+                "postal_code": "75001",
+                "latitude": 48.8566,
+                "longitude": 2.3522,
+                "allow_messages_from": "everyone"  # Allow messages from everyone
+            }
+            
+            # Update venue profile
+            requests.put(f"{self.base_url}/venues", json=venue_update_data, headers=venue_headers, timeout=10)
+            
+            # Test musician sending message to venue
+            musician_headers = {'Authorization': f'Bearer {self.musician_token}'}
+            message_data = {
+                "recipient_id": self.venue_user["id"],
+                "subject": "Test message - everyone allowed",
+                "content": "Bonjour, je souhaiterais jouer dans votre établissement."
+            }
+            
+            response = requests.post(f"{self.base_url}/messages", json=message_data, headers=musician_headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                message_response = response.json()
+                details = f"Message sent successfully to venue with 'everyone' policy, Message ID: {message_response.get('id')}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Messaging Restriction - Everyone Allowed", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Messaging Restriction - Everyone Allowed", False, f"Error: {str(e)}")
+            return False
+
+    def test_messaging_restriction_connected_only_blocked(self):
+        """Test TÂCHE 1: Messaging with allow_messages_from = 'connected_only' without connection (should fail)"""
+        try:
+            # Update venue to only allow messages from connected musicians
+            venue_headers = {'Authorization': f'Bearer {self.venue_token}'}
+            venue_update_data = {
+                "name": "Test Jazz Club",
+                "description": "A cozy jazz club for live music", 
+                "address": "123 Music Street",
+                "city": "Paris",
+                "postal_code": "75001",
+                "latitude": 48.8566,
+                "longitude": 2.3522,
+                "allow_messages_from": "connected_only"  # Only allow messages from connected musicians
+            }
+            
+            # Update venue profile
+            requests.put(f"{self.base_url}/venues", json=venue_update_data, headers=venue_headers, timeout=10)
+            
+            # Test musician (who has no connection) sending message to venue
+            musician_headers = {'Authorization': f'Bearer {self.musician_token}'}
+            message_data = {
+                "recipient_id": self.venue_user["id"],
+                "subject": "Test message - should be blocked",
+                "content": "Ce message devrait être bloqué car je n'ai pas de connexion avec ce venue."
+            }
+            
+            response = requests.post(f"{self.base_url}/messages", json=message_data, headers=musician_headers, timeout=10)
+            success = response.status_code == 403
+            
+            if success:
+                details = "Message correctly blocked - musician has no connection with venue"
+            else:
+                details = f"Unexpected status: {response.status_code}, Expected: 403. Response: {response.text[:100]}"
+            
+            self.log_test("Messaging Restriction - Connected Only Blocked", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Messaging Restriction - Connected Only Blocked", False, f"Error: {str(e)}")
+            return False
+
+    def test_messaging_restriction_with_accepted_application(self):
+        """Test TÂCHE 1: Messaging after accepted application (should work)"""
+        try:
+            # Create a planning slot for the venue
+            venue_headers = {'Authorization': f'Bearer {self.venue_token}'}
+            planning_data = {
+                "date": "2025-02-15",
+                "time": "21:00",
+                "title": "Concert Rock Test",
+                "description": "Test planning slot for messaging restriction",
+                "is_open": True,
+                "num_bands_needed": 1
+            }
+            
+            response = requests.post(f"{self.base_url}/planning", json=planning_data, headers=venue_headers, timeout=10)
+            if response.status_code == 200:
+                planning_response = response.json()
+                test_planning_slot_id = planning_response.get('id')
+                
+                # Musician applies to this planning slot
+                musician_headers = {'Authorization': f'Bearer {self.musician_token}'}
+                application_data = {
+                    "planning_slot_id": test_planning_slot_id,
+                    "band_name": "Test Rock Band",
+                    "description": "Rock band for messaging test",
+                    "music_style": "Rock",
+                    "contact_email": "test@test.com",
+                    "contact_phone": "+33123456789"
+                }
+                
+                app_response = requests.post(f"{self.base_url}/applications", json=application_data, headers=musician_headers, timeout=10)
+                if app_response.status_code == 200:
+                    app_data = app_response.json()
+                    test_application_id = app_data.get('id')
+                    
+                    # Venue accepts the application
+                    accept_response = requests.post(f"{self.base_url}/applications/{test_application_id}/accept", headers=venue_headers, timeout=10)
+                    if accept_response.status_code == 200:
+                        
+                        # Now musician should be able to send message
+                        message_data = {
+                            "recipient_id": self.venue_user["id"],
+                            "subject": "Message après candidature acceptée",
+                            "content": "Merci d'avoir accepté ma candidature! J'ai hâte de jouer chez vous."
+                        }
+                        
+                        message_response = requests.post(f"{self.base_url}/messages", json=message_data, headers=musician_headers, timeout=10)
+                        success = message_response.status_code == 200
+                        
+                        if success:
+                            msg_data = message_response.json()
+                            details = f"Message sent successfully after accepted application, Message ID: {msg_data.get('id')}"
+                        else:
+                            details = f"Message failed: {message_response.status_code}, Error: {message_response.text[:100]}"
+                    else:
+                        success = False
+                        details = f"Failed to accept application: {accept_response.status_code}"
+                else:
+                    success = False
+                    details = f"Failed to create application: {app_response.status_code}"
+            else:
+                success = False
+                details = f"Failed to create planning slot: {response.status_code}"
+            
+            self.log_test("Messaging Restriction - With Accepted Application", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Messaging Restriction - With Accepted Application", False, f"Error: {str(e)}")
+            return False
+
+    # ============= APPLICATION MANAGEMENT INTERFACE TESTS (TÂCHE 2) =============
+    
+    def test_application_management_interface_data(self):
+        """Test TÂCHE 2: Application management interface shows all required data"""
+        try:
+            # Use existing credentials from review request
+            venue_login_data = {
+                "email": "test_venue_sw@example.com",
+                "password": "password123"
+            }
+            
+            musician_login_data = {
+                "email": "rockstar@example.com", 
+                "password": "password123"
+            }
+            
+            # Login as venue
+            venue_login_response = requests.post(f"{self.base_url}/auth/login", json=venue_login_data, timeout=10)
+            if venue_login_response.status_code != 200:
+                self.log_test("Application Management Interface - Data", False, "Failed to login as test venue")
+                return False
+                
+            venue_data = venue_login_response.json()
+            test_venue_token = venue_data.get('token')
+            
+            # Login as musician
+            musician_login_response = requests.post(f"{self.base_url}/auth/login", json=musician_login_data, timeout=10)
+            if musician_login_response.status_code != 200:
+                self.log_test("Application Management Interface - Data", False, "Failed to login as test musician")
+                return False
+                
+            musician_data = musician_login_response.json()
+            test_musician_token = musician_data.get('token')
+            
+            # Get the specific planning slot and application from review request
+            planning_slot_id = "42c310c4-9abd-4a80-b396-71871d756fb6"
+            application_id = "46e1a8a3-2210-4dfc-ae2b-e16a252c7f48"
+            
+            # Test getting applications for the planning slot
+            venue_headers = {'Authorization': f'Bearer {test_venue_token}'}
+            response = requests.get(f"{self.base_url}/planning/{planning_slot_id}/applications", headers=venue_headers, timeout=10)
+            
+            success = response.status_code == 200
+            
+            if success:
+                applications = response.json()
+                details = f"Retrieved {len(applications)} applications for planning slot"
+                
+                # Check if our specific application exists and has all required fields
+                target_app = None
+                for app in applications:
+                    if app.get('id') == application_id:
+                        target_app = app
+                        break
+                
+                if target_app:
+                    # Check for all required fields mentioned in TÂCHE 2
+                    required_fields = ['musician_name', 'band_photo', 'contact_email', 'contact_phone', 'links']
+                    missing_fields = []
+                    
+                    for field in required_fields:
+                        if field not in target_app or target_app.get(field) is None:
+                            missing_fields.append(field)
+                    
+                    if missing_fields:
+                        details += f" ❌ Missing fields in application: {', '.join(missing_fields)}"
+                        success = False
+                    else:
+                        details += f" ✅ Application has all required fields: musician_name='{target_app.get('musician_name')}', contact_email='{target_app.get('contact_email')}', contact_phone='{target_app.get('contact_phone')}'"
+                        
+                        # Check if musician name is clickable (has musician_id)
+                        if target_app.get('musician_id'):
+                            details += f", musician_id='{target_app.get('musician_id')}' (clickable)"
+                        else:
+                            details += ", WARNING: no musician_id (not clickable)"
+                else:
+                    details += f" ❌ Specific application {application_id} not found"
+                    success = False
+            else:
+                details = f"Failed to get applications: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Application Management Interface - Data", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Application Management Interface - Data", False, f"Error: {str(e)}")
+            return False
+
+    def test_application_accept_reject_functionality(self):
+        """Test TÂCHE 2: Accept/Reject functionality for applications"""
+        try:
+            # Use existing credentials
+            venue_login_data = {
+                "email": "test_venue_sw@example.com",
+                "password": "password123"
+            }
+            
+            # Login as venue
+            venue_login_response = requests.post(f"{self.base_url}/auth/login", json=venue_login_data, timeout=10)
+            if venue_login_response.status_code != 200:
+                self.log_test("Application Accept/Reject Functionality", False, "Failed to login as test venue")
+                return False
+                
+            venue_data = venue_login_response.json()
+            test_venue_token = venue_data.get('token')
+            venue_headers = {'Authorization': f'Bearer {test_venue_token}'}
+            
+            # Get the specific application from review request
+            application_id = "46e1a8a3-2210-4dfc-ae2b-e16a252c7f48"
+            
+            # Test accepting the application
+            accept_response = requests.post(f"{self.base_url}/applications/{application_id}/accept", headers=venue_headers, timeout=10)
+            
+            if accept_response.status_code == 200:
+                details = "Application accepted successfully"
+                
+                # Verify the application status changed to 'accepted'
+                planning_slot_id = "42c310c4-9abd-4a80-b396-71871d756fb6"
+                apps_response = requests.get(f"{self.base_url}/planning/{planning_slot_id}/applications", headers=venue_headers, timeout=10)
+                
+                if apps_response.status_code == 200:
+                    applications = apps_response.json()
+                    target_app = None
+                    for app in applications:
+                        if app.get('id') == application_id:
+                            target_app = app
+                            break
+                    
+                    if target_app and target_app.get('status') == 'accepted':
+                        details += ", Status correctly changed to 'accepted'"
+                        success = True
+                    else:
+                        details += f", WARNING: Status not updated correctly (got: {target_app.get('status') if target_app else 'app not found'})"
+                        success = False
+                else:
+                    details += f", Failed to verify status change: {apps_response.status_code}"
+                    success = False
+            else:
+                success = False
+                details = f"Failed to accept application: {accept_response.status_code}, Error: {accept_response.text[:100]}"
+            
+            self.log_test("Application Accept/Reject Functionality", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Application Accept/Reject Functionality", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🎵 Starting Jam Connexion API Tests...")

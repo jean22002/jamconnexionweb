@@ -1422,42 +1422,28 @@ export default function VenueDashboard() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Département</Label>
-                      <Select 
-                        value={formData.department} 
-                        onValueChange={(value) => setFormData({ ...formData, department: value })} 
-                        disabled={!editing}
-                      >
-                        <SelectTrigger className="bg-black/20 border-white/10 disabled:opacity-70">
-                          <SelectValue placeholder="Sélectionnez un département" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background border-white/10 max-h-[300px]">
-                          {DEPARTEMENTS_FRANCE.map((dept) => (
-                            <SelectItem key={dept.code} value={`${dept.code} - ${dept.nom}`}>
-                              {dept.code} - {dept.nom}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label>Département (automatique)</Label>
+                      <Input 
+                        value={formData.department || ''} 
+                        readOnly
+                        placeholder="Sera rempli automatiquement"
+                        className="bg-black/20 border-white/10 opacity-70 cursor-not-allowed"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Rempli automatiquement via la sélection de ville
+                      </p>
                     </div>
                     <div className="space-y-2">
-                      <Label>Région</Label>
-                      <Select 
-                        value={formData.region} 
-                        onValueChange={(value) => setFormData({ ...formData, region: value })} 
-                        disabled={!editing}
-                      >
-                        <SelectTrigger className="bg-black/20 border-white/10 disabled:opacity-70">
-                          <SelectValue placeholder="Sélectionnez une région" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background border-white/10 max-h-[300px]">
-                          {REGIONS_FRANCE.map((region) => (
-                            <SelectItem key={region} value={region}>
-                              {region}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label>Région (automatique)</Label>
+                      <Input 
+                        value={formData.region || ''} 
+                        readOnly
+                        placeholder="Sera remplie automatiquement"
+                        className="bg-black/20 border-white/10 opacity-70 cursor-not-allowed"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Remplie automatiquement via la sélection de ville
+                      </p>
                     </div>
                   </div>
                 </div>

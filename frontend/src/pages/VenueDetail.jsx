@@ -324,13 +324,12 @@ export default function VenueDetail() {
       }
     }
     
-    // Then fetch from backend to confirm and sync
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('⏰ Délai écoulé, rafraîchissement des données...');
+    // Update participation status for the button state
     await fetchCurrentParticipation();
-    await fetchActiveEvents();
-    await fetchEvents(); // This will overwrite with real data from backend
-    console.log('✅ Données rafraîchies');
+    
+    // DON'T fetch events immediately - let the optimistic update stay
+    // The user can manually refresh if they want to see the backend confirmed value
+    console.log('✅ Mise à jour optimiste appliquée');
   };
 
   const submitReview = async () => {

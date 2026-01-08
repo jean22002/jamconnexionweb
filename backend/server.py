@@ -1690,8 +1690,19 @@ async def leave_event(event_id: str, current_user: dict = Depends(get_current_us
         {"$set": {"active": False, "left_at": datetime.now(timezone.utc).isoformat()}}
     )
     
+    # Si aucune participation active n'a été trouvée, c'est que l'utilisateur a déjà quitté
+    # On retourne quand même un succès car le résultat souhaité est atteint
     if result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="Participation not found")
+        # Vérifier si une participation inactive existe déjà
+        inactive_participation = await db.event_participations.find_one({
+            "event_id": event_id, 
+            "musician_id": musician["id"], 
+            "active": False
+        })
+        if inactive_participation:
+            return {"message": "Already left this event"}
+        else:
+            raise HTTPException(status_code=404, detail="Participation not found")
     
     return {"message": "Left event successfully"}
 

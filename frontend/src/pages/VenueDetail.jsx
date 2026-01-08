@@ -443,6 +443,7 @@ export default function VenueDetail() {
                     token={token}
                     currentParticipation={currentParticipation}
                     onParticipationChange={handleParticipationChange}
+                    loadingParticipations={loadingParticipations}
                   />
                 )}
               </div>

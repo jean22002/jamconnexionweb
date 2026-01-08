@@ -180,7 +180,8 @@ export default function VenueDashboard() {
         has_pa_system: response.data.has_pa_system || false,
         equipment: response.data.equipment || [],
         music_styles: response.data.music_styles || [],
-        opening_hours: response.data.opening_hours || ""
+        opening_hours: response.data.opening_hours || "",
+        allow_messages_from: response.data.allow_messages_from || "everyone"
       });
     } catch (error) {
       if (error.response?.status === 404) setEditing(true);

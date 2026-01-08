@@ -638,6 +638,8 @@ export default function VenueDetail() {
                           token={token}
                           currentParticipation={myParticipations.find(p => p.event_id === concert.id && p.event_type === 'concert')}
                           onParticipationChange={handleParticipationChange}
+                          loadingParticipations={loadingParticipations}
+                        />
                         />
                       </div>
                     )}

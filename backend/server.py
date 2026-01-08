@@ -2824,6 +2824,35 @@ async def send_message(data: MessageCreate, current_user: dict = Depends(get_cur
     elif current_user["role"] == "venue":
         sender_profile = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
     
+    # NOUVELLE LOGIQUE : Vérifier les restrictions de messagerie si le destinataire est un établissement
+    if recipient["role"] == "venue" and current_user["role"] == "musician":
+        venue_profile = await db.venues.find_one({"user_id": recipient["id"]}, {"_id": 0})
+        
+        if venue_profile and venue_profile.get("allow_messages_from") == "connected_only":
+            # Le venue accepte uniquement les messages des musiciens connectés (ayant joué ou été acceptés)
+            musician_profile = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+            if not musician_profile:
+                raise HTTPException(status_code=403, detail="Profil musicien non trouvé")
+            
+            # Vérifier si le musicien a une candidature acceptée pour ce venue
+            has_accepted_app = await db.applications.find_one({
+                "musician_id": musician_profile["id"],
+                "status": "accepted"
+            }, {"_id": 0})
+            
+            # Vérifier si le musicien a participé à un événement de ce venue
+            has_participated = await db.event_participations.find_one({
+                "user_id": current_user["id"],
+                "venue_id": venue_profile["id"],
+                "active": True
+            }, {"_id": 0})
+            
+            if not has_accepted_app and not has_participated:
+                raise HTTPException(
+                    status_code=403, 
+                    detail="Cet établissement accepte uniquement les messages des musiciens ayant déjà joué chez eux ou dont la candidature a été acceptée"
+                )
+    
     sender_name = sender_profile.get("pseudo" if current_user["role"] == "musician" else "name", current_user["name"]) if sender_profile else current_user["name"]
     sender_image = sender_profile.get("profile_image") if sender_profile else None
     

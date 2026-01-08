@@ -5671,6 +5671,20 @@ class JamConnexionAPITester:
         print(f"Testing against: {self.base_url}")
         print("-" * 50)
         
+        # 🚨 CRITICAL PRIORITY: Participant Counting Bug reported by user 🚨
+        print("\n" + "="*60)
+        print("🚨 CRITICAL PRIORITY: Testing Participant Counting Bug 🚨")
+        print("User reported: 'Ça décompte plus rien' - Counter not updating")
+        print("="*60)
+        
+        # Run critical bug tests first
+        self.test_participant_counting_bug_critical()
+        self.test_multiple_musicians_participation()
+        
+        print("\n" + "="*60)
+        print("📋 CONTINUING WITH STANDARD TESTS")
+        print("="*60)
+        
         # PRIORITY TEST: Concert Date Bug reported by user
         print("\n🚨 PRIORITY: Testing Concert Date Bug reported by user")
         self.test_concert_date_bug_reproduction()

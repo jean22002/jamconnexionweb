@@ -7040,6 +7040,29 @@ class JamConnexionAPITester:
             self.log_test("Multiple Musicians Participation", False, f"Error: {str(e)}")
             return False
 
+        # 🔒 MESSAGING RESTRICTION TESTS (as requested in review) 🔒
+        print("\n" + "="*60)
+        print("🔒 TESTING MESSAGING RESTRICTION FUNCTIONALITY")
+        print("Testing fixes for allow_messages_from restrictions")
+        print("="*60)
+        
+        self.test_messaging_restriction_everyone_allowed()
+        self.test_messaging_restriction_connected_only_blocked()
+        self.test_messaging_restriction_with_accepted_application()
+        self.test_messaging_restriction_second_venue_isolation()
+        
+        # Print final summary
+        print("\n" + "="*60)
+        print(f"🏁 Tests completed: {self.tests_passed}/{self.tests_run} passed")
+        print(f"📊 Success rate: {(self.tests_passed/self.tests_run)*100:.1f}%")
+        
+        if self.tests_passed == self.tests_run:
+            print("🎉 All tests passed!")
+        else:
+            print("⚠️  Some tests failed - check details above")
+            
+        return self.tests_passed == self.tests_run
+
 def main():
     tester = JamConnexionAPITester()
     success = tester.run_all_tests()

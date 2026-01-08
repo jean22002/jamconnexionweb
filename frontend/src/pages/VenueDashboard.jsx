@@ -3434,12 +3434,42 @@ export default function VenueDashboard() {
                         Enregistrer
                       </Button>
                       <Button
+                        onClick={async () => {
+                          if (!window.confirm(`Êtes-vous sûr de vouloir supprimer cet événement ?`)) return;
+                          try {
+                            if (selectedEventType === 'concert') {
+                              await axios.delete(`${API}/concerts/${selectedEvent.id}`, {
+                                headers: { Authorization: `Bearer ${token}` }
+                              });
+                              toast.success("Concert supprimé");
+                            } else if (selectedEventType === 'jam') {
+                              await axios.delete(`${API}/jams/${selectedEvent.id}`, {
+                                headers: { Authorization: `Bearer ${token}` }
+                              });
+                              toast.success("Bœuf supprimé");
+                            }
+                            setShowEventDetailsModal(false);
+                            setIsEditingEvent(false);
+                            setSelectedEvent(null);
+                            setSelectedEventType(null);
+                            fetchEvents();
+                          } catch (error) {
+                            toast.error("Erreur lors de la suppression");
+                          }
+                        }}
+                        variant="outline"
+                        className="rounded-full border-red-500/30 text-red-400 hover:bg-red-500/10"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Supprimer
+                      </Button>
+                      <Button
                         onClick={() => {
                           setIsEditingEvent(false);
                           setShowEventDetailsModal(false);
                         }}
                         variant="outline"
-                        className="flex-1 rounded-full border-white/20"
+                        className="rounded-full border-white/20"
                       >
                         Annuler
                       </Button>

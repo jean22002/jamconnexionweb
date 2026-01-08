@@ -138,7 +138,8 @@ export default function VenueDashboard() {
     address: "", city: "", department: "", region: "", postal_code: "", latitude: 0, longitude: 0,
     phone: "", website: "", facebook: "", instagram: "",
     has_stage: false, has_sound_engineer: false, has_pa_system: false,
-    equipment: [], music_styles: [], opening_hours: ""
+    equipment: [], music_styles: [], opening_hours: "",
+    allow_messages_from: "everyone" // "everyone" or "connected_only"
   });
 
   const [jamForm, setJamForm] = useState({

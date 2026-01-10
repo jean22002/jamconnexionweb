@@ -9,6 +9,7 @@ import { Switch } from "../components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { VenueImageUpload } from "../components/ui/image-upload";
 import Calendar from "../components/Calendar";
+import { CityAutocomplete } from "../components/CityAutocomplete";
 import { TimeSelect } from "../components/ui/time-select";
 import { 
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter

@@ -2749,6 +2749,30 @@ async def respond_to_review(review_id: str, data: ReviewResponseRequest, current
     )
     
     # Notify musician
+
+@api_router.delete("/reviews/{review_id}")
+async def delete_review(review_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a review (only the musician who created it can delete)"""
+    # Get the review
+    review = await db.reviews.find_one({"id": review_id}, {"_id": 0})
+    if not review:
+        raise HTTPException(status_code=404, detail="Avis non trouvé")
+    
+    # Check if current user is the musician who created the review
+    if current_user["role"] == "musician":
+        musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+        if not musician or review["musician_id"] != musician["id"]:
+            raise HTTPException(status_code=403, detail="Vous ne pouvez supprimer que vos propres avis")
+    else:
+        raise HTTPException(status_code=403, detail="Seul l'auteur de l'avis peut le supprimer")
+    
+    # Delete the review
+    result = await db.reviews.delete_one({"id": review_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Avis non trouvé")
+    
+    return {"message": "Avis supprimé avec succès"}
+
     await create_notification(
         review["musician_user_id"],
         "review_response",

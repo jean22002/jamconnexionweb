@@ -472,6 +472,13 @@ export default function VenueDashboard() {
     }
   }, [activeTab, profile]);
 
+  // Charger les avis au démarrage si on a un profil
+  useEffect(() => {
+    if (profile) {
+      fetchMyReviews();
+    }
+  }, [profile]);
+
   // Bands Management
   const fetchBands = async () => {
     setBandsLoading(true);

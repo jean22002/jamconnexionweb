@@ -3239,94 +3239,323 @@ export default function VenueDashboard() {
           </TabsContent>
 
           {/* Invoices Tab */}
-          <TabsContent value="invoices">
+          <TabsContent value="history">
             <div className="glassmorphism rounded-2xl p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="font-heading font-semibold text-xl mb-2">📄 Factures</h2>
+                  <h2 className="font-heading font-semibold text-xl mb-2">📊 Historique & Rentabilité</h2>
                   <p className="text-muted-foreground text-sm">
-                    Consultez et téléchargez vos factures d'abonnement mensuel
+                    Suivez la rentabilité de vos événements passés et analysez vos statistiques
                   </p>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                {/* Current Subscription Status */}
-                <div className="p-4 bg-muted/30 rounded-xl border border-white/10">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold mb-1">Statut de l'abonnement</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {user?.subscription_status === "active" && "✅ Actif - Abonnement mensuel"}
-                        {user?.subscription_status === "trial" && "🎁 Période d'essai"}
-                        {(!user?.subscription_status || user?.subscription_status === "inactive") && "❌ Inactif"}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-lg">29,99 €</p>
-                      <p className="text-xs text-muted-foreground">par mois</p>
-                    </div>
-                  </div>
+              {/* Filters */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-muted/30 rounded-xl">
+                <div>
+                  <Label className="text-sm mb-2 block">Période</Label>
+                  <select
+                    value={historyFilters.period}
+                    onChange={(e) => setHistoryFilters({...historyFilters, period: e.target.value})}
+                    className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white"
+                  >
+                    <option value="all">Toutes les périodes</option>
+                    <option value="month">Dernier mois</option>
+                    <option value="quarter">Dernier trimestre</option>
+                    <option value="year">Dernière année</option>
+                  </select>
                 </div>
+                
+                <div>
+                  <Label className="text-sm mb-2 block">Type d'événement</Label>
+                  <select
+                    value={historyFilters.type}
+                    onChange={(e) => setHistoryFilters({...historyFilters, type: e.target.value})}
+                    className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white"
+                  >
+                    <option value="all">Tous les événements</option>
+                    <option value="jam">Bœufs uniquement</option>
+                    <option value="concert">Concerts uniquement</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <Label className="text-sm mb-2 block">Style musical</Label>
+                  <select
+                    value={historyFilters.style}
+                    onChange={(e) => setHistoryFilters({...historyFilters, style: e.target.value})}
+                    className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white"
+                  >
+                    <option value="all">Tous les styles</option>
+                    {getAllStyles().map(style => (
+                      <option key={style} value={style}>{style}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
-                {/* Sample Invoices - In real implementation, fetch from backend */}
-                <div className="space-y-3">
-                  <h3 className="font-semibold mb-3">Historique des factures</h3>
-                  
-                  {/* Placeholder message */}
-                  <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-xl">
-                    <FileText className="w-12 h-12 mx-auto mb-4 opacity-50 text-muted-foreground" />
-                    <p className="text-muted-foreground mb-2">Aucune facture disponible</p>
-                    <p className="text-sm text-muted-foreground">
-                      Vos factures mensuelles apparaîtront ici après votre premier paiement
+              {/* Statistics Summary */}
+              {profitabilityStats && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <div className="p-4 bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-xl border border-green-500/30">
+                    <p className="text-sm text-muted-foreground mb-1">Bénéfice Total</p>
+                    <p className="text-2xl font-bold text-green-400">
+                      {profitabilityStats.global.total_profit.toLocaleString('fr-FR')} €
                     </p>
                   </div>
-
-                  {/* Example invoice structure (commented for future implementation) */}
-                  {/* 
-                  <div className="p-4 bg-card rounded-xl border border-white/10 hover:border-primary/30 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
-                          <FileText className="w-6 h-6 text-primary" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold">Facture Janvier 2025</h4>
-                          <p className="text-sm text-muted-foreground">Émise le 01/01/2025</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="font-semibold">29,99 €</p>
-                          <p className="text-xs text-green-400">✓ Payée</p>
-                        </div>
-                        <Button variant="outline" size="sm" className="rounded-full">
-                          Télécharger
-                        </Button>
-                      </div>
-                    </div>
+                  
+                  <div className="p-4 bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-xl border border-blue-500/30">
+                    <p className="text-sm text-muted-foreground mb-1">Recettes Totales</p>
+                    <p className="text-2xl font-bold text-blue-400">
+                      {profitabilityStats.global.total_revenue.toLocaleString('fr-FR')} €
+                    </p>
                   </div>
-                  */}
-                </div>
-
-                {/* Contact Support */}
-                <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-blue-400 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-sm mb-1">Besoin d'aide avec vos factures ?</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Contactez notre support à{" "}
-                        <a href="mailto:support@jamconnexion.com" className="text-primary hover:underline">
-                          support@jamconnexion.com
-                        </a>
-                      </p>
-                    </div>
+                  
+                  <div className="p-4 bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-xl border border-orange-500/30">
+                    <p className="text-sm text-muted-foreground mb-1">Dépenses Totales</p>
+                    <p className="text-2xl font-bold text-orange-400">
+                      {profitabilityStats.global.total_expenses.toLocaleString('fr-FR')} €
+                    </p>
+                  </div>
+                  
+                  <div className="p-4 bg-gradient-to-br from-purple-500/20 to-purple-600/10 rounded-xl border border-purple-500/30">
+                    <p className="text-sm text-muted-foreground mb-1">Bénéfice Moyen</p>
+                    <p className="text-2xl font-bold text-purple-400">
+                      {profitabilityStats.global.avg_profit_per_event.toLocaleString('fr-FR')} €
+                    </p>
+                    <p className="text-xs text-muted-foreground">{profitabilityStats.global.event_count} événements</p>
                   </div>
                 </div>
+              )}
+
+              {/* Statistics by Style */}
+              {profitabilityStats && Object.keys(profitabilityStats.by_style).length > 0 && (
+                <div className="mb-6 p-4 bg-muted/30 rounded-xl">
+                  <h3 className="font-semibold mb-4 flex items-center gap-2">
+                    <Music className="w-5 h-5 text-primary" />
+                    Rentabilité par style musical
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {Object.entries(profitabilityStats.by_style)
+                      .sort((a, b) => b[1].avg_profit - a[1].avg_profit)
+                      .map(([style, stats]) => (
+                        <div key={style} className="p-3 bg-black/20 rounded-lg border border-white/10">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-semibold">{style}</span>
+                            <span className="text-sm text-muted-foreground">{stats.count} événements</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <p className="text-muted-foreground">Bénéfice moyen</p>
+                              <p className={`font-semibold ${stats.avg_profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {stats.avg_profit.toLocaleString('fr-FR')} €
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Total</p>
+                              <p className={`font-semibold ${stats.profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {stats.profit.toLocaleString('fr-FR')} €
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Past Events List */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold">Événements passés ({getFilteredEvents().length})</h3>
+                </div>
+
+                {getFilteredEvents().length === 0 ? (
+                  <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-xl">
+                    <CalendarIcon className="w-12 h-12 mx-auto mb-4 opacity-50 text-muted-foreground" />
+                    <p className="text-muted-foreground mb-2">Aucun événement passé</p>
+                    <p className="text-sm text-muted-foreground">
+                      Les événements passés apparaîtront ici pour suivre leur rentabilité
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {getFilteredEvents().map((event) => (
+                      <div
+                        key={event.id}
+                        className="p-4 bg-card rounded-xl border border-white/10 hover:border-primary/30 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                event.type === 'jam' 
+                                  ? 'bg-purple-500/20 text-purple-400' 
+                                  : 'bg-blue-500/20 text-blue-400'
+                              }`}>
+                                {event.type === 'jam' ? '🎸 Bœuf' : '🎤 Concert'}
+                              </span>
+                              {event.profitability ? (
+                                <span className="px-2 py-1 rounded-full text-xs bg-green-500/20 text-green-400">
+                                  ✓ Rentabilité renseignée
+                                </span>
+                              ) : (
+                                <span className="px-2 py-1 rounded-full text-xs bg-orange-500/20 text-orange-400">
+                                  ⚠ À compléter
+                                </span>
+                              )}
+                            </div>
+                            
+                            <h4 className="font-semibold mb-1">{event.title}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              📅 {new Date(event.date).toLocaleDateString('fr-FR', { 
+                                weekday: 'long', 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric' 
+                              })} à {event.start_time}
+                            </p>
+                            
+                            {event.music_styles && event.music_styles.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {event.music_styles.map((style, idx) => (
+                                  <span key={idx} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">
+                                    {style}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+
+                            {event.profitability && (
+                              <div className="mt-3 p-3 bg-muted/30 rounded-lg">
+                                <div className="grid grid-cols-3 gap-4 text-sm">
+                                  <div>
+                                    <p className="text-muted-foreground">Recettes</p>
+                                    <p className="font-semibold text-blue-400">
+                                      +{event.profitability.revenue.toLocaleString('fr-FR')} €
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-muted-foreground">Dépenses</p>
+                                    <p className="font-semibold text-orange-400">
+                                      -{event.profitability.expenses.toLocaleString('fr-FR')} €
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-muted-foreground">Bénéfice</p>
+                                    <p className={`font-semibold ${
+                                      event.profitability.profit >= 0 ? 'text-green-400' : 'text-red-400'
+                                    }`}>
+                                      {event.profitability.profit >= 0 ? '+' : ''}{event.profitability.profit.toLocaleString('fr-FR')} €
+                                    </p>
+                                  </div>
+                                </div>
+                                {event.profitability.notes && (
+                                  <p className="text-xs text-muted-foreground mt-2 italic">
+                                    📝 {event.profitability.notes}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          <Button
+                            onClick={() => openProfitabilityEdit(event)}
+                            size="sm"
+                            variant="outline"
+                            className="rounded-full"
+                          >
+                            {event.profitability ? <Edit className="w-4 h-4 mr-1" /> : <Plus className="w-4 h-4 mr-1" />}
+                            {event.profitability ? 'Modifier' : 'Ajouter'}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </TabsContent>
+
+          {/* Dialog for editing profitability */}
+          <Dialog open={editingProfitability !== null} onOpenChange={(open) => !open && setEditingProfitability(null)}>
+            <DialogContent className="glassmorphism border-white/10 max-w-md">
+              <DialogHeader>
+                <DialogTitle>
+                  💰 Rentabilité - {editingProfitability?.title}
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-4 mt-4">
+                <div className="p-3 bg-muted/30 rounded-lg text-sm">
+                  <p className="text-muted-foreground">
+                    📅 {editingProfitability && new Date(editingProfitability.date).toLocaleDateString('fr-FR', { 
+                      weekday: 'long', 
+                      day: 'numeric', 
+                      month: 'long', 
+                      year: 'numeric' 
+                    })}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Recettes (€)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 1500"
+                    value={profitabilityForm.revenue}
+                    onChange={(e) => setProfitabilityForm({...profitabilityForm, revenue: e.target.value})}
+                    className="bg-black/20 border-white/10"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Dépenses (€)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 800"
+                    value={profitabilityForm.expenses}
+                    onChange={(e) => setProfitabilityForm({...profitabilityForm, expenses: e.target.value})}
+                    className="bg-black/20 border-white/10"
+                  />
+                </div>
+
+                {profitabilityForm.revenue && profitabilityForm.expenses && (
+                  <div className="p-3 bg-muted/30 rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-1">Bénéfice net</p>
+                    <p className={`text-2xl font-bold ${
+                      (parseFloat(profitabilityForm.revenue) - parseFloat(profitabilityForm.expenses)) >= 0 
+                        ? 'text-green-400' 
+                        : 'text-red-400'
+                    }`}>
+                      {(parseFloat(profitabilityForm.revenue) - parseFloat(profitabilityForm.expenses)).toLocaleString('fr-FR')} €
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label>Notes (optionnel)</Label>
+                  <Textarea
+                    placeholder="Ex: Bonne affluence, beau temps, groupe très apprécié..."
+                    value={profitabilityForm.notes}
+                    onChange={(e) => setProfitabilityForm({...profitabilityForm, notes: e.target.value})}
+                    className="bg-black/20 border-white/10"
+                    rows={3}
+                  />
+                </div>
+
+                <Button
+                  onClick={() => updateEventProfitability(editingProfitability.id, editingProfitability.type)}
+                  className="w-full bg-primary hover:bg-primary/90 rounded-full"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Enregistrer
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </Tabs>
 
         {/* Modale d'affichage/édition d'événement */}

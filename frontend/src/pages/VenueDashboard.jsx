@@ -156,36 +156,41 @@ export default function VenueDashboard() {
     try {
       const response = await axios.get(`${API}/venues/me`, { headers: { Authorization: `Bearer ${token}` } });
       setProfile(response.data);
-      setFormData({
-        name: response.data.name || "",
-        description: response.data.description || "",
-        profile_image: response.data.profile_image || "",
-        cover_image: response.data.cover_image || "",
-        address: response.data.address || "",
-        city: response.data.city || "",
-        department: response.data.department || "",
-        region: response.data.region || "",
-        postal_code: response.data.postal_code || "",
-        latitude: response.data.latitude || 0,
-        longitude: response.data.longitude || 0,
-        phone: response.data.phone || "",
-        website: response.data.website || "",
-        facebook: response.data.facebook || "",
-        instagram: response.data.instagram || "",
-        has_stage: response.data.has_stage || false,
-        has_sound_engineer: response.data.has_sound_engineer || false,
-        has_pa_system: response.data.has_pa_system || false,
-        equipment: response.data.equipment || [],
-        music_styles: response.data.music_styles || [],
-        opening_hours: response.data.opening_hours || "",
-        allow_messages_from: response.data.allow_messages_from || "everyone"
-      });
+      
+      // Ne mettre à jour formData QUE si on n'est PAS en mode édition
+      // Sinon on écrase les modifications de l'utilisateur
+      if (!editing) {
+        setFormData({
+          name: response.data.name || "",
+          description: response.data.description || "",
+          profile_image: response.data.profile_image || "",
+          cover_image: response.data.cover_image || "",
+          address: response.data.address || "",
+          city: response.data.city || "",
+          department: response.data.department || "",
+          region: response.data.region || "",
+          postal_code: response.data.postal_code || "",
+          latitude: response.data.latitude || 0,
+          longitude: response.data.longitude || 0,
+          phone: response.data.phone || "",
+          website: response.data.website || "",
+          facebook: response.data.facebook || "",
+          instagram: response.data.instagram || "",
+          has_stage: response.data.has_stage || false,
+          has_sound_engineer: response.data.has_sound_engineer || false,
+          has_pa_system: response.data.has_pa_system || false,
+          equipment: response.data.equipment || [],
+          music_styles: response.data.music_styles || [],
+          opening_hours: response.data.opening_hours || "",
+          allow_messages_from: response.data.allow_messages_from || "everyone"
+        });
+      }
     } catch (error) {
       if (error.response?.status === 404) setEditing(true);
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, editing]);
 
   const fetchEvents = useCallback(async () => {
     if (!profile) return;

@@ -1272,66 +1272,47 @@ export default function VenueDashboard() {
                 </div>
 
                 <div className="space-y-4">
-                  <Label className="flex items-center gap-2"><MapPin className="w-4 h-4 text-primary" /> Adresse</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Input placeholder="Adresse" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} disabled={!editing} className="md:col-span-2 bg-black/20 border-white/10 disabled:opacity-70" />
-                    <Input placeholder="Code postal" value={formData.postal_code} onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
-                  </div>
+                  <Label className="flex items-center gap-2"><MapPin className="w-4 h-4 text-primary" /> Localisation</Label>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      {editing ? (
-                        <CityAutocomplete
-                          value={formData.city}
-                          onSelect={(cityData) => {
-                            setFormData({
-                              ...formData,
-                              city: cityData.city,
-                              department: cityData.department,
-                              region: cityData.region
-                            });
-                          }}
-                          label="Ville"
-                          placeholder="Ex: Paris"
-                        />
-                      ) : (
-                        <>
-                          <Label>Ville</Label>
-                          <Input value={formData.city} disabled className="bg-black/20 border-white/10 disabled:opacity-70" />
-                        </>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Département</Label>
-                      <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })} disabled={!editing}>
-                        <SelectTrigger className="bg-black/20 border-white/10 disabled:opacity-70">
-                          <SelectValue placeholder="Sélectionnez un département" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background border-white/10 max-h-[300px]">
-                          {DEPARTEMENTS_FRANCE.map((dept) => (
-                            <SelectItem key={dept.code} value={dept.code}>
-                              {dept.code} - {dept.nom}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <Input 
+                      placeholder="Adresse" 
+                      value={formData.address || ''} 
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })} 
+                      disabled={!editing} 
+                      className="bg-black/20 border-white/10 disabled:opacity-70" 
+                    />
+                    <Input 
+                      placeholder="Ville" 
+                      value={formData.city || ''} 
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })} 
+                      disabled={!editing} 
+                      className="bg-black/20 border-white/10 disabled:opacity-70" 
+                    />
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label>Région</Label>
-                    <Select value={formData.region} onValueChange={(value) => setFormData({ ...formData, region: value })} disabled={!editing}>
-                      <SelectTrigger className="bg-black/20 border-white/10 disabled:opacity-70">
-                        <SelectValue placeholder="Sélectionnez une région" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background border-white/10 max-h-[300px]">
-                        {REGIONS_FRANCE.map((region) => (
-                          <SelectItem key={region} value={region}>
-                            {region}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Input 
+                      placeholder="Code postal" 
+                      value={formData.postal_code || ''} 
+                      onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })} 
+                      disabled={!editing} 
+                      className="bg-black/20 border-white/10 disabled:opacity-70" 
+                    />
+                    <Input 
+                      placeholder="Département (ex: 75)" 
+                      value={formData.department || ''} 
+                      onChange={(e) => setFormData({ ...formData, department: e.target.value })} 
+                      disabled={!editing} 
+                      className="bg-black/20 border-white/10 disabled:opacity-70" 
+                    />
+                    <Input 
+                      placeholder="Région (ex: Île-de-France)" 
+                      value={formData.region || ''} 
+                      onChange={(e) => setFormData({ ...formData, region: e.target.value })} 
+                      disabled={!editing} 
+                      className="bg-black/20 border-white/10 disabled:opacity-70" 
+                    />
                   </div>
                 </div>
 

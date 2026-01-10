@@ -1284,13 +1284,29 @@ export default function VenueDashboard() {
                       disabled={!editing} 
                       className="bg-black/20 border-white/10 disabled:opacity-70" 
                     />
-                    <Input 
-                      placeholder="Ville" 
-                      value={formData.city || ''} 
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })} 
-                      disabled={!editing} 
-                      className="bg-black/20 border-white/10 disabled:opacity-70" 
-                    />
+                    <div>
+                      {editing ? (
+                        <CityAutocomplete
+                          value={formData.city || ''}
+                          onSelect={(cityData) => {
+                            setFormData({
+                              ...formData,
+                              city: cityData.city,
+                              postal_code: cityData.postalCode,
+                              department: cityData.department,
+                              region: cityData.region
+                            });
+                          }}
+                          label="Ville"
+                          placeholder="Ex: Paris"
+                        />
+                      ) : (
+                        <>
+                          <Label>Ville</Label>
+                          <Input value={formData.city || ''} disabled className="bg-black/20 border-white/10 disabled:opacity-70" />
+                        </>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

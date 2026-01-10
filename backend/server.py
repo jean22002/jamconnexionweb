@@ -1983,6 +1983,263 @@ async def update_concert_event(concert_id: str, data: ConcertEvent, current_user
     updated_concert = await db.concerts.find_one({"id": concert_id}, {"_id": 0})
     return ConcertEventResponse(**updated_concert)
 
+# ============= PROFITABILITY/RENTABILITÉ =============
+
+@api_router.put("/jams/{jam_id}/profitability")
+async def update_jam_profitability(jam_id: str, data: ProfitabilityData, current_user: dict = Depends(get_current_user)):
+    """Update profitability data for a jam event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update profitability")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Vérifier que le jam appartient à ce venue
+    jam = await db.jams.find_one({"id": jam_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not jam:
+        raise HTTPException(status_code=404, detail="Jam event not found")
+    
+    # Calculer le profit
+    profit = data.revenue - data.expenses
+    now = datetime.now(timezone.utc).isoformat()
+    
+    profitability_data = {
+        "revenue": data.revenue,
+        "expenses": data.expenses,
+        "profit": profit,
+        "notes": data.notes,
+        "recorded_at": now
+    }
+    
+    # Mettre à jour le jam avec les données de rentabilité
+    await db.jams.update_one(
+        {"id": jam_id},
+        {"$set": {"profitability": profitability_data}}
+    )
+    
+    return ProfitabilityResponse(**profitability_data)
+
+@api_router.put("/concerts/{concert_id}/profitability")
+async def update_concert_profitability(concert_id: str, data: ProfitabilityData, current_user: dict = Depends(get_current_user)):
+    """Update profitability data for a concert event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update profitability")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Vérifier que le concert appartient à ce venue
+    concert = await db.concerts.find_one({"id": concert_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not concert:
+        raise HTTPException(status_code=404, detail="Concert event not found")
+    
+    # Calculer le profit
+    profit = data.revenue - data.expenses
+    now = datetime.now(timezone.utc).isoformat()
+    
+    profitability_data = {
+        "revenue": data.revenue,
+        "expenses": data.expenses,
+        "profit": profit,
+        "notes": data.notes,
+        "recorded_at": now
+    }
+    
+    # Mettre à jour le concert avec les données de rentabilité
+    await db.concerts.update_one(
+        {"id": concert_id},
+        {"$set": {"profitability": profitability_data}}
+    )
+    
+    return ProfitabilityResponse(**profitability_data)
+
+@api_router.get("/venues/me/past-events")
+async def get_past_events_with_profitability(current_user: dict = Depends(get_current_user)):
+    """Get all past events (jams + concerts) with profitability data for statistics"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can access this")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Date d'aujourd'hui
+    today = datetime.now(timezone.utc).date().isoformat()
+    
+    # Récupérer tous les jams passés
+    past_jams = await db.jams.find(
+        {"venue_id": venue["id"], "date": {"$lt": today}},
+        {"_id": 0}
+    ).sort("date", -1).to_list(500)
+    
+    # Récupérer tous les concerts passés
+    past_concerts = await db.concerts.find(
+        {"venue_id": venue["id"], "date": {"$lt": today}},
+        {"_id": 0}
+    ).sort("date", -1).to_list(500)
+    
+    # Formater les résultats
+    events = []
+    
+    for jam in past_jams:
+        events.append({
+            "id": jam["id"],
+            "type": "jam",
+            "date": jam["date"],
+            "start_time": jam.get("start_time", ""),
+            "end_time": jam.get("end_time", ""),
+            "music_styles": jam.get("music_styles", []),
+            "title": f"Bœuf - {', '.join(jam.get('music_styles', ['Musique']))}",
+            "profitability": jam.get("profitability", None)
+        })
+    
+    for concert in past_concerts:
+        events.append({
+            "id": concert["id"],
+            "type": "concert",
+            "date": concert["date"],
+            "start_time": concert.get("start_time", ""),
+            "end_time": concert.get("end_time", ""),
+            "music_styles": [],  # Les concerts n'ont pas de music_styles direct
+            "title": concert.get("title", "Concert"),
+            "bands": concert.get("bands", []),
+            "profitability": concert.get("profitability", None)
+        })
+    
+    # Trier par date (plus récent en premier)
+    events.sort(key=lambda x: x["date"], reverse=True)
+    
+    return events
+
+@api_router.get("/venues/me/profitability-stats")
+async def get_profitability_statistics(current_user: dict = Depends(get_current_user)):
+    """Get profitability statistics by style and period"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can access this")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Date d'aujourd'hui
+    today = datetime.now(timezone.utc).date().isoformat()
+    
+    # Récupérer tous les événements passés avec rentabilité
+    past_jams = await db.jams.find(
+        {"venue_id": venue["id"], "date": {"$lt": today}, "profitability": {"$exists": True}},
+        {"_id": 0}
+    ).to_list(500)
+    
+    past_concerts = await db.concerts.find(
+        {"venue_id": venue["id"], "date": {"$lt": today}, "profitability": {"$exists": True}},
+        {"_id": 0}
+    ).to_list(500)
+    
+    # Statistiques globales
+    total_revenue = 0
+    total_expenses = 0
+    total_profit = 0
+    event_count = 0
+    
+    # Statistiques par style
+    by_style = {}
+    
+    # Statistiques par période (mois)
+    by_month = {}
+    
+    # Traiter les jams
+    for jam in past_jams:
+        prof = jam.get("profitability", {})
+        if not prof:
+            continue
+            
+        event_count += 1
+        revenue = prof.get("revenue", 0)
+        expenses = prof.get("expenses", 0)
+        profit = prof.get("profit", 0)
+        
+        total_revenue += revenue
+        total_expenses += expenses
+        total_profit += profit
+        
+        # Par style
+        for style in jam.get("music_styles", ["Non spécifié"]):
+            if style not in by_style:
+                by_style[style] = {"count": 0, "revenue": 0, "expenses": 0, "profit": 0}
+            by_style[style]["count"] += 1
+            by_style[style]["revenue"] += revenue
+            by_style[style]["expenses"] += expenses
+            by_style[style]["profit"] += profit
+        
+        # Par mois
+        month_key = jam["date"][:7]  # YYYY-MM
+        if month_key not in by_month:
+            by_month[month_key] = {"count": 0, "revenue": 0, "expenses": 0, "profit": 0}
+        by_month[month_key]["count"] += 1
+        by_month[month_key]["revenue"] += revenue
+        by_month[month_key]["expenses"] += expenses
+        by_month[month_key]["profit"] += profit
+    
+    # Traiter les concerts
+    for concert in past_concerts:
+        prof = concert.get("profitability", {})
+        if not prof:
+            continue
+            
+        event_count += 1
+        revenue = prof.get("revenue", 0)
+        expenses = prof.get("expenses", 0)
+        profit = prof.get("profit", 0)
+        
+        total_revenue += revenue
+        total_expenses += expenses
+        total_profit += profit
+        
+        # Les concerts vont dans "Concert" comme style
+        style = "Concert"
+        if style not in by_style:
+            by_style[style] = {"count": 0, "revenue": 0, "expenses": 0, "profit": 0}
+        by_style[style]["count"] += 1
+        by_style[style]["revenue"] += revenue
+        by_style[style]["expenses"] += expenses
+        by_style[style]["profit"] += profit
+        
+        # Par mois
+        month_key = concert["date"][:7]  # YYYY-MM
+        if month_key not in by_month:
+            by_month[month_key] = {"count": 0, "revenue": 0, "expenses": 0, "profit": 0}
+        by_month[month_key]["count"] += 1
+        by_month[month_key]["revenue"] += revenue
+        by_month[month_key]["expenses"] += expenses
+        by_month[month_key]["profit"] += profit
+    
+    # Calculer les moyennes par style
+    for style in by_style:
+        count = by_style[style]["count"]
+        if count > 0:
+            by_style[style]["avg_profit"] = round(by_style[style]["profit"] / count, 2)
+            by_style[style]["avg_revenue"] = round(by_style[style]["revenue"] / count, 2)
+    
+    # Calculer les moyennes par mois
+    for month in by_month:
+        count = by_month[month]["count"]
+        if count > 0:
+            by_month[month]["avg_profit"] = round(by_month[month]["profit"] / count, 2)
+    
+    return {
+        "global": {
+            "total_revenue": round(total_revenue, 2),
+            "total_expenses": round(total_expenses, 2),
+            "total_profit": round(total_profit, 2),
+            "event_count": event_count,
+            "avg_profit_per_event": round(total_profit / event_count, 2) if event_count > 0 else 0
+        },
+        "by_style": by_style,
+        "by_month": by_month
+    }
+
 # ============= PLANNING SLOTS (Open dates for concerts) =============
 
 @api_router.post("/planning", response_model=PlanningSlotResponse)

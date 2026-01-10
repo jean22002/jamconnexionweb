@@ -611,7 +611,7 @@ metadata:
     implemented: true
     working: false
     file: "/app/frontend/src/pages/VenueDashboard.jsx, /app/frontend/src/components/CityAutocomplete.jsx"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -621,6 +621,9 @@ metadata:
       - working: false
         agent: "testing"
         comment: "🔧 CORRECTION JSX APPLIQUÉE + TESTS GÉOLOCALISATION OLONZAC - PROBLÈME CRITIQUE IDENTIFIÉ. CORRECTIONS EFFECTUÉES: ✅ Erreur JSX corrigée dans VenueDashboard.jsx (ligne 1308 - suppression div fermante en trop), ✅ Frontend redémarré avec succès. TESTS GÉOLOCALISATION TENTÉS: ❌ Impossible de compléter les tests automatisés Playwright à cause de problèmes de syntaxe dans les scripts (caractères spéciaux, guillemets). DIAGNOSTIC VISUEL: ✅ Page de connexion accessible, ✅ Interface utilisateur fonctionnelle. PROBLÈME PERSISTANT: Le système de géolocalisation Olonzac nécessite des tests manuels approfondis pour vérifier si le onSelect fonctionne correctement après les corrections JSX. RECOMMANDATION: Tests manuels requis pour valider le scénario exact demandé dans la review request (connexion test_venue_sw@example.com, modification profil, test Olonzac)."
+      - working: false
+        agent: "testing"
+        comment: "🚨 BUG CRITIQUE CONFIRMÉ - CITYAUTOCOMPLETE UTILISE MAUVAISES DONNÉES! Test exact du scénario demandé effectué avec test_venue_sw@example.com. RÉSULTATS DÉTAILLÉS: ✅ Toast '📍 Paris sélectionné !' s'affiche correctement (onSelect callback fonctionne), ❌ DONNÉES INCORRECTES: Après clic sur suggestion Paris, les champs se remplissent avec: Code postal=34210 (devrait être 75001), Département=34-Hérault (devrait être 75-Paris), Région=34-Hérault (devrait être Île-de-France), ❌ PERSISTANCE DES MAUVAISES DONNÉES: Les valeurs incorrectes persistent après sauvegarde et rechargement. CAUSE RACINE: Le CityAutocomplete ne synchronise PAS correctement les données de la ville sélectionnée - il semble utiliser des données d'une autre ville (probablement Olonzac CP=34210) au lieu de Paris. Le useEffect ajouté pour synchroniser query avec value ne résout pas le problème de mapping des données de géolocalisation. CORRECTION REQUISE: Investiguer la logique onSelect dans CityAutocomplete.jsx et la gestion des données cityData dans VenueDashboard.jsx."
 
 test_plan:
   current_focus:

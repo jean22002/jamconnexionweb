@@ -23,6 +23,7 @@ import { useAuth } from "../context/AuthContext";
 import SocialLinks from "../components/SocialLinks";
 import { StarRating } from "../components/StarRating";
 import { toast } from "sonner";
+import { MUSIC_STYLES_LIST } from "../data/music-styles";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 

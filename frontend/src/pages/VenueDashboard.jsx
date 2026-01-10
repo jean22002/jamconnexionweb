@@ -3432,74 +3432,80 @@ export default function VenueDashboard() {
               </div>
 
               {/* Statistics Summary */}
-              {profitabilityStats && (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                  <div className="p-4 bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-xl border border-green-500/30">
-                    <p className="text-sm text-muted-foreground mb-1">Bénéfice Total</p>
-                    <p className="text-2xl font-bold text-green-400">
-                      {profitabilityStats.global.total_profit.toLocaleString('fr-FR')} €
-                    </p>
+              {pastEvents.length > 0 && (() => {
+                const filteredStats = getFilteredStats();
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div className="p-4 bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-xl border border-green-500/30">
+                      <p className="text-sm text-muted-foreground mb-1">Bénéfice Total</p>
+                      <p className="text-2xl font-bold text-green-400">
+                        {filteredStats.global.total_profit.toLocaleString('fr-FR')} €
+                      </p>
+                    </div>
+                    
+                    <div className="p-4 bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-xl border border-blue-500/30">
+                      <p className="text-sm text-muted-foreground mb-1">Recettes Totales</p>
+                      <p className="text-2xl font-bold text-blue-400">
+                        {filteredStats.global.total_revenue.toLocaleString('fr-FR')} €
+                      </p>
+                    </div>
+                    
+                    <div className="p-4 bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-xl border border-orange-500/30">
+                      <p className="text-sm text-muted-foreground mb-1">Dépenses Totales</p>
+                      <p className="text-2xl font-bold text-orange-400">
+                        {filteredStats.global.total_expenses.toLocaleString('fr-FR')} €
+                      </p>
+                    </div>
+                    
+                    <div className="p-4 bg-gradient-to-br from-purple-500/20 to-purple-600/10 rounded-xl border border-purple-500/30">
+                      <p className="text-sm text-muted-foreground mb-1">Bénéfice Moyen</p>
+                      <p className="text-2xl font-bold text-purple-400">
+                        {filteredStats.global.avg_profit_per_event.toLocaleString('fr-FR')} €
+                      </p>
+                      <p className="text-xs text-muted-foreground">{filteredStats.global.event_count} événements</p>
+                    </div>
                   </div>
-                  
-                  <div className="p-4 bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-xl border border-blue-500/30">
-                    <p className="text-sm text-muted-foreground mb-1">Recettes Totales</p>
-                    <p className="text-2xl font-bold text-blue-400">
-                      {profitabilityStats.global.total_revenue.toLocaleString('fr-FR')} €
-                    </p>
-                  </div>
-                  
-                  <div className="p-4 bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-xl border border-orange-500/30">
-                    <p className="text-sm text-muted-foreground mb-1">Dépenses Totales</p>
-                    <p className="text-2xl font-bold text-orange-400">
-                      {profitabilityStats.global.total_expenses.toLocaleString('fr-FR')} €
-                    </p>
-                  </div>
-                  
-                  <div className="p-4 bg-gradient-to-br from-purple-500/20 to-purple-600/10 rounded-xl border border-purple-500/30">
-                    <p className="text-sm text-muted-foreground mb-1">Bénéfice Moyen</p>
-                    <p className="text-2xl font-bold text-purple-400">
-                      {profitabilityStats.global.avg_profit_per_event.toLocaleString('fr-FR')} €
-                    </p>
-                    <p className="text-xs text-muted-foreground">{profitabilityStats.global.event_count} événements</p>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Statistics by Style */}
-              {profitabilityStats && Object.keys(profitabilityStats.by_style).length > 0 && (
-                <div className="mb-6 p-4 bg-muted/30 rounded-xl">
-                  <h3 className="font-semibold mb-4 flex items-center gap-2">
-                    <Music className="w-5 h-5 text-primary" />
-                    Rentabilité par style musical
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {Object.entries(profitabilityStats.by_style)
-                      .sort((a, b) => b[1].avg_profit - a[1].avg_profit)
-                      .map(([style, stats]) => (
-                        <div key={style} className="p-3 bg-black/20 rounded-lg border border-white/10">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-semibold">{style}</span>
-                            <span className="text-sm text-muted-foreground">{stats.count} événements</span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div>
-                              <p className="text-muted-foreground">Bénéfice moyen</p>
-                              <p className={`font-semibold ${stats.avg_profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                {stats.avg_profit.toLocaleString('fr-FR')} €
-                              </p>
+              {pastEvents.length > 0 && (() => {
+                const filteredStats = getFilteredStats();
+                return Object.keys(filteredStats.by_style).length > 0 && (
+                  <div className="mb-6 p-4 bg-muted/30 rounded-xl">
+                    <h3 className="font-semibold mb-4 flex items-center gap-2">
+                      <Music className="w-5 h-5 text-primary" />
+                      Rentabilité par style musical
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {Object.entries(filteredStats.by_style)
+                        .sort((a, b) => b[1].avg_profit - a[1].avg_profit)
+                        .map(([style, stats]) => (
+                          <div key={style} className="p-3 bg-black/20 rounded-lg border border-white/10">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-semibold">{style}</span>
+                              <span className="text-sm text-muted-foreground">{stats.count} événements</span>
                             </div>
-                            <div>
-                              <p className="text-muted-foreground">Total</p>
-                              <p className={`font-semibold ${stats.profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                {stats.profit.toLocaleString('fr-FR')} €
-                              </p>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <p className="text-muted-foreground">Bénéfice moyen</p>
+                                <p className={`font-semibold ${stats.avg_profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                  {stats.avg_profit.toLocaleString('fr-FR')} €
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Total</p>
+                                <p className={`font-semibold ${stats.profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                  {stats.profit.toLocaleString('fr-FR')} €
+                                </p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Past Events List */}
               <div className="space-y-3">

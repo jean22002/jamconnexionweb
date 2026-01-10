@@ -130,9 +130,11 @@ export default function VenueDashboard() {
     notes: ''
   });
   const [historyFilters, setHistoryFilters] = useState({
-    period: 'all', // 'all', 'month', 'quarter', 'year'
+    period: 'all', // 'all', 'month', 'quarter', 'year', 'custom'
     type: 'all', // 'all', 'jam', 'concert'
-    style: 'all' // 'all' ou un style musical spécifique
+    style: 'all', // 'all' ou un style musical spécifique
+    customStartDate: '',
+    customEndDate: ''
   });
   
   // Bands

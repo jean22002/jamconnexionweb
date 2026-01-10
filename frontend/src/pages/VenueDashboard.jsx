@@ -1342,25 +1342,20 @@ export default function VenueDashboard() {
                   
                   <div className="space-y-2">
                     {editing ? (
-                      <>
-                        <CityAutocomplete
-                          value={formData.city}
-                          onSelect={(cityData) => {
-                            setFormData({
-                              ...formData,
-                              city: cityData.city,
-                              postal_code: cityData.postalCode,
-                              department: `${cityData.department} - ${cityData.departmentName}`,
-                              region: cityData.region
-                            });
-                          }}
-                          label="Ville"
-                          placeholder="Ex: Narbonne"
-                        />
-                        <Button type="button" onClick={geocodeAddress} variant="outline" className="border-white/20 w-full">
-                          <MapPin className="w-4 h-4 mr-2" /> Géolocaliser l'adresse
-                        </Button>
-                      </>
+                      <CityAutocomplete
+                        value={formData.city}
+                        onSelect={(cityData) => {
+                          setFormData({
+                            ...formData,
+                            city: cityData.city,
+                            postal_code: cityData.postalCode,
+                            department: `${cityData.department} - ${cityData.departmentName}`,
+                            region: cityData.region
+                          });
+                        }}
+                        label="Ville"
+                        placeholder="Ex: Narbonne"
+                      />
                     ) : (
                       <div className="space-y-2">
                         <Label>Ville</Label>
@@ -1375,7 +1370,7 @@ export default function VenueDashboard() {
                       <Input 
                         value={formData.department || ''} 
                         readOnly
-                        placeholder="Sera rempli automatiquement"
+                        placeholder="Rempli automatiquement"
                         className="bg-black/20 border-white/10 opacity-70 cursor-not-allowed"
                       />
                       <p className="text-xs text-muted-foreground">
@@ -1387,7 +1382,7 @@ export default function VenueDashboard() {
                       <Input 
                         value={formData.region || ''} 
                         readOnly
-                        placeholder="Sera remplie automatiquement"
+                        placeholder="Remplie automatiquement"
                         className="bg-black/20 border-white/10 opacity-70 cursor-not-allowed"
                       />
                       <p className="text-xs text-muted-foreground">

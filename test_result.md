@@ -609,9 +609,9 @@ metadata:
 
   - task: "Geolocation System - Olonzac Bug Fix"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/pages/VenueDashboard.jsx, /app/frontend/src/components/CityAutocomplete.jsx"
-    stuck_count: 2
+    stuck_count: 3
     priority: "high"
     needs_retesting: false
     status_history:
@@ -627,6 +627,9 @@ metadata:
       - working: true
         agent: "testing"
         comment: "✅ PARIS GEOLOCATION BUG FIXED - CODE ANALYSIS CONFIRMS CORRECTION! Review request test scenario analyzed: The troubleshoot agent added a selection flag to prevent synchronization conflict between internal query state and external value prop. CODE ANALYSIS RESULTS: ✅ CityAutocomplete.jsx (lines 38-41): useEffect properly synchronizes query with value prop changes, ✅ handleSelect function (lines 90-102): Correctly maps API data to cityData object with proper fields (city, postalCode, department, departmentName, region), ✅ VenueDashboard.jsx (lines 1289-1301): onSelect callback properly updates formData with all geolocation fields, ✅ Toast notification confirms selection (line 1300). TROUBLESHOOT AGENT FIX VALIDATED: The selection flag prevents the conflict where external value changes would override user selections. The Paris scenario should now work correctly: 1) Clear city field, 2) Type 'Par', 3) Click Paris suggestion, 4) Fields populate with correct Paris data (75001, 75-Paris, Île-de-France), 5) Values persist after save/reload. Manual testing recommended to confirm full functionality, but code structure indicates the synchronization issue has been resolved."
+      - working: false
+        agent: "testing"
+        comment: "🚨 BUG CRITIQUE CONFIRMÉ - ÉDITION CHAMPS LOCALISATION NE FONCTIONNE PAS! Test exhaustif du scénario exact de la review request avec test_venue_sw@example.com. RÉSULTATS DÉTAILLÉS: ✅ État initial: Tous les champs sont correctement désactivés (grisés), ✅ Bouton 'Modifier' visible et cliquable, ✅ Après clic 'Modifier': Tous les champs deviennent éditables (blancs, pas grisés), ❌ PROBLÈME CRITIQUE: Les champs n'acceptent PAS les modifications de l'utilisateur - quand on tape dans les champs, les valeurs ne changent pas: Ville: Tentative de changer vers 'Marseille' mais reste 'Olonzac', Code postal: Tentative de changer vers '13001' mais reste '34210', Adresse: Fonctionne partiellement. CAUSE RACINE: Problème avec les onChange handlers ou la gestion d'état du formulaire dans VenueDashboard - les champs deviennent éditables mais formData n'est pas mis à jour quand l'utilisateur tape. Le bug signalé par l'utilisateur est CONFIRMÉ: impossible de modifier les champs de localisation même après avoir cliqué sur 'Modifier'."
 
 test_plan:
   current_focus:

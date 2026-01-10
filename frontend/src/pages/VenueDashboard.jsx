@@ -644,7 +644,17 @@ export default function VenueDashboard() {
     }
 
     // Filter by period
-    if (historyFilters.period !== 'all') {
+    if (historyFilters.period === 'custom') {
+      // Custom date range
+      if (historyFilters.customStartDate && historyFilters.customEndDate) {
+        const startDate = new Date(historyFilters.customStartDate);
+        const endDate = new Date(historyFilters.customEndDate);
+        filtered = filtered.filter(e => {
+          const eventDate = new Date(e.date);
+          return eventDate >= startDate && eventDate <= endDate;
+        });
+      }
+    } else if (historyFilters.period !== 'all') {
       const now = new Date();
       const filterDate = new Date();
       

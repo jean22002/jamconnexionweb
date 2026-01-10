@@ -271,68 +271,7 @@ export default function VenueDashboard() {
     }
   };
 
-  // Nouvelle fonction : Utiliser le GPS pour auto-remplir l'adresse
-  const useMyLocation = async () => {
-    if (!navigator.geolocation) {
-      toast.error("La géolocalisation n'est pas supportée par votre navigateur");
-      return;
-    }
-
-    toast.info("Localisation en cours...");
-    
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        
-        // Géocodage inversé pour obtenir la ville
-        const cityData = await reverseGeocode(latitude, longitude);
-        
-        if (cityData) {
-          // Obtenir aussi l'adresse complète via Nominatim
-          try {
-            const response = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`
-            );
-            const data = await response.json();
-            
-            const address = `${data.address.house_number || ''} ${data.address.road || ''}`.trim() || data.address.suburb || '';
-            
-            setFormData({
-              ...formData,
-              address: address,
-              city: cityData.city,
-              postal_code: cityData.postalCode,
-              department: `${cityData.department} - ${cityData.departmentName}`,
-              region: cityData.region,
-              latitude: latitude,
-              longitude: longitude
-            });
-            
-            toast.success(`📍 Localisé à ${cityData.city} !`);
-          } catch (error) {
-            console.error('Error getting address:', error);
-            // Au moins on a la ville
-            setFormData({
-              ...formData,
-              city: cityData.city,
-              postal_code: cityData.postalCode,
-              department: `${cityData.department} - ${cityData.departmentName}`,
-              region: cityData.region,
-              latitude: latitude,
-              longitude: longitude
-            });
-            toast.success(`📍 Localisé à ${cityData.city} !`);
-          }
-        } else {
-          toast.error("Impossible de déterminer la ville");
-        }
-      },
-      (error) => {
-        console.error('Geolocation error:', error);
-        toast.error("Erreur d'accès à la localisation");
-      }
-    );
-  };
+ 
 
   // Broadcast Notifications
   const fetchNearbyMusiciansCount = async () => {

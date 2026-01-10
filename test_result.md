@@ -435,11 +435,11 @@ frontend:
 
   - task: "Review System - Frontend VenueDetail"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/pages/VenueDetail.jsx, /app/frontend/src/components/StarRating.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -447,6 +447,9 @@ frontend:
       - working: "NA"
         agent: "testing"
         comment: "🎯 TESTING REVIEW SYSTEM - Starting comprehensive testing of complete review system as requested. Testing scenarios: 1) Create test musician and venue accounts, 2) Musician participates in event, 3) Musician leaves review, 4) Review appears in venue dashboard, 5) Musician cannot leave second review (error message), 6) Musician deletes review, 7) After deletion, musician can leave new review. Key verification points: Delete button (🗑️) only visible to author, Error message 'Vous avez déjà laissé un avis pour cet établissement', Review deletion works and disappears everywhere, After deletion musician can leave new review."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE FOUND - REVIEW SYSTEM PARTIALLY IMPLEMENTED. COMPREHENSIVE TESTING RESULTS: ✅ Reviews tab accessible and working (shows 'Avis (0)'), ✅ Empty state message displayed correctly ('Aucun avis pour le moment', 'Soyez le premier à partager votre expérience !'), ✅ Tab structure functional with proper navigation, ❌ CRITICAL: 'Laisser un avis' button MISSING from the Reviews tab - this is the core functionality for creating reviews, ❌ Cannot test review creation, deletion, or error messages without the button, ❌ Unable to test scenarios 3-7 from review request due to missing button. ROOT CAUSE: The 'Laisser un avis' button is not rendered in the Reviews tab content. IMPACT: Users cannot create reviews, making the entire review system non-functional from user perspective. RECOMMENDATION: Main agent must add the missing 'Laisser un avis' button to the Reviews tab in VenueDetail.jsx."
 
   - task: "Review System - Frontend VenueDashboard"
     implemented: true

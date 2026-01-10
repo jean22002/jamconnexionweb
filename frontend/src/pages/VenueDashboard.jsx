@@ -1219,10 +1219,10 @@ export default function VenueDashboard() {
               <Bell className="w-4 h-4 inline mr-1" />
               Notifications
             </TabsTrigger>
+            <TabsTrigger value="history" className="rounded-full">Historique</TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-full">Avis</TabsTrigger>
             <TabsTrigger value="bands" className="rounded-full">Groupes</TabsTrigger>
             <TabsTrigger value="gallery" className="rounded-full">Galerie</TabsTrigger>
-            <TabsTrigger value="invoices" className="rounded-full">Factures</TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}

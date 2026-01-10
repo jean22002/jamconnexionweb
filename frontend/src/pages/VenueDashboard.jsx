@@ -1277,68 +1277,60 @@ export default function VenueDashboard() {
                     <Input placeholder="Code postal" value={formData.postal_code} onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
                   </div>
                   
-                  <div className="space-y-2">
-                    {editing ? (
-                      <>
-                        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-2">
-                          <p className="text-sm text-yellow-200 font-medium flex items-center gap-2">
-                            <span className="text-xl">⚠️</span>
-                            <span><strong>IMPORTANT :</strong> Après avoir tapé votre ville, vous DEVEZ CLIQUER sur une suggestion dans la liste déroulante pour que le code postal, le département et la région se remplissent automatiquement.</span>
-                          </p>
-                        </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      {editing ? (
                         <CityAutocomplete
                           value={formData.city}
                           onSelect={(cityData) => {
-                            console.log('🏙️ Ville sélectionnée:', cityData);
                             setFormData({
                               ...formData,
                               city: cityData.city,
-                              postal_code: cityData.postalCode,
-                              department: `${cityData.department} - ${cityData.departmentName}`,
+                              department: cityData.department,
                               region: cityData.region
                             });
-                            toast.success(`📍 ${cityData.city} sélectionné !`);
                           }}
                           label="Ville"
-                          placeholder="Ex: Narbonne"
+                          placeholder="Ex: Paris"
                         />
-                      </>
-                    ) : (
-                      <div className="space-y-2">
-                        <Label>Ville</Label>
-                        <Input value={formData.city} disabled className="bg-black/20 border-white/10 disabled:opacity-70" />
-                      </div>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      ℹ️ Tapez le nom de votre ville puis <strong className="text-primary">CLIQUEZ sur une suggestion</strong> dans la liste pour remplir automatiquement les champs
-                    </p>
+                      ) : (
+                        <>
+                          <Label>Ville</Label>
+                          <Input value={formData.city} disabled className="bg-black/20 border-white/10 disabled:opacity-70" />
+                        </>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Département</Label>
+                      <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })} disabled={!editing}>
+                        <SelectTrigger className="bg-black/20 border-white/10 disabled:opacity-70">
+                          <SelectValue placeholder="Sélectionnez un département" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border-white/10 max-h-[300px]">
+                          {DEPARTEMENTS_FRANCE.map((dept) => (
+                            <SelectItem key={dept.code} value={dept.code}>
+                              {dept.code} - {dept.nom}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Département (automatique)</Label>
-                      <Input 
-                        value={formData.department || ''} 
-                        readOnly
-                        placeholder="Rempli automatiquement"
-                        className="bg-black/20 border-white/10 opacity-70 cursor-not-allowed"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Rempli automatiquement via la sélection de ville
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Région (automatique)</Label>
-                      <Input 
-                        value={formData.region || ''} 
-                        readOnly
-                        placeholder="Remplie automatiquement"
-                        className="bg-black/20 border-white/10 opacity-70 cursor-not-allowed"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Remplie automatiquement via la sélection de ville
-                      </p>
-                    </div>
+                  <div className="space-y-2">
+                    <Label>Région</Label>
+                    <Select value={formData.region} onValueChange={(value) => setFormData({ ...formData, region: value })} disabled={!editing}>
+                      <SelectTrigger className="bg-black/20 border-white/10 disabled:opacity-70">
+                        <SelectValue placeholder="Sélectionnez une région" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-white/10 max-h-[300px]">
+                        {REGIONS_FRANCE.map((region) => (
+                          <SelectItem key={region} value={region}>
+                            {region}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

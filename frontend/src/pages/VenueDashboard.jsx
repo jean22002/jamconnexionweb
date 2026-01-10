@@ -1282,6 +1282,7 @@ export default function VenueDashboard() {
                       <CityAutocomplete
                         value={formData.city}
                         onSelect={(cityData) => {
+                          console.log('🏙️ Ville sélectionnée:', cityData);
                           setFormData({
                             ...formData,
                             city: cityData.city,
@@ -1289,6 +1290,7 @@ export default function VenueDashboard() {
                             department: `${cityData.department} - ${cityData.departmentName}`,
                             region: cityData.region
                           });
+                          toast.success(`📍 ${cityData.city} sélectionné !`);
                         }}
                         label="Ville"
                         placeholder="Ex: Narbonne"
@@ -1299,6 +1301,10 @@ export default function VenueDashboard() {
                         <Input value={formData.city} disabled className="bg-black/20 border-white/10 disabled:opacity-70" />
                       </div>
                     )}
+                    <p className="text-xs text-muted-foreground">
+                      ℹ️ Tapez le nom de votre ville et <strong>cliquez sur une suggestion</strong> pour remplir automatiquement département et région
+                    </p>
+                  </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

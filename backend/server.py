@@ -449,6 +449,19 @@ class ReviewResponse(BaseModel):
 class ReviewResponseRequest(BaseModel):
     response: str
 
+# Profitability/Rentabilité System
+class ProfitabilityData(BaseModel):
+    revenue: float  # Recettes
+    expenses: float  # Dépenses
+    notes: Optional[str] = None
+
+class ProfitabilityResponse(BaseModel):
+    revenue: float
+    expenses: float
+    profit: float  # Bénéfice net (calculé)
+    notes: Optional[str] = None
+    recorded_at: str
+
 # Messaging System
 class MessageCreate(BaseModel):
     recipient_id: str  # User ID of recipient

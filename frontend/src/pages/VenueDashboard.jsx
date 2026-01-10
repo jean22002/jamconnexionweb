@@ -119,6 +119,21 @@ export default function VenueDashboard() {
   const [respondingTo, setRespondingTo] = useState(null);
   const [responseText, setResponseText] = useState("");
   
+  // Profitability/History states
+  const [pastEvents, setPastEvents] = useState([]);
+  const [profitabilityStats, setProfitabilityStats] = useState(null);
+  const [editingProfitability, setEditingProfitability] = useState(null);
+  const [profitabilityForm, setProfitabilityForm] = useState({
+    revenue: '',
+    expenses: '',
+    notes: ''
+  });
+  const [historyFilters, setHistoryFilters] = useState({
+    period: 'all', // 'all', 'month', 'quarter', 'year'
+    type: 'all', // 'all', 'jam', 'concert'
+    style: 'all' // 'all' ou un style musical spécifique
+  });
+  
   // Bands
   const [bands, setBands] = useState([]);
   const [bandsLoading, setBandsLoading] = useState(false);

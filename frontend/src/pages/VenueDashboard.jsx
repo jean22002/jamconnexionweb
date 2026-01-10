@@ -7,11 +7,8 @@ import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { Switch } from "../components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { VenueImageUpload } from "../components/ui/image-upload";
 import Calendar from "../components/Calendar";
-import { CityAutocomplete } from "../components/CityAutocomplete";
-import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 import { TimeSelect } from "../components/ui/time-select";
 import { 
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter

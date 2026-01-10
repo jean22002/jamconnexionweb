@@ -679,6 +679,96 @@ export default function VenueDashboard() {
     return filtered;
   };
 
+  // Calculate filtered statistics based on current filters
+  const getFilteredStats = () => {
+    const filtered = getFilteredEvents();
+    
+    // Initialize stats
+    let totalRevenue = 0;
+    let totalExpenses = 0;
+    let totalProfit = 0;
+    let eventCount = 0;
+    const byStyle = {};
+    const byMonth = {};
+    
+    // Calculate stats from filtered events
+    filtered.forEach(event => {
+      const prof = event.profitability;
+      if (!prof) return;
+      
+      eventCount++;
+      const revenue = prof.revenue || 0;
+      const expenses = prof.expenses || 0;
+      const profit = prof.profit || 0;
+      
+      totalRevenue += revenue;
+      totalExpenses += expenses;
+      totalProfit += profit;
+      
+      // By style
+      const styles = event.music_styles || [];
+      if (styles.length === 0) {
+        // For concerts without music_styles, use "Concert" as the style
+        const style = event.type === 'concert' ? 'Concert' : 'Non spécifié';
+        if (!byStyle[style]) {
+          byStyle[style] = { count: 0, revenue: 0, expenses: 0, profit: 0 };
+        }
+        byStyle[style].count++;
+        byStyle[style].revenue += revenue;
+        byStyle[style].expenses += expenses;
+        byStyle[style].profit += profit;
+      } else {
+        styles.forEach(style => {
+          if (!byStyle[style]) {
+            byStyle[style] = { count: 0, revenue: 0, expenses: 0, profit: 0 };
+          }
+          byStyle[style].count++;
+          byStyle[style].revenue += revenue;
+          byStyle[style].expenses += expenses;
+          byStyle[style].profit += profit;
+        });
+      }
+      
+      // By month
+      const monthKey = event.date.substring(0, 7); // YYYY-MM
+      if (!byMonth[monthKey]) {
+        byMonth[monthKey] = { count: 0, revenue: 0, expenses: 0, profit: 0 };
+      }
+      byMonth[monthKey].count++;
+      byMonth[monthKey].revenue += revenue;
+      byMonth[monthKey].expenses += expenses;
+      byMonth[monthKey].profit += profit;
+    });
+    
+    // Calculate averages
+    Object.keys(byStyle).forEach(style => {
+      const count = byStyle[style].count;
+      if (count > 0) {
+        byStyle[style].avg_profit = parseFloat((byStyle[style].profit / count).toFixed(2));
+        byStyle[style].avg_revenue = parseFloat((byStyle[style].revenue / count).toFixed(2));
+      }
+    });
+    
+    Object.keys(byMonth).forEach(month => {
+      const count = byMonth[month].count;
+      if (count > 0) {
+        byMonth[month].avg_profit = parseFloat((byMonth[month].profit / count).toFixed(2));
+      }
+    });
+    
+    return {
+      global: {
+        total_revenue: parseFloat(totalRevenue.toFixed(2)),
+        total_expenses: parseFloat(totalExpenses.toFixed(2)),
+        total_profit: parseFloat(totalProfit.toFixed(2)),
+        event_count: eventCount,
+        avg_profit_per_event: eventCount > 0 ? parseFloat((totalProfit / eventCount).toFixed(2)) : 0
+      },
+      by_style: byStyle,
+      by_month: byMonth
+    };
+  };
+
   // Get all unique styles from past events for filter dropdown
   const getAllStyles = () => {
     const styles = new Set();

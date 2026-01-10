@@ -3264,47 +3264,74 @@ export default function VenueDashboard() {
               </div>
 
               {/* Filters */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-muted/30 rounded-xl">
-                <div>
-                  <Label className="text-sm mb-2 block">Période</Label>
-                  <select
-                    value={historyFilters.period}
-                    onChange={(e) => setHistoryFilters({...historyFilters, period: e.target.value})}
-                    className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white"
-                  >
-                    <option value="all">Toutes les périodes</option>
-                    <option value="month">Dernier mois</option>
-                    <option value="quarter">Dernier trimestre</option>
-                    <option value="year">Dernière année</option>
-                  </select>
+              <div className="space-y-4 mb-6 p-4 bg-muted/30 rounded-xl">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-sm mb-2 block">Période</Label>
+                    <select
+                      value={historyFilters.period}
+                      onChange={(e) => setHistoryFilters({...historyFilters, period: e.target.value, customStartDate: '', customEndDate: ''})}
+                      className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white"
+                    >
+                      <option value="all">Toutes les périodes</option>
+                      <option value="month">Dernier mois</option>
+                      <option value="quarter">Dernier trimestre</option>
+                      <option value="year">Dernière année</option>
+                      <option value="custom">Période personnalisée</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm mb-2 block">Type d'événement</Label>
+                    <select
+                      value={historyFilters.type}
+                      onChange={(e) => setHistoryFilters({...historyFilters, type: e.target.value})}
+                      className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white"
+                    >
+                      <option value="all">Tous les événements</option>
+                      <option value="jam">Bœufs uniquement</option>
+                      <option value="concert">Concerts uniquement</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm mb-2 block">Style musical</Label>
+                    <select
+                      value={historyFilters.style}
+                      onChange={(e) => setHistoryFilters({...historyFilters, style: e.target.value})}
+                      className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white"
+                    >
+                      <option value="all">Tous les styles</option>
+                      {MUSIC_STYLES_LIST.map(style => (
+                        <option key={style} value={style}>{style}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                
-                <div>
-                  <Label className="text-sm mb-2 block">Type d'événement</Label>
-                  <select
-                    value={historyFilters.type}
-                    onChange={(e) => setHistoryFilters({...historyFilters, type: e.target.value})}
-                    className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white"
-                  >
-                    <option value="all">Tous les événements</option>
-                    <option value="jam">Bœufs uniquement</option>
-                    <option value="concert">Concerts uniquement</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <Label className="text-sm mb-2 block">Style musical</Label>
-                  <select
-                    value={historyFilters.style}
-                    onChange={(e) => setHistoryFilters({...historyFilters, style: e.target.value})}
-                    className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white"
-                  >
-                    <option value="all">Tous les styles</option>
-                    {getAllStyles().map(style => (
-                      <option key={style} value={style}>{style}</option>
-                    ))}
-                  </select>
-                </div>
+
+                {/* Custom Date Range - Only shown when custom period selected */}
+                {historyFilters.period === 'custom' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-white/10">
+                    <div>
+                      <Label className="text-sm mb-2 block">Date de début</Label>
+                      <Input
+                        type="date"
+                        value={historyFilters.customStartDate}
+                        onChange={(e) => setHistoryFilters({...historyFilters, customStartDate: e.target.value})}
+                        className="bg-black/20 border-white/10"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm mb-2 block">Date de fin</Label>
+                      <Input
+                        type="date"
+                        value={historyFilters.customEndDate}
+                        onChange={(e) => setHistoryFilters({...historyFilters, customEndDate: e.target.value})}
+                        className="bg-black/20 border-white/10"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Statistics Summary */}

@@ -544,6 +544,134 @@ export default function VenueDashboard() {
     }
   }, [activeTab, bandFilters]);
 
+  // ============= PROFITABILITY & HISTORY FUNCTIONS =============
+  
+  const fetchPastEvents = async () => {
+    try {
+      const response = await axios.get(`${API}/venues/me/past-events`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPastEvents(response.data);
+    } catch (error) {
+      console.error("Error fetching past events:", error);
+      toast.error("Erreur lors du chargement de l'historique");
+    }
+  };
+
+  const fetchProfitabilityStats = async () => {
+    try {
+      const response = await axios.get(`${API}/venues/me/profitability-stats`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setProfitabilityStats(response.data);
+    } catch (error) {
+      console.error("Error fetching profitability stats:", error);
+    }
+  };
+
+  const updateEventProfitability = async (eventId, eventType) => {
+    const { revenue, expenses, notes } = profitabilityForm;
+    
+    if (!revenue || !expenses) {
+      toast.error("Remplissez les recettes et dépenses");
+      return;
+    }
+
+    try {
+      const endpoint = eventType === 'jam' 
+        ? `${API}/jams/${eventId}/profitability`
+        : `${API}/concerts/${eventId}/profitability`;
+      
+      await axios.put(
+        endpoint,
+        {
+          revenue: parseFloat(revenue),
+          expenses: parseFloat(expenses),
+          notes: notes
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      toast.success("Rentabilité enregistrée ! 💰");
+      setEditingProfitability(null);
+      setProfitabilityForm({ revenue: '', expenses: '', notes: '' });
+      
+      // Recharger les données
+      fetchPastEvents();
+      fetchProfitabilityStats();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur lors de l'enregistrement");
+    }
+  };
+
+  const openProfitabilityEdit = (event) => {
+    setEditingProfitability(event);
+    if (event.profitability) {
+      setProfitabilityForm({
+        revenue: event.profitability.revenue.toString(),
+        expenses: event.profitability.expenses.toString(),
+        notes: event.profitability.notes || ''
+      });
+    } else {
+      setProfitabilityForm({ revenue: '', expenses: '', notes: '' });
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "history") {
+      fetchPastEvents();
+      fetchProfitabilityStats();
+    }
+  }, [activeTab]);
+
+  // Filter past events based on selected filters
+  const getFilteredEvents = () => {
+    let filtered = [...pastEvents];
+
+    // Filter by type
+    if (historyFilters.type !== 'all') {
+      filtered = filtered.filter(e => e.type === historyFilters.type);
+    }
+
+    // Filter by style
+    if (historyFilters.style !== 'all') {
+      filtered = filtered.filter(e => 
+        e.music_styles && e.music_styles.includes(historyFilters.style)
+      );
+    }
+
+    // Filter by period
+    if (historyFilters.period !== 'all') {
+      const now = new Date();
+      const filterDate = new Date();
+      
+      if (historyFilters.period === 'month') {
+        filterDate.setMonth(now.getMonth() - 1);
+      } else if (historyFilters.period === 'quarter') {
+        filterDate.setMonth(now.getMonth() - 3);
+      } else if (historyFilters.period === 'year') {
+        filterDate.setFullYear(now.getFullYear() - 1);
+      }
+      
+      filtered = filtered.filter(e => new Date(e.date) >= filterDate);
+    }
+
+    return filtered;
+  };
+
+  // Get all unique styles from past events for filter dropdown
+  const getAllStyles = () => {
+    const styles = new Set();
+    pastEvents.forEach(event => {
+      if (event.music_styles) {
+        event.music_styles.forEach(style => styles.add(style));
+      }
+    });
+    return Array.from(styles).sort();
+  };
+
+  // ============= END PROFITABILITY & HISTORY FUNCTIONS =============
+
   // Gallery Management
   const uploadGalleryPhoto = async (file) => {
     if (!file) return;

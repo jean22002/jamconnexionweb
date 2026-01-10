@@ -374,6 +374,26 @@ export default function VenueDetail() {
     }
   };
 
+  const deleteReview = async (reviewId) => {
+    if (!token) {
+      toast.error("Connectez-vous pour supprimer un avis");
+      return;
+    }
+
+    const confirmDelete = window.confirm("Êtes-vous sûr de vouloir supprimer cet avis ?");
+    if (!confirmDelete) return;
+
+    try {
+      await axios.delete(`${API}/reviews/${reviewId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success("Avis supprimé avec succès");
+      fetchReviews();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur lors de la suppression");
+    }
+  };
+
   if (loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   }

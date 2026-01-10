@@ -1305,7 +1305,6 @@ export default function VenueDashboard() {
                       ℹ️ Tapez le nom de votre ville et <strong>cliquez sur une suggestion</strong> pour remplir automatiquement département et région
                     </p>
                   </div>
-                  </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">

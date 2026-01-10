@@ -607,8 +607,21 @@ metadata:
   test_sequence: 2
   run_ui: true
 
+  - task: "Geolocation System - Olonzac Bug Fix"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/VenueDashboard.jsx, /app/frontend/src/components/CityAutocomplete.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "🚨 BUG CONFIRMÉ - Système de géolocalisation Olonzac défaillant. TESTS DÉTAILLÉS EFFECTUÉS: ✅ API geo.gouv.fr fonctionne parfaitement (retourne CP=34210, Dept=34-Hérault, Région=Occitanie pour Olonzac), ✅ CityAutocomplete affiche correctement la suggestion 'Olonzac 34210 • Hérault (34) • Occitanie', ❌ PROBLÈME 1: Clic sur suggestion ne met PAS à jour les champs département et code postal (restent 11-Aude et 11100), ❌ PROBLÈME 2: Champ adresse non éditable manuellement (impossible de taper '12 Rue de la République'), ❌ PROBLÈME 3: Après sauvegarde et rechargement, anciennes valeurs reviennent (Narbonne au lieu d'Olonzac). CAUSE RACINE IDENTIFIÉE: handleSave() appelle fetchProfile() après sauvegarde qui écrase formData avec anciennes données DB, suggérant que le backend ne sauvegarde pas correctement les nouvelles données de géolocalisation ou qu'il y a un problème de gestion d'état du formulaire."
+
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Geolocation System - Olonzac Bug Fix"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

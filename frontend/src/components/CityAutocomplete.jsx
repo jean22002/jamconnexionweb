@@ -35,6 +35,11 @@ export const CityAutocomplete = ({ value, onSelect, label = "Ville", placeholder
   const [loading, setLoading] = useState(false);
   const wrapperRef = useRef(null);
 
+  // Synchroniser query avec value quand value change de l'extérieur
+  useEffect(() => {
+    setQuery(value || '');
+  }, [value]);
+
   // Fermer les suggestions si on clique en dehors
   useEffect(() => {
     const handleClickOutside = (event) => {

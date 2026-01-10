@@ -1050,7 +1050,17 @@ export default function VenueDetail() {
                           <span className="text-xs text-muted-foreground">
                             {new Date(review.created_at).toLocaleDateString('fr-FR')}
                           </span>
-                          {user && user.id !== review.musician_user_id && (
+                          {user && user.id === review.musician_user_id ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteReview(review.id)}
+                              className="text-muted-foreground hover:text-destructive"
+                              title="Supprimer mon avis"
+                            >
+                              🗑️
+                            </Button>
+                          ) : user && user.id !== review.musician_user_id ? (
                             <Button
                               variant="ghost"
                               size="sm"
@@ -1059,7 +1069,7 @@ export default function VenueDetail() {
                             >
                               <AlertCircle className="w-4 h-4" />
                             </Button>
-                          )}
+                          ) : null}
                         </div>
                       </div>
 

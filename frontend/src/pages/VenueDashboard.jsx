@@ -1279,22 +1279,30 @@ export default function VenueDashboard() {
                   
                   <div className="space-y-2">
                     {editing ? (
-                      <CityAutocomplete
-                        value={formData.city}
-                        onSelect={(cityData) => {
-                          console.log('🏙️ Ville sélectionnée:', cityData);
-                          setFormData({
-                            ...formData,
-                            city: cityData.city,
-                            postal_code: cityData.postalCode,
-                            department: `${cityData.department} - ${cityData.departmentName}`,
-                            region: cityData.region
-                          });
-                          toast.success(`📍 ${cityData.city} sélectionné !`);
-                        }}
-                        label="Ville"
-                        placeholder="Ex: Narbonne"
-                      />
+                      <>
+                        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-2">
+                          <p className="text-sm text-yellow-200 font-medium flex items-center gap-2">
+                            <span className="text-xl">⚠️</span>
+                            <span><strong>IMPORTANT :</strong> Après avoir tapé votre ville, vous DEVEZ CLIQUER sur une suggestion dans la liste déroulante pour que le code postal, le département et la région se remplissent automatiquement.</span>
+                          </p>
+                        </div>
+                        <CityAutocomplete
+                          value={formData.city}
+                          onSelect={(cityData) => {
+                            console.log('🏙️ Ville sélectionnée:', cityData);
+                            setFormData({
+                              ...formData,
+                              city: cityData.city,
+                              postal_code: cityData.postalCode,
+                              department: `${cityData.department} - ${cityData.departmentName}`,
+                              region: cityData.region
+                            });
+                            toast.success(`📍 ${cityData.city} sélectionné !`);
+                          }}
+                          label="Ville"
+                          placeholder="Ex: Narbonne"
+                        />
+                      </>
                     ) : (
                       <div className="space-y-2">
                         <Label>Ville</Label>
@@ -1302,7 +1310,7 @@ export default function VenueDashboard() {
                       </div>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      ℹ️ Tapez le nom de votre ville et <strong>cliquez sur une suggestion</strong> pour remplir automatiquement département et région
+                      ℹ️ Tapez le nom de votre ville puis <strong className="text-primary">CLIQUEZ sur une suggestion</strong> dans la liste pour remplir automatiquement les champs
                     </p>
                   </div>
                   

@@ -271,8 +271,6 @@ export default function VenueDashboard() {
     }
   };
 
- 
-
   // Broadcast Notifications
   const fetchNearbyMusiciansCount = async () => {
     try {

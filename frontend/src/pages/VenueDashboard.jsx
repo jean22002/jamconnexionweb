@@ -1762,33 +1762,47 @@ export default function VenueDashboard() {
                     <div className="mt-4 p-4 bg-muted/30 rounded-lg border border-white/10 space-y-3">
                       <Label className="text-base font-semibold">💡 Détails des lights</Label>
                       
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={formData.has_auto_light}
-                            onChange={(e) => setFormData({ ...formData, has_auto_light: e.target.checked })}
-                            className="rounded"
-                            disabled={!editing}
-                          />
-                          <Label className={!editing ? "cursor-not-allowed opacity-60" : "cursor-pointer"} onClick={() => editing && setFormData({ ...formData, has_auto_light: !formData.has_auto_light })}>
-                            Auto light (jeux de lumière automatiques)
-                          </Label>
-                        </div>
+                      {editing ? (
+                        /* Mode édition - Checkboxes */
+                        <div className="flex flex-col gap-3">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={formData.has_auto_light}
+                              onChange={(e) => setFormData({ ...formData, has_auto_light: e.target.checked })}
+                              className="rounded"
+                            />
+                            <Label className="cursor-pointer" onClick={() => setFormData({ ...formData, has_auto_light: !formData.has_auto_light })}>
+                              Auto light (jeux de lumière automatiques)
+                            </Label>
+                          </div>
 
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={formData.has_light_table}
-                            onChange={(e) => setFormData({ ...formData, has_light_table: e.target.checked })}
-                            className="rounded"
-                            disabled={!editing}
-                          />
-                          <Label className={!editing ? "cursor-not-allowed opacity-60" : "cursor-pointer"} onClick={() => editing && setFormData({ ...formData, has_light_table: !formData.has_light_table })}>
-                            Table light (console d'éclairage)
-                          </Label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={formData.has_light_table}
+                              onChange={(e) => setFormData({ ...formData, has_light_table: e.target.checked })}
+                              className="rounded"
+                            />
+                            <Label className="cursor-pointer" onClick={() => setFormData({ ...formData, has_light_table: !formData.has_light_table })}>
+                              Table light (console d'éclairage)
+                            </Label>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        /* Mode lecture - Affichage */
+                        <div className="space-y-2 text-sm text-muted-foreground">
+                          {formData.has_auto_light && (
+                            <p>✓ Auto light (jeux de lumière automatiques)</p>
+                          )}
+                          {formData.has_light_table && (
+                            <p>✓ Table light (console d'éclairage)</p>
+                          )}
+                          {!formData.has_auto_light && !formData.has_light_table && (
+                            <p className="text-muted-foreground italic">Aucun détail renseigné</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

@@ -1863,6 +1863,18 @@ async def create_concert_event(data: ConcertEvent, current_user: dict = Depends(
     if not venue:
         raise HTTPException(status_code=404, detail="Venue profile not found")
     
+    # Vérifier s'il existe déjà un concert à cette date
+    existing_concert = await db.concerts.find_one({
+        "venue_id": venue["id"],
+        "date": data.date
+    }, {"_id": 0})
+    
+    if existing_concert:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Un concert est déjà prévu le {data.date}. Vous ne pouvez pas créer deux concerts le même jour."
+        )
+    
     concert_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
     

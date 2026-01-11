@@ -165,6 +165,13 @@ export default function VenueDashboard() {
     phone: "", website: "", facebook: "", instagram: "",
     has_stage: false, has_sound_engineer: false, has_pa_system: false, has_lights: false,
     stage_size: "", // "5m²", "10m²", etc.
+    // Sono details
+    pa_mixer_name: "", // Nom de la table de mixage
+    pa_speakers_name: "", // Nom des enceintes
+    pa_power: "", // Puissance
+    // Lights details
+    has_auto_light: false, // Auto light
+    has_light_table: false, // Table light
     equipment: [], music_styles: [], opening_hours: "",
     allow_messages_from: "everyone" // "everyone" or "connected_only"
   });

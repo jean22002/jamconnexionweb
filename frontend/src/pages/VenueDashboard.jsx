@@ -2574,13 +2574,21 @@ export default function VenueDashboard() {
 
                     <div className="space-y-2">
                       <Label>Affluence estimée (nombre de personnes)</Label>
-                      <Input
-                        type="number"
-                        placeholder="Ex: 50, 100, 200..."
-                        value={planningForm.expectedAttendance}
-                        onChange={(e) => setPlanningForm({ ...planningForm, expectedAttendance: e.target.value })}
-                        className="bg-black/20 border-white/10"
-                      />
+                      <Select 
+                        value={planningForm.expectedAttendance || ""} 
+                        onValueChange={(value) => setPlanningForm({ ...planningForm, expectedAttendance: value })}
+                      >
+                        <SelectTrigger className="bg-black/20 border-white/10">
+                          <SelectValue placeholder="Sélectionnez l'affluence attendue" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border-white/10 max-h-[300px] overflow-y-auto">
+                          {Array.from({ length: 49 }, (_, i) => (i + 2) * 10).map(count => (
+                            <SelectItem key={count} value={count.toString()}>
+                              {count} personnes
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="space-y-2">

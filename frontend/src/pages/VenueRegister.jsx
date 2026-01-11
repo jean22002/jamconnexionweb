@@ -329,6 +329,10 @@ export default function VenueRegister() {
                       <p className="font-semibold">Conservation</p>
                       <p>Les données sont conservées pendant la durée du compte et conformément aux obligations légales.</p>
 
+                      <p className="font-semibold">Traitement des données d'événements</p>
+                      <p>Dans le cadre de l'outil d'analyse, Jam Connexion peut traiter des informations relatives aux événements organisés par l'établissement (date, type, style, rentabilité estimée, données historiques).</p>
+                      <p>Ces données sont utilisées exclusivement pour le fonctionnement de l'outil d'analyse et ne sont ni vendues, ni transmises à des tiers.</p>
+
                       <p className="font-semibold">Droits</p>
                       <p>Conformément au RGPD, l'établissement dispose de droits d'accès, rectification, suppression et opposition.</p>
 

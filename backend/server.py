@@ -244,6 +244,8 @@ class VenueProfileResponse(BaseModel):
     has_stage: bool = False
     has_sound_engineer: bool = False
     has_pa_system: bool = False
+    has_lights: bool = False
+    stage_size: Optional[str] = None
     equipment: List[str] = []
     music_styles: List[str] = []
     opening_hours: Optional[str] = None

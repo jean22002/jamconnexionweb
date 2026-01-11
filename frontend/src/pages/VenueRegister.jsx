@@ -239,16 +239,23 @@ export default function VenueRegister() {
                       <p className="font-semibold">Article 6 – Suspension ou suppression de compte</p>
                       <p>Jam Connexion se réserve le droit de suspendre ou supprimer un compte établissement en cas de non-respect des présentes CGU.</p>
 
-                      <p className="font-semibold">Article 7 – Responsabilité</p>
+                      <p className="font-semibold">Article 7 – Outil de statistiques et d'analyse</p>
+                      <p>Jam Connexion met à disposition des établissements un outil d'analyse et de suivi leur permettant d'obtenir des indicateurs de rentabilité liés à leurs événements (exemples : historique, statistiques, filtres, comparatif).</p>
+                      <p>Cet outil est fourni à titre strictement informatif.</p>
+                      <p>Les résultats affichés ne constituent ni un conseil, ni une recommandation, ni une garantie de performance économique ou commerciale.</p>
+                      <p>L'établissement demeure seul responsable de l'interprétation et de l'utilisation des résultats.</p>
+                      <p>Jam Connexion ne peut être tenu responsable de décisions ou d'actions prises sur la base des informations issues de cet outil.</p>
+
+                      <p className="font-semibold">Article 8 – Responsabilité</p>
                       <p>Jam Connexion est tenu à une obligation de moyens. Aucune garantie n'est donnée quant aux résultats de mise en relation.</p>
 
-                      <p className="font-semibold">Article 8 – Données personnelles</p>
+                      <p className="font-semibold">Article 9 – Données personnelles</p>
                       <p>Les données sont traitées conformément à la Politique de confidentialité et au RGPD.</p>
 
-                      <p className="font-semibold">Article 9 – Modification des CGU</p>
+                      <p className="font-semibold">Article 10 – Modification des CGU</p>
                       <p>Jam Connexion peut modifier les CGU à tout moment.</p>
 
-                      <p className="font-semibold">Article 10 – Droit applicable</p>
+                      <p className="font-semibold">Article 11 – Droit applicable</p>
                       <p>Les présentes CGU sont soumises au droit français.</p>
                     </div>
                   }

@@ -296,6 +296,17 @@ export default function VenueDashboard() {
     if (profile) fetchEvents();
   }, [profile, fetchEvents]);
 
+  // Auto-refresh events every 30 seconds to update participant counts in real-time
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (profile && !editing) {
+        fetchEvents(); // Refresh events to get updated participant counts
+      }
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [profile, editing, fetchEvents]);
+
   const handleSave = async () => {
     setSaving(true);
     try {

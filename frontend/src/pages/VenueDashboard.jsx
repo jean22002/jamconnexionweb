@@ -1653,7 +1653,37 @@ export default function VenueDashboard() {
                       />
                       <Label>Sono</Label>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <Switch 
+                        checked={formData.has_lights} 
+                        onCheckedChange={() => toggleEquipment('has_lights', formData.has_lights)} 
+                      />
+                      <Label>Lights</Label>
+                    </div>
                   </div>
+
+                  {/* Conditionally show stage size selector */}
+                  {formData.has_stage && (
+                    <div className="mt-4 p-4 bg-muted/30 rounded-lg border border-white/10">
+                      <Label className="mb-2 block">Taille de la scène</Label>
+                      <Select 
+                        value={formData.stage_size || ""} 
+                        onValueChange={(value) => setFormData({ ...formData, stage_size: value })}
+                      >
+                        <SelectTrigger className="bg-black/20 border-white/10">
+                          <SelectValue placeholder="Sélectionnez la taille" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border-white/10 max-h-[300px] overflow-y-auto">
+                          {Array.from({ length: 10 }, (_, i) => (i + 1) * 5).map(size => (
+                            <SelectItem key={size} value={`${size}m²`}>
+                              {size}m²
+                            </SelectItem>
+                          ))}
+                          <SelectItem value="Plus de 50m²">Plus de 50m²</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-4 border-t border-white/10 pt-4">

@@ -2593,15 +2593,90 @@ export default function VenueDashboard() {
                       </Select>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>Rémunération proposée</Label>
-                      <Input
-                        type="text"
-                        placeholder="Ex: 200€, Au chapeau, Visibilité..."
-                        value={planningForm.payment}
-                        onChange={(e) => setPlanningForm({ ...planningForm, payment: e.target.value })}
-                        className="bg-black/20 border-white/10"
-                      />
+                    <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-white/10">
+                      <Label className="text-base font-semibold">💰 Rémunération proposée</Label>
+                      
+                      {/* Option 1: Proposition manuelle */}
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="radio"
+                          name="payment_type"
+                          value="manual"
+                          checked={planningForm.payment_type === 'manual'}
+                          onChange={(e) => setPlanningForm({ ...planningForm, payment_type: e.target.value, payment_base: '' })}
+                          className="mt-1"
+                        />
+                        <div className="flex-1 space-y-2">
+                          <Label className="cursor-pointer" onClick={() => setPlanningForm({ ...planningForm, payment_type: 'manual', payment_base: '' })}>
+                            Proposition manuelle
+                          </Label>
+                          {planningForm.payment_type === 'manual' && (
+                            <Input
+                              type="text"
+                              placeholder="Ex: 200€, 150€ + bar, Visibilité..."
+                              value={planningForm.payment}
+                              onChange={(e) => setPlanningForm({ ...planningForm, payment: e.target.value })}
+                              className="bg-black/20 border-white/10"
+                            />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Option 2: Au chapeau */}
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="radio"
+                          name="payment_type"
+                          value="hat"
+                          checked={planningForm.payment_type === 'hat'}
+                          onChange={(e) => setPlanningForm({ ...planningForm, payment_type: e.target.value, payment: 'Au chapeau' })}
+                          className="mt-1"
+                        />
+                        <div className="flex-1 space-y-2">
+                          <Label className="cursor-pointer" onClick={() => setPlanningForm({ ...planningForm, payment_type: 'hat', payment: 'Au chapeau' })}>
+                            Au chapeau
+                          </Label>
+                          {planningForm.payment_type === 'hat' && (
+                            <div className="space-y-2">
+                              <p className="text-xs text-muted-foreground">
+                                Les spectateurs donnent ce qu'ils souhaitent à la fin du concert
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <Label className="text-xs whitespace-nowrap">Base minimum (optionnel) :</Label>
+                                <Input
+                                  type="text"
+                                  placeholder="Ex: 50€, 100€..."
+                                  value={planningForm.payment_base}
+                                  onChange={(e) => setPlanningForm({ ...planningForm, payment_base: e.target.value })}
+                                  className="bg-black/20 border-white/10"
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Option 3: Aux entrées */}
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="radio"
+                          name="payment_type"
+                          value="tickets"
+                          checked={planningForm.payment_type === 'tickets'}
+                          onChange={(e) => setPlanningForm({ ...planningForm, payment_type: e.target.value, payment: 'Aux entrées (billetterie auto-gérée)', payment_base: '' })}
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <Label className="cursor-pointer" onClick={() => setPlanningForm({ ...planningForm, payment_type: 'tickets', payment: 'Aux entrées (billetterie auto-gérée)', payment_base: '' })}>
+                            Aux entrées (billetterie auto-gérée par le/les groupes)
+                          </Label>
+                          {planningForm.payment_type === 'tickets' && (
+                            <p className="text-xs text-muted-foreground mt-2">
+                              Les groupes gèrent leur propre billetterie et conservent les recettes des entrées
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
                     {/* Catering Section */}

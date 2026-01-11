@@ -2277,6 +2277,18 @@ async def create_planning_slot(data: PlanningSlot, current_user: dict = Depends(
     if not venue:
         raise HTTPException(status_code=404, detail="Venue profile not found")
     
+    # Vérifier s'il existe déjà un créneau Planning à cette date
+    existing_slot = await db.planning_slots.find_one({
+        "venue_id": venue["id"],
+        "date": data.date
+    }, {"_id": 0})
+    
+    if existing_slot:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Un créneau pour candidatures est déjà ouvert le {data.date}. Vous ne pouvez pas créer deux créneaux le même jour."
+        )
+    
     slot_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
     

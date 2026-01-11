@@ -153,6 +153,7 @@ export default function VenueDashboard() {
   const [showMessageDialog, setShowMessageDialog] = useState(false);
   const [selectedBand, setSelectedBand] = useState(null);
   const [messageForm, setMessageForm] = useState({ subject: "", content: "" });
+  const [manualBandEntry, setManualBandEntry] = useState(false); // Mode saisie manuelle
   
   // Gallery
   const [gallery, setGallery] = useState([]);

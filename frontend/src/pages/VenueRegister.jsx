@@ -289,10 +289,13 @@ export default function VenueRegister() {
                       <p className="font-semibold">Article 7 – Responsabilité</p>
                       <p>Jam Connexion ne garantit ni contacts, ni contrats, ni résultats commerciaux.</p>
 
-                      <p className="font-semibold">Article 8 – Modification des CGV</p>
+                      <p className="font-semibold">Article 8 – Absence de garantie commerciale</p>
+                      <p>Les statistiques, indicateurs et informations fournis via l'outil d'analyse ne constituent en aucun cas une garantie de mise en relation, de fréquentation, ou de rentabilité des événements.</p>
+
+                      <p className="font-semibold">Article 9 – Modification des CGV</p>
                       <p>Jam Connexion se réserve le droit de modifier les CGV à tout moment.</p>
 
-                      <p className="font-semibold">Article 9 – Droit applicable</p>
+                      <p className="font-semibold">Article 10 – Droit applicable</p>
                       <p>Les présentes CGV sont soumises au droit français.</p>
                     </div>
                   }

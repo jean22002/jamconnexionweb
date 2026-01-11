@@ -1,9 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -22,25 +19,6 @@ import JoinEventButton from "../components/JoinEventButton";
 import { StarRating, StarRatingInput } from "../components/StarRating";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
-
-const venueIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-});
-
-// Component to update map view when coordinates change
-function MapUpdater({ center }) {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (center && center[0] && center[1]) {
-      map.setView(center, map.getZoom());
-    }
-  }, [center, map]);
-  
-  return null;
-}
 
 export default function VenueDetail() {
   const { id } = useParams();

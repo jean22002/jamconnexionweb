@@ -1847,8 +1847,27 @@ export default function VenueDashboard() {
 
                 <div className="space-y-2">
                   <Label>Styles musicaux</Label>
-                  {editing && <Input placeholder="Appuyez Entrée" onKeyPress={(e) => { if (e.key === 'Enter') { addToList('music_styles', e.target.value, formData, setFormData); e.target.value = ''; } }} className="bg-black/20 border-white/10" />}
-                  <div className="flex flex-wrap gap-2">
+                  {editing && (
+                    <Select 
+                      onValueChange={(value) => {
+                        if (value && !formData.music_styles.includes(value)) {
+                          setFormData({ ...formData, music_styles: [...formData.music_styles, value] });
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="bg-black/20 border-white/10">
+                        <SelectValue placeholder="Sélectionnez un style musical" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-white/10 max-h-[300px] overflow-y-auto">
+                        {MUSIC_STYLES_LIST.filter(style => !formData.music_styles.includes(style)).map((style) => (
+                          <SelectItem key={style} value={style}>
+                            {style}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  <div className="flex flex-wrap gap-2 mt-2">
                     {formData.music_styles.map((style, i) => (
                       <span key={i} className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm flex items-center gap-1">
                         {style}

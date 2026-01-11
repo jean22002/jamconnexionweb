@@ -454,9 +454,35 @@ export default function VenueDetail() {
             <div className="flex items-start justify-between">
               <div>
                 <h1 className="font-heading font-bold text-3xl md:text-4xl mb-2">{venue.name}</h1>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <MapPin className="w-4 h-4" />
-                  <span>{venue.address}, {venue.postal_code} {venue.city}</span>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <MapPin className="w-4 h-4" />
+                    <span>{venue.address}, {venue.postal_code} {venue.city}</span>
+                  </div>
+                  
+                  {/* GPS Navigation Buttons */}
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-full transition-colors"
+                      title="Ouvrir dans Google Maps"
+                    >
+                      <Navigation className="w-3 h-3" />
+                      Google Maps
+                    </a>
+                    <a
+                      href={`https://waze.com/ul?ll=${venue.latitude},${venue.longitude}&navigate=yes`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-xs rounded-full transition-colors"
+                      title="Ouvrir dans Waze"
+                    >
+                      <Navigation className="w-3 h-3" />
+                      Waze
+                    </a>
+                  </div>
                 </div>
               </div>
               

@@ -1722,38 +1722,56 @@ export default function VenueDashboard() {
                     <div className="mt-4 p-4 bg-muted/30 rounded-lg border border-white/10 space-y-3">
                       <Label className="text-base font-semibold">🔊 Détails de la sono</Label>
                       
-                      <div className="space-y-2">
-                        <Label>Nom de la table de mixage</Label>
-                        <Input
-                          placeholder="Ex: Yamaha MG16XU, Behringer X32..."
-                          value={formData.pa_mixer_name}
-                          onChange={(e) => setFormData({ ...formData, pa_mixer_name: e.target.value })}
-                          className="bg-black/20 border-white/10"
-                          disabled={!editing}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Nom des enceintes</Label>
-                        <Input
-                          placeholder="Ex: JBL EON615, RCF ART 735-A..."
-                          value={formData.pa_speakers_name}
-                          onChange={(e) => setFormData({ ...formData, pa_speakers_name: e.target.value })}
-                          className="bg-black/20 border-white/10"
-                          disabled={!editing}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Puissance</Label>
-                        <Input
-                          placeholder="Ex: 2000W, 3kW..."
-                          value={formData.pa_power}
-                          onChange={(e) => setFormData({ ...formData, pa_power: e.target.value })}
-                          className="bg-black/20 border-white/10"
-                          disabled={!editing}
-                        />
-                      </div>
+                      {editing ? (
+                        /* Mode édition - Formulaire */
+                        <div className="space-y-3">
+                          <div>
+                            <Label>Nom de la table de mixage</Label>
+                            <Input 
+                              placeholder="Ex: Yamaha MG16XU, Behringer X32..."
+                              value={formData.pa_mixer_name}
+                              onChange={(e) => setFormData({ ...formData, pa_mixer_name: e.target.value })}
+                              className="bg-black/20 border-white/10"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label>Nom des enceintes</Label>
+                            <Input 
+                              placeholder="Ex: JBL EON615, RCF ART 735-A..."
+                              value={formData.pa_speakers_name}
+                              onChange={(e) => setFormData({ ...formData, pa_speakers_name: e.target.value })}
+                              className="bg-black/20 border-white/10"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label>Puissance</Label>
+                            <Input 
+                              placeholder="Ex: 2000W, 3kW..."
+                              value={formData.pa_power}
+                              onChange={(e) => setFormData({ ...formData, pa_power: e.target.value })}
+                              className="bg-black/20 border-white/10"
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        /* Mode lecture - Affichage */
+                        <div className="space-y-2 text-sm text-muted-foreground">
+                          {formData.pa_mixer_name && (
+                            <p><span className="text-white font-medium">Table de mixage :</span> {formData.pa_mixer_name}</p>
+                          )}
+                          {formData.pa_speakers_name && (
+                            <p><span className="text-white font-medium">Enceintes :</span> {formData.pa_speakers_name}</p>
+                          )}
+                          {formData.pa_power && (
+                            <p><span className="text-white font-medium">Puissance :</span> {formData.pa_power}</p>
+                          )}
+                          {!formData.pa_mixer_name && !formData.pa_speakers_name && !formData.pa_power && (
+                            <p className="text-muted-foreground italic">Aucun détail renseigné</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
 

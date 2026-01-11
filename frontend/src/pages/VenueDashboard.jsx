@@ -2149,6 +2149,62 @@ export default function VenueDashboard() {
                         )}
                       </div>
 
+                      {/* Musical Styles Section */}
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Music className="w-4 h-4" />
+                          Styles musicaux
+                        </Label>
+                        <Select 
+                          value="" 
+                          onValueChange={(value) => {
+                            if (value && !concertForm.music_styles.includes(value)) {
+                              setConcertForm({ 
+                                ...concertForm, 
+                                music_styles: [...concertForm.music_styles, value] 
+                              });
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="bg-black/20 border-white/10">
+                            <SelectValue placeholder="Sélectionnez un style" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-background border-white/10 max-h-[300px] overflow-y-auto">
+                            {MUSIC_STYLES_LIST.map(style => (
+                              <SelectItem 
+                                key={style} 
+                                value={style}
+                                disabled={concertForm.music_styles.includes(style)}
+                              >
+                                {style}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {concertForm.music_styles.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {concertForm.music_styles.map((style, idx) => (
+                              <span 
+                                key={idx} 
+                                className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm flex items-center gap-2"
+                              >
+                                {style}
+                                <button 
+                                  type="button"
+                                  onClick={() => setConcertForm({ 
+                                    ...concertForm, 
+                                    music_styles: concertForm.music_styles.filter((_, i) => i !== idx) 
+                                  })}
+                                  className="hover:text-primary-foreground"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
                       <Button onClick={createConcert} className="w-full bg-primary hover:bg-primary/90 rounded-full">Créer</Button>
                     </div>
                   </DialogContent>

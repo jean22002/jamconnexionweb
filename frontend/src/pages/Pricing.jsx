@@ -107,7 +107,7 @@ export default function Pricing() {
               <div>
                 <h2 className="font-heading font-bold text-2xl">Établissement</h2>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-primary font-bold text-2xl">10€</span>
+                  <span className="text-primary font-bold text-2xl">14,99€</span>
                   <span className="text-muted-foreground">/mois</span>
                 </div>
               </div>

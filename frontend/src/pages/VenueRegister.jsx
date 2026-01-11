@@ -275,7 +275,7 @@ export default function VenueRegister() {
                       <p>Chaque établissement bénéficie d'une période d'essai gratuite de deux (2) mois. À l'issue de l'essai, l'abonnement débute automatiquement sauf résiliation préalable.</p>
 
                       <p className="font-semibold">Article 3 – Tarifs</p>
-                      <p>Le tarif de l'abonnement est de : <strong>10 € TTC par mois</strong></p>
+                      <p>Le tarif de l'abonnement est de : <strong>14,99 € TTC par mois</strong></p>
 
                       <p className="font-semibold">Article 4 – Paiement</p>
                       <p>Le paiement est mensuel et effectué à la date anniversaire de l'abonnement.</p>

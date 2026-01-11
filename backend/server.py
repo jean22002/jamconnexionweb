@@ -253,6 +253,13 @@ class VenueProfileResponse(BaseModel):
     has_pa_system: bool = False
     has_lights: bool = False
     stage_size: Optional[str] = None
+    # PA System details
+    pa_mixer_name: Optional[str] = None
+    pa_speakers_name: Optional[str] = None
+    pa_power: Optional[str] = None
+    # Lights details
+    has_auto_light: bool = False
+    has_light_table: bool = False
     equipment: List[str] = []
     music_styles: List[str] = []
     opening_hours: Optional[str] = None

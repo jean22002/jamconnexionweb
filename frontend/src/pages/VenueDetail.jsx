@@ -11,7 +11,7 @@ import {
 } from "../components/ui/dialog";
 import { 
   Music, MapPin, Globe, Instagram, Facebook, Phone, ArrowLeft, Loader2, 
-  Check, Clock, Guitar, Bell, BellOff, CalendarIcon, Send, Users, User, AlertCircle, Heart
+  Check, Clock, Guitar, Bell, BellOff, CalendarIcon, Send, Users, User, AlertCircle, Heart, Navigation
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";

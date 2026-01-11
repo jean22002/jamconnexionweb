@@ -163,7 +163,8 @@ export default function VenueDashboard() {
     name: "", description: "", profile_image: "", cover_image: "",
     address: "", city: "", department: "", region: "", postal_code: "", latitude: 0, longitude: 0,
     phone: "", website: "", facebook: "", instagram: "",
-    has_stage: false, has_sound_engineer: false, has_pa_system: false,
+    has_stage: false, has_sound_engineer: false, has_pa_system: false, has_lights: false,
+    stage_size: "", // "5m²", "10m²", etc.
     equipment: [], music_styles: [], opening_hours: "",
     allow_messages_from: "everyone" // "everyone" or "connected_only"
   });

@@ -92,6 +92,8 @@ export default function VenueDashboard() {
     expectedBandStyle: '',
     expectedAttendance: '',
     payment: '',
+    payment_type: 'manual', // 'manual', 'hat', 'tickets'
+    payment_base: '', // Base minimum pour "au chapeau"
     artist_categories: [],
     num_bands_needed: 1,
     application_type: 'bands', // 'bands', 'solo', or 'both'

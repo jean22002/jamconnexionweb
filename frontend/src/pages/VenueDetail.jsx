@@ -200,6 +200,16 @@ export default function VenueDetail() {
     fetchCurrentParticipation();
   }, [checkSubscription, fetchCurrentParticipation]);
 
+  // Auto-refresh events every 30 seconds to update participant counts in real-time
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchEvents(); // Refresh events to get updated participant counts
+      fetchActiveEvents(); // Refresh active events
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [fetchEvents, fetchActiveEvents]);
+
   const submitApplication = async () => {
     if (!selectedSlot) return;
     try {

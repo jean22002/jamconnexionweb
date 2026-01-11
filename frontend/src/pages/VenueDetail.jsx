@@ -576,6 +576,7 @@ export default function VenueDetail() {
               <div className="space-y-6">
                 <div className="h-64 rounded-2xl overflow-hidden neon-border">
                   <MapContainer 
+                    key={`${venue.latitude}-${venue.longitude}`}
                     center={[venue.latitude, venue.longitude]} 
                     zoom={15} 
                     className="h-full w-full" 

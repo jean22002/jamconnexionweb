@@ -313,6 +313,18 @@ backend:
         comment: "🎉 BUG FIX VALIDÉ - TITRE ET HEURE CORRECTEMENT SAUVEGARDÉS! TESTS COMPLETS RÉUSSIS (3/3 - 100%). RÉSULTATS DÉTAILLÉS: ✅ TEST 1 - Création avec titre et heure: Créneau créé avec time='21:30' et title='Soirée Blues Rock' correctement sauvegardés via API, ✅ TEST 2 - Modification et persistance: Créneau initial (time='20:00', title='Concert Rock') modifié vers (time='21:00', title='Grande Soirée Rock') avec persistance confirmée, ✅ TEST 3 - Tous les champs persistants: Créneau complet avec TOUS les champs (date, time, title, description, expected_band_style, expected_attendance, payment, catering, accommodation) correctement sauvegardés et récupérés. CAUSE RACINE RÉSOLUE: Le frontend ne remplissait pas correctement le formulaire lors de l'édition d'un créneau existant. Maintenant tous les champs sont présents dans l'état initial et mappés correctement lors de l'édition."
 
 frontend:
+  - task: "VenueDashboard - Real-time Participant Counter Updates"
+    implemented: false
+    working: false
+    file: "/app/frontend/src/pages/VenueDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "🚨 CRITICAL BUG CONFIRMED - Real-time participant counter updates missing in VenueDashboard. COMPREHENSIVE ANALYSIS COMPLETED: ✅ Backend APIs 100% functional (all participation endpoints work correctly), ❌ Frontend lacks real-time polling mechanism, ❌ VenueDashboard only fetches data on mount/profile change, no automatic refresh, ❌ When musician joins/leaves from VenueDetail (public page), VenueDashboard (private) doesn't auto-update, ❌ Venue must manually refresh page (F5) to see updated participant counts. ROOT CAUSE: fetchEvents() function only called in useEffect on component mount and profile changes - no interval-based polling or websocket implementation. IMPACT: Poor UX for venue owners who don't see real-time participation changes. SOLUTION NEEDED: Implement polling mechanism (every 30-60 seconds) or websocket connection to automatically refresh event data and participant counters in VenueDashboard. This is the exact bug described in review request where 'compteur de participants ne se met pas à jour côté établissement'."
+
   - task: "Landing Page & Auth Forms"
     implemented: true
     working: true

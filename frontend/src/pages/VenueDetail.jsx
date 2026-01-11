@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Button } from "../components/ui/button";
@@ -28,6 +28,19 @@ const venueIcon = new L.Icon({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
   iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
 });
+
+// Component to update map view when coordinates change
+function MapUpdater({ center }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (center && center[0] && center[1]) {
+      map.setView(center, map.getZoom());
+    }
+  }, [center, map]);
+  
+  return null;
+}
 
 export default function VenueDetail() {
   const { id } = useParams();
@@ -563,12 +576,12 @@ export default function VenueDetail() {
               <div className="space-y-6">
                 <div className="h-64 rounded-2xl overflow-hidden neon-border">
                   <MapContainer 
-                    key={`${venue.latitude}-${venue.longitude}`}
                     center={[venue.latitude, venue.longitude]} 
                     zoom={15} 
                     className="h-full w-full" 
                     scrollWheelZoom={false}
                   >
+                    <MapUpdater center={[venue.latitude, venue.longitude]} />
                     <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
                     <Marker position={[venue.latitude, venue.longitude]} icon={venueIcon} />
                   </MapContainer>

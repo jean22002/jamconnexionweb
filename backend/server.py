@@ -3673,7 +3673,7 @@ async def reject_band_join_request(request_id: str, current_user: dict = Depends
 
 # ============= PAYMENT ROUTES =============
 
-SUBSCRIPTION_PRICE = 10.00
+SUBSCRIPTION_PRICE = 14.99
 
 @api_router.post("/payments/checkout")
 async def create_checkout(data: CheckoutRequest, request: Request, current_user: dict = Depends(get_current_user)):

@@ -1009,6 +1009,8 @@ export default function VenueDashboard() {
         expectedBandStyle: '',
         expectedAttendance: '',
         payment: '',
+        payment_type: 'manual',
+        payment_base: '',
         music_styles: [],
         artist_categories: [],
         num_bands_needed: 1,

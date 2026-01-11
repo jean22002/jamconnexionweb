@@ -3841,6 +3841,81 @@ export default function VenueDashboard() {
                       />
                     </div>
 
+                    {/* Musical Styles Section for Concert */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Music className="w-4 h-4" />
+                        Styles musicaux
+                      </Label>
+                      {isEditingEvent ? (
+                        <>
+                          <Select 
+                            value="" 
+                            onValueChange={(value) => {
+                              if (value && !selectedEvent.music_styles?.includes(value)) {
+                                setSelectedEvent({ 
+                                  ...selectedEvent, 
+                                  music_styles: [...(selectedEvent.music_styles || []), value] 
+                                });
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="bg-black/20 border-white/10">
+                              <SelectValue placeholder="Sélectionnez un style" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background border-white/10 max-h-[300px] overflow-y-auto">
+                              {MUSIC_STYLES_LIST.map(style => (
+                                <SelectItem 
+                                  key={style} 
+                                  value={style}
+                                  disabled={selectedEvent.music_styles?.includes(style)}
+                                >
+                                  {style}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {selectedEvent.music_styles && selectedEvent.music_styles.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {selectedEvent.music_styles.map((style, idx) => (
+                                <span 
+                                  key={idx} 
+                                  className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm flex items-center gap-2"
+                                >
+                                  {style}
+                                  <button 
+                                    type="button"
+                                    onClick={() => setSelectedEvent({ 
+                                      ...selectedEvent, 
+                                      music_styles: selectedEvent.music_styles.filter((_, i) => i !== idx) 
+                                    })}
+                                    className="hover:text-primary-foreground"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {selectedEvent.music_styles && selectedEvent.music_styles.length > 0 ? (
+                            selectedEvent.music_styles.map((style, idx) => (
+                              <span 
+                                key={idx} 
+                                className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm"
+                              >
+                                {style}
+                              </span>
+                            ))
+                          ) : (
+                            <p className="text-sm text-muted-foreground">Aucun style défini</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
                     <div className="space-y-2">
                       <Label>Description</Label>
                       <Textarea

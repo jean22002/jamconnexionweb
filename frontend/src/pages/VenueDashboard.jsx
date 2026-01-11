@@ -1572,7 +1572,9 @@ export default function VenueDashboard() {
                               city: cityData.city,
                               postal_code: cityData.postalCode,
                               department: cityData.department,
-                              region: cityData.region
+                              region: cityData.region,
+                              latitude: cityData.latitude,
+                              longitude: cityData.longitude
                             });
                           }}
                           label="Ville"

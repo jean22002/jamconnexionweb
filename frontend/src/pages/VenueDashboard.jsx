@@ -2518,14 +2518,58 @@ export default function VenueDashboard() {
                     )}
 
                     <div className="space-y-2">
-                      <Label>Style de groupe recherché</Label>
-                      <Input
-                        type="text"
-                        placeholder="Ex: Rock, Jazz, Blues, Pop..."
-                        value={planningForm.expectedBandStyle}
-                        onChange={(e) => setPlanningForm({ ...planningForm, expectedBandStyle: e.target.value })}
-                        className="bg-black/20 border-white/10"
-                      />
+                      <Label className="flex items-center gap-2">
+                        <Music className="w-4 h-4" />
+                        Styles musicaux recherchés
+                      </Label>
+                      <Select 
+                        value="" 
+                        onValueChange={(value) => {
+                          if (value && !planningForm.music_styles.includes(value)) {
+                            setPlanningForm({ 
+                              ...planningForm, 
+                              music_styles: [...planningForm.music_styles, value] 
+                            });
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="bg-black/20 border-white/10">
+                          <SelectValue placeholder="Sélectionnez un ou plusieurs styles" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border-white/10 max-h-[300px] overflow-y-auto">
+                          {MUSIC_STYLES_LIST.map(style => (
+                            <SelectItem 
+                              key={style} 
+                              value={style}
+                              disabled={planningForm.music_styles.includes(style)}
+                            >
+                              {style}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {planningForm.music_styles.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {planningForm.music_styles.map((style, idx) => (
+                            <span 
+                              key={idx} 
+                              className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm flex items-center gap-2"
+                            >
+                              {style}
+                              <button 
+                                type="button"
+                                onClick={() => setPlanningForm({ 
+                                  ...planningForm, 
+                                  music_styles: planningForm.music_styles.filter((_, i) => i !== idx) 
+                                })}
+                                className="hover:text-primary-foreground"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">

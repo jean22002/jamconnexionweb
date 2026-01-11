@@ -2234,6 +2234,21 @@ export default function VenueDashboard() {
                               {concert.start_time}{concert.end_time ? ` - ${concert.end_time}` : ''}
                             </p>
                             {concert.title && <p className="text-sm font-medium mt-1">{concert.title}</p>}
+                            
+                            {/* Musical Styles Display */}
+                            {concert.music_styles && concert.music_styles.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {concert.music_styles.map((style, idx) => (
+                                  <span 
+                                    key={idx} 
+                                    className="px-2 py-0.5 bg-primary/20 text-primary text-xs rounded-full"
+                                  >
+                                    {style}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            
                             <p className="text-green-400 text-sm mt-1">
                               👥 {concert.participants_count || 0} participant{(concert.participants_count || 0) > 1 ? 's' : ''}
                             </p>

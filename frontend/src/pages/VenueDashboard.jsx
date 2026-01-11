@@ -1642,28 +1642,32 @@ export default function VenueDashboard() {
                     <div className="flex items-center gap-2">
                       <Switch 
                         checked={formData.has_stage} 
-                        onCheckedChange={() => toggleEquipment('has_stage', formData.has_stage)} 
+                        onCheckedChange={() => toggleEquipment('has_stage', formData.has_stage)}
+                        disabled={!editing}
                       />
                       <Label>Scène</Label>
                     </div>
                     <div className="flex items-center gap-2">
                       <Switch 
                         checked={formData.has_sound_engineer} 
-                        onCheckedChange={() => toggleEquipment('has_sound_engineer', formData.has_sound_engineer)} 
+                        onCheckedChange={() => toggleEquipment('has_sound_engineer', formData.has_sound_engineer)}
+                        disabled={!editing}
                       />
                       <Label>Ingé son</Label>
                     </div>
                     <div className="flex items-center gap-2">
                       <Switch 
                         checked={formData.has_pa_system} 
-                        onCheckedChange={() => toggleEquipment('has_pa_system', formData.has_pa_system)} 
+                        onCheckedChange={() => toggleEquipment('has_pa_system', formData.has_pa_system)}
+                        disabled={!editing}
                       />
                       <Label>Sono</Label>
                     </div>
                     <div className="flex items-center gap-2">
                       <Switch 
                         checked={formData.has_lights} 
-                        onCheckedChange={() => toggleEquipment('has_lights', formData.has_lights)} 
+                        onCheckedChange={() => toggleEquipment('has_lights', formData.has_lights)}
+                        disabled={!editing}
                       />
                       <Label>Lights</Label>
                     </div>
@@ -1676,6 +1680,7 @@ export default function VenueDashboard() {
                       <Select 
                         value={formData.stage_size || ""} 
                         onValueChange={(value) => setFormData({ ...formData, stage_size: value })}
+                        disabled={!editing}
                       >
                         <SelectTrigger className="bg-black/20 border-white/10">
                           <SelectValue placeholder="Sélectionnez la taille" />
@@ -1704,6 +1709,7 @@ export default function VenueDashboard() {
                           value={formData.pa_mixer_name}
                           onChange={(e) => setFormData({ ...formData, pa_mixer_name: e.target.value })}
                           className="bg-black/20 border-white/10"
+                          disabled={!editing}
                         />
                       </div>
 
@@ -1714,6 +1720,7 @@ export default function VenueDashboard() {
                           value={formData.pa_speakers_name}
                           onChange={(e) => setFormData({ ...formData, pa_speakers_name: e.target.value })}
                           className="bg-black/20 border-white/10"
+                          disabled={!editing}
                         />
                       </div>
 
@@ -1724,6 +1731,7 @@ export default function VenueDashboard() {
                           value={formData.pa_power}
                           onChange={(e) => setFormData({ ...formData, pa_power: e.target.value })}
                           className="bg-black/20 border-white/10"
+                          disabled={!editing}
                         />
                       </div>
                     </div>
@@ -1741,8 +1749,9 @@ export default function VenueDashboard() {
                             checked={formData.has_auto_light}
                             onChange={(e) => setFormData({ ...formData, has_auto_light: e.target.checked })}
                             className="rounded"
+                            disabled={!editing}
                           />
-                          <Label className="cursor-pointer" onClick={() => setFormData({ ...formData, has_auto_light: !formData.has_auto_light })}>
+                          <Label className={!editing ? "cursor-not-allowed opacity-60" : "cursor-pointer"} onClick={() => editing && setFormData({ ...formData, has_auto_light: !formData.has_auto_light })}>
                             Auto light (jeux de lumière automatiques)
                           </Label>
                         </div>
@@ -1753,8 +1762,9 @@ export default function VenueDashboard() {
                             checked={formData.has_light_table}
                             onChange={(e) => setFormData({ ...formData, has_light_table: e.target.checked })}
                             className="rounded"
+                            disabled={!editing}
                           />
-                          <Label className="cursor-pointer" onClick={() => setFormData({ ...formData, has_light_table: !formData.has_light_table })}>
+                          <Label className={!editing ? "cursor-not-allowed opacity-60" : "cursor-pointer"} onClick={() => editing && setFormData({ ...formData, has_light_table: !formData.has_light_table })}>
                             Table light (console d'éclairage)
                           </Label>
                         </div>

@@ -61,7 +61,7 @@ export const CityAutocomplete = ({ value, onSelect, label = "Ville", placeholder
     setLoading(true);
     try {
       const response = await fetch(
-        `https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(searchQuery)}&fields=nom,code,codesPostaux,codeDepartement,codeRegion,departement,region&boost=population&limit=10`
+        `https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(searchQuery)}&fields=nom,code,codesPostaux,codeDepartement,codeRegion,departement,region,centre&boost=population&limit=10`
       );
       const data = await response.json();
       setSuggestions(data);
@@ -93,7 +93,10 @@ export const CityAutocomplete = ({ value, onSelect, label = "Ville", placeholder
       postalCode: city.codesPostaux?.[0] || '',
       department: city.codeDepartement,
       departmentName: city.departement?.nom || '',
-      region: city.region?.nom || ''
+      region: city.region?.nom || '',
+      // Coordonnées GPS: l'API renvoie [longitude, latitude]
+      latitude: city.centre?.coordinates?.[1] || 0,
+      longitude: city.centre?.coordinates?.[0] || 0
     };
     
     setQuery(city.nom);

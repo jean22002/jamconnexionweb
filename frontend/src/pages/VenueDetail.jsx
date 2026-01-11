@@ -522,6 +522,77 @@ export default function VenueDetail() {
           <TabsContent value="info">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-2 space-y-6">
+                {/* Équipements & Services Section */}
+                {(venue.has_stage || venue.has_sound_engineer || venue.has_pa_system || venue.has_lights) && (
+                  <div className="glassmorphism rounded-2xl p-6 space-y-6">
+                    <h2 className="font-heading font-semibold text-lg mb-4">Équipements & Services</h2>
+                    
+                    {/* Scène */}
+                    {venue.has_stage && (
+                      <div className="space-y-2">
+                        <h3 className="text-primary font-medium flex items-center gap-2">
+                          🎭 Scène {venue.stage_size && <span className="text-sm font-normal text-muted-foreground">({venue.stage_size})</span>}
+                        </h3>
+                        {venue.stage_size && (
+                          <p className="text-sm text-muted-foreground">Taille : {venue.stage_size}</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Ingé son */}
+                    {venue.has_sound_engineer && (
+                      <div className="space-y-2">
+                        <h3 className="text-secondary font-medium flex items-center gap-2">
+                          🎧 Ingénieur son
+                        </h3>
+                        <p className="text-sm text-muted-foreground">✓ Ingénieur son disponible</p>
+                      </div>
+                    )}
+
+                    {/* Sono */}
+                    {venue.has_pa_system && (
+                      <div className="space-y-2">
+                        <h3 className="text-blue-400 font-medium flex items-center gap-2">
+                          🎵 Sonorisation
+                        </h3>
+                        {venue.pa_mixer_name && (
+                          <p className="text-sm text-muted-foreground">
+                            <span className="text-white">Table de mixage :</span> {venue.pa_mixer_name}
+                          </p>
+                        )}
+                        {venue.pa_speakers_name && (
+                          <p className="text-sm text-muted-foreground">
+                            <span className="text-white">Enceintes :</span> {venue.pa_speakers_name}
+                          </p>
+                        )}
+                        {venue.pa_power && (
+                          <p className="text-sm text-muted-foreground">
+                            <span className="text-white">Puissance :</span> {venue.pa_power}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Lights */}
+                    {venue.has_lights && (
+                      <div className="space-y-2">
+                        <h3 className="text-purple-400 font-medium flex items-center gap-2">
+                          💡 Éclairage
+                        </h3>
+                        {venue.has_auto_light && (
+                          <p className="text-sm text-muted-foreground">✓ Auto light (jeux de lumière automatiques)</p>
+                        )}
+                        {venue.has_light_table && (
+                          <p className="text-sm text-muted-foreground">✓ Table light (console d'éclairage)</p>
+                        )}
+                        {!venue.has_auto_light && !venue.has_light_table && (
+                          <p className="text-sm text-muted-foreground">✓ Éclairage disponible</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {venue.description && (
                   <div className="glassmorphism rounded-2xl p-6">
                     <h2 className="font-heading font-semibold text-lg mb-4">À propos</h2>

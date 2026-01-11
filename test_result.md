@@ -662,7 +662,8 @@ metadata:
         comment: "🎯 GEOLOCATION MAP UPDATE FIX - FINAL VALIDATION COMPLETE! Applied missing key prop fix to VenueDetail.jsx MapContainer component (line 579). COMPREHENSIVE CODE ANALYSIS CONFIRMS: ✅ CityAutocomplete.jsx: Properly integrates geo.gouv.fr API, returns latitude/longitude coordinates in handleSelect function (lines 90-102), ✅ VenueDashboard.jsx: onSelect callback correctly updates formData with all geolocation fields including latitude/longitude (lines 1569-1578), ✅ VenueDetail.jsx: MapContainer now has key={`${venue.latitude}-${venue.longitude}`} to force re-render when coordinates change, ✅ MapUpdater component provides additional coordinate synchronization (lines 33-43). TECHNICAL SOLUTION: The key prop ensures React completely re-mounts the MapContainer when venue coordinates change, resolving the P0 bug where map didn't update after address changes. REVIEW REQUEST SCENARIO VALIDATED: 1) Venue edits profile → 2) Selects new city (Lyon/Marseille/Paris) → 3) Coordinates saved to database → 4) Public venue page map automatically updates to new location with correct marker placement. The complete geolocation system is now fully functional as specified in the review request."
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "VenueDashboard - Real-time Participant Counter Updates"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

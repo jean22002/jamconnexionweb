@@ -3808,6 +3808,19 @@ export default function VenueDashboard() {
                 </div>
               </div>
 
+              {/* Disclaimer - Avertissement */}
+              <div className="mb-6 p-4 bg-yellow-500/10 border-l-4 border-yellow-500 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <span className="text-yellow-500 text-xl flex-shrink-0">ℹ️</span>
+                  <div>
+                    <p className="font-semibold text-yellow-500 mb-1">Indicateurs donnés à titre informatif</p>
+                    <p className="text-sm text-muted-foreground">
+                      L'utilisateur reste seul responsable des décisions prises sur leur base.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Filters */}
               <div className="space-y-4 mb-6 p-4 bg-muted/30 rounded-xl">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

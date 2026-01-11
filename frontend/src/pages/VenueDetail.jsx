@@ -574,20 +574,6 @@ export default function VenueDetail() {
               </div>
 
               <div className="space-y-6">
-                <div className="h-64 rounded-2xl overflow-hidden neon-border">
-                  <MapContainer 
-                    key={`${venue.latitude}-${venue.longitude}`}
-                    center={[venue.latitude, venue.longitude]} 
-                    zoom={15} 
-                    className="h-full w-full" 
-                    scrollWheelZoom={false}
-                  >
-                    <MapUpdater center={[venue.latitude, venue.longitude]} />
-                    <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
-                    <Marker position={[venue.latitude, venue.longitude]} icon={venueIcon} />
-                  </MapContainer>
-                </div>
-
                 <div className="glassmorphism rounded-2xl p-6 space-y-4">
                   <h2 className="font-heading font-semibold text-lg">Contact</h2>
                   {venue.phone && (

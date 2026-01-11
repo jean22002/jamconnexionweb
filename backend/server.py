@@ -1401,6 +1401,18 @@ async def create_jam_event(data: JamEvent, current_user: dict = Depends(get_curr
     if not venue:
         raise HTTPException(status_code=404, detail="Venue profile not found")
     
+    # Vérifier s'il existe déjà un bœuf à cette date
+    existing_jam = await db.jams.find_one({
+        "venue_id": venue["id"],
+        "date": data.date
+    }, {"_id": 0})
+    
+    if existing_jam:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Un bœuf est déjà prévu le {data.date}. Vous ne pouvez pas créer deux bœufs le même jour."
+        )
+    
     jam_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
     

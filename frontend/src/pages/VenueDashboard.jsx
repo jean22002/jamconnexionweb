@@ -1691,6 +1691,76 @@ export default function VenueDashboard() {
                       </Select>
                     </div>
                   )}
+
+                  {/* Conditionally show PA system details */}
+                  {formData.has_pa_system && (
+                    <div className="mt-4 p-4 bg-muted/30 rounded-lg border border-white/10 space-y-3">
+                      <Label className="text-base font-semibold">🔊 Détails de la sono</Label>
+                      
+                      <div className="space-y-2">
+                        <Label>Nom de la table de mixage</Label>
+                        <Input
+                          placeholder="Ex: Yamaha MG16XU, Behringer X32..."
+                          value={formData.pa_mixer_name}
+                          onChange={(e) => setFormData({ ...formData, pa_mixer_name: e.target.value })}
+                          className="bg-black/20 border-white/10"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Nom des enceintes</Label>
+                        <Input
+                          placeholder="Ex: JBL EON615, RCF ART 735-A..."
+                          value={formData.pa_speakers_name}
+                          onChange={(e) => setFormData({ ...formData, pa_speakers_name: e.target.value })}
+                          className="bg-black/20 border-white/10"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Puissance</Label>
+                        <Input
+                          placeholder="Ex: 2000W, 3kW..."
+                          value={formData.pa_power}
+                          onChange={(e) => setFormData({ ...formData, pa_power: e.target.value })}
+                          className="bg-black/20 border-white/10"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Conditionally show lights details */}
+                  {formData.has_lights && (
+                    <div className="mt-4 p-4 bg-muted/30 rounded-lg border border-white/10 space-y-3">
+                      <Label className="text-base font-semibold">💡 Détails des lights</Label>
+                      
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={formData.has_auto_light}
+                            onChange={(e) => setFormData({ ...formData, has_auto_light: e.target.checked })}
+                            className="rounded"
+                          />
+                          <Label className="cursor-pointer" onClick={() => setFormData({ ...formData, has_auto_light: !formData.has_auto_light })}>
+                            Auto light (jeux de lumière automatiques)
+                          </Label>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={formData.has_light_table}
+                            onChange={(e) => setFormData({ ...formData, has_light_table: e.target.checked })}
+                            className="rounded"
+                          />
+                          <Label className="cursor-pointer" onClick={() => setFormData({ ...formData, has_light_table: !formData.has_light_table })}>
+                            Table light (console d'éclairage)
+                          </Label>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-4 border-t border-white/10 pt-4">

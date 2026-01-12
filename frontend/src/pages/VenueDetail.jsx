@@ -855,8 +855,12 @@ export default function VenueDetail() {
                       <span>Vous avez candidaté</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-secondary/20 border-2 border-secondary rounded"></div>
+                      <div className="w-4 h-4 bg-yellow-500/20 border-2 border-yellow-500 rounded"></div>
                       <span>Créneau disponible</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-white/5 border border-white/10 rounded"></div>
+                      <span>Date non attribuée</span>
                     </div>
                   </div>
                 )}

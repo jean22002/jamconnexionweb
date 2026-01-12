@@ -4048,16 +4048,125 @@ export default function VenueDashboard() {
                         )}
                       </div>
 
-                      <Button
-                        onClick={() => {
-                          setSelectedBand(band);
-                          setShowMessageDialog(true);
-                        }}
-                        className="w-full bg-primary hover:bg-primary/90 rounded-full gap-2"
-                      >
-                        <Send className="w-4 h-4" />
-                        Contacter
-                      </Button>
+                      <div className="flex gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              className="flex-1 bg-cyan-500 hover:bg-cyan-600 rounded-full gap-2"
+                            >
+                              <Eye className="w-4 h-4" />
+                              Voir le profil complet
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="glassmorphism border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle className="text-2xl">{band.name}</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4 mt-4">
+                              {band.photo && (
+                                <img src={band.photo} alt={band.name} className="w-full h-60 object-cover rounded-lg" />
+                              )}
+                              
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <MapPin className="w-4 h-4" />
+                                <span>{band.city} {band.department && `(${band.department})`}</span>
+                              </div>
+
+                              {band.members_count && (
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <Users className="w-4 h-4" />
+                                  <span>{band.members_count} membre(s)</span>
+                                </div>
+                              )}
+
+                              {band.description && (
+                                <div>
+                                  <Label className="text-base font-semibold mb-2 block">Description</Label>
+                                  <p className="text-sm text-muted-foreground">{band.description}</p>
+                                </div>
+                              )}
+
+                              {band.music_styles?.length > 0 && (
+                                <div>
+                                  <Label className="text-base font-semibold mb-2 block">Styles musicaux</Label>
+                                  <div className="flex flex-wrap gap-2">
+                                    {band.music_styles.map((style, i) => (
+                                      <span key={i} className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm">{style}</span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="flex gap-2 flex-wrap">
+                                {band.looking_for_concerts && (
+                                  <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
+                                    🎤 Cherche concerts
+                                  </span>
+                                )}
+                                {band.looking_for_members && (
+                                  <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
+                                    👥 Cherche membres
+                                  </span>
+                                )}
+                              </div>
+
+                              {(band.is_association && band.association_name) && (
+                                <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                                  <Label className="text-base font-semibold mb-2 block text-blue-400">🏛️ Association</Label>
+                                  <p className="text-sm">{band.association_name}</p>
+                                </div>
+                              )}
+
+                              {(band.has_label && band.label_name) && (
+                                <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                                  <Label className="text-base font-semibold mb-2 block text-purple-400">🎵 Label de musique</Label>
+                                  <p className="text-sm">{band.label_name}</p>
+                                  {band.label_city && <p className="text-sm text-muted-foreground mt-1">📍 {band.label_city}</p>}
+                                </div>
+                              )}
+
+                              {(band.facebook || band.instagram || band.youtube || band.website) && (
+                                <div>
+                                  <Label className="text-base font-semibold mb-2 block">Réseaux sociaux</Label>
+                                  <div className="flex gap-3">
+                                    {band.facebook && (
+                                      <a href={band.facebook} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-white">
+                                        <Facebook className="w-5 h-5" />
+                                      </a>
+                                    )}
+                                    {band.instagram && (
+                                      <a href={band.instagram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-white">
+                                        <Instagram className="w-5 h-5" />
+                                      </a>
+                                    )}
+                                    {band.youtube && (
+                                      <a href={band.youtube} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-white">
+                                        <Youtube className="w-5 h-5" />
+                                      </a>
+                                    )}
+                                    {band.website && (
+                                      <a href={band.website} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-white">
+                                        <Globe className="w-5 h-5" />
+                                      </a>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+
+                        <Button
+                          onClick={() => {
+                            setSelectedBand(band);
+                            setShowMessageDialog(true);
+                          }}
+                          className="flex-1 bg-primary hover:bg-primary/90 rounded-full gap-2"
+                        >
+                          <Send className="w-4 h-4" />
+                          Contacter
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>

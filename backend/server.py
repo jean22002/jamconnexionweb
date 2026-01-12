@@ -108,6 +108,9 @@ class BandInfo(BaseModel):
     has_sound_engineer: bool = False  # Le groupe possède son propre ingénieur son
     is_association: bool = False  # Le groupe fait partie d'une association
     association_name: Optional[str] = None  # Nom de l'association
+    has_label: bool = False  # Le groupe a un label de musique
+    label_name: Optional[str] = None  # Nom du label
+    label_city: Optional[str] = None  # Ville du label
     # Location info
     city: Optional[str] = None
     postal_code: Optional[str] = None

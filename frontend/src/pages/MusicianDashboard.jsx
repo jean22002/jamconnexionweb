@@ -3153,36 +3153,6 @@ export default function MusicianDashboard() {
                   Réinitialiser les filtres
                 </Button>
                   </div>
-                ) : (
-                  /* Mode géolocalisation */
-                  <div className="space-y-6">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Label>Rayon de recherche</Label>
-                        <span className="text-primary font-semibold">{bandSearchRadius} km</span>
-                      </div>
-                      <Slider
-                        value={[bandSearchRadius]}
-                        onValueChange={(value) => setBandSearchRadius(value[0])}
-                        max={200}
-                        min={5}
-                        step={5}
-                        className="w-full"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Rechercher les groupes dans un rayon de {bandSearchRadius} km autour de vous
-                      </p>
-                    </div>
-
-                    {!geoPosition && (
-                      <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                        <p className="text-sm text-yellow-400">
-                          📍 Activez la géolocalisation pour rechercher les groupes autour de vous
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
 
               {/* Bands List */}

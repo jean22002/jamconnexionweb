@@ -65,6 +65,8 @@ export default function VenueDashboard() {
   // Dialogs
   const [showJamDialog, setShowJamDialog] = useState(false);
   const [showConcertDialog, setShowConcertDialog] = useState(false);
+  const [showKaraokeDialog, setShowKaraokeDialog] = useState(false);
+  const [showSpectacleDialog, setShowSpectacleDialog] = useState(false);
   const [showPlanningDialog, setShowPlanningDialog] = useState(false);
   const [viewingApplications, setViewingApplications] = useState(null);
   

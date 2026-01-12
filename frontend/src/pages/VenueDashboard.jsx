@@ -2706,10 +2706,7 @@ export default function VenueDashboard() {
                     </div>
                     <DialogFooter>
                       <Button onClick={() => setShowKaraokeDialog(false)} variant="outline">Annuler</Button>
-                      <Button onClick={() => {
-                        toast.success("Soirée karaoké créée!");
-                        setShowKaraokeDialog(false);
-                      }} className="bg-primary hover:bg-primary/90">Créer</Button>
+                      <Button onClick={createKaraoke} className="bg-primary hover:bg-primary/90">Créer</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>

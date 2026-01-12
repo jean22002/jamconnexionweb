@@ -28,7 +28,10 @@ export default function VenueDetail() {
   const [loading, setLoading] = useState(true);
   const [jams, setJams] = useState([]);
   const [concerts, setConcerts] = useState([]);
+  const [karaokes, setKaraokes] = useState([]);
+  const [spectacles, setSpectacles] = useState([]);
   const [planningSlots, setPlanningSlots] = useState([]);
+  const [myApplications, setMyApplications] = useState([]);
   const [showApplyDialog, setShowApplyDialog] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [applicationForm, setApplicationForm] = useState({

@@ -3388,6 +3388,30 @@ export default function MusicianDashboard() {
                         </div>
                       )}
 
+                      {/* Association */}
+                      {selectedBand.is_association && selectedBand.association_name && (
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Association</Label>
+                          <p className="text-sm font-semibold flex items-center gap-2">
+                            <Users className="w-4 h-4 text-green-400" />
+                            {selectedBand.association_name}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Label de musique */}
+                      {selectedBand.has_label && selectedBand.label_name && (
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Label de musique</Label>
+                          <p className="text-sm font-semibold">
+                            🏷️ {selectedBand.label_name}
+                            {selectedBand.label_city && (
+                              <span className="text-muted-foreground ml-2">({selectedBand.label_city})</span>
+                            )}
+                          </p>
+                        </div>
+                      )}
+
                       {/* Styles musicaux */}
                       {selectedBand.music_styles && selectedBand.music_styles.length > 0 && (
                         <div>

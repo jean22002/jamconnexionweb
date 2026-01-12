@@ -2712,11 +2712,57 @@ export default function VenueDashboard() {
                 </Dialog>
               </div>
 
-              <div className="glassmorphism rounded-2xl p-6">
-                <p className="text-muted-foreground text-center py-8">
-                  Aucune soirée karaoké prévue. Créez votre première soirée karaoké !
-                </p>
-              </div>
+              {karaokes.length === 0 ? (
+                <div className="glassmorphism rounded-2xl p-6">
+                  <p className="text-muted-foreground text-center py-8">
+                    Aucune soirée karaoké prévue. Créez votre première soirée karaoké !
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {karaokes.map((karaoke) => (
+                    <div 
+                      key={karaoke.id} 
+                      className="glassmorphism rounded-xl p-5 hover:bg-white/5 transition-colors"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="font-heading font-semibold text-lg">{karaoke.title || "Soirée Karaoké"}</p>
+                          <p className="text-muted-foreground text-sm">{karaoke.date} • {karaoke.start_time} - {karaoke.end_time}</p>
+                          <p className="text-green-400 text-sm mt-1">
+                            👥 {karaoke.participants_count || 0} participant{(karaoke.participants_count || 0) > 1 ? 's' : ''}
+                          </p>
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={async () => {
+                            if (window.confirm("Supprimer cette soirée karaoké ?")) {
+                              try {
+                                await axios.delete(`${API}/karaoke/${karaoke.id}`, { headers: { Authorization: `Bearer ${token}` } });
+                                toast.success("Soirée karaoké supprimée");
+                                fetchEvents();
+                              } catch (error) {
+                                toast.error("Erreur lors de la suppression");
+                              }
+                            }
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </div>
+                      {karaoke.description && (
+                        <p className="text-muted-foreground text-sm mt-3">{karaoke.description}</p>
+                      )}
+                      {karaoke.music_styles && karaoke.music_styles.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {karaoke.music_styles.map((s, i) => <span key={i} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">{s}</span>)}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </TabsContent>
 
@@ -2817,18 +2863,61 @@ export default function VenueDashboard() {
                     </div>
                     <DialogFooter>
                       <Button onClick={() => setShowSpectacleDialog(false)} variant="outline">Annuler</Button>
-                      <Button onClick={() => setShowSpectacleDialog(false)} variant="outline">Annuler</Button>
                       <Button onClick={createSpectacle} className="bg-primary hover:bg-primary/90">Créer</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
               </div>
 
-              <div className="glassmorphism rounded-2xl p-6">
-                <p className="text-muted-foreground text-center py-8">
-                  Aucun spectacle prévu. Créez votre premier spectacle !
-                </p>
-              </div>
+              {spectacles.length === 0 ? (
+                <div className="glassmorphism rounded-2xl p-6">
+                  <p className="text-muted-foreground text-center py-8">
+                    Aucun spectacle prévu. Créez votre premier spectacle !
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {spectacles.map((spectacle) => (
+                    <div 
+                      key={spectacle.id} 
+                      className="glassmorphism rounded-xl p-5 hover:bg-white/5 transition-colors"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="font-heading font-semibold text-lg">{spectacle.artist_name}</p>
+                          <p className="text-muted-foreground text-sm">{spectacle.date} • {spectacle.start_time} - {spectacle.end_time}</p>
+                          <span className="inline-block px-2 py-1 bg-secondary/20 text-secondary text-xs rounded-full mt-2">
+                            {spectacle.type}
+                          </span>
+                          {spectacle.price && (
+                            <p className="text-green-400 text-sm mt-1">💰 {spectacle.price}</p>
+                          )}
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={async () => {
+                            if (window.confirm("Supprimer ce spectacle ?")) {
+                              try {
+                                await axios.delete(`${API}/spectacle/${spectacle.id}`, { headers: { Authorization: `Bearer ${token}` } });
+                                toast.success("Spectacle supprimé");
+                                fetchEvents();
+                              } catch (error) {
+                                toast.error("Erreur lors de la suppression");
+                              }
+                            }
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </div>
+                      {spectacle.description && (
+                        <p className="text-muted-foreground text-sm mt-3">{spectacle.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </TabsContent>
 

@@ -58,6 +58,8 @@ export default function VenueDashboard() {
   // Events
   const [jams, setJams] = useState([]);
   const [concerts, setConcerts] = useState([]);
+  const [karaokes, setKaraokes] = useState([]);
+  const [spectacles, setSpectacles] = useState([]);
   const [planningSlots, setPlanningSlots] = useState([]);
   const [applications, setApplications] = useState({});
   const [musicians, setMusicians] = useState([]);

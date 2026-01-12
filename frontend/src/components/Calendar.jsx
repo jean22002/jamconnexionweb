@@ -90,7 +90,7 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
     let label = '';
     let eventInfo = '';
     
-    // Priorité : Candidatures du musicien > Événements réservés > Créneaux disponibles
+    // Priorité : Candidatures du musicien > Événements réservés > Créneaux disponibles > Dates normales
     if (hasApplied) {
       // VERT pour les créneaux où le musicien a candidaté
       colorClasses = 'bg-green-500/20 text-green-400 border-2 border-green-500/40 hover:bg-green-500/30 cursor-pointer';
@@ -119,13 +119,13 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
       label = 'En cours';
       eventInfo = `${planningSlot.accepted_bands_count}/${planningSlot.num_bands_needed} groupes`;
     } else if (isOpenSlot) {
-      // BLEU/SECONDARY pour les créneaux ouverts disponibles (changé de jaune)
-      colorClasses = 'bg-secondary/20 text-secondary border-2 border-secondary/40 hover:bg-secondary/30 cursor-pointer';
+      // JAUNE pour les créneaux ouverts disponibles
+      colorClasses = 'bg-yellow-500/20 text-yellow-400 border-2 border-yellow-500/40 hover:bg-yellow-500/30 cursor-pointer';
       label = 'Disponible';
       eventInfo = planningSlot.title || `${planningSlot.num_bands_needed || 1} groupe${planningSlot.num_bands_needed > 1 ? 's' : ''}`;
     } else if (eventType === 'concert') {
-      // Vert pour les concerts - maintenant cliquable
-      colorClasses = 'bg-green-500/20 text-green-400 border-2 border-green-500/40 hover:bg-green-500/30 cursor-pointer';
+      // Les concerts sans créneau restent en rouge (événement réservé)
+      colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 hover:bg-red-500/30 cursor-pointer';
       label = 'Concert';
       // Afficher le nombre de participants et les noms des groupes
       if (concert) {
@@ -137,8 +137,8 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
         }
       }
     } else if (eventType === 'jam') {
-      // Mauve pour les bœufs - maintenant cliquable
-      colorClasses = 'bg-purple-500/20 text-purple-400 border-2 border-purple-500/40 hover:bg-purple-500/30 cursor-pointer';
+      // Les jams sans créneau restent en rouge (événement réservé)
+      colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 hover:bg-red-500/30 cursor-pointer';
       label = 'Bœuf';
       // Afficher le nombre de participants si disponible
       if (jam && jam.participants_count !== undefined) {

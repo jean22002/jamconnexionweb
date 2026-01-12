@@ -825,50 +825,140 @@ export default function VenueDetail() {
                 <p>Aucune date ouverte aux candidatures</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {planningSlots.map((slot) => (
-                  <div key={slot.id} className="glassmorphism rounded-xl p-5">
-                    <div className="space-y-3">
-                      <div>
-                        <p className="font-heading font-semibold text-lg">{slot.date}</p>
-                        {slot.time && <p className="text-primary text-sm">🕐 {slot.time}</p>}
-                        {slot.title && <p className="text-sm font-medium mt-1">{slot.title}</p>}
-                      </div>
-                      
-                      {slot.music_styles && slot.music_styles.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {slot.music_styles.map((s, i) => <span key={i} className="px-2 py-1 bg-secondary/20 text-secondary text-xs rounded-full">{s}</span>)}
-                        </div>
-                      )}
-                      
-                      <div className="space-y-1 text-sm">
-                        {slot.expected_band_style && (
-                          <p className="text-muted-foreground">🎸 Style recherché: {slot.expected_band_style}</p>
-                        )}
-                        {slot.expected_attendance > 0 && (
-                          <p className="text-muted-foreground">👥 Affluence: ~{slot.expected_attendance} personnes</p>
-                        )}
-                        {slot.payment && (
-                          <p className="text-green-400">💰 {slot.payment}</p>
-                        )}
-                        {slot.has_catering && (
-                          <p className="text-muted-foreground">🍽️ Catering disponible</p>
-                        )}
-                        {slot.has_accommodation && (
-                          <p className="text-muted-foreground">🛏️ Hébergement disponible</p>
-                        )}
-                      </div>
-                      
-                      {slot.description && (
-                        <p className="text-sm text-muted-foreground border-t border-white/10 pt-3">{slot.description}</p>
-                      )}
-                    </div>
-                    
-                    <Button onClick={() => openApplyDialog(slot)} className="w-full mt-4 bg-secondary hover:bg-secondary/90 rounded-full gap-2" data-testid={`apply-btn-${slot.id}`}>
-                      <Send className="w-4 h-4" /> Postuler
-                    </Button>
+              <div className="space-y-4">
+                {/* Toggle View Button */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-heading font-semibold text-lg">Créneaux de candidature</h3>
+                    <p className="text-sm text-muted-foreground">{planningSlots.length} créneau{planningSlots.length > 1 ? 'x' : ''} disponible{planningSlots.length > 1 ? 's' : ''}</p>
                   </div>
-                ))}
+                  <Button 
+                    onClick={() => setShowCalendarView(!showCalendarView)}
+                    variant="outline"
+                    className="rounded-full gap-2"
+                  >
+                    <CalendarIcon className="w-4 h-4" />
+                    {showCalendarView ? "Vue liste" : "Vue calendrier"}
+                  </Button>
+                </div>
+
+                {/* Legend */}
+                {showCalendarView && (
+                  <div className="flex flex-wrap gap-4 text-sm glassmorphism rounded-xl p-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-red-500/20 border-2 border-red-500 rounded"></div>
+                      <span>Événement programmé</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-green-500/20 border-2 border-green-500 rounded"></div>
+                      <span>Vous avez candidaté</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-secondary/20 border-2 border-secondary rounded"></div>
+                      <span>Créneau disponible</span>
+                    </div>
+                  </div>
+                )}
+
+                {showCalendarView ? (
+                  /* Calendar View */
+                  <div className="glassmorphism rounded-2xl p-6">
+                    <Calendar
+                      currentMonth={currentMonth}
+                      onMonthChange={setCurrentMonth}
+                      onDateClick={(dateStr) => {
+                        setSelectedDate(dateStr);
+                        const slot = planningSlots.find(s => s.date === dateStr);
+                        if (slot) {
+                          openApplyDialog(slot);
+                        }
+                      }}
+                      bookedDates={[
+                        ...jams.map(j => j.date),
+                        ...concerts.map(c => c.date),
+                        ...karaokes.map(k => k.date),
+                        ...spectacles.map(s => s.date)
+                      ]}
+                      eventsByDate={{}}
+                      planningSlots={planningSlots}
+                      myApplications={myApplications}
+                    />
+                  </div>
+                ) : (
+                  /* List View */
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {planningSlots.map((slot) => {
+                      const hasApplied = myApplications.some(app => app.slot_id === slot.id);
+                      const isBooked = [
+                        ...jams.map(j => j.date),
+                        ...concerts.map(c => c.date),
+                        ...karaokes.map(k => k.date),
+                        ...spectacles.map(s => s.date)
+                      ].includes(slot.date);
+
+                      return (
+                        <div key={slot.id} className={`glassmorphism rounded-xl p-5 ${hasApplied ? 'border-2 border-green-500' : isBooked ? 'border-2 border-red-500' : ''}`}>
+                          <div className="space-y-3">
+                            <div>
+                              <div className="flex items-center justify-between">
+                                <p className="font-heading font-semibold text-lg">{slot.date}</p>
+                                {hasApplied && (
+                                  <span className="px-2 py-1 bg-green-500/20 text-green-500 text-xs rounded-full">
+                                    ✓ Candidaté
+                                  </span>
+                                )}
+                                {isBooked && !hasApplied && (
+                                  <span className="px-2 py-1 bg-red-500/20 text-red-500 text-xs rounded-full">
+                                    Réservé
+                                  </span>
+                                )}
+                              </div>
+                              {slot.time && <p className="text-primary text-sm">🕐 {slot.time}</p>}
+                              {slot.title && <p className="text-sm font-medium mt-1">{slot.title}</p>}
+                            </div>
+                            
+                            {slot.music_styles && slot.music_styles.length > 0 && (
+                              <div className="flex flex-wrap gap-2">
+                                {slot.music_styles.map((s, i) => <span key={i} className="px-2 py-1 bg-secondary/20 text-secondary text-xs rounded-full">{s}</span>)}
+                              </div>
+                            )}
+                            
+                            <div className="space-y-1 text-sm">
+                              {slot.expected_band_style && (
+                                <p className="text-muted-foreground">🎸 Style recherché: {slot.expected_band_style}</p>
+                              )}
+                              {slot.expected_attendance > 0 && (
+                                <p className="text-muted-foreground">👥 Affluence: ~{slot.expected_attendance} personnes</p>
+                              )}
+                              {slot.payment && (
+                                <p className="text-green-400">💰 {slot.payment}</p>
+                              )}
+                              {slot.has_catering && (
+                                <p className="text-muted-foreground">🍽️ Catering disponible</p>
+                              )}
+                              {slot.has_accommodation && (
+                                <p className="text-muted-foreground">🛏️ Hébergement disponible</p>
+                              )}
+                            </div>
+                            
+                            {slot.description && (
+                              <p className="text-sm text-muted-foreground border-t border-white/10 pt-3">{slot.description}</p>
+                            )}
+                          </div>
+                          
+                          <Button 
+                            onClick={() => openApplyDialog(slot)} 
+                            className="w-full mt-4 bg-secondary hover:bg-secondary/90 rounded-full gap-2" 
+                            data-testid={`apply-btn-${slot.id}`}
+                            disabled={hasApplied}
+                          >
+                            <Send className="w-4 h-4" /> {hasApplied ? "Déjà candidaté" : "Postuler"}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 

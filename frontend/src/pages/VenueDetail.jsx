@@ -56,6 +56,9 @@ export default function VenueDetail() {
   const [loadingBands, setLoadingBands] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [showCalendarView, setShowCalendarView] = useState(false);
 
   const fetchVenue = useCallback(async () => {
     try {

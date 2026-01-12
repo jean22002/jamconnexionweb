@@ -106,6 +106,8 @@ class BandInfo(BaseModel):
     show_duration: Optional[str] = None  # 30mn, 45mn, 1h, 1h15, etc.
     admin_id: Optional[str] = None  # ID du musicien administrateur du groupe
     has_sound_engineer: bool = False  # Le groupe possède son propre ingénieur son
+    is_association: bool = False  # Le groupe fait partie d'une association
+    association_name: Optional[str] = None  # Nom de l'association
     # Location info
     city: Optional[str] = None
     postal_code: Optional[str] = None

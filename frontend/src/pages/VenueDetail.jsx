@@ -248,6 +248,7 @@ export default function VenueDetail() {
       toast.success("Candidature envoyée!");
       setShowApplyDialog(false);
       setApplicationForm({ band_name: "", band_photo: "", description: "", music_style: "", links: { facebook: "", instagram: "", youtube: "" }, contact_email: "", contact_phone: "" });
+      fetchMyApplications(); // Refresh applications to update calendar
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur");
     }

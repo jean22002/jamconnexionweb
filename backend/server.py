@@ -332,6 +332,53 @@ class ConcertEventResponse(BaseModel):
     participants_count: int = 0  # Nombre de participants (musiciens qui ont cliqué "Je participe")
     created_at: str
 
+
+# Karaoke Event
+class KaraokeEvent(BaseModel):
+    date: str
+    start_time: str
+    end_time: Optional[str] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    music_styles: List[str] = []
+
+class KaraokeEventResponse(BaseModel):
+    id: str
+    venue_id: str
+    venue_name: str
+    date: str
+    start_time: str
+    end_time: Optional[str] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    music_styles: List[str] = []
+    participants_count: int = 0
+    created_at: str
+
+# Spectacle Event
+class SpectacleEvent(BaseModel):
+    date: str
+    start_time: str
+    end_time: Optional[str] = None
+    type: str  # humour, theatre, magie, danse, cirque, conte, autre
+    artist_name: str
+    description: Optional[str] = None
+    price: Optional[str] = None
+
+class SpectacleEventResponse(BaseModel):
+    id: str
+    venue_id: str
+    venue_name: str
+    date: str
+    start_time: str
+    end_time: Optional[str] = None
+    type: str
+    artist_name: str
+    description: Optional[str] = None
+    price: Optional[str] = None
+    participants_count: int = 0
+    created_at: str
+
 # Planning/Open dates for concerts
 class PlanningSlot(BaseModel):
     date: str

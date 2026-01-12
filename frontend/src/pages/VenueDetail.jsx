@@ -59,6 +59,7 @@ export default function VenueDetail() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [showCalendarView, setShowCalendarView] = useState(false);
+  const [selectedSlotForPreview, setSelectedSlotForPreview] = useState(null);
 
   const fetchVenue = useCallback(async () => {
     try {

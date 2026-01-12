@@ -153,16 +153,21 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
       colorClasses = 'bg-muted/20 text-muted-foreground cursor-not-allowed opacity-40';
       label = '';
     } else {
-      // Bleu pour les jours libres
-      colorClasses = 'bg-blue-500/20 text-blue-400 border-2 border-blue-500/40 hover:bg-blue-500/30 hover:border-blue-500/60 cursor-pointer';
-      label = 'Libre';
+      // BLANC pour les jours sans créneau (verrouillés, non cliquables)
+      colorClasses = 'bg-white/5 text-muted-foreground/50 border border-white/10 cursor-not-allowed';
+      label = '';
     }
     
     calendarDays.push(
       <button
         key={day}
-        onClick={() => onDateClick(date)}
-        disabled={isPast && !eventType}
+        onClick={() => {
+          // Seulement permettre le click si ce n'est pas une date passée et qu'il y a un créneau ou événement
+          if (!isPast && (planningSlot || isBooked)) {
+            onDateClick(dateStr);
+          }
+        }}
+        disabled={isPast || (!planningSlot && !isBooked)}
         className={`
           aspect-square p-2 rounded-lg font-semibold transition-all
           ${colorClasses}

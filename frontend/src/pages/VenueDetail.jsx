@@ -868,27 +868,115 @@ export default function VenueDetail() {
 
                 {showCalendarView ? (
                   /* Calendar View */
-                  <div className="glassmorphism rounded-2xl p-6">
-                    <Calendar
-                      currentMonth={currentMonth}
-                      onMonthChange={setCurrentMonth}
-                      onDateClick={(dateStr) => {
-                        setSelectedDate(dateStr);
-                        const slot = planningSlots.find(s => s.date === dateStr);
-                        if (slot) {
-                          openApplyDialog(slot);
-                        }
-                      }}
-                      bookedDates={[
-                        ...jams.map(j => j.date),
-                        ...concerts.map(c => c.date),
-                        ...karaokes.map(k => k.date),
-                        ...spectacles.map(s => s.date)
-                      ]}
-                      eventsByDate={{}}
-                      planningSlots={planningSlots}
-                      myApplications={myApplications}
-                    />
+                  <div className="relative">
+                    <div className="glassmorphism rounded-2xl p-6">
+                      <Calendar
+                        currentMonth={currentMonth}
+                        onMonthChange={setCurrentMonth}
+                        onDateClick={(dateStr) => {
+                          setSelectedDate(dateStr);
+                          const slot = planningSlots.find(s => s.date === dateStr);
+                          if (slot) {
+                            setSelectedSlotForPreview(slot);
+                          }
+                        }}
+                        bookedDates={[
+                          ...jams.map(j => j.date),
+                          ...concerts.map(c => c.date),
+                          ...karaokes.map(k => k.date),
+                          ...spectacles.map(s => s.date)
+                        ]}
+                        eventsByDate={{}}
+                        planningSlots={planningSlots}
+                        myApplications={myApplications}
+                      />
+                    </div>
+
+                    {/* Slot Preview Card Overlay */}
+                    {selectedSlotForPreview && (
+                      <div className="absolute inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-sm rounded-2xl p-4">
+                        <div className="glassmorphism rounded-xl p-6 max-w-lg w-full shadow-2xl border-2 border-primary/30 max-h-[80vh] overflow-y-auto">
+                          {/* Close button */}
+                          <button 
+                            onClick={() => setSelectedSlotForPreview(null)}
+                            className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+
+                          <div className="space-y-4">
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="font-heading font-semibold text-2xl">{selectedSlotForPreview.date}</p>
+                                {myApplications.some(app => app.slot_id === selectedSlotForPreview.id) && (
+                                  <span className="px-3 py-1 bg-green-500/20 text-green-500 text-sm rounded-full">
+                                    ✓ Candidaté
+                                  </span>
+                                )}
+                              </div>
+                              {selectedSlotForPreview.time && <p className="text-primary text-lg">🕐 {selectedSlotForPreview.time}</p>}
+                              {selectedSlotForPreview.title && <p className="text-lg font-medium mt-2">{selectedSlotForPreview.title}</p>}
+                            </div>
+                            
+                            {selectedSlotForPreview.music_styles && selectedSlotForPreview.music_styles.length > 0 && (
+                              <div className="flex flex-wrap gap-2">
+                                {selectedSlotForPreview.music_styles.map((s, i) => (
+                                  <span key={i} className="px-3 py-1 bg-secondary/20 text-secondary text-sm rounded-full">{s}</span>
+                                ))}
+                              </div>
+                            )}
+                            
+                            <div className="space-y-2 text-sm">
+                              {selectedSlotForPreview.expected_band_style && (
+                                <p className="text-muted-foreground">🎸 Style recherché: {selectedSlotForPreview.expected_band_style}</p>
+                              )}
+                              {selectedSlotForPreview.expected_attendance > 0 && (
+                                <p className="text-muted-foreground">👥 Affluence attendue: ~{selectedSlotForPreview.expected_attendance} personnes</p>
+                              )}
+                              {selectedSlotForPreview.payment && (
+                                <p className="text-green-400 font-semibold">💰 {selectedSlotForPreview.payment}</p>
+                              )}
+                              {selectedSlotForPreview.has_catering && (
+                                <p className="text-muted-foreground">🍽️ Catering disponible</p>
+                              )}
+                              {selectedSlotForPreview.has_accommodation && (
+                                <p className="text-muted-foreground">🛏️ Hébergement disponible</p>
+                              )}
+                            </div>
+                            
+                            {selectedSlotForPreview.description && (
+                              <div className="border-t border-white/10 pt-4">
+                                <p className="text-sm text-muted-foreground">{selectedSlotForPreview.description}</p>
+                              </div>
+                            )}
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3 pt-4">
+                              <Button 
+                                onClick={() => setSelectedSlotForPreview(null)}
+                                variant="outline"
+                                className="flex-1 rounded-full"
+                              >
+                                Fermer
+                              </Button>
+                              <Button 
+                                onClick={() => {
+                                  openApplyDialog(selectedSlotForPreview);
+                                  setSelectedSlotForPreview(null);
+                                }}
+                                className="flex-1 bg-secondary hover:bg-secondary/90 rounded-full gap-2"
+                                disabled={myApplications.some(app => app.slot_id === selectedSlotForPreview.id)}
+                              >
+                                <Send className="w-4 h-4" />
+                                {myApplications.some(app => app.slot_id === selectedSlotForPreview.id) ? "Déjà candidaté" : "Postuler"}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   /* List View */

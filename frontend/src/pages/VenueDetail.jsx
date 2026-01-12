@@ -72,10 +72,14 @@ export default function VenueDetail() {
       const [jamsRes, concertsRes, planningRes] = await Promise.all([
         axios.get(`${API}/venues/${id}/jams`),
         axios.get(`${API}/venues/${id}/concerts`),
+        axios.get(`${API}/venues/${id}/karaoke`),
+        axios.get(`${API}/venues/${id}/spectacle`),
         axios.get(`${API}/venues/${id}/planning`)
       ]);
       setJams(jamsRes.data);
       setConcerts(concertsRes.data);
+      setKaraokes(karaokeRes.data);
+      setSpectacles(spectacleRes.data);
       setPlanningSlots(planningRes.data.filter(s => s.is_open));
     } catch (error) {
       console.error("Error:", error);

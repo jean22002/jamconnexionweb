@@ -523,6 +523,21 @@ frontend:
         agent: "testing"
         comment: "✅ CORRECTION VALIDÉE - Test avec compte test_venue_invoice_4266@test.com. RÉSULTATS: ✅ 9 onglets présents (au lieu de 8), ✅ Onglet 'Factures' trouvé et accessible, ✅ Statut de l'abonnement affiché, ✅ Prix 29,99 € par mois affiché, ✅ Message 'Aucune facture disponible' affiché, ✅ Section de contact support présente. Onglets complets: ['Profil', 'Boeufs', 'Concerts', 'Planning', 'Notifications', 'Avis', 'Groupes', 'Galerie', 'Factures']. L'onglet Factures est entièrement fonctionnel."
 
+  - task: "VenueDashboard - Voir le profil complet (Groupes)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/VenueDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Ajout du bouton 'Voir le profil complet' (cyan) à côté du bouton 'Contacter' (violet) sur les cartes de groupe dans l'onglet Groupes. Le bouton ouvre une boîte de dialogue modale affichant toutes les informations du groupe"
+      - working: true
+        agent: "testing"
+        comment: "🎉 VOIR LE PROFIL COMPLET - FONCTIONNALITÉ ENTIÈREMENT VALIDÉE! Tests complets de la nouvelle fonctionnalité 'Voir le profil complet' dans l'onglet Groupes du tableau de bord établissement. RÉSULTATS DÉTAILLÉS (100% RÉUSSI): ✅ Connexion établissement réussie (karaoke@test.com), ✅ Navigation vers onglet 'Groupes' fonctionnelle, ✅ 236 cartes de groupes chargées avec succès, ✅ BOUTONS CORRECTEMENT IMPLÉMENTÉS: Bouton 'Voir le profil complet' (cyan: bg-cyan-500 hover:bg-cyan-600) et bouton 'Contacter' (violet: bg-primary hover:bg-primary/90) présents côte à côte, ✅ MODAL PROFIL COMPLET FONCTIONNELLE: Ouverture correcte au clic, titre du groupe affiché ('The Jazz Collective'), informations complètes visibles (localisation Paris, badge 'Cherche concerts', section réseaux sociaux, photo du groupe), fermeture correcte de la modal, ✅ FONCTIONNALITÉ CONTACT ACCESSIBLE: Bouton 'Contacter' fonctionnel. VALIDATION COMPLÈTE: Tous les points de validation de la review request sont satisfaits - les deux boutons s'affichent avec les bonnes couleurs, la modal s'ouvre et affiche toutes les informations du groupe, et se ferme correctement. La fonctionnalité est prête pour la production."
+
   - task: "VenueDashboard - Calendrier Visuel Planning"
     implemented: true
     working: true

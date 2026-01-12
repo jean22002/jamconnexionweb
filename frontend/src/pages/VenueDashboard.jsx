@@ -253,19 +253,25 @@ export default function VenueDashboard() {
   const fetchEvents = useCallback(async () => {
     if (!profile) return;
     try {
-      const [jamsRes, concertsRes, planningRes] = await Promise.all([
+      const [jamsRes, concertsRes, karaokeRes, spectacleRes, planningRes] = await Promise.all([
         axios.get(`${API}/venues/${profile.id}/jams`),
         axios.get(`${API}/venues/${profile.id}/concerts`),
+        axios.get(`${API}/venues/${profile.id}/karaoke`),
+        axios.get(`${API}/venues/${profile.id}/spectacle`),
         axios.get(`${API}/venues/${profile.id}/planning`)
       ]);
       setJams(jamsRes.data);
       setConcerts(concertsRes.data);
+      setKaraokes(karaokeRes.data);
+      setSpectacles(spectacleRes.data);
       setPlanningSlots(planningRes.data);
       
       // Construire le tableau des dates réservées
       const bookedDatesArray = [
         ...jamsRes.data.map(j => j.date),
-        ...concertsRes.data.map(c => c.date)
+        ...concertsRes.data.map(c => c.date),
+        ...karaokeRes.data.map(k => k.date),
+        ...spectacleRes.data.map(s => s.date)
       ];
       setBookedDates(bookedDatesArray);
       
@@ -276,6 +282,12 @@ export default function VenueDashboard() {
       });
       concertsRes.data.forEach(concert => {
         eventsMap[concert.date] = 'concert'; // Vert pour les concerts
+      });
+      karaokeRes.data.forEach(karaoke => {
+        eventsMap[karaoke.date] = 'karaoke'; // Couleur pour karaoké
+      });
+      spectacleRes.data.forEach(spectacle => {
+        eventsMap[spectacle.date] = 'spectacle'; // Couleur pour spectacle
       });
       setEventsByDate(eventsMap);
     } catch (error) {

@@ -121,6 +121,22 @@ export default function VenueDetail() {
     }
   }, [id]);
 
+
+  const fetchMyApplications = useCallback(async () => {
+    if (!token || !user || user.role !== "musician") return;
+    try {
+      const response = await axios.get(`${API}/applications/my`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Filter applications for this venue only
+      const venueApplications = response.data.filter(app => app.venue_id === id);
+      setMyApplications(venueApplications);
+    } catch (error) {
+      console.error("Error fetching applications:", error);
+    }
+  }, [id, token, user]);
+
+
   const handleSubscribe = async () => {
     if (!token || !user || user.role !== "musician") {
       toast.error("Connectez-vous en tant que musicien pour vous connecter");

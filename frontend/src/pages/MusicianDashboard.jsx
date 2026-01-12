@@ -391,7 +391,9 @@ export default function MusicianDashboard() {
     bandcamp: "",
     looking_for_concerts: true,
     looking_for_members: false,
-    is_public: true
+    is_public: true,
+    is_association: false,
+    association_name: ""
   });
 
   // State for solo profile

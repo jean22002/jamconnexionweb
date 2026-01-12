@@ -3591,7 +3591,12 @@ async def get_bands_directory(
                         "looking_for_members": band.get("looking_for_members", False),
                         "looking_for_profiles": band.get("looking_for_profiles", []),
                         "has_sound_engineer": band.get("has_sound_engineer", False),
-                        "admin_id": band.get("admin_id")
+                        "admin_id": band.get("admin_id"),
+                        "is_association": band.get("is_association", False),
+                        "association_name": band.get("association_name"),
+                        "has_label": band.get("has_label", False),
+                        "label_name": band.get("label_name"),
+                        "label_city": band.get("label_city")
                     }
                     
                     # Calculate distance if geolocation mode

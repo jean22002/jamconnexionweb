@@ -69,7 +69,7 @@ export default function VenueDetail() {
 
   const fetchEvents = useCallback(async () => {
     try {
-      const [jamsRes, concertsRes, planningRes] = await Promise.all([
+      const [jamsRes, concertsRes, karaokeRes, spectacleRes, planningRes] = await Promise.all([
         axios.get(`${API}/venues/${id}/jams`),
         axios.get(`${API}/venues/${id}/concerts`),
         axios.get(`${API}/venues/${id}/karaoke`),

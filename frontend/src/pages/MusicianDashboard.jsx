@@ -1941,6 +1941,45 @@ export default function MusicianDashboard() {
                       )}
                     </div>
 
+                    {/* Label de musique */}
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3 glassmorphism rounded-lg p-4">
+                        <Switch 
+                          checked={currentBand.has_label || false} 
+                          onCheckedChange={(checked) => setCurrentBand({ 
+                            ...currentBand, 
+                            has_label: checked, 
+                            label_name: checked ? currentBand.label_name : "",
+                            label_city: checked ? currentBand.label_city : ""
+                          })}
+                        />
+                        <Label className="cursor-pointer">Mon groupe a un label de musique</Label>
+                      </div>
+                      
+                      {currentBand.has_label && (
+                        <div className="space-y-3 pl-4">
+                          <div className="space-y-2">
+                            <Label>Nom du label</Label>
+                            <Input 
+                              value={currentBand.label_name || ""} 
+                              onChange={(e) => setCurrentBand({ ...currentBand, label_name: e.target.value })}
+                              placeholder="Ex: Universal Music France"
+                              className="bg-black/20 border-white/10" 
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Ville du label</Label>
+                            <Input 
+                              value={currentBand.label_city || ""} 
+                              onChange={(e) => setCurrentBand({ ...currentBand, label_city: e.target.value })}
+                              placeholder="Ex: Paris"
+                              className="bg-black/20 border-white/10" 
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     {/* Styles musicaux */}
                     <div className="space-y-2">
                       <Label>Styles musicaux du groupe</Label>

@@ -1206,6 +1206,34 @@ export default function VenueDashboard() {
     }
   };
 
+
+  // Create Karaoke
+  const createKaraoke = async () => {
+    try {
+      await axios.post(`${API}/karaoke`, karaokeForm, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Soirée karaoké créée!");
+      setShowKaraokeDialog(false);
+      setKaraokeForm({ date: "", start_time: "", end_time: "", title: "", description: "", music_styles: [] });
+      fetchEvents();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur");
+    }
+  };
+
+  // Create Spectacle
+  const createSpectacle = async () => {
+    try {
+      await axios.post(`${API}/spectacle`, spectacleForm, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Spectacle créé!");
+      setShowSpectacleDialog(false);
+      setSpectacleForm({ date: "", start_time: "", end_time: "", type: "", artist_name: "", description: "", price: "" });
+      fetchEvents();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur");
+    }
+  };
+
+
   // Search bands with debounce
   const searchBands = async (query) => {
     if (query.length < 2) {

@@ -393,7 +393,10 @@ export default function MusicianDashboard() {
     looking_for_members: false,
     is_public: true,
     is_association: false,
-    association_name: ""
+    association_name: "",
+    has_label: false,
+    label_name: "",
+    label_city: ""
   });
 
   // State for solo profile

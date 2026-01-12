@@ -2559,6 +2559,243 @@ export default function VenueDashboard() {
             </div>
           </TabsContent>
 
+          {/* Karaoké Tab */}
+          <TabsContent value="karaoke">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-heading font-semibold text-xl">🎤 Soirées Karaoké</h2>
+                <Dialog open={showKaraokeDialog} onOpenChange={setShowKaraokeDialog}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-primary hover:bg-primary/90 rounded-full gap-2">
+                      <Plus className="w-4 h-4" /> Nouvelle soirée karaoké
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="glassmorphism border-white/10 max-w-lg max-h-[90vh] overflow-y-auto">
+                    <DialogHeader><DialogTitle>Créer une soirée karaoké</DialogTitle></DialogHeader>
+                    <div className="space-y-4 mt-4">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label>Date</Label>
+                          <Input 
+                            type="date" 
+                            value={karaokeForm.date} 
+                            onChange={(e) => setKaraokeForm({ ...karaokeForm, date: e.target.value })} 
+                            className="bg-black/20 border-white/10"
+                            onKeyDown={(e) => e.preventDefault()}
+                            style={{ caretColor: 'transparent' }}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Heure début</Label>
+                          <TimeSelect
+                            value={karaokeForm.start_time}
+                            onChange={(value) => setKaraokeForm({ ...karaokeForm, start_time: value })}
+                            placeholder="Heure de début"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Heure fin</Label>
+                          <TimeSelect
+                            value={karaokeForm.end_time}
+                            onChange={(value) => setKaraokeForm({ ...karaokeForm, end_time: value })}
+                            placeholder="Heure de fin"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Titre de la soirée</Label>
+                        <Input 
+                          value={karaokeForm.title} 
+                          onChange={(e) => setKaraokeForm({ ...karaokeForm, title: e.target.value })} 
+                          placeholder="Ex: Soirée Karaoké du vendredi"
+                          className="bg-black/20 border-white/10" 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Description</Label>
+                        <Textarea 
+                          value={karaokeForm.description} 
+                          onChange={(e) => setKaraokeForm({ ...karaokeForm, description: e.target.value })} 
+                          placeholder="Détails de la soirée karaoké..."
+                          className="bg-black/20 border-white/10 min-h-[100px]" 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Styles musicaux</Label>
+                        <Select 
+                          value="" 
+                          onValueChange={(value) => {
+                            if (value && !karaokeForm.music_styles.includes(value)) {
+                              setKaraokeForm({ 
+                                ...karaokeForm, 
+                                music_styles: [...karaokeForm.music_styles, value] 
+                              });
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="bg-black/20 border-white/10">
+                            <SelectValue placeholder="Sélectionnez un style" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-background border-white/10 max-h-[300px] overflow-y-auto">
+                            {MUSIC_STYLES_LIST.map(style => (
+                              <SelectItem key={style} value={style}>{style}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {karaokeForm.music_styles.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {karaokeForm.music_styles.map((style, index) => (
+                              <span key={index} className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm flex items-center gap-2">
+                                {style}
+                                <button 
+                                  onClick={() => setKaraokeForm({ 
+                                    ...karaokeForm, 
+                                    music_styles: karaokeForm.music_styles.filter((_, i) => i !== index) 
+                                  })}
+                                  className="hover:text-red-400"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={() => setShowKaraokeDialog(false)} variant="outline">Annuler</Button>
+                      <Button onClick={() => {
+                        toast.success("Soirée karaoké créée!");
+                        setShowKaraokeDialog(false);
+                      }} className="bg-primary hover:bg-primary/90">Créer</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <div className="glassmorphism rounded-2xl p-6">
+                <p className="text-muted-foreground text-center py-8">
+                  Aucune soirée karaoké prévue. Créez votre première soirée karaoké !
+                </p>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Spectacle Tab */}
+          <TabsContent value="spectacle">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-heading font-semibold text-xl">🎭 Spectacles</h2>
+                <Dialog open={showSpectacleDialog} onOpenChange={setShowSpectacleDialog}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-primary hover:bg-primary/90 rounded-full gap-2">
+                      <Plus className="w-4 h-4" /> Nouveau spectacle
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="glassmorphism border-white/10 max-w-lg max-h-[90vh] overflow-y-auto">
+                    <DialogHeader><DialogTitle>Créer un spectacle</DialogTitle></DialogHeader>
+                    <div className="space-y-4 mt-4">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label>Date</Label>
+                          <Input 
+                            type="date" 
+                            value={spectacleForm.date} 
+                            onChange={(e) => setSpectacleForm({ ...spectacleForm, date: e.target.value })} 
+                            className="bg-black/20 border-white/10"
+                            onKeyDown={(e) => e.preventDefault()}
+                            style={{ caretColor: 'transparent' }}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Heure début</Label>
+                          <TimeSelect
+                            value={spectacleForm.start_time}
+                            onChange={(value) => setSpectacleForm({ ...spectacleForm, start_time: value })}
+                            placeholder="Heure de début"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Heure fin</Label>
+                          <TimeSelect
+                            value={spectacleForm.end_time}
+                            onChange={(value) => setSpectacleForm({ ...spectacleForm, end_time: value })}
+                            placeholder="Heure de fin"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label>Type de spectacle</Label>
+                        <Select 
+                          value={spectacleForm.type} 
+                          onValueChange={(value) => setSpectacleForm({ ...spectacleForm, type: value })}
+                        >
+                          <SelectTrigger className="bg-black/20 border-white/10">
+                            <SelectValue placeholder="Sélectionnez le type" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-background border-white/10">
+                            <SelectItem value="humour">Humour / Stand-up</SelectItem>
+                            <SelectItem value="theatre">Théâtre</SelectItem>
+                            <SelectItem value="magie">Magie</SelectItem>
+                            <SelectItem value="danse">Danse</SelectItem>
+                            <SelectItem value="cirque">Cirque</SelectItem>
+                            <SelectItem value="conte">Conte / Lecture</SelectItem>
+                            <SelectItem value="autre">Autre</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Nom de l'artiste</Label>
+                        <Input 
+                          value={spectacleForm.artist_name} 
+                          onChange={(e) => setSpectacleForm({ ...spectacleForm, artist_name: e.target.value })} 
+                          placeholder="Nom de l'artiste ou de la troupe"
+                          className="bg-black/20 border-white/10" 
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Description du spectacle</Label>
+                        <Textarea 
+                          value={spectacleForm.description} 
+                          onChange={(e) => setSpectacleForm({ ...spectacleForm, description: e.target.value })} 
+                          placeholder="Description détaillée du spectacle..."
+                          className="bg-black/20 border-white/10 min-h-[100px]" 
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Prix d'entrée (optionnel)</Label>
+                        <Input 
+                          value={spectacleForm.price} 
+                          onChange={(e) => setSpectacleForm({ ...spectacleForm, price: e.target.value })} 
+                          placeholder="Ex: 15€ / Gratuit"
+                          className="bg-black/20 border-white/10" 
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={() => setShowSpectacleDialog(false)} variant="outline">Annuler</Button>
+                      <Button onClick={() => {
+                        toast.success("Spectacle créé!");
+                        setShowSpectacleDialog(false);
+                      }} className="bg-primary hover:bg-primary/90">Créer</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <div className="glassmorphism rounded-2xl p-6">
+                <p className="text-muted-foreground text-center py-8">
+                  Aucun spectacle prévu. Créez votre premier spectacle !
+                </p>
+              </div>
+            </div>
+          </TabsContent>
+
+
           {/* Planning Tab - Calendrier Visuel */}
           <TabsContent value="planning">
             <div className="space-y-6">

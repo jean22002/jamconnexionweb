@@ -2817,10 +2817,8 @@ export default function VenueDashboard() {
                     </div>
                     <DialogFooter>
                       <Button onClick={() => setShowSpectacleDialog(false)} variant="outline">Annuler</Button>
-                      <Button onClick={() => {
-                        toast.success("Spectacle créé!");
-                        setShowSpectacleDialog(false);
-                      }} className="bg-primary hover:bg-primary/90">Créer</Button>
+                      <Button onClick={() => setShowSpectacleDialog(false)} variant="outline">Annuler</Button>
+                      <Button onClick={createSpectacle} className="bg-primary hover:bg-primary/90">Créer</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>

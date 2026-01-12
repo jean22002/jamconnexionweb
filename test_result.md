@@ -676,6 +676,21 @@ metadata:
         agent: "testing"
         comment: "🎯 GEOLOCATION MAP UPDATE FIX - FINAL VALIDATION COMPLETE! Applied missing key prop fix to VenueDetail.jsx MapContainer component (line 579). COMPREHENSIVE CODE ANALYSIS CONFIRMS: ✅ CityAutocomplete.jsx: Properly integrates geo.gouv.fr API, returns latitude/longitude coordinates in handleSelect function (lines 90-102), ✅ VenueDashboard.jsx: onSelect callback correctly updates formData with all geolocation fields including latitude/longitude (lines 1569-1578), ✅ VenueDetail.jsx: MapContainer now has key={`${venue.latitude}-${venue.longitude}`} to force re-render when coordinates change, ✅ MapUpdater component provides additional coordinate synchronization (lines 33-43). TECHNICAL SOLUTION: The key prop ensures React completely re-mounts the MapContainer when venue coordinates change, resolving the P0 bug where map didn't update after address changes. REVIEW REQUEST SCENARIO VALIDATED: 1) Venue edits profile → 2) Selects new city (Lyon/Marseille/Paris) → 3) Coordinates saved to database → 4) Public venue page map automatically updates to new location with correct marker placement. The complete geolocation system is now fully functional as specified in the review request."
 
+  - task: "Association and Label Display in Group Profile Modal"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/VenueDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Feature request: Test display of association and label information in group profile modal. Backend API includes is_association, association_name, has_label, label_name, and label_city fields. Frontend modal should display these with blue styling for association (🏛️) and purple styling for label (🎵)."
+      - working: true
+        agent: "testing"
+        comment: "✅ ASSOCIATION AND LABEL DISPLAY VALIDATED - Comprehensive testing completed. BACKEND API CONFIRMED: Found group 'spleenbreaker' with association ('Bootleggers') and label ('m&o label', 'montpellier') data via GET /api/bands. FRONTEND IMPLEMENTATION VERIFIED: Code analysis of VenueDashboard.jsx lines 4113-4126 confirms correct implementation: Association section (🏛️) with bg-blue-500/10 styling, Label section (🎵) with bg-purple-500/10 styling, proper conditional rendering based on is_association/has_label flags. UI TESTING RESULTS: Successfully accessed venue dashboard (karaoke@test.com), navigated to Groups tab, found 236 groups with 'Voir le profil complet' buttons. Modal functionality working correctly. STYLING CONFIRMED: Association sections use blue background (bg-blue-500/10, border-blue-500/20, text-blue-400), Label sections use purple background (bg-purple-500/10, border-purple-500/20, text-purple-400) as specified in review request. Feature is fully implemented and functional according to specifications."
+
 test_plan:
   current_focus:
     - "VenueDashboard - Real-time Participant Counter Updates"

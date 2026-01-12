@@ -221,7 +221,8 @@ export default function VenueDetail() {
   useEffect(() => {
     checkSubscription();
     fetchCurrentParticipation();
-  }, [checkSubscription, fetchCurrentParticipation]);
+    fetchMyApplications();
+  }, [checkSubscription, fetchCurrentParticipation, fetchMyApplications]);
 
   // Auto-refresh events every 30 seconds to update participant counts in real-time
   useEffect(() => {

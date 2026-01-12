@@ -2074,6 +2074,176 @@ async def update_concert_event(concert_id: str, data: ConcertEvent, current_user
     updated_concert = await db.concerts.find_one({"id": concert_id}, {"_id": 0})
     return ConcertEventResponse(**updated_concert)
 
+
+
+# ============= KARAOKE EVENTS =============
+
+@api_router.post("/karaoke", response_model=KaraokeEventResponse)
+async def create_karaoke_event(event: KaraokeEvent, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can create karaoke events")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    karaoke_id = str(uuid.uuid4())
+    karaoke_data = {
+        "id": karaoke_id,
+        "venue_id": venue["id"],
+        "venue_name": venue["name"],
+        **event.model_dump(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "participants_count": 0
+    }
+    
+    await db.karaoke.insert_one(karaoke_data)
+    return KaraokeEventResponse(**karaoke_data)
+
+@api_router.get("/karaoke", response_model=List[KaraokeEventResponse])
+async def get_all_karaoke_events():
+    karaoke_events = await db.karaoke.find({}, {"_id": 0}).sort("date", 1).to_list(100)
+    return [KaraokeEventResponse(**k) for k in karaoke_events]
+
+@api_router.get("/venues/me/karaoke", response_model=List[KaraokeEventResponse])
+async def get_my_karaoke_events(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can access this")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    karaoke_events = await db.karaoke.find({"venue_id": venue["id"]}, {"_id": 0}).sort("date", 1).to_list(100)
+    return [KaraokeEventResponse(**k) for k in karaoke_events]
+
+@api_router.get("/venues/{venue_id}/karaoke", response_model=List[KaraokeEventResponse])
+async def get_venue_karaoke_events(venue_id: str):
+    karaoke_events = await db.karaoke.find({"venue_id": venue_id}, {"_id": 0}).sort("date", 1).to_list(100)
+    return [KaraokeEventResponse(**k) for k in karaoke_events]
+
+@api_router.delete("/karaoke/{karaoke_id}")
+async def delete_karaoke_event(karaoke_id: str, current_user: dict = Depends(get_current_user)):
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    result = await db.karaoke.delete_one({"id": karaoke_id, "venue_id": venue["id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Karaoke event not found")
+    
+    return {"message": "Karaoke event deleted"}
+
+@api_router.put("/karaoke/{karaoke_id}", response_model=KaraokeEventResponse)
+async def update_karaoke_event(karaoke_id: str, data: KaraokeEvent, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update karaoke events")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    existing_karaoke = await db.karaoke.find_one({"id": karaoke_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not existing_karaoke:
+        raise HTTPException(status_code=404, detail="Karaoke event not found")
+    
+    update_data = {
+        **data.model_dump(),
+        "venue_name": venue["name"]
+    }
+    
+    await db.karaoke.update_one(
+        {"id": karaoke_id},
+        {"$set": update_data}
+    )
+    
+    updated_karaoke = await db.karaoke.find_one({"id": karaoke_id}, {"_id": 0})
+    return KaraokeEventResponse(**updated_karaoke)
+
+# ============= SPECTACLE EVENTS =============
+
+@api_router.post("/spectacle", response_model=SpectacleEventResponse)
+async def create_spectacle_event(event: SpectacleEvent, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can create spectacle events")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    spectacle_id = str(uuid.uuid4())
+    spectacle_data = {
+        "id": spectacle_id,
+        "venue_id": venue["id"],
+        "venue_name": venue["name"],
+        **event.model_dump(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "participants_count": 0
+    }
+    
+    await db.spectacle.insert_one(spectacle_data)
+    return SpectacleEventResponse(**spectacle_data)
+
+@api_router.get("/spectacle", response_model=List[SpectacleEventResponse])
+async def get_all_spectacle_events():
+    spectacle_events = await db.spectacle.find({}, {"_id": 0}).sort("date", 1).to_list(100)
+    return [SpectacleEventResponse(**s) for s in spectacle_events]
+
+@api_router.get("/venues/me/spectacle", response_model=List[SpectacleEventResponse])
+async def get_my_spectacle_events(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can access this")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    spectacle_events = await db.spectacle.find({"venue_id": venue["id"]}, {"_id": 0}).sort("date", 1).to_list(100)
+    return [SpectacleEventResponse(**s) for s in spectacle_events]
+
+@api_router.get("/venues/{venue_id}/spectacle", response_model=List[SpectacleEventResponse])
+async def get_venue_spectacle_events(venue_id: str):
+    spectacle_events = await db.spectacle.find({"venue_id": venue_id}, {"_id": 0}).sort("date", 1).to_list(100)
+    return [SpectacleEventResponse(**s) for s in spectacle_events]
+
+@api_router.delete("/spectacle/{spectacle_id}")
+async def delete_spectacle_event(spectacle_id: str, current_user: dict = Depends(get_current_user)):
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    result = await db.spectacle.delete_one({"id": spectacle_id, "venue_id": venue["id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Spectacle event not found")
+    
+    return {"message": "Spectacle event deleted"}
+
+@api_router.put("/spectacle/{spectacle_id}", response_model=SpectacleEventResponse)
+async def update_spectacle_event(spectacle_id: str, data: SpectacleEvent, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update spectacle events")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    existing_spectacle = await db.spectacle.find_one({"id": spectacle_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not existing_spectacle:
+        raise HTTPException(status_code=404, detail="Spectacle event not found")
+    
+    update_data = {
+        **data.model_dump(),
+        "venue_name": venue["name"]
+    }
+    
+    await db.spectacle.update_one(
+        {"id": spectacle_id},
+        {"$set": update_data}
+    )
+    
+    updated_spectacle = await db.spectacle.find_one({"id": spectacle_id}, {"_id": 0})
+    return SpectacleEventResponse(**updated_spectacle)
+
 # ============= PROFITABILITY/RENTABILITÉ =============
 
 @api_router.put("/jams/{jam_id}/profitability")

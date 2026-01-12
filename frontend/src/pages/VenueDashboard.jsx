@@ -187,6 +187,16 @@ export default function VenueDashboard() {
     bands: [], price: "", music_styles: []
   });
 
+  const [karaokeForm, setKaraokeForm] = useState({
+    date: "", start_time: "", end_time: "", title: "", description: "",
+    music_styles: [], has_catering: false, catering_drinks: 0
+  });
+
+  const [spectacleForm, setSpectacleForm] = useState({
+    date: "", start_time: "", end_time: "", type: "", artist_name: "",
+    description: "", price: ""
+  });
+
   const [newBand, setNewBand] = useState({ name: "", musician_id: "", members_count: 0, photo: "", facebook: "", instagram: "" });
 
   const fetchProfile = useCallback(async () => {

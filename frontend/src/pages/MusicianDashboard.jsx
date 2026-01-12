@@ -1915,6 +1915,29 @@ export default function MusicianDashboard() {
                       <Label className="cursor-pointer">Le groupe possède son propre ingénieur son</Label>
                     </div>
 
+                    {/* Association */}
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3 glassmorphism rounded-lg p-4">
+                        <Switch 
+                          checked={currentBand.is_association || false} 
+                          onCheckedChange={(checked) => setCurrentBand({ ...currentBand, is_association: checked, association_name: checked ? currentBand.association_name : "" })}
+                        />
+                        <Label className="cursor-pointer">Mon groupe fait partie d'une association</Label>
+                      </div>
+                      
+                      {currentBand.is_association && (
+                        <div className="space-y-2 pl-4">
+                          <Label>Nom de l'association</Label>
+                          <Input 
+                            value={currentBand.association_name || ""} 
+                            onChange={(e) => setCurrentBand({ ...currentBand, association_name: e.target.value })}
+                            placeholder="Ex: Association Musicale de Paris"
+                            className="bg-black/20 border-white/10" 
+                          />
+                        </div>
+                      )}
+                    </div>
+
                     {/* Styles musicaux */}
                     <div className="space-y-2">
                       <Label>Styles musicaux du groupe</Label>

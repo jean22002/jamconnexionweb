@@ -3273,17 +3273,16 @@ export default function MusicianDashboard() {
                           </span>
                         )}
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 mt-4">
                         <Button
                           onClick={() => {
                             setSelectedBand(band);
                             setShowBandDetailsDialog(true);
                           }}
-                          variant="outline"
-                          className="flex-1 border-white/20"
+                          className="flex-1 bg-secondary hover:bg-secondary/90 rounded-full"
                         >
                           <Eye className="w-4 h-4 mr-2" />
-                          Voir profil
+                          Voir le profil complet
                         </Button>
                         <Button
                           onClick={() => {

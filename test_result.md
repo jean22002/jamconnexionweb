@@ -693,7 +693,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "VenueDashboard - Real-time Participant Counter Updates"
+    - "Band Image Upload Component Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

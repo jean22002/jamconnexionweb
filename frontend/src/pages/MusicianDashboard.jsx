@@ -1686,7 +1686,7 @@ export default function MusicianDashboard() {
                   </DialogHeader>
 
                   <div className="space-y-4 mt-4">
-                    {/* Nom et Photo */}
+                    {/* Nom du groupe */}
                     <div className="space-y-2">
                       <Label>Nom du groupe *</Label>
                       <Input 
@@ -1694,6 +1694,16 @@ export default function MusicianDashboard() {
                         onChange={(e) => setCurrentBand({ ...currentBand, name: e.target.value })}
                         className="bg-black/20 border-white/10"
                         placeholder="Ex: The Rolling Stones"
+                      />
+                    </div>
+
+                    {/* Photo de couverture */}
+                    <div className="space-y-2">
+                      <Label>Photo de couverture du groupe</Label>
+                      <BandImageUpload
+                        value={currentBand.photo || ""}
+                        onChange={(url) => setCurrentBand({ ...currentBand, photo: url })}
+                        token={token}
                       />
                     </div>
 

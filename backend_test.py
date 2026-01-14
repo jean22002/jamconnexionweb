@@ -7051,6 +7051,14 @@ class JamConnexionAPITester:
         self.test_messaging_restriction_with_accepted_application()
         self.test_messaging_restriction_second_venue_isolation()
         
+        # 🎯 STRIPE PAYMENT SYSTEM TESTS (PRIORITY ABSOLUTE) 🎯
+        print("\n" + "="*70)
+        print("🎯 TESTING STRIPE PAYMENT SYSTEM - PRIORITY ABSOLUTE")
+        print("Testing Stripe integration for venue subscriptions (14.99€/month)")
+        print("="*70)
+        
+        self.run_stripe_payment_tests()
+        
         # Print final summary
         print("\n" + "="*60)
         print(f"🏁 Tests completed: {self.tests_passed}/{self.tests_run} passed")
@@ -7062,6 +7070,228 @@ class JamConnexionAPITester:
             print("⚠️  Some tests failed - check details above")
             
         return self.tests_passed == self.tests_run
+
+    # ============= STRIPE PAYMENT SYSTEM TESTS =============
+    
+    def test_stripe_checkout_creation_venue(self):
+        """Test Stripe checkout session creation for venue (should succeed)"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            checkout_data = {
+                "origin_url": "https://musicianhub.preview.emergentagent.com"
+            }
+            
+            response = requests.post(f"{self.base_url}/payments/checkout", json=checkout_data, headers=headers, timeout=15)
+            success = response.status_code == 200
+            
+            if success:
+                checkout_response = response.json()
+                self.checkout_session_id = checkout_response.get('session_id')
+                checkout_url = checkout_response.get('url')
+                
+                # Verify URL is valid Stripe checkout URL
+                url_valid = checkout_url and "checkout.stripe.com" in checkout_url
+                details = f"Session ID: {self.checkout_session_id}, URL valid: {url_valid}"
+                
+                if not url_valid:
+                    success = False
+                    details += " - Invalid Stripe URL"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:200]}"
+            
+            self.log_test("Stripe Checkout Creation (Venue)", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Stripe Checkout Creation (Venue)", False, f"Error: {str(e)}")
+            return False
+
+    def test_stripe_checkout_creation_musician(self):
+        """Test Stripe checkout session creation for musician (should fail - 403)"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            checkout_data = {
+                "origin_url": "https://musicianhub.preview.emergentagent.com"
+            }
+            
+            response = requests.post(f"{self.base_url}/payments/checkout", json=checkout_data, headers=headers, timeout=10)
+            success = response.status_code == 403
+            
+            if success:
+                details = "Correctly rejected musician checkout request (403 Forbidden)"
+            else:
+                details = f"Unexpected status: {response.status_code}, Expected: 403"
+            
+            self.log_test("Stripe Checkout Creation (Musician - Should Fail)", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Stripe Checkout Creation (Musician - Should Fail)", False, f"Error: {str(e)}")
+            return False
+
+    def test_stripe_checkout_creation_unauthenticated(self):
+        """Test Stripe checkout session creation without authentication (should fail - 401)"""
+        try:
+            checkout_data = {
+                "origin_url": "https://musicianhub.preview.emergentagent.com"
+            }
+            
+            response = requests.post(f"{self.base_url}/payments/checkout", json=checkout_data, timeout=10)
+            success = response.status_code == 401
+            
+            if success:
+                details = "Correctly rejected unauthenticated checkout request (401 Unauthorized)"
+            else:
+                details = f"Unexpected status: {response.status_code}, Expected: 401"
+            
+            self.log_test("Stripe Checkout Creation (Unauthenticated - Should Fail)", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Stripe Checkout Creation (Unauthenticated - Should Fail)", False, f"Error: {str(e)}")
+            return False
+
+    def test_payment_status_check(self):
+        """Test payment status verification"""
+        try:
+            if not hasattr(self, 'checkout_session_id') or not self.checkout_session_id:
+                self.log_test("Payment Status Check", False, "No checkout session ID available from previous test")
+                return False
+            
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            response = requests.get(f"{self.base_url}/payments/status/{self.checkout_session_id}", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                status_response = response.json()
+                required_fields = ['status', 'payment_status', 'amount_total', 'currency']
+                missing_fields = [field for field in required_fields if field not in status_response]
+                
+                if missing_fields:
+                    success = False
+                    details = f"Missing fields: {', '.join(missing_fields)}"
+                else:
+                    details = f"Status: {status_response.get('status')}, Payment: {status_response.get('payment_status')}, Amount: {status_response.get('amount_total')}, Currency: {status_response.get('currency')}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:200]}"
+            
+            self.log_test("Payment Status Check", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Payment Status Check", False, f"Error: {str(e)}")
+            return False
+
+    def test_account_subscription_status(self):
+        """Test account subscription status endpoint"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            response = requests.get(f"{self.base_url}/venues/me/subscription-status", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                status_response = response.json()
+                required_fields = ['status', 'trial_end', 'days_left', 'is_active']
+                missing_fields = [field for field in required_fields if field not in status_response]
+                
+                if missing_fields:
+                    success = False
+                    details = f"Missing fields: {', '.join(missing_fields)}"
+                else:
+                    details = f"Subscription: {status_response.get('status')}, Active: {status_response.get('is_active')}, Days left: {status_response.get('days_left')}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:200]}"
+            
+            self.log_test("Account Subscription Status", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Account Subscription Status", False, f"Error: {str(e)}")
+            return False
+
+    def test_stripe_webhook_endpoint(self):
+        """Test Stripe webhook endpoint accessibility"""
+        try:
+            # Test webhook endpoint with minimal payload (will fail validation but should be accessible)
+            webhook_data = {
+                "id": "evt_test_webhook",
+                "object": "event",
+                "type": "checkout.session.completed",
+                "data": {
+                    "object": {
+                        "id": "cs_test_session",
+                        "client_reference_id": "test_user_id"
+                    }
+                }
+            }
+            
+            response = requests.post(f"{self.base_url}/webhook/stripe", json=webhook_data, timeout=10)
+            # Webhook should be accessible (even if it fails validation)
+            success = response.status_code in [200, 400]  # 400 is expected for invalid signature
+            
+            if success:
+                if response.status_code == 400:
+                    details = "Webhook endpoint accessible (400 expected for invalid signature)"
+                else:
+                    details = f"Webhook processed successfully: {response.status_code}"
+            else:
+                details = f"Unexpected status: {response.status_code}, Error: {response.text[:200]}"
+            
+            self.log_test("Stripe Webhook Endpoint", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Stripe Webhook Endpoint", False, f"Error: {str(e)}")
+            return False
+
+    def test_database_transaction_storage(self):
+        """Test that payment transaction is stored in database"""
+        try:
+            if not hasattr(self, 'checkout_session_id') or not self.checkout_session_id:
+                self.log_test("Database Transaction Storage", False, "No checkout session ID available")
+                return False
+            
+            # We can't directly access the database, but we can verify through the payment status endpoint
+            # that the transaction was created and stored
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            response = requests.get(f"{self.base_url}/payments/status/{self.checkout_session_id}", headers=headers, timeout=10)
+            
+            success = response.status_code == 200
+            if success:
+                status_response = response.json()
+                # If we can retrieve the status, it means the transaction was stored
+                details = f"Transaction stored with status: {status_response.get('status')}"
+            else:
+                details = f"Failed to retrieve transaction: {response.status_code}"
+                success = False
+            
+            self.log_test("Database Transaction Storage", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Database Transaction Storage", False, f"Error: {str(e)}")
+            return False
+
+    def run_stripe_payment_tests(self):
+        """Run comprehensive Stripe payment system tests"""
+        print("\n🎯 TESTING STRIPE PAYMENT SYSTEM - PRIORITY TESTS")
+        print("=" * 70)
+        
+        # Test 1: Create checkout session for venue (CRITICAL)
+        if not self.test_stripe_checkout_creation_venue():
+            print("❌ Critical: Venue checkout creation failed")
+            return False
+        
+        # Test 2: Verify payment status endpoint
+        self.test_payment_status_check()
+        
+        # Test 3: Verify subscription status endpoint  
+        self.test_account_subscription_status()
+        
+        # Test 4: Security tests
+        self.test_stripe_checkout_creation_musician()
+        self.test_stripe_checkout_creation_unauthenticated()
+        
+        # Test 5: Webhook endpoint
+        self.test_stripe_webhook_endpoint()
+        
+        # Test 6: Database storage verification
+        self.test_database_transaction_storage()
+        
+        return True
 
 def main():
     tester = JamConnexionAPITester()

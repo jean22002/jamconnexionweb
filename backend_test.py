@@ -7370,7 +7370,7 @@ class JamConnexionAPITester:
         
         critical_tests = [
             "Register Venue", "Login", "Auth Me",
-            "Stripe Checkout Session", "Venue Subscription Status", 
+            "Stripe Checkout Creation (Venue)", "Account Subscription Status", 
             "Health Check", "List Venues", "List Musicians",
             "Upload Image", "Account Status"
         ]

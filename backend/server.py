@@ -4156,20 +4156,43 @@ async def get_payment_status(session_id: str, request: Request, current_user: di
 
 @api_router.post("/webhook/stripe")
 async def stripe_webhook(request: Request):
-    body = await request.body()
-    signature = request.headers.get("Stripe-Signature")
+    """Handle Stripe webhook events with signature verification"""
+    payload = await request.body()
+    sig_header = request.headers.get("Stripe-Signature")
     
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
+    if not STRIPE_WEBHOOK_SECRET:
+        logger.warning("Webhook secret not configured - accepting webhook without verification")
+        # Process without verification (not recommended for production)
+        try:
+            event = stripe.Event.construct_from(
+                json.loads(payload), stripe.api_key
+            )
+        except Exception as e:
+            logger.error(f"Error parsing webhook payload: {e}")
+            raise HTTPException(status_code=400, detail="Invalid payload")
+    else:
+        # Verify webhook signature
+        try:
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, STRIPE_WEBHOOK_SECRET
+            )
+        except ValueError as e:
+            logger.error(f"Invalid webhook payload: {e}")
+            raise HTTPException(status_code=400, detail="Invalid payload")
+        except stripe.error.SignatureVerificationError as e:
+            logger.error(f"Invalid webhook signature: {e}")
+            raise HTTPException(status_code=400, detail="Invalid signature")
     
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-    
+    # Handle the event
     try:
-        webhook_response = await stripe_checkout.handle_webhook(body, signature)
-        
-        if webhook_response.payment_status == "paid":
-            user_id = webhook_response.metadata.get("user_id")
+        if event.type == 'checkout.session.completed':
+            session = event.data.object
+            
+            # Extract user info from metadata
+            user_id = session.get('client_reference_id') or session.get('metadata', {}).get('user_id')
+            
             if user_id:
+                # Update user subscription status
                 await db.users.update_one(
                     {"id": user_id},
                     {"$set": {
@@ -4178,15 +4201,41 @@ async def stripe_webhook(request: Request):
                         "subscription_started": datetime.now(timezone.utc).isoformat()
                     }}
                 )
+                
+                # Update transaction status
                 await db.payment_transactions.update_one(
-                    {"session_id": webhook_response.session_id},
-                    {"$set": {"status": "completed", "payment_status": "paid"}}
+                    {"session_id": session.id},
+                    {"$set": {
+                        "status": "completed",
+                        "payment_status": "paid",
+                        "completed_at": datetime.now(timezone.utc).isoformat()
+                    }}
                 )
+                logger.info(f"Subscription activated for user {user_id}")
         
-        return {"status": "ok"}
+        elif event.type == 'customer.subscription.deleted':
+            # Handle subscription cancellation
+            subscription = event.data.object
+            customer_id = subscription.customer
+            
+            # Find user by Stripe customer ID if stored
+            user = await db.users.find_one({"stripe_customer_id": customer_id}, {"_id": 0})
+            if user:
+                await db.users.update_one(
+                    {"id": user["id"]},
+                    {"$set": {
+                        "subscription_status": "cancelled",
+                        "has_active_subscription": False,
+                        "subscription_cancelled": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                logger.info(f"Subscription cancelled for user {user['id']}")
+        
+        return {"status": "success"}
+    
     except Exception as e:
-        logger.error(f"Webhook error: {e}")
-        return {"status": "error"}
+        logger.error(f"Error processing webhook event: {e}")
+        raise HTTPException(status_code=500, detail="Webhook processing failed")
 
 # ============= HEALTH & ROOT =============
 

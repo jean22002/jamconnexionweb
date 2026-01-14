@@ -3,14 +3,9 @@ import jwt
 import os
 from fastapi import HTTPException, Header
 from datetime import datetime, timezone, timedelta
-from motor.motor_asyncio import AsyncIOMotorClient
 
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default_secret')
 JWT_ALGORITHM = "HS256"
-
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
 
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -28,9 +23,17 @@ def create_token(user_id: str, email: str, role: str) -> str:
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-async def get_current_user(authorization: str = Header(None)):
+async def get_current_user(authorization: str = Header(None), db=None):
+    """Get current user from JWT token. DB instance must be passed from route."""
     if not authorization:
         raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    if db is None:
+        # Import here to avoid circular dependency
+        from motor.motor_asyncio import AsyncIOMotorClient
+        mongo_url = os.environ['MONGO_URL']
+        client = AsyncIOMotorClient(mongo_url)
+        db = client[os.environ['DB_NAME']]
     
     try:
         token = authorization.replace("Bearer ", "")

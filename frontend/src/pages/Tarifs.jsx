@@ -6,22 +6,30 @@ export default function Tarifs() {
   const navigate = useNavigate();
 
   const musicianFeatures = [
-    "Accès illimité à la carte",
-    "Profils établissements détaillés",
-    "Géolocalisation en temps réel",
-    "Création de profil musicien",
-    "Contact direct avec les venues",
-    "Filtres par style et localisation"
+    "Accès illimité à la carte des établissements",
+    "Profils établissements détaillés (équipements, services, avis)",
+    "Géolocalisation en temps réel des venues",
+    "Création de profil musicien & groupe (bio, styles, médias)",
+    "Candidature aux créneaux ouverts des établissements",
+    "Contact direct avec les venues via messagerie",
+    "Filtres avancés par style musical et localisation",
+    "Système de notifications en temps réel",
+    "Gestion de plusieurs groupes musicaux"
   ];
 
   const venueFeatures = [
-    "Profil établissement complet",
-    "Visibilité sur la carte",
-    "Détail équipement & services",
-    "Liens réseaux sociaux",
-    "Jours de jam personnalisés",
-    "Badge établissement vérifié",
-    "Support prioritaire"
+    "Profil établissement complet (photos, description, équipements)",
+    "Visibilité maximale sur la carte interactive",
+    "Création de créneaux ouverts pour candidatures musiciens",
+    "Gestion complète des bœufs et concerts",
+    "Planning visuel avec calendrier interactif",
+    "Détail équipement & services (scène, sono, ingé son)",
+    "Liens réseaux sociaux (Facebook, Instagram, YouTube)",
+    "Jours de jam personnalisés et événements récurrents",
+    "Réception et gestion des candidatures musiciens",
+    "Système d'avis et notation par les musiciens",
+    "Badge établissement vérifié pour plus de crédibilité",
+    "Support prioritaire avec réponse rapide"
   ];
 
   return (

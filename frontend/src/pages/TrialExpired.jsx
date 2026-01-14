@@ -42,12 +42,12 @@ export default function TrialExpired() {
 
           {/* Title */}
           <h1 className="font-heading font-bold text-4xl md:text-5xl mb-4 text-gradient">
-            Votre essai gratuit est terminé 🎉
+            Ton essai gratuit de 60 jours est terminé 🎉
           </h1>
 
           {/* Message */}
           <p className="text-xl text-muted-foreground mb-8">
-            Merci d'avoir testé Jam Connexion pendant 60 jours !
+            Pour continuer sur Jam Connexion, choisis un abonnement mensuel à 14,99€/mois (sans engagement).
           </p>
 
           {/* Features reminder */}
@@ -86,38 +86,25 @@ export default function TrialExpired() {
             </p>
           </div>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          {/* CTA Button - Unique, pas d'échappatoire */}
+          <div className="flex justify-center">
             <Button
               onClick={handleSubscribe}
               disabled={loading}
               size="lg"
-              className="bg-primary hover:bg-primary/90 rounded-full text-lg px-8"
+              className="bg-primary hover:bg-primary/90 rounded-full text-lg px-12 py-7 font-heading font-semibold hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] transition-all"
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  <Loader2 className="w-6 h-6 mr-2 animate-spin" />
                   Chargement...
                 </>
               ) : (
                 <>
-                  <CreditCard className="w-5 h-5 mr-2" />
+                  <CreditCard className="w-6 h-6 mr-2" />
                   Continuer avec l'abonnement
                 </>
               )}
-            </Button>
-            
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="rounded-full text-lg px-8"
-              disabled={loading}
-            >
-              <Link to="/">
-                <Music className="w-5 h-5 mr-2" />
-                Retour à l'accueil
-              </Link>
             </Button>
           </div>
 

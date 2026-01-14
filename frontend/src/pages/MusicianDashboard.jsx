@@ -1669,6 +1669,122 @@ export default function MusicianDashboard() {
                         ))}
                       </div>
                     </TabsContent>
+
+                    {/* Settings Tab - Account Management */}
+                    <TabsContent value="settings" className="space-y-4 mt-4">
+                      <div className="space-y-4 p-4 border-2 border-red-500/20 rounded-xl">
+                        <h4 className="font-medium text-red-400">Gestion du compte</h4>
+                        
+                        {/* Suspend Account */}
+                        <div className="flex items-start justify-between gap-4 p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
+                          <div>
+                            <p className="font-medium mb-1">Suspendre mon compte</p>
+                            <p className="text-xs text-muted-foreground">
+                              Suspendre temporairement pour 60 jours. Réactivation possible à tout moment.
+                            </p>
+                          </div>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="rounded-full border-orange-500/50 hover:bg-orange-500/20">
+                                <Clock className="w-4 h-4 mr-2" />
+                                Suspendre
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="glassmorphism border-white/10">
+                              <DialogHeader>
+                                <DialogTitle className="text-orange-400">Suspendre mon compte</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div className="p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
+                                  <h4 className="font-semibold mb-2">⚠️ Attention</h4>
+                                  <ul className="text-sm space-y-2 text-muted-foreground">
+                                    <li>• Compte suspendu pour 60 jours maximum</li>
+                                    <li>• Profil non visible pendant cette période</li>
+                                    <li>• Réactivation possible à tout moment</li>
+                                  </ul>
+                                </div>
+                                <div className="flex gap-2 justify-end">
+                                  <DialogTrigger asChild>
+                                    <Button variant="outline" className="rounded-full">Annuler</Button>
+                                  </DialogTrigger>
+                                  <Button
+                                    className="bg-orange-500 hover:bg-orange-600 rounded-full"
+                                    onClick={async () => {
+                                      try {
+                                        await axios.post(`${API}/account/suspend`, {}, { 
+                                          headers: { Authorization: `Bearer ${token}` } 
+                                        });
+                                        toast.success("Compte suspendu pour 60 jours");
+                                        setTimeout(() => logout(), 2000);
+                                      } catch (error) {
+                                        toast.error("Erreur lors de la suspension");
+                                      }
+                                    }}
+                                  >
+                                    Confirmer
+                                  </Button>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+
+                        {/* Delete Account */}
+                        <div className="flex items-start justify-between gap-4 p-4 bg-red-500/10 rounded-lg border border-red-500/20">
+                          <div>
+                            <p className="font-medium mb-1">Supprimer mon compte</p>
+                            <p className="text-xs text-muted-foreground">
+                              Suppression définitive et irréversible de toutes vos données.
+                            </p>
+                          </div>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="rounded-full border-red-500/50 hover:bg-red-500/20">
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Supprimer
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="glassmorphism border-white/10">
+                              <DialogHeader>
+                                <DialogTitle className="text-red-400">Supprimer mon compte</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div className="p-4 bg-red-500/10 rounded-lg border border-red-500/20">
+                                  <h4 className="font-semibold mb-2">🚨 Action irréversible</h4>
+                                  <ul className="text-sm space-y-2 text-muted-foreground">
+                                    <li>• Toutes vos données seront supprimées</li>
+                                    <li>• Vos candidatures seront perdues</li>
+                                    <li>• Vos messages seront effacés</li>
+                                    <li>• Cette action ne peut pas être annulée</li>
+                                  </ul>
+                                </div>
+                                <div className="flex gap-2 justify-end">
+                                  <DialogTrigger asChild>
+                                    <Button variant="outline" className="rounded-full">Annuler</Button>
+                                  </DialogTrigger>
+                                  <Button
+                                    className="bg-red-500 hover:bg-red-600 rounded-full"
+                                    onClick={async () => {
+                                      try {
+                                        await axios.delete(`${API}/account/delete`, { 
+                                          headers: { Authorization: `Bearer ${token}` } 
+                                        });
+                                        toast.success("Compte supprimé définitivement");
+                                        setTimeout(() => logout(), 2000);
+                                      } catch (error) {
+                                        toast.error("Erreur lors de la suppression");
+                                      }
+                                    }}
+                                  >
+                                    Confirmer la suppression
+                                  </Button>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      </div>
+                    </TabsContent>
                   </Tabs>
 
                   <Button onClick={handleSaveProfile} className="w-full mt-4 bg-primary hover:bg-primary/90 rounded-full" data-testid="save-profile-btn">

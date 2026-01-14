@@ -3,68 +3,68 @@
     "total_tests": 10,
     "passed_tests": 9,
     "success_rate": 90.0,
-    "timestamp": "2026-01-14T23:28:18.985293"
+    "timestamp": "2026-01-14T23:28:42.481056"
   },
   "test_results": [
     {
       "test": "Register Venue",
       "success": true,
-      "details": "User ID: 1116eade-3afd-4646-a77d-733cad521bf5, Trial: trial",
-      "timestamp": "2026-01-14T23:28:17.733402"
+      "details": "User ID: eea322d5-b30e-4831-bd7f-05b29022524d, Trial: trial",
+      "timestamp": "2026-01-14T23:28:41.475627"
     },
     {
       "test": "Login",
       "success": true,
       "details": "Login successful for venue",
-      "timestamp": "2026-01-14T23:28:18.032708"
+      "timestamp": "2026-01-14T23:28:41.780475"
     },
     {
       "test": "Auth Me",
       "success": true,
       "details": "User: Test Venue, Role: venue",
-      "timestamp": "2026-01-14T23:28:18.106206"
+      "timestamp": "2026-01-14T23:28:41.820912"
     },
     {
       "test": "Stripe Checkout Creation (Venue)",
       "success": true,
-      "details": "Session ID: cs_live_a1IR9lnaiIfi6YXTPb6LzpW7aMxy7h418MxywmaqyYtxjQiLjqjdsNR8iN, URL valid: True",
-      "timestamp": "2026-01-14T23:28:18.744424"
+      "details": "Session ID: cs_live_a1ZB1i1VL6JEVfwVMIFdDmlL5y4kNa9wuY0jHlZb7Yg2MyUOzHzdj1F5In, URL valid: True",
+      "timestamp": "2026-01-14T23:28:42.225110"
     },
     {
-      "test": "Venue Subscription Status",
+      "test": "Account Subscription Status",
       "success": false,
-      "details": "Method not found",
-      "timestamp": "2026-01-14T23:28:18.745781"
+      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
+      "timestamp": "2026-01-14T23:28:42.260077"
     },
     {
       "test": "Health Check",
       "success": true,
       "details": "Status: 200, Response: healthy",
-      "timestamp": "2026-01-14T23:28:18.789590"
+      "timestamp": "2026-01-14T23:28:42.296151"
     },
     {
       "test": "List Venues",
       "success": true,
       "details": "Found 4 venues",
-      "timestamp": "2026-01-14T23:28:18.833248"
+      "timestamp": "2026-01-14T23:28:42.340645"
     },
     {
       "test": "List Musicians",
       "success": true,
       "details": "Found 25 musicians",
-      "timestamp": "2026-01-14T23:28:18.886555"
+      "timestamp": "2026-01-14T23:28:42.391673"
     },
     {
       "test": "Upload Image",
       "success": true,
       "details": "Upload successful: test.jpg",
-      "timestamp": "2026-01-14T23:28:18.933088"
+      "timestamp": "2026-01-14T23:28:42.435716"
     },
     {
       "test": "Account Status",
       "success": true,
       "details": "Account status: unknown",
-      "timestamp": "2026-01-14T23:28:18.981900"
+      "timestamp": "2026-01-14T23:28:42.479445"
     }
   ]
 }

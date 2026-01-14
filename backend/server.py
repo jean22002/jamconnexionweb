@@ -53,6 +53,7 @@ async def geocode_city(city_name: str):
     return None, None
 
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
+STRIPE_PRICE_ID = os.environ.get('STRIPE_PRICE_ID', 'price_1SpH8aBykagrgoTUBAdOU10z')
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")

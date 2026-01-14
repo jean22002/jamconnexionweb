@@ -89,14 +89,22 @@ export default function TrialExpired() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
-              asChild
+              onClick={handleSubscribe}
+              disabled={loading}
               size="lg"
               className="bg-primary hover:bg-primary/90 rounded-full text-lg px-8"
             >
-              <Link to="/payment">
-                <CreditCard className="w-5 h-5 mr-2" />
-                S'abonner maintenant
-              </Link>
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Chargement...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-5 h-5 mr-2" />
+                  Continuer avec l'abonnement
+                </>
+              )}
             </Button>
             
             <Button
@@ -104,6 +112,7 @@ export default function TrialExpired() {
               variant="outline"
               size="lg"
               className="rounded-full text-lg px-8"
+              disabled={loading}
             >
               <Link to="/">
                 <Music className="w-5 h-5 mr-2" />

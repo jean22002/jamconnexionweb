@@ -647,10 +647,10 @@ def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
 async def register(data: UserRegister):
     existing = await db.users.find_one({"email": data.email})
     if existing:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="Adresse email déjà existante")
     
     if data.role not in ["musician", "venue"]:
-        raise HTTPException(status_code=400, detail="Role must be 'musician' or 'venue'")
+        raise HTTPException(status_code=400, detail="Le rôle doit être 'musician' ou 'venue'")
     
     user_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()

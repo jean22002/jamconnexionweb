@@ -14,6 +14,7 @@ import VenueRegister from "./pages/VenueRegister";
 import MusicianRegister from "./pages/MusicianRegister";
 import Pricing from "./pages/Pricing";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentCancel from "./pages/PaymentCancel";
 import TrialExpired from "./pages/TrialExpired";
 import "./App.css";
 
@@ -102,6 +103,14 @@ function App() {
             element={
               <ProtectedRoute allowedRole="venue">
                 <PaymentSuccess />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/payment/cancel" 
+            element={
+              <ProtectedRoute allowedRole="venue">
+                <PaymentCancel />
               </ProtectedRoute>
             } 
           />

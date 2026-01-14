@@ -61,9 +61,6 @@ export default function Landing() {
                   Tarifs
                 </Button>
               </Link>
-                  Tarifs
-                </Button>
-              </Link>
               {user ? (
                 <Link to={user.role === "musician" ? "/musician" : "/venue"}>
                   <Button className="bg-primary hover:bg-primary/90 rounded-full px-6" data-testid="nav-dashboard">

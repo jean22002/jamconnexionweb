@@ -723,7 +723,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Band Image Upload Component Testing"
+    - "Stripe Payment System - Backend Integration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

@@ -126,7 +126,13 @@ class JamConnexionAPITester:
     def test_auth_me(self):
         """Test /auth/me endpoint"""
         try:
-            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            # Use venue token if available, otherwise musician token
+            token = getattr(self, 'venue_token', None) or getattr(self, 'musician_token', None)
+            if not token:
+                self.log_test("Auth Me", False, "No authentication token available")
+                return False
+                
+            headers = {'Authorization': f'Bearer {token}'}
             response = requests.get(f"{self.base_url}/auth/me", headers=headers, timeout=10)
             success = response.status_code == 200
             

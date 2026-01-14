@@ -14,6 +14,7 @@ import VenueRegister from "./pages/VenueRegister";
 import MusicianRegister from "./pages/MusicianRegister";
 import Pricing from "./pages/Pricing";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import TrialExpired from "./pages/TrialExpired";
 import "./App.css";
 
 const ProtectedRoute = ({ children, allowedRole }) => {

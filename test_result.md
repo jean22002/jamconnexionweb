@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Application Jam Connexion pour connecter musiciens et établissements organisant des jam sessions. Feature en cours: Système de participation en temps réel aux événements."
+user_problem_statement: "🎯 TEST COMPLET DU SYSTÈME DE PAIEMENT STRIPE - PRIORITÉ ABSOLUE. Migration de emergentintegrations vers la bibliothèque officielle Stripe pour gérer les abonnements récurrents. Le système permet aux établissements de souscrire un abonnement mensuel de 14,99€ après leur période d'essai de 60 jours."
 
 backend:
   - task: "Authentication (JWT)"

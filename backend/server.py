@@ -4071,7 +4071,7 @@ async def create_checkout(data: CheckoutRequest, request: Request, current_user:
     cancel_url = f"{data.origin_url}/payment/cancel"
     
     checkout_request = CheckoutSessionRequest(
-        price_id=STRIPE_PRICE_ID,
+        price=STRIPE_PRICE_ID,
         currency="eur",
         success_url=success_url,
         cancel_url=cancel_url,

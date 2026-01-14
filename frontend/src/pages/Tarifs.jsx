@@ -109,7 +109,7 @@ export default function Tarifs() {
               onClick={() => navigate("/musician-register")}
               className="w-full bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 hover:to-cyan-500 text-white rounded-full py-6 text-lg font-heading font-semibold"
             >
-              Créer mon compte gratuit
+              Je suis un musicien
             </Button>
           </div>
 
@@ -156,7 +156,7 @@ export default function Tarifs() {
               onClick={() => navigate("/venue-register")}
               className="w-full bg-primary hover:bg-primary/90 rounded-full py-6 text-lg font-heading font-semibold hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] transition-all"
             >
-              Commencer l'essai gratuit
+              Je suis un établissement
             </Button>
           </div>
 

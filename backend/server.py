@@ -7,6 +7,7 @@ import os
 import logging
 import json
 from pathlib import Path
+from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone, timedelta

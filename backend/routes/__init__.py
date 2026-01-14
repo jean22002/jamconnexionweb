@@ -5,6 +5,7 @@ from .payments import router as payments_router
 from .webhooks import router as webhooks_router
 from .messages import router as messages_router
 from .reviews import router as reviews_router
+from .notifications import router as notifications_router
 
 __all__ = [
     'auth_router',
@@ -13,5 +14,6 @@ __all__ = [
     'payments_router',
     'webhooks_router',
     'messages_router',
-    'reviews_router'
+    'reviews_router',
+    'notifications_router'
 ]

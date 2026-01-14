@@ -82,7 +82,13 @@ logger = logging.getLogger(__name__)
 api_router = APIRouter(prefix="/api")
 
 # Import and include refactored routers
-from routes import auth_router, account_router, uploads_router, payments_router, webhooks_router
+from routes import (
+    auth_router, account_router, uploads_router, 
+    payments_router, webhooks_router,
+    messages_router, reviews_router
+)
+import routes.messages as messages
+import routes.reviews as reviews
 
 # Include refactored routers (these replace old endpoints)
 api_router.include_router(auth_router)

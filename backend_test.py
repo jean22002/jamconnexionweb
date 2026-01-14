@@ -7438,8 +7438,8 @@ class JamConnexionAPITester:
         else:
             self.log_test("Stripe Checkout Session", False, "Method not found")
         
-        if hasattr(self, 'test_venue_subscription_status'):
-            self.test_venue_subscription_status()   # GET /api/account/status
+        if hasattr(self, 'test_account_subscription_status'):
+            self.test_account_subscription_status()   # GET /api/account/status
         else:
             self.log_test("Venue Subscription Status", False, "Method not found")
         

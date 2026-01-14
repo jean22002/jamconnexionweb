@@ -1245,7 +1245,63 @@ async def get_my_venue(current_user: dict = Depends(get_current_user)):
     
     subscribers_count = await db.venue_subscriptions.count_documents({"venue_id": venue["id"]})
     
-    return VenueProfileResponse(**venue, subscription_status=current_user.get("subscription_status"), subscribers_count=subscribers_count)
+    # Calculate trial days left
+    trial_days_left = None
+    subscription_status = current_user.get("subscription_status")
+    trial_end = current_user.get("trial_end")
+    
+    if subscription_status == "trial" and trial_end:
+        trial_end_date = datetime.fromisoformat(trial_end)
+        now = datetime.now(timezone.utc)
+        days_left = (trial_end_date - now).days
+        trial_days_left = max(0, days_left)
+        
+        # Update status to expired if trial ended
+        if days_left < 0:
+            subscription_status = "expired"
+            await db.users.update_one(
+                {"id": current_user["id"]},
+                {"$set": {"subscription_status": "expired"}}
+            )
+    
+    return VenueProfileResponse(
+        **venue,
+        subscription_status=subscription_status,
+        trial_end=trial_end,
+        trial_days_left=trial_days_left,
+        subscribers_count=subscribers_count
+    )
+
+@api_router.get("/venues/me/subscription-status")
+async def check_subscription_status(current_user: dict = Depends(get_current_user)):
+    """Check subscription status and days left for venue"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venue accounts can access this")
+    
+    subscription_status = current_user.get("subscription_status", "expired")
+    trial_end = current_user.get("trial_end")
+    
+    days_left = 0
+    if subscription_status == "trial" and trial_end:
+        trial_end_date = datetime.fromisoformat(trial_end)
+        now = datetime.now(timezone.utc)
+        days_left = (trial_end_date - now).days
+        days_left = max(0, days_left)
+        
+        # Update status if expired
+        if days_left <= 0:
+            subscription_status = "expired"
+            await db.users.update_one(
+                {"id": current_user["id"]},
+                {"$set": {"subscription_status": "expired"}}
+            )
+    
+    return {
+        "status": subscription_status,
+        "trial_end": trial_end,
+        "days_left": days_left,
+        "is_active": subscription_status in ["trial", "active"]
+    }
 
 @api_router.get("/venues/me/jams", response_model=List[JamEventResponse])
 async def get_my_venue_jams(current_user: dict = Depends(get_current_user)):

@@ -273,6 +273,8 @@ class VenueProfileResponse(BaseModel):
     opening_hours: Optional[str] = None
     created_at: str
     subscription_status: Optional[str] = None
+    trial_end: Optional[str] = None  # ISO date string
+    trial_days_left: Optional[int] = None  # Calculated field
     subscribers_count: int = 0
     show_reviews: bool = True
     allow_messages_from: str = "everyone"  # "everyone" or "connected_only"

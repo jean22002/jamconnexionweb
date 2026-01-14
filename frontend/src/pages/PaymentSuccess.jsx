@@ -94,18 +94,18 @@ export default function PaymentSuccess() {
               <div className="w-20 h-20 mx-auto rounded-full bg-green-500/20 flex items-center justify-center mb-6 animate-pulse-glow">
                 <Check className="w-10 h-10 text-green-400" />
               </div>
-              <h1 className="font-heading font-bold text-2xl mb-3">
-                Paiement réussi !
+              <h1 className="font-heading font-bold text-3xl mb-3">
+                Merci pour ton abonnement 🎉
               </h1>
               <p className="text-muted-foreground mb-8">
-                Votre abonnement est maintenant actif. Vous pouvez compléter votre profil pour être visible sur la carte.
+                Ton accès est maintenant actif. Tu peux continuer où tu t'étais arrêté.
               </p>
               <Button 
                 onClick={() => navigate("/venue")}
-                className="bg-primary hover:bg-primary/90 rounded-full px-8 py-6 font-heading font-semibold hover:shadow-[0_0_20px_rgba(217,70,239,0.5)] transition-all"
+                className="bg-primary hover:bg-primary/90 rounded-full px-12 py-7 font-heading text-lg font-semibold hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] transition-all"
                 data-testid="go-dashboard-btn"
               >
-                Aller au Dashboard
+                Accéder à Jam Connexion
               </Button>
             </>
           )}

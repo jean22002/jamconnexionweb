@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 class JamConnexionAPITester:
-    def __init__(self, base_url="https://musicvenue-update.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://musicianhub.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0

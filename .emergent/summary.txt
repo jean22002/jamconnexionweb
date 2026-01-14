@@ -1,158 +1,174 @@
 <analysis>**original_problem_statement:**
-L'utilisateur a demandé l'implémentation d'un système d'avis complet et la résolution d'un bug de géolocalisation persistant et frustrant dans le profil de l'établissement.
-
-**Fonctionnalités du système d'avis demandées :**
-1.  Un musicien ne peut laisser qu'un seul avis par établissement.
-2.  Si un musicien essaie de laisser un deuxième avis, une notification Vous avez déjà publié un avis doit apparaître.
-3.  Le musicien doit pouvoir supprimer son propre avis.
-4.  L'avis doit apparaître dans le tableau de bord de l'établissement, dans une section Avis.
-
-**Problème de géolocalisation :**
-L'utilisateur a signalé à plusieurs reprises que le système de géolocalisation dans le profil de l'établissement () ne fonctionnait pas correctement. Les champs (ville, code postal, département, région) ne se mettaient pas à jour, se réinitialisaient, ou affichaient des données incorrectes. L'utilisateur a demandé de copier le système du profil musicien, qui fonctionnait bien. Après de nombreuses tentatives, la solution finale demandée par l'utilisateur est un système hybride.
+L'utilisateur a demandé une série d'améliorations et de corrections pour une application de mise en relation entre musiciens et établissements :
+1.  **Fonctionnalités de Base :** Ajout de textes légaux (CGU, etc.), mise à jour du prix de l'abonnement, correction de bugs d'affichage responsive.
+2.  **Types d'Événements :** Ajout de Karaoké et Spectacle comme nouveaux types d'événements.
+3.  **Profils & Candidatures :**
+    *   Implémenter un calendrier sur le profil de l'établissement pour que les musiciens voient et postulent aux créneaux.
+    *   Ajouter des champs association et label de musique aux profils de groupe.
+    *   Permettre l'ajout d'une photo de couverture pour les groupes.
+    *   Ajouter un bouton Voir le profil complet sur les cartes de groupe.
+4.  **Gestion des Comptes :**
+    *   Permettre aux utilisateurs de suspendre (60 jours) ou de supprimer leur compte.
+    *   Empêcher l'inscription avec une adresse e-mail déjà utilisée.
+    *   Nettoyer la base de données des comptes de test.
+5.  **Abonnement & Paiement (Stripe) :**
+    *   Retirer les compteurs de la page d'accueil et les afficher uniquement lorsque le nombre d'utilisateurs dépasse 100.
+    *   Mettre en place un système d'essai gratuit de 60 jours pour les nouveaux établissements.
+    *   Après l'essai, bloquer l'accès et rediriger l'utilisateur vers une page de paiement Stripe pour souscrire à un abonnement mensuel de 14,99 €.
+    *   Utiliser les clés d'API Stripe LIVE et le Price ID fournis par l'utilisateur.
+    *   Assurer que le système est robuste et que chaque utilisateur a sa propre date de fin d'essai.
 
 **User's preferred language**: French
 
 **what currently exists?**
-Une application full-stack (React, FastAPI, MongoDB).
-- Le bug des  dans le profil établissement a été corrigé.
-- La restriction de messagerie () a été implémentée et testée côté backend.
-- L'interface de gestion des candidatures a été améliorée.
-- Le bug des avis qui n'apparaissaient pas dans le dashboard de l'établissement a été corrigé en s'assurant qu'ils sont chargés au montage du composant.
-- Un endpoint backend  a été créé.
-- Un bug de géolocalisation très persistant a été traité au travers de multiples itérations. La solution actuelle est un système hybride : le champ Adresse est un  manuel, tandis que le champ Ville utilise un  qui, lors de la sélection, remplit automatiquement le code postal, le département et la région. Ces champs restent modifiables manuellement. La cause principale du bug (un conflit de  dans ) a été identifiée et corrigée par l'agent de dépannage ().
+- Les textes légaux, l'avertissement, la mise à jour des prix et les corrections de responsive ont été effectués.
+- Le calendrier de candidature pour les musiciens est fonctionnel.
+- Les profils de groupe ont été enrichis avec les champs d'association, de label et une photo de couverture. Le bouton Voir le profil a été ajouté.
+- La gestion de compte (suspension, suppression, validation d'e-mail unique) est implémentée côté backend et frontend.
+- La logique pour le système d'essai de 60 jours est en place (champs en BDD, vérification à la connexion, redirection vers une page ).
+- L'intégration Stripe est partiellement en place mais **cassée**. Les clés LIVE et le Price ID sont dans les variables d'environnement, mais la création de la session de paiement pour un abonnement échoue.
 
 **Last working item**:
--   **Last item agent was working**: L'agent implémentait la suite des fonctionnalités du système d'avis, spécifiquement la possibilité pour un musicien de supprimer son propre avis. Il venait d'ajouter l'endpoint  côté backend et s'apprêtait à modifier l'interface frontend () pour ajouter le bouton de suppression.
--   **Status**: IN PROGRESS
--   **Agent Testing Done**: N
--   **Which testing method agent to use?**: frontend testing agent. L'agent doit tester le cycle de vie complet d'un avis :
-    1.  Un musicien participe à un événement.
-    2.  Le musicien laisse un avis sur la page de l'établissement.
-    3.  L'avis apparaît sur la page de l'établissement et dans le dashboard de l'établissement.
-    4.  Le musicien supprime son avis.
-    5.  L'avis disparaît de partout.
-    6.  Le musicien essaie de laisser un nouvel avis et reçoit la notification Vous avez déjà publié un avis (avant la suppression) et peut en poster un nouveau (après la suppression).
--   **User Testing Done**: N
+- **Last item agent was working**: Correction du bug de création de session d'abonnement Stripe. L'agent a identifié que la bibliothèque  utilisée n'est pas adaptée pour les abonnements récurrents (elle force le ). Après confirmation du support, la décision a été prise de migrer vers la bibliothèque Python officielle de Stripe.
+- **Status**: IN PROGRESS
+- **Agent Testing Done**: N (La dernière tentative de correction a échoué)
+- **Which testing method agent to use?**: backend testing agent (Après correction, un test complet du flux de paiement sera nécessaire).
+- **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Finaliser le système d'avis (P0)**
--   **Issue 2: Le bug de géolocalisation pourrait réapparaître (P1)**
--   **Issue 3: Validation de l'interface de gestion des candidatures (P2)**
+- **Issue 1**: La création de la session de paiement Stripe pour un abonnement échoue. (P0 - BLOCKER)
+- **Issue 2**: Les événements Karaoké et Spectacle ne s'affichent pas dans la liste après leur création. (P1)
+- **Issue 3**: Les avis ne sont pas visibles sur le profil Test Bar. (P2)
+- **Issue 4**: Le correctif du bug des boutons de navigation GPS (pointe vers la mauvaise adresse) est en attente de vérification par l'utilisateur. (P3)
+- **Issue 5**: L'interface de gestion des candidatures est en attente de validation par l'utilisateur. (P4)
 
 **Issues Detail**:
--   **Issue 1: Finaliser le système d'avis**
-    -   **Attempted fixes**: Le backend  a été créé. Le travail sur le frontend a commencé.
-    -   **Next debug checklist**:
-        1.  Modifier  pour ajouter un bouton Supprimer à côté d'un avis, visible uniquement par son auteur ().
-        2.  Créer une fonction handler qui appelle l'endpoint .
-        3.  Après la suppression, mettre à jour l'état local pour retirer l'avis de l'interface.
-        4.  Confirmer que la logique backend existante (qui empêche de laisser un deuxième avis) fonctionne et que le frontend affiche bien le message d'erreur retourné par l'API.
-    -   **Why fix this issue and what will be achieved with the fix?**: Complète une fonctionnalité majeure demandée par l'utilisateur et donne aux utilisateurs le contrôle sur leur contenu.
-    -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: both
-    -   **Blocked on other issue**: Non.
+- **Issue 1: Échec de la création de session d'abonnement Stripe**
+    - **Attempted fixes**: L'agent a essayé de passer le Price ID via les paramètres , , et  à la bibliothèque . Toutes les tentatives ont échoué car la bibliothèque force le  de Stripe, alors qu'un Price ID récurrent nécessite le . L'erreur renvoyée par l'API Stripe était You cannot use ... Please either switch to mode or use only one-time prices.
+    - **Next debug checklist**:
+        1.  Remplacer l'utilisation de  par la bibliothèque officielle .
+        2.  Installer la bibliothèque : Looking in indexes: https://pypi.org/simple, https://d33sy5i8bnduwe.cloudfront.net/simple/
+Requirement already satisfied: stripe in /root/.venv/lib/python3.11/site-packages (14.1.0)
+Requirement already satisfied: typing_extensions>=4.5.0 in /root/.venv/lib/python3.11/site-packages (from stripe) (4.15.0)
+Requirement already satisfied: requests>=2.20 in /root/.venv/lib/python3.11/site-packages (from stripe) (2.32.5)
+Requirement already satisfied: charset_normalizer<4,>=2 in /root/.venv/lib/python3.11/site-packages (from requests>=2.20->stripe) (3.4.4)
+Requirement already satisfied: idna<4,>=2.5 in /root/.venv/lib/python3.11/site-packages (from requests>=2.20->stripe) (3.11)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /root/.venv/lib/python3.11/site-packages (from requests>=2.20->stripe) (2.6.2)
+Requirement already satisfied: certifi>=2017.4.17 in /root/.venv/lib/python3.11/site-packages (from requests>=2.20->stripe) (2025.11.12).
+        3.  Dans , au sein de l'endpoint , réécrire la logique en utilisant .
+        4.  S'assurer que l'appel inclut les paramètres corrects : , , , , et .
+        5.  Intégrer la clé secrète du webhook () dans le  et l'utiliser pour sécuriser l'endpoint de webhook .
+    - **Why fix this issue and what will be achieved with the fix?**: C'est la fonctionnalité de monétisation principale de l'application. Sans cette correction, les utilisateurs ne peuvent pas s'abonner après leur période d'essai, ce qui rend l'application inutilisable à long terme.
+    - **Status**: IN PROGRESS
+    - **Is recurring issue?**: N
+    - **Should Test frontend/backend/both after fix?**: both
+    - **Blocked on other issue**: None
 
--   **Issue 2: Le bug de géolocalisation pourrait réapparaître**
-    -   **Attempted fixes**: De nombreuses tentatives ont été faites, incluant la copie du système du profil musicien, la simplification en champs manuels, et finalement un système hybride. La cause racine, un conflit de  dans , a été corrigée par .
-    -   **Next debug checklist**:
-        1.  Après avoir terminé le système d'avis, demander à l'utilisateur une validation finale et explicite du système de géolocalisation.
-        2.  Lui demander de tester plusieurs villes (ex: Paris, Montauban) et de confirmer que le clic sur une suggestion remplit correctement tous les champs et que la sauvegarde fonctionne.
-    -   **Why fix this issue and what will be achieved with the fix?**: C'est une source de frustration majeure et récurrente pour l'utilisateur. Sa résolution définitive est critique.
-    -   **Status**: USER VERIFICATION PENDING
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: frontend
-    -   **Blocked on other issue**: Non.
-
--   **Issue 3: Validation de l'interface de gestion des candidatures**
-    -   **Attempted fixes**: L'agent a découvert que l'interface existait déjà. Il l'a améliorée pour la rendre plus informative (nom du musicien cliquable) et a corrigé un bug de logique connexe dans les restrictions de messagerie.
-    -   **Next debug checklist**: Demander à l'utilisateur de valider que l'interface actuelle dans l'onglet Planning du  pour accepter/refuser les candidatures est conforme à ses attentes.
-    -   **Why fix this issue and what will be achieved with the fix?**: C'est une fonctionnalité clé pour les établissements.
-    -   **Status**: USER VERIFICATION PENDING
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: frontend
-    -   **Blocked on other issue**: Non.
+- **Issue 2: Les événements Karaoké/Spectacle ne s'affichent pas après création**
+    - **Status**: NOT STARTED (dans ce fork)
+    - **Details**: Problème hérité, probablement lié à une mauvaise gestion du rafraîchissement de l'état (state) dans  après un appel POST.
 
 **In progress Task List**:
--   **Task 1: Ajouter le bouton et la logique de suppression d'avis côté frontend**
-    -   **Where to resume**: , dans la boucle .
-    -   **What will be achieved with this?**: Permettre aux musiciens de supprimer leurs propres avis.
-    -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: frontend
-    -   **Blocked on something**: Non.
+- **Task 1: Migrer la création de session Stripe vers la bibliothèque officielle (P0)**
+    - **Where to resume**: Fichier , endpoint .
+    - **What will be achieved with this?**: Un flux de paiement fonctionnel permettant aux utilisateurs de souscrire à un abonnement après leur période d'essai.
+    - **Status**: NOT STARTED (La décision de migrer vient d'être prise).
+    - **Should Test frontend/backend/both after fix?**: both
+    - **Blocked on something**: Non
 
 **Upcoming and Future Tasks**
-*   **Upcoming Tasks**:
-    *   **(P0)** Implémenter la notification Vous avez déjà publié un avis sur le frontend.
-    *   **(P1)** Obtenir la validation de l'utilisateur pour le système de géolocalisation.
-    *   **(P2)** Obtenir la validation de l'utilisateur pour l'interface de gestion des candidatures.
-*   **Future Tasks**:
-    *   **(Refactor)** Décomposer le fichier monolithique .
-    *   **(Refactor)** Scinder les composants massifs  et .
+-   **Upcoming Tasks**:
+    *   **(P1)** Intégrer la clé secrète du webhook Stripe () pour sécuriser les notifications de paiement.
+    *   **(P2)** Résoudre le bug d'affichage des événements Karaoké et Spectacle.
+    *   **(P3)** Obtenir la validation de l'utilisateur pour l'ensemble des fonctionnalités héritées (Avis, GPS, UI candidatures).
+-   **Future Tasks**:
+    *   **(Refactor - CRITICAL)** Décomposer les composants monolithiques  et .
+    *   **(Refactor - HIGHLY RECOMMENDED)** Scinder le fichier backend monolithique  en plusieurs routeurs.
 
 **Completed work in this session**
--   Correction du bug des  qui ne conservaient pas leur état dans .
--   Implémentation et correction de la logique de restriction de messagerie côté backend.
--   Amélioration de l'interface existante de gestion des candidatures.
--   Correction du bug de géolocalisation après de multiples itérations, aboutissant à un système hybride fonctionnel. La cause racine (conflit d'état React) a été résolue.
--   Correction du bug où les avis n'apparaissaient pas dans le dashboard de l'établissement.
--   Création de l'endpoint backend .
+-   Ajout d'un bouton Voir le profil complet sur les cartes de groupe dans .
+-   Affichage des informations de label et d'association dans le profil détaillé du groupe.
+-   Implémentation de l'upload de photo de couverture pour les groupes dans .
+-   Nettoyage complet de la base de données des comptes de test à la demande de l'utilisateur.
+-   Modification de la page d'accueil () pour n'afficher les compteurs que si le nombre d'utilisateurs > 100.
+-   Mise à jour du prix de l'abonnement à 14,99 € sur la page d'accueil.
+-   Implémentation complète (backend et frontend) de la suppression et suspension de compte pour musiciens et établissements.
+-   Traduction et vérification du message d'erreur pour les inscriptions avec un e-mail déjà existant.
+-   Mise à jour des textes sur les pages de flux de paiement (, ).
+-   Création de la page .
+-   Mise à jour du backend pour utiliser les clés Stripe LIVE et le Price ID de l'utilisateur.
+
+**Earlier issues found/mentioned but not fixed**
+-   Les problèmes mentionnés dans **All Pending/In progress Issue list** (avis non visibles, validation GPS, validation UI gestion) ont été reportés des forks précédents et n'ont pas été traités dans cette session.
 
 **Known issue recurrence from previous fork**
--   Le bug de géolocalisation dans le profil établissement était un problème connu et a été une source majeure de travail et de frustration dans cette session.
+-   La tendance aux données qui ne se rafraîchissent pas après une action de création (POST) semble être un problème récurrent, se manifestant avec les événements Karaoké et potentiellement d'autres fonctionnalités.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **React State & Effect Management**: Le bug de géolocalisation était un problème complexe de gestion d'état, avec des  qui s'annulaient ou écrasaient les données de l'utilisateur. La solution finale a impliqué de gérer soigneusement la synchronisation entre la valeur du composant parent et l'état interne du composant .
--   **REST API**: Ajout d'un endpoint  pour la gestion des ressources (avis), en respectant les conventions REST.
--   **Débogage itératif**: L'agent a dû essayer plusieurs approches (simplification, copie, système hybride, intervention du ) pour résoudre un bug persistant, en se basant sur les retours constants de l'utilisateur via des captures d'écran.
+-   **Stripe Integration**: L'agent a tenté d'utiliser  mais a été bloqué par ses limitations. La migration vers la bibliothèque  officielle est la prochaine étape critique.
+-   **Subscription Logic**: Mise en place d'une logique basée sur  et  pour gérer l'accès des utilisateurs.
+-   **State Management (React)**: Utilisation de ,  pour gérer l'état local des composants. Le bug des karaokés est probablement lié à un problème de rafraîchissement de l'état.
 
 **key DB schema**
--   **reviews** (collection MongoDB): Aucune modification de schéma. Une opération  est désormais possible.
+-   **users**: Contient maintenant  (date d'expiration de l'essai),  (booléen), et  (date de fin de suspension).
 
 **All files of reference**
-*   : **Fichier critique à modifier.** C'est ici qu'il faut ajouter le bouton de suppression d'avis.
-*   : Fichier de référence pour le bug de géolocalisation. La logique actuelle est un système hybride. La fonction  a été modifiée pour ne pas s'exécuter en mode édition.
-*   : Contient le nouvel endpoint  et la logique de restriction de messagerie.
-*   : Contient la correction du bug de  appliquée par le .
+-   : Fichier central pour la correction du bug Stripe et l'intégration du webhook secret.
+-   : Contient les clés Stripe LIVE, le Price ID et le futur Webhook Secret.
+-   : Point de départ du flux de paiement pour l'utilisateur.
+-   : Contient la logique qui redirige les utilisateurs expirés.
+
+**Areas that need refactoring**:
+-   **CRITICAL**:  et  sont extrêmement complexes et difficiles à maintenir.
+-   **HIGHLY RECOMMENDED**:  doit être découpé en routeurs pour améliorer la lisibilité et la maintenance.
+
+**key api endpoints**
+-   : **(CASSÉ)** Crée une session de paiement Stripe. Doit être corrigé.
+-   : Vérifie le statut d'abonnement d'un utilisateur.
+-   : Suspend le compte d'un utilisateur.
+-   : Supprime le compte d'un utilisateur.
+-   : Endpoint pour recevoir les événements de Stripe (doit être sécurisé avec le webhook secret).
 
 **Critical Info for New Agent**
--   **Priorité Absolue (P0)**: Finalisez le système d'avis en ajoutant la suppression côté frontend.
--   **Point de vigilance (P1)**: Le bug de géolocalisation a été extrêmement difficile à résoudre et est une source de grande frustration pour l'utilisateur. Bien que la solution actuelle semble fonctionner, soyez prêt à y revenir si l'utilisateur signale le moindre problème. La clé était un bug complexe de synchronisation d'état dans . Ne modifiez pas ce composant sans comprendre la correction apportée par le .
--   **Communication**: L'utilisateur est très impliqué, fournit des captures d'écran précises et attend des résultats rapides. Analysez attentivement ses retours visuels. Il a exprimé sa frustration concernant le coût en crédits, donc l'efficacité est primordiale.
-
-**documents and test reports created in this job**
--   Les agents de test (frontend, backend, troubleshoot) ont été utilisés pour diagnostiquer et valider les corrections, notamment pour la géolocalisation et les avis. Les rapports se trouvent dans .
+-   **Priorité Absolue (P0)**: Votre première action doit être de corriger l'endpoint . Remplacez la bibliothèque  par la bibliothèque  officielle pour créer des sessions de paiement en .
+-   **Clés LIVE**: L'application est configurée avec les clés Stripe **LIVE**. Soyez prudent. Utilisez les numéros de carte de test de Stripe pour les simulations de paiement.
+-   **Webhook Secret**: L'utilisateur a fourni une clé secrète de webhook : . Une fois le checkout réparé, vous devez l'ajouter au fichier  et l'utiliser pour vérifier la signature des webhooks reçus par Stripe.
+-   **Confusion de l'utilisateur**: L'utilisateur a été plusieurs fois confus à propos des déploiements qui échouaient et de la différence entre l'environnement de prévisualisation et la production. Communiquez très clairement lorsque les modifications sont prêtes à être déployées et demandez à l'utilisateur de vérifier que le déploiement a réussi.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **LATEST**:  (a review from a musician doesn't appear on the venue profile) - **Status: In progress**, agent found root cause (reviews not fetched) and fixed it, now working on deletion.
-2.   (perfect it works, now keep the street input but for the city, use prediction to autofill...) - **Status: Completed**, hybrid geolocation system implemented.
-3.   (when I click modify, I can't edit the fields) - **Status: Completed**, fixed by .
-4.   (address is frozen, when I change city to Paraza it reverts to Olonzac) - **Status: Completed**, part of the complex geolocation bug.
-5.   (it's not working, remove it and copy the musician profile system) - **Status: Completed**, agent tried this but it also failed, leading to further debugging.
-6.   (no not good, I click paris it doesn't work... I'm tired of paying...) - **Status: Completed**, user is frustrated, sent screenshots proving  was not working correctly.
-7.   (when I type montauban the postal code doesn't change) - **Status: Completed**, user error (didn't click suggestion), agent clarified.
-8.   (look, when I enter Olonzac it doesn't match...) - **Status: Completed**, report of incorrect data from .
-9.   (delete the geolocate button) - **Status: Completed**, part of the simplification attempts for the geolocation flow.
-10.  (geolocation is not working... fix the bug) - **Status: Completed**, initial report of the recurring geolocation bug for this session.
+1.  **LATEST**: jai oublié de te donner le id price price_1SpH8aBykagrgoTUBAdOU10z" - **DONE (added to .env)**
+2.  "jai Du re génére une clé. sk_live_... - **DONE (added to .env)**
+3.  ça fonctionne ok, Maintenant je te donne les clés api pour stripes... - **IN PROGRESS (Stripe bug)**
+4.  je vois tjrs 10 - **RESOLVED (Deployment issue)**
+5.  oui sur mon site déployé - **RESOLVED (Deployment issue)**
+6.  je comprend tjrs pas cela affiche encore le. nombre... - **RESOLVED (Deployment issue)**
+7.  en mode preview je ne vois pas les 500 et 150 musicien... - **RESOLVED (Deployment issue)**
+8.  bien vérifier que chaque utilisateur paye a ses 60 jours... - **DONE (Verified)**
+9.  ...page “Paiement annulé”... - **DONE (Implemented)**
+10. ...le 61 jour Page “Fin d’essai”... - **DONE (Implemented)**
 
 **Project Health Check:**
--   **Broken**: Non. Les fonctionnalités de base sont stables. Le système d'avis est en cours de finalisation.
--   **Mocked**: Aucune.
+-   **Broken**: La fonctionnalité clé de souscription à l'abonnement via Stripe est cassée.
 
 **3rd Party Integrations**
-*   Stripe (Payments) — Utilise une clé de test.
-*   Leaflet.js (Cartes)
-*   : API de géocodage externe utilisée par le .
-*   : Librairie pour les appels à l'API de géocodage.
+-   **Stripe (Paiements)**: Actuellement en cours de migration de  vers la bibliothèque officielle  pour gérer les abonnements. Clés LIVE configurées.
+-   ****: Utilisé pour l'autocomplétion des villes.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES
--   **Troubleshoot agent used after agent stuck in loop**: YES (Utilisé avec succès pour trouver la cause du bug de géolocalisation)
--   **Test files created**: Des fichiers de test ont été générés dans  par l'agent de test.
--   **Known regressions**: Le bug de géolocalisation a été une régression/problème récurrent tout au long de la session.
+-   **Testing agent used after significant changes**: YES (mais pas pour la dernière fonctionnalité qui est cassée)
+-   **Troubleshoot agent used after agent stuck in loop**: NO
+-   **Test files created**: None
+-   **Known regressions**: La création de session Stripe pour les abonnements.
+
+**Credentials to test flow:**
+-   **Stripe LIVE Secret Key**: 
+-   **Stripe LIVE Price ID**: 
+-   **Stripe Webhook Secret**: 
+-   **Stripe Test Card**: Utiliser les cartes de test fournies dans la documentation Stripe pour simuler des paiements.
 
 **What agent forgot to execute**
-- L'agent a correctement suivi les demandes de l'utilisateur, mais le bug de géolocalisation a nécessité de nombreuses tentatives avant d'être résolu, ce qui a pu donner l'impression d'oublier ou de ne pas corriger le problème. Toutes les demandes ont été prises en compte.</analysis>
+-   L'intégration de la clé secrète du webhook Stripe est en attente de la résolution du bug de checkout.
+-   Les anciens problèmes (bug des avis, vérification GPS, etc.) n'ont pas été abordés car la priorité a été donnée aux nouvelles demandes de l'utilisateur et au bug bloquant de Stripe.</analysis>

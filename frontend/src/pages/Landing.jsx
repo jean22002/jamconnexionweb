@@ -261,7 +261,7 @@ export default function Landing() {
               <div className="text-center mb-6">
                 <p className="font-mono text-xs uppercase tracking-wider text-primary mb-2">Établissements</p>
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="font-heading font-bold text-5xl">10€</span>
+                  <span className="font-heading font-bold text-5xl">14,99€</span>
                   <span className="text-muted-foreground">/mois</span>
                 </div>
                 <p className="text-secondary mt-2 font-medium">2 mois d'essai gratuit</p>

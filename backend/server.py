@@ -778,7 +778,11 @@ async def update_venue_profile(data: VenueProfile, current_user: dict = Depends(
     updated = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
     subscribers_count = await db.venue_subscriptions.count_documents({"venue_id": venue["id"]})
     
-    return VenueProfileResponse(**updated, subscription_status=current_user.get("subscription_status"), subscribers_count=subscribers_count)
+    # Update the dict
+    updated["subscription_status"] = current_user.get("subscription_status")
+    updated["subscribers_count"] = subscribers_count
+    
+    return VenueProfileResponse(**updated)
 
 @api_router.get("/venues/me", response_model=VenueProfileResponse)
 async def get_my_venue(current_user: dict = Depends(get_current_user)):
@@ -1003,7 +1007,9 @@ async def find_nearby_venues(data: NearbySearchRequest):
             if subscription_status in ["active", "trial"]:
                 subscribers_count = await db.venue_subscriptions.count_documents({"venue_id": v["id"]})
                 v["distance_km"] = round(distance, 2)
-                nearby.append(VenueProfileResponse(**v, subscription_status=subscription_status, subscribers_count=subscribers_count))
+                v["subscription_status"] = subscription_status
+                v["subscribers_count"] = subscribers_count
+                nearby.append(VenueProfileResponse(**v))
     
     nearby.sort(key=lambda x: x.model_dump().get("distance_km", 999))
     return nearby

@@ -83,6 +83,7 @@ class UserResponse(BaseModel):
     created_at: str
     subscription_status: Optional[str] = None
     trial_end: Optional[str] = None
+    has_active_subscription: Optional[bool] = False
 
 # Band Model (for musicians)
 class BandInfo(BaseModel):

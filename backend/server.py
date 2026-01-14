@@ -234,6 +234,9 @@ class VenueProfile(BaseModel):
     show_reviews: bool = True  # Toggle to show/hide reviews publicly
     allow_messages_from: str = "everyone"  # "everyone" or "connected_only" (musiciens qui ont joué/été acceptés)
     gallery: List[str] = []  # Array of image URLs (max 20)
+    # Subscription fields
+    subscription_status: Optional[str] = "trial"  # "trial", "active", "expired"
+    trial_end: Optional[str] = None  # ISO date string
 
 class VenueProfileResponse(BaseModel):
     id: str

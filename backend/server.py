@@ -90,6 +90,8 @@ api_router.include_router(account_router)
 api_router.include_router(uploads_router)
 api_router.include_router(payments_router)
 api_router.include_router(webhooks_router)
+api_router.include_router(messages_router)
+api_router.include_router(reviews_router)
 
 # Helper function needed by legacy routes
 async def get_current_user(authorization: str = Header(None)):

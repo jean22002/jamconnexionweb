@@ -52,26 +52,6 @@ db = client[os.environ['DB_NAME']]
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default_secret')
 JWT_ALGORITHM = "HS256"
 
-# Helper function for geocoding French cities
-async def geocode_city(city_name: str):
-    """Get GPS coordinates from city name using French government API"""
-    if not city_name:
-        return None, None
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"https://geo.api.gouv.fr/communes?nom={city_name}&fields=centre&limit=1",
-                timeout=5.0
-            )
-            data = response.json()
-            if data and len(data) > 0:
-                coords = data[0].get("centre", {}).get("coordinates")
-                if coords and len(coords) == 2:
-                    return coords[1], coords[0]  # Return lat, lon
-    except Exception as e:
-        print(f"Geocoding error for {city_name}: {e}")
-    return None, None
-
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
 STRIPE_PRICE_ID = os.environ.get('STRIPE_PRICE_ID', 'price_1SpH8aBykagrgoTUBAdOU10z')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')

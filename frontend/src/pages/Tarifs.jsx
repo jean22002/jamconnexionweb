@@ -11,6 +11,7 @@ export default function Tarifs() {
     "Géolocalisation en temps réel des venues",
     "Création de profil musicien & groupe (bio, styles, médias)",
     "Candidature aux créneaux ouverts des établissements",
+    "Messagerie interne pour contacter les établissements",
     "Contact direct avec les venues via messagerie",
     "Filtres avancés par style musical et localisation",
     "Système de notifications en temps réel",
@@ -27,6 +28,7 @@ export default function Tarifs() {
     "Liens réseaux sociaux (Facebook, Instagram, YouTube)",
     "Jours de jam personnalisés et événements récurrents",
     "Réception et gestion des candidatures musiciens",
+    "Messagerie interne pour échanger avec les musiciens",
     "Système d'avis et notation par les musiciens",
     "Badge établissement vérifié pour plus de crédibilité",
     "Support prioritaire avec réponse rapide"

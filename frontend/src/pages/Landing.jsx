@@ -149,29 +149,33 @@ export default function Landing() {
                 <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-background/60"></div>
               </div>
               
-              <div className="absolute -bottom-6 -left-6 glassmorphism rounded-2xl p-4 animate-float">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
-                    <MapPin className="w-6 h-6 text-secondary" />
-                  </div>
-                  <div>
-                    <p className="font-heading font-semibold text-white">+150</p>
-                    <p className="text-sm text-muted-foreground">Établissements</p>
+              {showStats && stats.venues > 100 && (
+                <div className="absolute -bottom-6 -left-6 glassmorphism rounded-2xl p-4 animate-float">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
+                      <MapPin className="w-6 h-6 text-secondary" />
+                    </div>
+                    <div>
+                      <p className="font-heading font-semibold text-white">+{stats.venues}</p>
+                      <p className="text-sm text-muted-foreground">Établissements</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
               
-              <div className="absolute -top-6 -right-6 glassmorphism rounded-2xl p-4 animate-float animation-delay-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                    <Users className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-heading font-semibold text-white">+500</p>
-                    <p className="text-sm text-muted-foreground">Musiciens</p>
+              {showStats && stats.musicians > 100 && (
+                <div className="absolute -top-6 -right-6 glassmorphism rounded-2xl p-4 animate-float animation-delay-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                      <Users className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-heading font-semibold text-white">+{stats.musicians}</p>
+                      <p className="text-sm text-muted-foreground">Musiciens</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

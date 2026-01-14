@@ -213,6 +213,16 @@ export default function VenueDashboard() {
       const response = await axios.get(`${API}/venues/me`, { headers: { Authorization: `Bearer ${token}` } });
       setProfile(response.data);
       
+      // Get subscription status
+      setSubscriptionStatus(response.data.subscription_status);
+      setTrialDaysLeft(response.data.trial_days_left);
+      
+      // Check if expired and redirect
+      if (response.data.subscription_status === "expired") {
+        navigate("/trial-expired");
+        return;
+      }
+      
       // Ne mettre à jour formData QUE si on n'est PAS en mode édition
       // Sinon on écrase les modifications de l'utilisateur
       if (!editing) {
@@ -253,7 +263,7 @@ export default function VenueDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [token, editing]);
+  }, [token, editing, navigate]);
 
   const fetchEvents = useCallback(async () => {
     if (!profile) return;

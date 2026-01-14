@@ -1,10 +1,41 @@
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { Button } from "../components/ui/button";
 import { Music, MapPin, Users, Mic2, Guitar, Radio, ArrowRight, Check } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
 export default function Landing() {
   const { user } = useAuth();
+  const [stats, setStats] = useState({ musicians: 0, venues: 0 });
+  const [showStats, setShowStats] = useState(false);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Fetch musicians count
+        const musiciansRes = await axios.get(`${API}/musicians`);
+        const musiciansCount = musiciansRes.data.length;
+
+        // Fetch venues count
+        const venuesRes = await axios.get(`${API}/venues`);
+        const venuesCount = venuesRes.data.length;
+
+        setStats({ musicians: musiciansCount, venues: venuesCount });
+        
+        // Show stats only if at least one exceeds 100
+        if (musiciansCount > 100 || venuesCount > 100) {
+          setShowStats(true);
+        }
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">

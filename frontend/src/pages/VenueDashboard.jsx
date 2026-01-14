@@ -1561,6 +1561,37 @@ export default function VenueDashboard() {
           </div>
         )}
 
+        {/* Trial Banner */}
+        {subscriptionStatus === "trial" && trialDaysLeft !== null && (
+          <div className="glassmorphism border-2 border-secondary/50 rounded-2xl p-4 mb-6">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-secondary" />
+                </div>
+                <div>
+                  <p className="font-heading font-semibold text-lg">
+                    {trialDaysLeft > 0 ? (
+                      <>Il vous reste {trialDaysLeft} jour{trialDaysLeft > 1 ? "s" : ""} d'essai gratuit</>
+                    ) : (
+                      <>Votre essai se termine aujourd'hui</>
+                    )}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Profitez de toutes les fonctionnalités sans engagement
+                  </p>
+                </div>
+              </div>
+              <Button asChild className="bg-secondary hover:bg-secondary/90 rounded-full">
+                <Link to="/pricing">
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  S'abonner maintenant
+                </Link>
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 mb-6 scrollbar-hide">

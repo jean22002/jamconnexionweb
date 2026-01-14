@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -49,11 +49,16 @@ const INSTRUMENTS_BASE = [
 
 export default function VenueDashboard() {
   const { user, token, logout, refreshUser } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
+  
+  // Subscription state
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+  const [trialDaysLeft, setTrialDaysLeft] = useState(null);
   
   // Events
   const [jams, setJams] = useState([]);

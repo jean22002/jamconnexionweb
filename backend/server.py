@@ -4107,7 +4107,11 @@ async def get_payment_status(session_id: str, request: Request, current_user: di
             )
             await db.users.update_one(
                 {"id": current_user["id"]},
-                {"$set": {"subscription_status": "active", "subscription_started": datetime.now(timezone.utc).isoformat()}}
+                {"$set": {
+                    "subscription_status": "active",
+                    "has_active_subscription": True,
+                    "subscription_started": datetime.now(timezone.utc).isoformat()
+                }}
             )
         elif status.status == "expired":
             await db.payment_transactions.update_one(

@@ -12,7 +12,9 @@ import uuid
 from datetime import datetime, timezone, timedelta
 import stripe
 import math
-import jwt
+import aiofiles
+import httpx
+from math import radians, sin, cos, sqrt, atan2
 
 # Import models from models package
 from models import (
@@ -33,6 +35,9 @@ from models import (
 # Import utility functions
 from utils import hash_password, verify_password, create_token, geocode_city, haversine_distance, save_upload_file
 
+# Import new routers
+from routes import auth_router, account_router, uploads_router, payments_router, webhooks_router
+
 ROOT_DIR = Path(__file__).parent
 UPLOADS_DIR = ROOT_DIR / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
@@ -50,61 +55,75 @@ JWT_ALGORITHM = "HS256"
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
 STRIPE_PRICE_ID = os.environ.get('STRIPE_PRICE_ID', 'price_1SpH8aBykagrgoTUBAdOU10z')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
-SUBSCRIPTION_PRICE = 14.99
 
 stripe.api_key = STRIPE_API_KEY
 
-# Create FastAPI app
-app = FastAPI(
-    title="Jam Connexion API",
-    description="API for connecting musicians with venues",
-    version="2.0.0"
-)
-
-# CORS Configuration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app = FastAPI()
+api_router = APIRouter(prefix="/api")
 
 # Mount static files for uploads
 app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
-# Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+    # Read and check file size
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="Fichier trop volumineux. Maximum 5MB.")
+    
+    # Save file
+    async with aiofiles.open(file_path, 'wb') as f:
+        await f.write(content)
+    
+    # Return relative URL path
+    if folder:
+        return f"/uploads/{folder}/{filename}"
+    return f"/uploads/{filename}"
 
-# Create main API router
-api_router = APIRouter(prefix="/api")
+# ============= AUTH HELPERS =============
 
-# Import and include refactored routers
-from routes import auth_router, account_router, uploads_router, payments_router, webhooks_router
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-# Include refactored routers (these replace old endpoints)
-api_router.include_router(auth_router)
-api_router.include_router(account_router)
-api_router.include_router(uploads_router)
-api_router.include_router(payments_router)
-api_router.include_router(webhooks_router)
+def verify_password(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
 
-# Helper function needed by legacy routes
+def create_token(user_id: str, email: str, role: str) -> str:
+    payload = {
+        "user_id": user_id,
+        "email": email,
+        "role": role,
+        "exp": datetime.now(timezone.utc) + timedelta(days=7)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
 async def get_current_user(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
     
     token = authorization.split(" ")[1]
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         user = await db.users.find_one({"id": payload["user_id"]}, {"_id": 0})
         if not user:
             raise HTTPException(status_code=401, detail="User not found")
         return user
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
+def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    R = 6371
+    lat1_rad = math.radians(lat1)
+    lat2_rad = math.radians(lat2)
+    delta_lat = math.radians(lat2 - lat1)
+    delta_lon = math.radians(lon2 - lon1)
+    a = math.sin(delta_lat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon/2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    return R * c
+
+# ============= AUTH ROUTES =============
 
 @api_router.post("/auth/register", response_model=TokenResponse)
 async def register(data: UserRegister):

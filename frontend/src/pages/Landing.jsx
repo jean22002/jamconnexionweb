@@ -113,7 +113,7 @@ export default function Landing() {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 animate-fade-up animation-delay-200">
-                <Link to="/musician-register">
+                <Link to="/tarifs">
                   <Button 
                     size="lg" 
                     className="bg-primary hover:bg-primary/90 rounded-full px-8 py-6 font-heading font-semibold hover:shadow-[0_0_20px_rgba(217,70,239,0.5)] hover:-translate-y-1 transition-all w-full sm:w-auto"
@@ -123,7 +123,7 @@ export default function Landing() {
                     Je suis Musicien
                   </Button>
                 </Link>
-                <Link to="/venue-register">
+                <Link to="/tarifs">
                   <Button 
                     size="lg" 
                     variant="outline"

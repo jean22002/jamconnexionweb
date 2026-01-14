@@ -90,6 +90,14 @@ function App() {
             } 
           />
           <Route 
+            path="/trial-expired" 
+            element={
+              <ProtectedRoute allowedRole="venue">
+                <TrialExpired />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
             path="/payment/success" 
             element={
               <ProtectedRoute allowedRole="venue">

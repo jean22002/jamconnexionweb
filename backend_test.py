@@ -7433,6 +7433,11 @@ class JamConnexionAPITester:
         # 2. Paiement Stripe (CRITIQUE - Notre fix principal)
         print("\n2️⃣ PAIEMENT STRIPE (CRITIQUE)")
         print("-" * 30)
+        
+        # Create venue profile first for subscription tests
+        if hasattr(self, 'venue_token'):
+            self.test_create_venue_profile()
+        
         if hasattr(self, 'test_stripe_checkout_creation_venue'):
             self.test_stripe_checkout_creation_venue()     # POST /api/payments/checkout
         else:

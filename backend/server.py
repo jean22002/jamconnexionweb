@@ -4112,35 +4112,47 @@ async def create_checkout(data: CheckoutRequest, request: Request, current_user:
 
 @api_router.get("/payments/status/{session_id}")
 async def get_payment_status(session_id: str, request: Request, current_user: dict = Depends(get_current_user)):
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
+    try:
+        # Retrieve session from Stripe
+        session = stripe.checkout.Session.retrieve(session_id)
+        
+        # Get transaction from database
+        transaction = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
+        
+        # Update transaction status if payment is complete
+        if transaction and transaction.get("payment_status") != "paid":
+            if session.payment_status == "paid":
+                await db.payment_transactions.update_one(
+                    {"session_id": session_id},
+                    {"$set": {"status": "completed", "payment_status": "paid", "completed_at": datetime.now(timezone.utc).isoformat()}}
+                )
+                await db.users.update_one(
+                    {"id": current_user["id"]},
+                    {"$set": {
+                        "subscription_status": "active",
+                        "has_active_subscription": True,
+                        "subscription_started": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+            elif session.status == "expired":
+                await db.payment_transactions.update_one(
+                    {"session_id": session_id},
+                    {"$set": {"status": "expired", "payment_status": "failed"}}
+                )
+        
+        return {
+            "status": session.status,
+            "payment_status": session.payment_status,
+            "amount_total": session.amount_total,
+            "currency": session.currency
+        }
     
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-    status = await stripe_checkout.get_checkout_status(session_id)
-    
-    transaction = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
-    
-    if transaction and transaction.get("payment_status") != "paid":
-        if status.payment_status == "paid":
-            await db.payment_transactions.update_one(
-                {"session_id": session_id},
-                {"$set": {"status": "completed", "payment_status": "paid", "completed_at": datetime.now(timezone.utc).isoformat()}}
-            )
-            await db.users.update_one(
-                {"id": current_user["id"]},
-                {"$set": {
-                    "subscription_status": "active",
-                    "has_active_subscription": True,
-                    "subscription_started": datetime.now(timezone.utc).isoformat()
-                }}
-            )
-        elif status.status == "expired":
-            await db.payment_transactions.update_one(
-                {"session_id": session_id},
-                {"$set": {"status": "expired", "payment_status": "failed"}}
-            )
-    
-    return {"status": status.status, "payment_status": status.payment_status, "amount_total": status.amount_total, "currency": status.currency}
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Erreur lors de la récupération du statut: {str(e)}")
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur interne du serveur")
 
 @api_router.post("/webhook/stripe")
 async def stripe_webhook(request: Request):

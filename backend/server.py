@@ -4137,7 +4137,14 @@ async def stripe_webhook(request: Request):
         if webhook_response.payment_status == "paid":
             user_id = webhook_response.metadata.get("user_id")
             if user_id:
-                await db.users.update_one({"id": user_id}, {"$set": {"subscription_status": "active"}})
+                await db.users.update_one(
+                    {"id": user_id},
+                    {"$set": {
+                        "subscription_status": "active",
+                        "has_active_subscription": True,
+                        "subscription_started": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
                 await db.payment_transactions.update_one(
                     {"session_id": webhook_response.session_id},
                     {"$set": {"status": "completed", "payment_status": "paid"}}

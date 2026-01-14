@@ -1979,6 +1979,128 @@ export default function VenueDashboard() {
                   </div>
                 </div>
               </div>
+
+              {/* Account Management Section */}
+              <div className="glassmorphism rounded-2xl p-6 mt-6 border-2 border-red-500/20">
+                <h3 className="font-heading font-semibold text-lg mb-4 text-red-400">Gestion du compte</h3>
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between gap-4 p-4 bg-orange-500/10 rounded-xl border border-orange-500/20">
+                    <div>
+                      <p className="font-medium mb-1">Suspendre mon compte</p>
+                      <p className="text-sm text-muted-foreground">
+                        Suspendre temporairement votre compte pour 60 jours. Vous pourrez le réactiver à tout moment.
+                      </p>
+                    </div>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="rounded-full border-orange-500/50 hover:bg-orange-500/20">
+                          <Clock className="w-4 h-4 mr-2" />
+                          Suspendre
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="glassmorphism border-white/10">
+                        <DialogHeader>
+                          <DialogTitle className="text-orange-400">Suspendre mon compte</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
+                            <h4 className="font-semibold mb-2">⚠️ Attention</h4>
+                            <ul className="text-sm space-y-2 text-muted-foreground">
+                              <li>• Votre compte sera suspendu pour 60 jours maximum</li>
+                              <li>• Votre profil ne sera plus visible pendant cette période</li>
+                              <li>• Vos événements seront masqués</li>
+                              <li>• Vous pourrez réactiver votre compte à tout moment</li>
+                            </ul>
+                          </div>
+                          <DialogFooter className="flex gap-2">
+                            <DialogTrigger asChild>
+                              <Button variant="outline" className="rounded-full">
+                                Annuler
+                              </Button>
+                            </DialogTrigger>
+                            <Button
+                              className="bg-orange-500 hover:bg-orange-600 rounded-full"
+                              onClick={async () => {
+                                try {
+                                  await axios.post(`${API}/account/suspend`, {}, { 
+                                    headers: { Authorization: `Bearer ${token}` } 
+                                  });
+                                  toast.success("Compte suspendu pour 60 jours");
+                                  setTimeout(() => logout(), 2000);
+                                } catch (error) {
+                                  toast.error("Erreur lors de la suspension");
+                                }
+                              }}
+                            >
+                              Confirmer la suspension
+                            </Button>
+                          </DialogFooter>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+
+                  <div className="flex items-start justify-between gap-4 p-4 bg-red-500/10 rounded-xl border border-red-500/20">
+                    <div>
+                      <p className="font-medium mb-1">Supprimer mon compte</p>
+                      <p className="text-sm text-muted-foreground">
+                        Supprimer définitivement votre compte et toutes vos données. Cette action est irréversible.
+                      </p>
+                    </div>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="rounded-full border-red-500/50 hover:bg-red-500/20">
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Supprimer
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="glassmorphism border-white/10">
+                        <DialogHeader>
+                          <DialogTitle className="text-red-400">Supprimer mon compte</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="p-4 bg-red-500/10 rounded-lg border border-red-500/20">
+                            <h4 className="font-semibold mb-2">🚨 Attention - Action irréversible</h4>
+                            <ul className="text-sm space-y-2 text-muted-foreground">
+                              <li>• Toutes vos données seront supprimées définitivement</li>
+                              <li>• Tous vos événements seront supprimés</li>
+                              <li>• Toutes les candidatures reçues seront perdues</li>
+                              <li>• Vos messages et notifications seront effacés</li>
+                              <li>• Cette action ne peut pas être annulée</li>
+                            </ul>
+                          </div>
+                          <DialogFooter className="flex gap-2">
+                            <DialogTrigger asChild>
+                              <Button variant="outline" className="rounded-full">
+                                Annuler
+                              </Button>
+                            </DialogTrigger>
+                            <Button
+                              className="bg-red-500 hover:bg-red-600 rounded-full"
+                              onClick={async () => {
+                                try {
+                                  await axios.delete(`${API}/account/delete`, { 
+                                    headers: { Authorization: `Bearer ${token}` } 
+                                  });
+                                  toast.success("Compte supprimé définitivement");
+                                  setTimeout(() => {
+                                    logout();
+                                    navigate("/");
+                                  }, 2000);
+                                } catch (error) {
+                                  toast.error("Erreur lors de la suppression");
+                                }
+                              }}
+                            >
+                              Confirmer la suppression
+                            </Button>
+                          </DialogFooter>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </div>
+              </div>
             </div>
           </TabsContent>
 

@@ -4065,38 +4065,50 @@ async def create_checkout(data: CheckoutRequest, request: Request, current_user:
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venue accounts can subscribe")
     
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
+    try:
+        success_url = f"{data.origin_url}/payment/success?session_id={{CHECKOUT_SESSION_ID}}"
+        cancel_url = f"{data.origin_url}/payment/cancel"
+        
+        # Create Stripe checkout session for subscription
+        session = stripe.checkout.Session.create(
+            mode='subscription',
+            line_items=[{
+                'price': STRIPE_PRICE_ID,
+                'quantity': 1,
+            }],
+            success_url=success_url,
+            cancel_url=cancel_url,
+            client_reference_id=current_user["id"],
+            customer_email=current_user["email"],
+            metadata={
+                "user_id": current_user["id"],
+                "email": current_user["email"],
+                "type": "venue_subscription"
+            }
+        )
+        
+        # Store transaction in database
+        transaction_doc = {
+            "id": str(uuid.uuid4()),
+            "session_id": session.id,
+            "user_id": current_user["id"],
+            "email": current_user["email"],
+            "amount": SUBSCRIPTION_PRICE,
+            "currency": "eur",
+            "status": "initiated",
+            "payment_status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.payment_transactions.insert_one(transaction_doc)
+        
+        return {"url": session.url, "session_id": session.id}
     
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-    
-    success_url = f"{data.origin_url}/payment/success?session_id={{CHECKOUT_SESSION_ID}}"
-    cancel_url = f"{data.origin_url}/payment/cancel"
-    
-    checkout_request = CheckoutSessionRequest(
-        stripe_price_id=STRIPE_PRICE_ID,
-        quantity=1,
-        success_url=success_url,
-        cancel_url=cancel_url,
-        metadata={"user_id": current_user["id"], "email": current_user["email"], "type": "venue_subscription"}
-    )
-    
-    session: CheckoutSessionResponse = await stripe_checkout.create_checkout_session(checkout_request)
-    
-    transaction_doc = {
-        "id": str(uuid.uuid4()),
-        "session_id": session.session_id,
-        "user_id": current_user["id"],
-        "email": current_user["email"],
-        "amount": SUBSCRIPTION_PRICE,
-        "currency": "eur",
-        "status": "initiated",
-        "payment_status": "pending",
-        "created_at": datetime.now(timezone.utc).isoformat()
-    }
-    await db.payment_transactions.insert_one(transaction_doc)
-    
-    return {"url": session.url, "session_id": session.session_id}
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Erreur lors de la création de la session de paiement: {str(e)}")
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur interne du serveur")
 
 @api_router.get("/payments/status/{session_id}")
 async def get_payment_status(session_id: str, request: Request, current_user: dict = Depends(get_current_user)):

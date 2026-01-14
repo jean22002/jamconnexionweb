@@ -90,6 +90,12 @@ api_router.include_router(account_router)
 api_router.include_router(uploads_router)
 api_router.include_router(payments_router)
 api_router.include_router(webhooks_router)
+
+# Inject DB connection to routers that need it
+from routes import messages, reviews
+messages.set_db(db)
+reviews.set_db(db)
+
 api_router.include_router(messages_router)
 api_router.include_router(reviews_router)
 

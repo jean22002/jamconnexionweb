@@ -7432,8 +7432,15 @@ class JamConnexionAPITester:
         return self.tests_passed == self.tests_run
 
 def main():
+    import sys
+    
     tester = JamConnexionAPITester()
-    success = tester.run_all_tests()
+    
+    # Check if we should run post-refactoring tests specifically
+    if len(sys.argv) > 1 and sys.argv[1] == "--post-refactoring":
+        success = tester.run_post_refactoring_tests()
+    else:
+        success = tester.run_all_tests()
     
     # Save detailed results
     with open('/app/test_reports/backend_test_results.json', 'w') as f:

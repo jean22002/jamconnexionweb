@@ -901,10 +901,13 @@ async def list_venues(city: Optional[str] = None, style: Optional[str] = None):
     result = []
     for v in venues:
         user = await db.users.find_one({"id": v["user_id"]}, {"_id": 0})
-        subscription_status = user.get("subscription_status") if user else None
-        if subscription_status in ["active", "trial"]:
+        user_subscription_status = user.get("subscription_status") if user else None
+        if user_subscription_status in ["active", "trial"]:
             subscribers_count = await db.venue_subscriptions.count_documents({"venue_id": v["id"]})
-            result.append(VenueProfileResponse(**v, subscription_status=subscription_status, subscribers_count=subscribers_count))
+            # Update the dict before creating the response
+            v["subscription_status"] = user_subscription_status
+            v["subscribers_count"] = subscribers_count
+            result.append(VenueProfileResponse(**v))
     
     return result
 

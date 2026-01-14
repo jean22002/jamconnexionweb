@@ -918,10 +918,14 @@ async def get_venue(venue_id: str):
         raise HTTPException(status_code=404, detail="Venue not found")
     
     user = await db.users.find_one({"id": venue["user_id"]}, {"_id": 0})
-    subscription_status = user.get("subscription_status") if user else None
+    user_subscription_status = user.get("subscription_status") if user else None
     subscribers_count = await db.venue_subscriptions.count_documents({"venue_id": venue_id})
     
-    return VenueProfileResponse(**venue, subscription_status=subscription_status, subscribers_count=subscribers_count)
+    # Update the dict before creating the response
+    venue["subscription_status"] = user_subscription_status
+    venue["subscribers_count"] = subscribers_count
+    
+    return VenueProfileResponse(**venue)
 
 @api_router.get("/venues/{venue_id}/bands-played")
 async def get_bands_played_at_venue(venue_id: str):

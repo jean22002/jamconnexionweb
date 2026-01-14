@@ -1328,12 +1328,17 @@ async def get_my_venue(current_user: dict = Depends(get_current_user)):
     
     subscribers_count = await db.venue_subscriptions.count_documents({"venue_id": venue["id"]})
     
-    # Calculate trial days left
+    # Calculate trial days left and check access
     trial_days_left = None
     subscription_status = current_user.get("subscription_status")
     trial_end = current_user.get("trial_end")
+    has_active_subscription = current_user.get("has_active_subscription", False)
     
-    if subscription_status == "trial" and trial_end:
+    # Vérification selon la logique : has_active_subscription OU trial_end
+    if has_active_subscription:
+        # Abonnement actif : accès OK
+        subscription_status = "active"
+    elif subscription_status == "trial" and trial_end:
         trial_end_date = datetime.fromisoformat(trial_end)
         now = datetime.now(timezone.utc)
         days_left = (trial_end_date - now).days

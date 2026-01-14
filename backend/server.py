@@ -418,7 +418,7 @@ async def create_musician_profile(data: MusicianProfile, current_user: dict = De
         "status": "accepted"
     })
     
-    return MusicianProfileResponse(**musician_doc, friends_count=friends_count)
+    return MusicianProfileResponse(**{**musician_doc, "friends_count": friends_count})
 
 @api_router.put("/musicians", response_model=MusicianProfileResponse)
 async def update_musician_profile(data: MusicianProfile, current_user: dict = Depends(get_current_user)):
@@ -451,7 +451,7 @@ async def update_musician_profile(data: MusicianProfile, current_user: dict = De
         "status": "accepted"
     })
     
-    return MusicianProfileResponse(**updated, friends_count=friends_count)
+    return MusicianProfileResponse(**{**updated, "friends_count": friends_count})
 
 @api_router.get("/musicians/me", response_model=MusicianProfileResponse)
 async def get_my_musician_profile(current_user: dict = Depends(get_current_user)):
@@ -467,7 +467,7 @@ async def get_my_musician_profile(current_user: dict = Depends(get_current_user)
         "status": "accepted"
     })
     
-    return MusicianProfileResponse(**musician, friends_count=friends_count)
+    return MusicianProfileResponse(**{**musician, "friends_count": friends_count})
 
 @api_router.get("/musicians", response_model=List[MusicianProfileResponse])
 async def list_musicians(instrument: Optional[str] = None, style: Optional[str] = None, city: Optional[str] = None):
@@ -487,7 +487,7 @@ async def list_musicians(instrument: Optional[str] = None, style: Optional[str] 
             "status": "accepted"
         })
         try:
-            result.append(MusicianProfileResponse(**m, friends_count=friends_count))
+            result.append(MusicianProfileResponse(**{**m, "friends_count": friends_count}))
         except Exception as e:
             # Skip musicians with invalid data
             logger.warning(f"Skipping musician {m.get('id')} due to validation error: {e}")
@@ -505,7 +505,7 @@ async def get_musician(musician_id: str):
         "status": "accepted"
     })
     
-    return MusicianProfileResponse(**musician, friends_count=friends_count)
+    return MusicianProfileResponse(**{**musician, "friends_count": friends_count})
 
 # ============= BANDS SEARCH =============
 

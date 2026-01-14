@@ -7,17 +7,36 @@ import os
 import logging
 import json
 from pathlib import Path
-from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone, timedelta
-import bcrypt
-import jwt
 import stripe
 import math
 import aiofiles
 import httpx
 from math import radians, sin, cos, sqrt, atan2
+
+# Import models from models package
+from models import (
+    UserRegister, UserLogin, UserResponse, TokenResponse,
+    BandInfo, MusicianConcert, MusicianProfile, MusicianProfileResponse,
+    FriendRequest, FriendRequestResponse, BandJoinRequest, BandJoinRequestResponse,
+    VenueProfile, VenueProfileResponse, VenueSubscription, NearbySearchRequest,
+    JamEvent, JamEventResponse, ConcertBand, ConcertEvent, ConcertEventResponse,
+    KaraokeEvent, KaraokeEventResponse, SpectacleEvent, SpectacleEventResponse,
+    PlanningSlot, PlanningSlotResponse, ConcertApplication, ConcertApplicationResponse,
+    ReviewCreate, ReviewResponse, ReviewResponseRequest,
+    MessageCreate, MessageResponse,
+    CheckoutRequest,
+    NotificationResponse,
+    ProfitabilityData, ProfitabilityResponse
+)
+
+# Import utility functions
+from utils import hash_password, verify_password, create_token, geocode_city, haversine_distance, save_upload_file
+
+# Import new routers
+from routes import auth_router, account_router, uploads_router, payments_router, webhooks_router
 
 ROOT_DIR = Path(__file__).parent
 UPLOADS_DIR = ROOT_DIR / "uploads"

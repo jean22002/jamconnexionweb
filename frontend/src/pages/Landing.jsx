@@ -56,8 +56,11 @@ export default function Landing() {
                   FAQ
                 </Button>
               </Link>
-              <Link to="/pricing">
+              <Link to="/tarifs">
                 <Button variant="ghost" className="text-muted-foreground hover:text-white" data-testid="nav-pricing">
+                  Tarifs
+                </Button>
+              </Link>
                   Tarifs
                 </Button>
               </Link>

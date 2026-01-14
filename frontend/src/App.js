@@ -13,6 +13,7 @@ import FAQ from "./pages/FAQ";
 import VenueRegister from "./pages/VenueRegister";
 import MusicianRegister from "./pages/MusicianRegister";
 import Pricing from "./pages/Pricing";
+import Tarifs from "./pages/Tarifs";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
 import TrialExpired from "./pages/TrialExpired";

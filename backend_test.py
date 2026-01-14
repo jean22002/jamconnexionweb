@@ -7401,14 +7401,41 @@ class JamConnexionAPITester:
         print("\n1️⃣ AUTHENTICATION (CRITIQUE)")
         print("-" * 30)
         self.test_register_venue()  # POST /api/auth/register (créer un compte venue de test)
-        self.test_login()           # POST /api/auth/login
+        if hasattr(self, 'venue_user'):
+            # Use venue credentials for login test
+            login_data = {
+                "email": self.venue_user['email'],
+                "password": "TestPass123!"
+            }
+            
+            try:
+                response = requests.post(f"{self.base_url}/auth/login", json=login_data, timeout=10)
+                success = response.status_code == 200
+                
+                if success:
+                    data = response.json()
+                    details = f"Login successful for {data.get('user', {}).get('role', 'unknown')}"
+                else:
+                    details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+                
+                self.log_test("Login", success, details)
+            except Exception as e:
+                self.log_test("Login", False, f"Error: {str(e)}")
+        
         self.test_auth_me()         # GET /api/auth/me
         
         # 2. Paiement Stripe (CRITIQUE - Notre fix principal)
         print("\n2️⃣ PAIEMENT STRIPE (CRITIQUE)")
         print("-" * 30)
-        self.test_stripe_checkout_session()     # POST /api/payments/checkout
-        self.test_venue_subscription_status()   # GET /api/account/status
+        if hasattr(self, 'test_stripe_checkout_creation_venue'):
+            self.test_stripe_checkout_creation_venue()     # POST /api/payments/checkout
+        else:
+            self.log_test("Stripe Checkout Session", False, "Method not found")
+        
+        if hasattr(self, 'test_venue_subscription_status'):
+            self.test_venue_subscription_status()   # GET /api/account/status
+        else:
+            self.log_test("Venue Subscription Status", False, "Method not found")
         
         # 3. Endpoints principaux
         print("\n3️⃣ ENDPOINTS PRINCIPAUX")

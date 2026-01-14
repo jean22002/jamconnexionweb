@@ -7293,6 +7293,144 @@ class JamConnexionAPITester:
         
         return True
 
+    # ============= POST-REFACTORING CRITICAL TESTS =============
+    
+    def test_list_musicians(self):
+        """Test listing musicians"""
+        try:
+            response = requests.get(f"{self.base_url}/musicians", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                details = f"Found {len(data)} musicians"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("List Musicians", success, details)
+            return success
+        except Exception as e:
+            self.log_test("List Musicians", False, f"Error: {str(e)}")
+            return False
+
+    def test_upload_image(self):
+        """Test image upload functionality"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Create a simple test file content
+            test_file_content = b"fake image content for testing"
+            files = {'file': ('test.jpg', test_file_content, 'image/jpeg')}
+            
+            response = requests.post(f"{self.base_url}/upload/image", files=files, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                details = f"Upload successful: {data.get('filename')}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Upload Image", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Upload Image", False, f"Error: {str(e)}")
+            return False
+
+    def test_account_status(self):
+        """Test account status endpoint"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            response = requests.get(f"{self.base_url}/account/status", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                details = f"Account status: {data.get('status', 'unknown')}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Account Status", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Account Status", False, f"Error: {str(e)}")
+            return False
+
+    def print_refactoring_summary(self):
+        """Print summary of post-refactoring tests"""
+        print("\n" + "=" * 60)
+        print("🎯 RÉSUMÉ POST-REFACTORING")
+        print("=" * 60)
+        
+        critical_tests = [
+            "Register Venue", "Login", "Auth Me",
+            "Stripe Checkout Session", "Venue Subscription Status", 
+            "Health Check", "List Venues", "List Musicians",
+            "Upload Image", "Account Status"
+        ]
+        
+        passed_critical = 0
+        failed_critical = []
+        
+        for result in self.test_results:
+            if result["test"] in critical_tests:
+                if result["success"]:
+                    passed_critical += 1
+                else:
+                    failed_critical.append(result["test"])
+        
+        print(f"✅ Tests critiques réussis: {passed_critical}/{len(critical_tests)}")
+        
+        if failed_critical:
+            print(f"❌ Tests critiques échoués: {', '.join(failed_critical)}")
+        else:
+            print("🎉 TOUS LES TESTS CRITIQUES RÉUSSIS!")
+        
+        print(f"📊 Total général: {self.tests_passed}/{self.tests_run} tests réussis")
+        print("=" * 60)
+
+    def run_post_refactoring_tests(self):
+        """Run critical post-refactoring validation tests as requested"""
+        print("🎯 TEST RAPIDE POST-REFACTORING - Validation Complète")
+        print("=" * 60)
+        print("CONTEXTE: Backend refactorisé avec modèles/utils/6 routeurs")
+        print("OBJECTIF: Vérifier que TOUT fonctionne après le refactoring")
+        print("=" * 60)
+        
+        # 1. Authentication (CRITIQUE)
+        print("\n1️⃣ AUTHENTICATION (CRITIQUE)")
+        print("-" * 30)
+        self.test_register_venue()  # POST /api/auth/register (créer un compte venue de test)
+        self.test_login()           # POST /api/auth/login
+        self.test_auth_me()         # GET /api/auth/me
+        
+        # 2. Paiement Stripe (CRITIQUE - Notre fix principal)
+        print("\n2️⃣ PAIEMENT STRIPE (CRITIQUE)")
+        print("-" * 30)
+        self.test_stripe_checkout_session()     # POST /api/payments/checkout
+        self.test_venue_subscription_status()   # GET /api/account/status
+        
+        # 3. Endpoints principaux
+        print("\n3️⃣ ENDPOINTS PRINCIPAUX")
+        print("-" * 30)
+        self.test_health_check()        # GET /api/health
+        self.test_list_venues()         # GET /api/venues
+        self.test_list_musicians()      # GET /api/musicians
+        
+        # 4. Uploads
+        print("\n4️⃣ UPLOADS")
+        print("-" * 30)
+        self.test_upload_image()        # POST /api/upload/image
+        
+        # 5. Gestion de compte
+        print("\n5️⃣ GESTION DE COMPTE")
+        print("-" * 30)
+        self.test_account_status()      # GET /api/account/status
+        
+        # Final summary
+        self.print_refactoring_summary()
+        return self.tests_passed == self.tests_run
+
 def main():
     tester = JamConnexionAPITester()
     success = tester.run_all_tests()

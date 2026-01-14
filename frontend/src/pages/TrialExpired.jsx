@@ -1,8 +1,36 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import { Button } from "../components/ui/button";
-import { Clock, CreditCard, CheckCircle2, Music } from "lucide-react";
+import { Clock, CreditCard, CheckCircle2, Music, Loader2 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { toast } from "sonner";
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function TrialExpired() {
+  const { token } = useAuth();
+  const [loading, setLoading] = useState(false);
+
+  const handleSubscribe = async () => {
+    setLoading(true);
+    try {
+      const originUrl = window.location.origin;
+      const response = await axios.post(
+        `${API}/payments/checkout`,
+        { origin_url: originUrl },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      // Redirect to Stripe Checkout
+      window.location.href = response.data.url;
+    } catch (error) {
+      console.error("Error creating checkout:", error);
+      toast.error("Erreur lors de la création de la session de paiement");
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="max-w-2xl w-full">

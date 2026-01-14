@@ -1,18 +1,23 @@
 from fastapi import APIRouter, HTTPException, Depends
-from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime, timezone
 from typing import List
-import os
 import uuid
 
 from models import MessageCreate, MessageResponse
-from utils import get_current_user
 
 router = APIRouter(prefix="/messages", tags=["Messages"])
 
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# DB will be injected by the main server
+db = None
+
+def set_db(database):
+    global db
+    db = database
+
+async def get_current_user_local(authorization: str = None):
+    """Import get_current_user locally to avoid circular imports"""
+    from utils import get_current_user
+    return await get_current_user(authorization)
 
 @router.post("", response_model=MessageResponse)
 async def send_message(data: MessageCreate, current_user: dict = Depends(get_current_user)):

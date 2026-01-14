@@ -1,21 +1,26 @@
 from fastapi import APIRouter, HTTPException, Depends
-from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime, timezone
 from typing import List
-import os
 import uuid
 
 from models import ReviewCreate, ReviewResponse, ReviewResponseRequest
-from utils import get_current_user
 
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
 
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# DB will be injected by the main server
+db = None
+
+def set_db(database):
+    global db
+    db = database
+
+async def get_current_user_local(authorization: str = None):
+    """Import get_current_user locally to avoid circular imports"""
+    from utils import get_current_user
+    return await get_current_user(authorization)
 
 @router.post("", response_model=ReviewResponse)
-async def create_review(data: ReviewCreate, current_user: dict = Depends(get_current_user)):
+async def create_review(data: ReviewCreate, current_user: dict = Depends(get_current_user_local)):
     """Create a review for a venue"""
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can write reviews")
@@ -57,7 +62,7 @@ async def create_review(data: ReviewCreate, current_user: dict = Depends(get_cur
     return ReviewResponse(**review_doc)
 
 @router.post("/{review_id}/respond")
-async def respond_to_review(review_id: str, data: ReviewResponseRequest, current_user: dict = Depends(get_current_user)):
+async def respond_to_review(review_id: str, data: ReviewResponseRequest, current_user: dict = Depends(get_current_user_local)):
     """Venue responds to a review"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can respond to reviews")
@@ -86,7 +91,7 @@ async def respond_to_review(review_id: str, data: ReviewResponseRequest, current
     return {"message": "Response added successfully"}
 
 @router.delete("/{review_id}")
-async def delete_review(review_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_review(review_id: str, current_user: dict = Depends(get_current_user_local)):
     """Delete a review (only by the author)"""
     review = await db.reviews.find_one({"id": review_id}, {"_id": 0})
     if not review:
@@ -100,7 +105,7 @@ async def delete_review(review_id: str, current_user: dict = Depends(get_current
     return {"message": "Review deleted"}
 
 @router.post("/{review_id}/report")
-async def report_review(review_id: str, current_user: dict = Depends(get_current_user)):
+async def report_review(review_id: str, current_user: dict = Depends(get_current_user_local)):
     """Report a review as inappropriate"""
     review = await db.reviews.find_one({"id": review_id}, {"_id": 0})
     if not review:

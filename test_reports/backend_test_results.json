@@ -1,70 +1,76 @@
 {
   "summary": {
-    "total_tests": 10,
+    "total_tests": 11,
     "passed_tests": 9,
-    "success_rate": 90.0,
-    "timestamp": "2026-01-14T23:28:42.481056"
+    "success_rate": 81.81818181818183,
+    "timestamp": "2026-01-14T23:29:04.379361"
   },
   "test_results": [
     {
       "test": "Register Venue",
       "success": true,
-      "details": "User ID: eea322d5-b30e-4831-bd7f-05b29022524d, Trial: trial",
-      "timestamp": "2026-01-14T23:28:41.475627"
+      "details": "User ID: d85980b5-1b48-499c-a1fe-46ec7040ca3f, Trial: trial",
+      "timestamp": "2026-01-14T23:29:03.396105"
     },
     {
       "test": "Login",
       "success": true,
       "details": "Login successful for venue",
-      "timestamp": "2026-01-14T23:28:41.780475"
+      "timestamp": "2026-01-14T23:29:03.659696"
     },
     {
       "test": "Auth Me",
       "success": true,
       "details": "User: Test Venue, Role: venue",
-      "timestamp": "2026-01-14T23:28:41.820912"
+      "timestamp": "2026-01-14T23:29:03.703051"
+    },
+    {
+      "test": "Create Venue Profile",
+      "success": false,
+      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
+      "timestamp": "2026-01-14T23:29:03.742841"
     },
     {
       "test": "Stripe Checkout Creation (Venue)",
       "success": true,
-      "details": "Session ID: cs_live_a1ZB1i1VL6JEVfwVMIFdDmlL5y4kNa9wuY0jHlZb7Yg2MyUOzHzdj1F5In, URL valid: True",
-      "timestamp": "2026-01-14T23:28:42.225110"
+      "details": "Session ID: cs_live_a1KYp2LKVs09q0Liw4TAbRXMNgrss4cEeP3zw1pEXTyAuKcITMJQ0Lqmz0, URL valid: True",
+      "timestamp": "2026-01-14T23:29:04.086223"
     },
     {
       "test": "Account Subscription Status",
       "success": false,
       "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-14T23:28:42.260077"
+      "timestamp": "2026-01-14T23:29:04.126386"
     },
     {
       "test": "Health Check",
       "success": true,
       "details": "Status: 200, Response: healthy",
-      "timestamp": "2026-01-14T23:28:42.296151"
+      "timestamp": "2026-01-14T23:29:04.159307"
     },
     {
       "test": "List Venues",
       "success": true,
       "details": "Found 4 venues",
-      "timestamp": "2026-01-14T23:28:42.340645"
+      "timestamp": "2026-01-14T23:29:04.200011"
     },
     {
       "test": "List Musicians",
       "success": true,
       "details": "Found 25 musicians",
-      "timestamp": "2026-01-14T23:28:42.391673"
+      "timestamp": "2026-01-14T23:29:04.248029"
     },
     {
       "test": "Upload Image",
       "success": true,
       "details": "Upload successful: test.jpg",
-      "timestamp": "2026-01-14T23:28:42.435716"
+      "timestamp": "2026-01-14T23:29:04.328916"
     },
     {
       "test": "Account Status",
       "success": true,
       "details": "Account status: unknown",
-      "timestamp": "2026-01-14T23:28:42.479445"
+      "timestamp": "2026-01-14T23:29:04.377701"
     }
   ]
 }

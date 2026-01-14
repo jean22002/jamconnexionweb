@@ -20,7 +20,7 @@ async def get_current_user_local(authorization: str = None):
     return await get_current_user(authorization)
 
 @router.post("", response_model=MessageResponse)
-async def send_message(data: MessageCreate, current_user: dict = Depends(get_current_user)):
+async def send_message(data: MessageCreate, current_user: dict = Depends(get_current_user_local)):
     """Send a message to another user"""
     # Get recipient info
     recipient = await db.users.find_one({"id": data.recipient_id}, {"_id": 0})
@@ -68,7 +68,7 @@ async def send_message(data: MessageCreate, current_user: dict = Depends(get_cur
     return MessageResponse(**message_doc)
 
 @router.get("/inbox", response_model=List[MessageResponse])
-async def get_inbox(current_user: dict = Depends(get_current_user)):
+async def get_inbox(current_user: dict = Depends(get_current_user_local)):
     """Get all messages received by current user"""
     messages = await db.messages.find(
         {"recipient_id": current_user["id"]},
@@ -77,7 +77,7 @@ async def get_inbox(current_user: dict = Depends(get_current_user)):
     return [MessageResponse(**m) for m in messages]
 
 @router.get("/sent", response_model=List[MessageResponse])
-async def get_sent_messages(current_user: dict = Depends(get_current_user)):
+async def get_sent_messages(current_user: dict = Depends(get_current_user_local)):
     """Get all messages sent by current user"""
     messages = await db.messages.find(
         {"sender_id": current_user["id"]},
@@ -86,7 +86,7 @@ async def get_sent_messages(current_user: dict = Depends(get_current_user)):
     return [MessageResponse(**m) for m in messages]
 
 @router.put("/{message_id}/read")
-async def mark_as_read(message_id: str, current_user: dict = Depends(get_current_user)):
+async def mark_as_read(message_id: str, current_user: dict = Depends(get_current_user_local)):
     """Mark a message as read"""
     message = await db.messages.find_one({"id": message_id}, {"_id": 0})
     if not message:
@@ -103,7 +103,7 @@ async def mark_as_read(message_id: str, current_user: dict = Depends(get_current
     return {"message": "Message marked as read"}
 
 @router.delete("/conversation/{partner_id}")
-async def delete_conversation(partner_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_conversation(partner_id: str, current_user: dict = Depends(get_current_user_local)):
     """Delete all messages in a conversation with a partner"""
     result = await db.messages.delete_many({
         "$or": [

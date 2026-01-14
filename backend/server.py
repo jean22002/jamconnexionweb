@@ -4071,8 +4071,8 @@ async def create_checkout(data: CheckoutRequest, request: Request, current_user:
     cancel_url = f"{data.origin_url}/payment/cancel"
     
     checkout_request = CheckoutSessionRequest(
-        price=STRIPE_PRICE_ID,
-        currency="eur",
+        stripe_price_id=STRIPE_PRICE_ID,
+        quantity=1,
         success_url=success_url,
         cancel_url=cancel_url,
         metadata={"user_id": current_user["id"], "email": current_user["email"], "type": "venue_subscription"}

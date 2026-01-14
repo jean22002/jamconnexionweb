@@ -460,6 +460,26 @@ export default function VenueDetail() {
           <ArrowLeft className="w-4 h-4" /> Retour
         </Link>
 
+        {/* Expired Subscription Warning */}
+        {venue.subscription_status === "expired" && (
+          <div className="glassmorphism border-2 border-orange-500/50 rounded-2xl p-6 mb-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-6 h-6 text-orange-400" />
+              </div>
+              <div>
+                <h3 className="font-heading font-semibold text-lg mb-2">
+                  Établissement temporairement non disponible
+                </h3>
+                <p className="text-muted-foreground">
+                  L'établissement n'est plus abonné à Jam Connexion pour le moment. 
+                  Vous ne pouvez pas candidater ou participer aux événements actuellement.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Hero */}
         <div className="relative rounded-3xl overflow-hidden mb-8">
           <div className="h-64 md:h-80" style={{

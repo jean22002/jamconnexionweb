@@ -26,8 +26,42 @@ class KaraokeSpectacleTestRunner:
         return success
     
     def setup_test_accounts(self):
-        """Create test venue and musician accounts"""
-        print("🔧 Setting up test accounts...")
+        """Use existing test account from review request"""
+        print("🔧 Using existing test account...")
+        
+        # Use the test account mentioned in the review request
+        login_data = {
+            "email": "ledb.test@narbonne.fr",
+            "password": "TestDB2026!"
+        }
+        
+        response = requests.post(f"{self.base_url}/auth/login", json=login_data, timeout=10)
+        if response.status_code == 200:
+            auth_data = response.json()
+            self.venue_token = auth_data.get('token')
+            user_data = auth_data.get('user', {})
+            print(f"✅ Logged in as venue: {user_data.get('email')} (ID: {user_data.get('id')})")
+            
+            # Get venue profile
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            profile_response = requests.get(f"{self.base_url}/venues/me", headers=headers, timeout=10)
+            if profile_response.status_code == 200:
+                venue_profile = profile_response.json()
+                self.venue_profile_id = venue_profile.get('id')
+                print(f"✅ Venue profile found: {self.venue_profile_id}")
+                return True
+            else:
+                print(f"❌ Failed to get venue profile: {profile_response.status_code}")
+                return False
+        else:
+            print(f"❌ Failed to login with test account: {response.status_code} - {response.text[:100]}")
+            
+            # Fallback: try to create new accounts
+            return self.create_new_test_accounts()
+    
+    def create_new_test_accounts(self):
+        """Create new test accounts as fallback"""
+        print("🔧 Creating new test accounts...")
         
         # Create venue account
         venue_data = {

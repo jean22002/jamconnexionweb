@@ -1,0 +1,11 @@
+# Cron job pour les notifications automatiques d'événements
+# Exécute le script tous les jours à 12h30 (heure de Paris)
+
+# Format: minute heure jour mois jour_semaine commande
+30 11 * * * cd /app/backend && /usr/bin/python3 notifications_scheduler.py >> /var/log/notifications.log 2>&1
+
+# Note: 11h30 UTC = 12h30 Paris (heure d'hiver)
+# Pour l'heure d'été, ajuster à 10h30 UTC
+
+# Pour tester manuellement:
+# cd /app/backend && python3 notifications_scheduler.py

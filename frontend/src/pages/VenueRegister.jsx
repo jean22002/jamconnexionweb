@@ -276,12 +276,18 @@ export default function VenueRegister() {
 
                       <p className="font-semibold">Article 3 – Tarifs</p>
                       <p>Le tarif de l'abonnement est de : <strong>14,99 € TTC par mois</strong></p>
+                      <p>Ce tarif inclut l'accès complet à toutes les fonctionnalités réservées aux établissements.</p>
 
-                      <p className="font-semibold">Article 4 – Paiement</p>
-                      <p>Le paiement est mensuel et effectué à la date anniversaire de l'abonnement.</p>
+                      <p className="font-semibold">Article 4 – Paiement et renouvellement</p>
+                      <p>Le paiement est <strong>mensuel et effectué automatiquement</strong> par carte bancaire via notre prestataire de paiement sécurisé <strong>Stripe</strong>. Le prélèvement intervient à la date anniversaire de votre abonnement chaque mois.</p>
+                      <p><strong>L'abonnement est renouvelé automatiquement</strong> chaque mois sauf résiliation de votre part.</p>
+                      <p>En cas de refus ou d'échec de paiement, l'accès au service sera suspendu jusqu'à régularisation.</p>
 
                       <p className="font-semibold">Article 5 – Durée et résiliation</p>
-                      <p>L'abonnement est sans engagement. La résiliation est possible à tout moment. Elle prend effet à la date anniversaire du mois suivant la demande de résiliation. L'accès au service reste actif jusqu'à cette date.</p>
+                      <p>L'abonnement est <strong>sans engagement de durée</strong>. La résiliation est possible à tout moment depuis votre espace compte. Elle prend effet immédiatement, sans remboursement au prorata. L'accès au service reste actif jusqu'à la fin de la période déjà payée.</p>
+
+                      <p className="font-semibold">Article 5 bis – Droit de rétractation</p>
+                      <p>Conformément à l'article L221-28 du Code de la consommation, vous disposez d'un délai de <strong>14 jours</strong> pour exercer votre droit de rétractation sans justification. En utilisant le service pendant ce délai, vous renoncez expressément à ce droit.</p>
 
                       <p className="font-semibold">Article 6 – Remboursement</p>
                       <p>Aucun remboursement automatique n'est prévu. Un remboursement mensuel peut être accordé uniquement en cas de dysfonctionnement technique avéré, imputable au site, ayant empêché l'utilisation normale du service.</p>

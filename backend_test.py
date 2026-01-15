@@ -1104,6 +1104,444 @@ class JamConnexionAPITester:
             self.log_test("Get Nearby Musicians Count", False, f"Error: {str(e)}")
             return False
 
+    # ============= NOTIFICATIONS SYSTEM TESTS =============
+
+    def test_notifications_api_get_all(self):
+        """Test GET /api/notifications - Récupérer toutes les notifications de l'utilisateur connecté"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            response = requests.get(f"{self.base_url}/notifications", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                notifications = response.json()
+                details = f"Retrieved {len(notifications)} notifications"
+                if notifications:
+                    first_notif = notifications[0]
+                    details += f", First: {first_notif.get('title', 'No title')[:30]}..."
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Notifications API - GET All", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Notifications API - GET All", False, f"Error: {str(e)}")
+            return False
+
+    def test_notifications_api_unread_count(self):
+        """Test GET /api/notifications/unread/count - Compter les notifications non lues"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            response = requests.get(f"{self.base_url}/notifications/unread/count", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                count_data = response.json()
+                count = count_data.get('count', 0)
+                details = f"Unread notifications count: {count}"
+                self.initial_unread_count = count
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Notifications API - Unread Count", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Notifications API - Unread Count", False, f"Error: {str(e)}")
+            return False
+
+    def test_notifications_api_mark_read(self):
+        """Test PUT /api/notifications/{id}/read - Marquer une notification comme lue"""
+        try:
+            # First get notifications to find one to mark as read
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            response = requests.get(f"{self.base_url}/notifications", headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                notifications = response.json()
+                if notifications:
+                    # Find an unread notification
+                    unread_notif = None
+                    for notif in notifications:
+                        if not notif.get('read', True):
+                            unread_notif = notif
+                            break
+                    
+                    if unread_notif:
+                        notif_id = unread_notif['id']
+                        response = requests.put(f"{self.base_url}/notifications/{notif_id}/read", headers=headers, timeout=10)
+                        success = response.status_code == 200
+                        
+                        if success:
+                            details = f"Marked notification as read: {unread_notif.get('title', 'No title')[:30]}..."
+                        else:
+                            details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+                    else:
+                        # No unread notifications, test with any notification
+                        if notifications:
+                            notif_id = notifications[0]['id']
+                            response = requests.put(f"{self.base_url}/notifications/{notif_id}/read", headers=headers, timeout=10)
+                            success = response.status_code == 200
+                            details = "Marked already read notification (test successful)"
+                        else:
+                            success = True
+                            details = "No notifications to test with (endpoint structure valid)"
+                else:
+                    success = True
+                    details = "No notifications available to test with"
+            else:
+                success = False
+                details = f"Failed to get notifications: {response.status_code}"
+            
+            self.log_test("Notifications API - Mark as Read", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Notifications API - Mark as Read", False, f"Error: {str(e)}")
+            return False
+
+    def test_notifications_api_mark_all_read(self):
+        """Test PUT /api/notifications/read-all - Marquer toutes les notifications comme lues"""
+        try:
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            response = requests.put(f"{self.base_url}/notifications/read-all", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                result = response.json()
+                count = result.get('message', 'Unknown result')
+                details = f"Mark all read result: {count}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Notifications API - Mark All Read", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Notifications API - Mark All Read", False, f"Error: {str(e)}")
+            return False
+
+    def test_notifications_api_delete(self):
+        """Test DELETE /api/notifications/{id} - Supprimer une notification"""
+        try:
+            # First get notifications to find one to delete
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            response = requests.get(f"{self.base_url}/notifications", headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                notifications = response.json()
+                if notifications:
+                    # Delete the first notification
+                    notif_to_delete = notifications[0]
+                    notif_id = notif_to_delete['id']
+                    
+                    response = requests.delete(f"{self.base_url}/notifications/{notif_id}", headers=headers, timeout=10)
+                    success = response.status_code == 200
+                    
+                    if success:
+                        details = f"Deleted notification: {notif_to_delete.get('title', 'No title')[:30]}..."
+                    else:
+                        details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+                else:
+                    success = True
+                    details = "No notifications available to delete (endpoint structure valid)"
+            else:
+                success = False
+                details = f"Failed to get notifications: {response.status_code}"
+            
+            self.log_test("Notifications API - Delete", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Notifications API - Delete", False, f"Error: {str(e)}")
+            return False
+
+    def test_create_test_events_for_notifications(self):
+        """Créer des événements de test pour le script de notifications"""
+        try:
+            from datetime import datetime, timedelta
+            
+            # Create events for testing notification script
+            venue_headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # 1. Créer un bœuf pour dans 3 jours
+            three_days_later = (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d")
+            jam_3_days_data = {
+                "date": three_days_later,
+                "start_time": "20:00",
+                "end_time": "23:00",
+                "music_styles": ["Jazz", "Blues"],
+                "rules": "Test bœuf J-3 pour notifications",
+                "has_instruments": True,
+                "has_pa_system": True
+            }
+            
+            response = requests.post(f"{self.base_url}/jams", json=jam_3_days_data, headers=venue_headers, timeout=10)
+            jam_3_days_success = response.status_code == 200
+            if jam_3_days_success:
+                self.jam_3_days = response.json()
+                
+                # Add participants to this jam
+                musician_headers = {'Authorization': f'Bearer {self.musician_token}'}
+                requests.post(f"{self.base_url}/events/{self.jam_3_days['id']}/join?event_type=jam", headers=musician_headers, timeout=10)
+                
+                if hasattr(self, 'friend_musician_token'):
+                    friend_headers = {'Authorization': f'Bearer {self.friend_musician_token}'}
+                    requests.post(f"{self.base_url}/events/{self.jam_3_days['id']}/join?event_type=jam", headers=friend_headers, timeout=10)
+            
+            # 2. Créer un bœuf pour aujourd'hui
+            today = datetime.now().strftime("%Y-%m-%d")
+            jam_today_data = {
+                "date": today,
+                "start_time": "21:00",
+                "end_time": "23:59",
+                "music_styles": ["Rock", "Pop"],
+                "rules": "Test bœuf Jour J pour notifications",
+                "has_instruments": True,
+                "has_pa_system": True
+            }
+            
+            response = requests.post(f"{self.base_url}/jams", json=jam_today_data, headers=venue_headers, timeout=10)
+            jam_today_success = response.status_code == 200
+            if jam_today_success:
+                self.jam_today = response.json()
+                
+                # Add participants to this jam
+                musician_headers = {'Authorization': f'Bearer {self.musician_token}'}
+                requests.post(f"{self.base_url}/events/{self.jam_today['id']}/join?event_type=jam", headers=musician_headers, timeout=10)
+                
+                if hasattr(self, 'friend_musician_token'):
+                    friend_headers = {'Authorization': f'Bearer {self.friend_musician_token}'}
+                    requests.post(f"{self.base_url}/events/{self.jam_today['id']}/join?event_type=jam", headers=friend_headers, timeout=10)
+            
+            success = jam_3_days_success and jam_today_success
+            if success:
+                details = f"Created test events: Jam J-3 ({three_days_later}), Jam Today ({today})"
+            else:
+                details = f"Jam J-3: {jam_3_days_success}, Jam Today: {jam_today_success}"
+            
+            self.log_test("Create Test Events for Notifications", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Create Test Events for Notifications", False, f"Error: {str(e)}")
+            return False
+
+    def test_notifications_script_execution(self):
+        """Test d'exécution du script de notifications"""
+        try:
+            import subprocess
+            import os
+            
+            # Execute the notifications script
+            script_path = "/app/backend/notifications_scheduler.py"
+            
+            # Change to backend directory for proper execution
+            result = subprocess.run(
+                ['python3', script_path],
+                cwd='/app/backend',
+                capture_output=True,
+                text=True,
+                timeout=60
+            )
+            
+            success = result.returncode == 0
+            
+            if success:
+                output_lines = result.stdout.split('\n')
+                details = f"Script executed successfully. Output lines: {len(output_lines)}"
+                
+                # Look for key indicators in output
+                if "Traitement des notifications terminé" in result.stdout:
+                    details += ", Processing completed"
+                if "notifications J-3" in result.stdout:
+                    details += ", J-3 notifications processed"
+                if "notifications Jour J" in result.stdout:
+                    details += ", Day-J notifications processed"
+            else:
+                details = f"Script failed with code {result.returncode}"
+                if result.stderr:
+                    details += f", Error: {result.stderr[:100]}"
+                if result.stdout:
+                    details += f", Output: {result.stdout[:100]}"
+            
+            self.log_test("Notifications Script Execution", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Notifications Script Execution", False, f"Error: {str(e)}")
+            return False
+
+    def test_verify_notifications_created(self):
+        """Vérifier que les notifications ont été créées dans MongoDB"""
+        try:
+            # Check if notifications were created after script execution
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            
+            # Get current notifications count
+            response = requests.get(f"{self.base_url}/notifications", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                notifications = response.json()
+                
+                # Look for notification types created by the script
+                jam_reminders = [n for n in notifications if n.get('type') == 'jam_reminder']
+                jam_nearby = [n for n in notifications if n.get('type') == 'jam_nearby']
+                
+                details = f"Total notifications: {len(notifications)}, Jam reminders: {len(jam_reminders)}, Nearby jams: {len(jam_nearby)}"
+                
+                # Check notification content
+                if jam_reminders:
+                    first_reminder = jam_reminders[0]
+                    details += f", First reminder: '{first_reminder.get('title', 'No title')[:30]}...'"
+                
+                if jam_nearby:
+                    first_nearby = jam_nearby[0]
+                    details += f", First nearby: '{first_nearby.get('title', 'No title')[:30]}...'"
+                
+                # Verify notification fields
+                if notifications:
+                    first_notif = notifications[0]
+                    required_fields = ['id', 'user_id', 'type', 'title', 'message', 'read', 'created_at']
+                    missing_fields = [field for field in required_fields if field not in first_notif]
+                    
+                    if missing_fields:
+                        details += f", Missing fields: {missing_fields}"
+                        success = False
+                    else:
+                        details += ", All required fields present"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Verify Notifications Created", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Verify Notifications Created", False, f"Error: {str(e)}")
+            return False
+
+    def test_notifications_daemon_status(self):
+        """Test du statut du daemon de notifications"""
+        try:
+            import subprocess
+            
+            # Check supervisor status for notifications daemon
+            result = subprocess.run(
+                ['sudo', 'supervisorctl', 'status', 'notifications_daemon'],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+            
+            success = result.returncode == 0 and 'RUNNING' in result.stdout
+            
+            if success:
+                details = "Notifications daemon is RUNNING"
+                # Extract additional info from status
+                status_line = result.stdout.strip()
+                if 'uptime' in status_line:
+                    details += f", Status: {status_line}"
+            else:
+                details = f"Daemon status check failed: {result.stdout.strip()}"
+                if result.stderr:
+                    details += f", Error: {result.stderr.strip()}"
+            
+            self.log_test("Notifications Daemon Status", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Notifications Daemon Status", False, f"Error: {str(e)}")
+            return False
+
+    def test_notifications_daemon_logs(self):
+        """Test des logs du daemon de notifications"""
+        try:
+            import subprocess
+            
+            # Check daemon logs
+            result = subprocess.run(
+                ['tail', '-50', '/var/log/supervisor/notifications_daemon.out.log'],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+            
+            success = result.returncode == 0
+            
+            if success:
+                log_content = result.stdout
+                details = f"Retrieved {len(log_content.split())} log lines"
+                
+                # Look for key daemon messages
+                if "Démarrage du daemon de notifications" in log_content:
+                    details += ", Daemon startup message found"
+                if "Planification: tous les jours à 12:30" in log_content:
+                    details += ", Scheduling message found"
+                if "Paris" in log_content:
+                    details += ", Paris timezone configured"
+                
+                # Check for recent activity
+                lines = log_content.split('\n')
+                recent_lines = [line for line in lines[-10:] if line.strip()]
+                if recent_lines:
+                    details += f", Recent activity: {len(recent_lines)} lines"
+            else:
+                details = f"Failed to read logs: {result.stderr[:100] if result.stderr else 'Unknown error'}"
+            
+            self.log_test("Notifications Daemon Logs", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Notifications Daemon Logs", False, f"Error: {str(e)}")
+            return False
+
+    def test_notifications_authentication_required(self):
+        """Test que l'authentification est requise pour les endpoints notifications"""
+        try:
+            # Test without authentication
+            response = requests.get(f"{self.base_url}/notifications", timeout=10)
+            success = response.status_code == 401
+            
+            if success:
+                details = "Correctly rejected unauthenticated request"
+            else:
+                details = f"Unexpected status: {response.status_code}, Expected: 401"
+            
+            self.log_test("Notifications Authentication Required", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Notifications Authentication Required", False, f"Error: {str(e)}")
+            return False
+
+    def test_notifications_user_filtering(self):
+        """Test que les notifications sont filtrées par user_id"""
+        try:
+            # Get notifications for musician
+            musician_headers = {'Authorization': f'Bearer {self.musician_token}'}
+            musician_response = requests.get(f"{self.base_url}/notifications", headers=musician_headers, timeout=10)
+            
+            # Get notifications for venue (if available)
+            venue_headers = {'Authorization': f'Bearer {self.venue_token}'}
+            venue_response = requests.get(f"{self.base_url}/notifications", headers=venue_headers, timeout=10)
+            
+            success = musician_response.status_code == 200 and venue_response.status_code == 200
+            
+            if success:
+                musician_notifs = musician_response.json()
+                venue_notifs = venue_response.json()
+                
+                details = f"Musician notifications: {len(musician_notifs)}, Venue notifications: {len(venue_notifs)}"
+                
+                # Verify user_id filtering
+                if musician_notifs:
+                    musician_user_id = self.musician_user['id']
+                    wrong_user_notifs = [n for n in musician_notifs if n.get('user_id') != musician_user_id]
+                    if wrong_user_notifs:
+                        details += f", ERROR: {len(wrong_user_notifs)} notifications with wrong user_id"
+                        success = False
+                    else:
+                        details += ", User filtering correct"
+            else:
+                details = f"Musician: {musician_response.status_code}, Venue: {venue_response.status_code}"
+            
+            self.log_test("Notifications User Filtering", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Notifications User Filtering", False, f"Error: {str(e)}")
+            return False
+
     # ============= REVIEW SYSTEM TESTS =============
 
     def test_create_review_without_participation(self):

@@ -87,8 +87,16 @@ class NotificationSystemTester:
                 self.venue_token = venue_data.get('token')
                 self.venue_user = venue_data.get('user')
                 details += f", Venue: {self.venue_user.get('email')}"
+                
+                # Verify venue token works
+                venue_headers = {'Authorization': f'Bearer {self.venue_token}'}
+                auth_check = requests.get(f"{self.base_url}/auth/me", headers=venue_headers, timeout=10)
+                if auth_check.status_code != 200:
+                    details += f", Venue auth failed: {auth_check.status_code}"
+                    success = False
             else:
                 details += f", Venue creation failed: {venue_response.status_code}"
+                success = False
             
             self.log_test("Setup Test Accounts", success, details)
             return success

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Header
 from datetime import datetime, timezone
 from typing import List
 import uuid
@@ -17,7 +17,6 @@ def set_db(database):
 async def get_current_user_local(authorization: str = Header(None)):
     """Import get_current_user locally to avoid circular imports"""
     from utils import get_current_user
-    from fastapi import Header
     return await get_current_user(authorization, db)
 
 @router.get("", response_model=List[NotificationResponse])

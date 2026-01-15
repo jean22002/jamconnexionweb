@@ -2302,7 +2302,12 @@ export default function VenueDashboard() {
                       
                       {/* Informations complémentaires */}
                       <div className="mt-3 space-y-1 text-sm">
-                        {jam.has_instruments && <p className="text-secondary">🎸 Instruments sur place</p>}
+                        {jam.has_instruments && jam.instruments_available && jam.instruments_available.length > 0 && (
+                          <p className="text-secondary">🎸 {jam.instruments_available.join(", ")}</p>
+                        )}
+                        {jam.has_instruments && (!jam.instruments_available || jam.instruments_available.length === 0) && (
+                          <p className="text-secondary">🎸 Instruments sur place</p>
+                        )}
                         {jam.has_pa_system && <p className="text-secondary">🔊 Sono disponible</p>}
                         {jam.rules && <p className="text-muted-foreground mt-2"><strong>Règlement:</strong> {jam.rules}</p>}
                         {jam.description && <p className="text-muted-foreground"><strong>Description:</strong> {jam.description.substring(0, 100)}{jam.description.length > 100 ? '...' : ''}</p>}

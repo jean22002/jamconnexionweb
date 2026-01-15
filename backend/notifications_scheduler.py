@@ -157,33 +157,34 @@ async def check_and_send_event_notifications():
             notified_nearby = 0
             
             for musician in musicians:
-                # Vérifier si le musicien a des coordonnées
-                if not musician.get("city"):
+                # Vérifier que le musicien n'est pas déjà participant
+                is_participant = await db.event_participations.find_one({
+                    "event_id": jam["id"],
+                    "musician_id": musician["user_id"]
+                })
+                
+                if is_participant:
                     continue
                 
-                # Calculer la distance (on utilise les coordonnées de la ville)
-                # Note: Idéalement il faudrait géocoder la ville du musicien, mais on simplifie ici
+                # Calculer la distance si le musicien a des coordonnées GPS
+                musician_lat = musician.get("latitude")
+                musician_lon = musician.get("longitude")
                 
-                # Pour simplifier, on notifie tous les musiciens de la même région
-                if musician.get("region") == venue.get("region"):
-                    # Vérifier que le musicien n'est pas déjà participant
-                    is_participant = await db.event_participations.find_one({
-                        "event_id": jam["id"],
-                        "musician_id": musician["user_id"]
-                    })
+                if musician_lat and musician_lon:
+                    distance = haversine_distance(venue_lat, venue_lon, musician_lat, musician_lon)
                     
-                    if not is_participant:
+                    if distance <= 70:  # Dans un rayon de 70km
                         await send_notification(
                             db,
                             musician["user_id"],
                             "jam_nearby",
                             f"🎵 Bœuf ce soir près de chez vous !",
-                            f"Un bœuf {'/'.join(jam.get('music_styles', [])[:2])} a lieu ce soir à {jam['start_time']} à {jam['venue_name']} ({venue['city']})",
+                            f"Un bœuf {'/'.join(jam.get('music_styles', [])[:2]) if jam.get('music_styles') else 'Jam Session'} a lieu ce soir à {jam['start_time']} à {jam['venue_name']} ({venue['city']}) - À {int(distance)}km de vous",
                             f"/venues/{jam['venue_id']}"
                         )
                         notified_nearby += 1
             
-            print(f"✅ {notified_nearby} musiciens à proximité notifiés")
+            print(f"✅ {notified_nearby} musiciens à proximité (70km) notifiés")
     
     print(f"✅ {len(jams_today)} bœufs Jour J traités")
     
@@ -210,8 +211,11 @@ async def check_and_send_event_notifications():
         
         # 2. Notifier les musiciens à proximité (même logique que les bœufs)
         venue = await db.venues.find_one({"id": concert["venue_id"]}, {"_id": 0})
-        if venue and venue.get("region"):
-            musicians = await db.musicians.find({"region": venue["region"]}, {"_id": 0}).to_list(10000)
+        if venue and venue.get("latitude") and venue.get("longitude"):
+            venue_lat = venue["latitude"]
+            venue_lon = venue["longitude"]
+            
+            musicians = await db.musicians.find({}, {"_id": 0}).to_list(10000)
             notified_nearby = 0
             
             for musician in musicians:
@@ -220,18 +224,28 @@ async def check_and_send_event_notifications():
                     "musician_id": musician["user_id"]
                 })
                 
-                if not is_participant:
-                    await send_notification(
-                        db,
-                        musician["user_id"],
-                        "concert_nearby",
-                        f"🎸 Concert ce soir près de chez vous !",
-                        f"Un concert {'/'.join(concert.get('music_styles', [])[:2])} a lieu ce soir à {concert['start_time']} à {concert['venue_name']} ({venue['city']})",
-                        f"/venues/{concert['venue_id']}"
-                    )
-                    notified_nearby += 1
+                if is_participant:
+                    continue
+                
+                # Calculer la distance si le musicien a des coordonnées GPS
+                musician_lat = musician.get("latitude")
+                musician_lon = musician.get("longitude")
+                
+                if musician_lat and musician_lon:
+                    distance = haversine_distance(venue_lat, venue_lon, musician_lat, musician_lon)
+                    
+                    if distance <= 70:  # Dans un rayon de 70km
+                        await send_notification(
+                            db,
+                            musician["user_id"],
+                            "concert_nearby",
+                            f"🎸 Concert ce soir près de chez vous !",
+                            f"Un concert {'/'.join(concert.get('music_styles', [])[:2]) if concert.get('music_styles') else concert.get('title', 'Concert')} a lieu ce soir à {concert['start_time']} à {concert['venue_name']} ({venue['city']}) - À {int(distance)}km de vous",
+                            f"/venues/{concert['venue_id']}"
+                        )
+                        notified_nearby += 1
             
-            print(f"✅ {notified_nearby} musiciens à proximité notifiés")
+            print(f"✅ {notified_nearby} musiciens à proximité (70km) notifiés")
     
     print(f"✅ {len(concerts_today)} concerts Jour J traités")
     

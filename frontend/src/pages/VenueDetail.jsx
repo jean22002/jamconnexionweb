@@ -762,7 +762,12 @@ export default function VenueDetail() {
                     <div className="flex flex-wrap gap-2 mt-3">
                       {jam.music_styles.map((s, i) => <span key={i} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">{s}</span>)}
                     </div>
-                    {jam.has_instruments && <p className="text-sm text-secondary mt-2">🎸 Instruments sur place</p>}
+                    {jam.has_instruments && jam.instruments_available && jam.instruments_available.length > 0 && (
+                      <p className="text-sm text-secondary mt-2">🎸 {jam.instruments_available.join(", ")}</p>
+                    )}
+                    {jam.has_instruments && (!jam.instruments_available || jam.instruments_available.length === 0) && (
+                      <p className="text-sm text-secondary mt-2">🎸 Instruments sur place</p>
+                    )}
                     {jam.has_pa_system && <p className="text-sm text-secondary">🔊 Sono disponible</p>}
                     {jam.rules && (
                       <div className="mt-3 pt-3 border-t border-white/10">

@@ -224,8 +224,8 @@ async def delete_account(current_user: dict = Depends(get_current_user)):
             # Delete all venue-related data
             await db.jams.delete_many({"venue_id": venue_id})
             await db.concerts.delete_many({"venue_id": venue_id})
-            await db.karaokes.delete_many({"venue_id": venue_id})
-            await db.spectacles.delete_many({"venue_id": venue_id})
+            await db.karaoke.delete_many({"venue_id": venue_id})
+            await db.spectacle.delete_many({"venue_id": venue_id})
             await db.planning_slots.delete_many({"venue_id": venue_id})
             await db.applications.delete_many({"venue_id": venue_id})
             await db.reviews.delete_many({"venue_id": venue_id})

@@ -309,7 +309,7 @@ export default function Landing() {
             </div>
             
             <p className="text-muted-foreground text-sm">
-              © 2024 Jam Connexion. Tous droits réservés.
+              © 2026 Jam Connexion. Tous droits réservés.
             </p>
             
             <div className="flex items-center gap-6">

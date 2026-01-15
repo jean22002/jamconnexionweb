@@ -116,22 +116,21 @@ export default function Landing() {
                 <Link to="/tarifs">
                   <Button 
                     size="lg" 
-                    className="bg-primary hover:bg-primary/90 rounded-full px-8 py-6 font-heading font-semibold hover:shadow-[0_0_20px_rgba(217,70,239,0.5)] hover:-translate-y-1 transition-all w-full sm:w-auto"
+                    className="bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 hover:to-cyan-500 text-white rounded-full px-8 py-6 font-heading font-semibold hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] hover:-translate-y-1 transition-all w-full sm:w-auto"
                     data-testid="hero-musician-btn"
                   >
                     <Guitar className="w-5 h-5 mr-2" />
-                    Je suis Musicien
+                    Je suis un musicien
                   </Button>
                 </Link>
                 <Link to="/tarifs">
                   <Button 
                     size="lg" 
-                    variant="outline"
-                    className="border-white/20 hover:border-white/50 rounded-full px-8 py-6 font-heading hover:bg-white/5 transition-all w-full sm:w-auto"
+                    className="bg-primary hover:bg-primary/90 rounded-full px-8 py-6 font-heading font-semibold hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] hover:-translate-y-1 transition-all w-full sm:w-auto"
                     data-testid="hero-venue-btn"
                   >
                     <Mic2 className="w-5 h-5 mr-2" />
-                    Je suis Établissement
+                    Je suis un établissement
                   </Button>
                 </Link>
               </div>

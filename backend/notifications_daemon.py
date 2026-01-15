@@ -10,6 +10,11 @@ from datetime import datetime
 import pytz
 import subprocess
 import os
+import sys
+
+# Force unbuffered output
+sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 1)
 
 PARIS_TZ = pytz.timezone('Europe/Paris')
 TARGET_HOUR = 12

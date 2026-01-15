@@ -6656,6 +6656,339 @@ class JamConnexionAPITester:
             self.log_test("Messaging Restriction - Second Venue Isolation", False, f"Error: {str(e)}")
             return False
 
+    # ============= KARAOKE AND SPECTACLE TESTS (BUG FIX VALIDATION) =============
+    
+    def test_karaoke_creation(self):
+        """Test Karaoké event creation - Bug Fix Validation"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Create karaoke event with test data from review request
+            karaoke_data = {
+                "date": "2026-02-15",
+                "start_time": "21:00",
+                "end_time": "02:00",
+                "title": "Soirée Karaoké Rock",
+                "description": "Venez chanter vos tubes rock préférés !",
+                "music_styles": ["Rock", "Pop"]
+            }
+            
+            response = requests.post(f"{self.base_url}/karaoke", json=karaoke_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                karaoke_response = response.json()
+                self.karaoke_id = karaoke_response.get('id')
+                details = f"Karaoké created: ID={self.karaoke_id}, Title='{karaoke_response.get('title')}', Date={karaoke_response.get('date')}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Karaoké Creation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Karaoké Creation", False, f"Error: {str(e)}")
+            return False
+
+    def test_spectacle_creation(self):
+        """Test Spectacle event creation - Bug Fix Validation"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Create spectacle event with test data from review request
+            spectacle_data = {
+                "date": "2026-02-20",
+                "start_time": "20:00",
+                "end_time": "23:00",
+                "type": "Concert",
+                "artist_name": "Les Musiciens de Test",
+                "description": "Spectacle de blues acoustique",
+                "price": "15€"
+            }
+            
+            response = requests.post(f"{self.base_url}/spectacle", json=spectacle_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                spectacle_response = response.json()
+                self.spectacle_id = spectacle_response.get('id')
+                details = f"Spectacle created: ID={self.spectacle_id}, Artist='{spectacle_response.get('artist_name')}', Date={spectacle_response.get('date')}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Spectacle Creation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Spectacle Creation", False, f"Error: {str(e)}")
+            return False
+
+    def test_karaoke_venue_listing(self):
+        """Test Karaoké events appear in venue listing - Bug Fix Validation"""
+        try:
+            response = requests.get(f"{self.base_url}/venues/{self.venue_profile_id}/karaoke", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                karaoke_events = response.json()
+                found_our_karaoke = False
+                for event in karaoke_events:
+                    if event.get('id') == self.karaoke_id:
+                        found_our_karaoke = True
+                        break
+                
+                if found_our_karaoke:
+                    details = f"✅ Karaoké appears in venue listing: {len(karaoke_events)} total events, our event found"
+                    success = True
+                else:
+                    details = f"❌ Karaoké NOT found in venue listing: {len(karaoke_events)} total events, our event missing"
+                    success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Karaoké Venue Listing", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Karaoké Venue Listing", False, f"Error: {str(e)}")
+            return False
+
+    def test_spectacle_venue_listing(self):
+        """Test Spectacle events appear in venue listing - Bug Fix Validation"""
+        try:
+            response = requests.get(f"{self.base_url}/venues/{self.venue_profile_id}/spectacle", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                spectacle_events = response.json()
+                found_our_spectacle = False
+                for event in spectacle_events:
+                    if event.get('id') == self.spectacle_id:
+                        found_our_spectacle = True
+                        break
+                
+                if found_our_spectacle:
+                    details = f"✅ Spectacle appears in venue listing: {len(spectacle_events)} total events, our event found"
+                    success = True
+                else:
+                    details = f"❌ Spectacle NOT found in venue listing: {len(spectacle_events)} total events, our event missing"
+                    success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Spectacle Venue Listing", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Spectacle Venue Listing", False, f"Error: {str(e)}")
+            return False
+
+    def test_karaoke_global_listing(self):
+        """Test Karaoké events appear in global listing - Non-regression test"""
+        try:
+            response = requests.get(f"{self.base_url}/karaoke", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                karaoke_events = response.json()
+                found_our_karaoke = False
+                for event in karaoke_events:
+                    if event.get('id') == self.karaoke_id:
+                        found_our_karaoke = True
+                        break
+                
+                if found_our_karaoke:
+                    details = f"✅ Karaoké appears in global listing: {len(karaoke_events)} total events"
+                    success = True
+                else:
+                    details = f"❌ Karaoké NOT found in global listing: {len(karaoke_events)} total events"
+                    success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Karaoké Global Listing", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Karaoké Global Listing", False, f"Error: {str(e)}")
+            return False
+
+    def test_spectacle_global_listing(self):
+        """Test Spectacle events appear in global listing - Non-regression test"""
+        try:
+            response = requests.get(f"{self.base_url}/spectacle", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                spectacle_events = response.json()
+                found_our_spectacle = False
+                for event in spectacle_events:
+                    if event.get('id') == self.spectacle_id:
+                        found_our_spectacle = True
+                        break
+                
+                if found_our_spectacle:
+                    details = f"✅ Spectacle appears in global listing: {len(spectacle_events)} total events"
+                    success = True
+                else:
+                    details = f"❌ Spectacle NOT found in global listing: {len(spectacle_events)} total events"
+                    success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Spectacle Global Listing", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Spectacle Global Listing", False, f"Error: {str(e)}")
+            return False
+
+    def test_karaoke_delete_endpoint(self):
+        """Test Karaoké delete endpoint - Non-regression test"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Create a test karaoke to delete
+            karaoke_data = {
+                "date": "2026-03-01",
+                "start_time": "19:00",
+                "end_time": "23:00",
+                "title": "Test Karaoké à supprimer",
+                "music_styles": ["Pop"]
+            }
+            
+            create_response = requests.post(f"{self.base_url}/karaoke", json=karaoke_data, headers=headers, timeout=10)
+            if create_response.status_code == 200:
+                test_karaoke = create_response.json()
+                test_karaoke_id = test_karaoke.get('id')
+                
+                # Now delete it
+                delete_response = requests.delete(f"{self.base_url}/karaoke/{test_karaoke_id}", headers=headers, timeout=10)
+                success = delete_response.status_code == 200
+                
+                if success:
+                    details = f"✅ Karaoké deleted successfully: ID={test_karaoke_id}"
+                else:
+                    details = f"❌ Delete failed: Status={delete_response.status_code}, Error={delete_response.text[:100]}"
+            else:
+                success = False
+                details = f"❌ Failed to create test karaoke for deletion: {create_response.status_code}"
+            
+            self.log_test("Karaoké Delete Endpoint", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Karaoké Delete Endpoint", False, f"Error: {str(e)}")
+            return False
+
+    def test_spectacle_delete_endpoint(self):
+        """Test Spectacle delete endpoint - Non-regression test"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Create a test spectacle to delete
+            spectacle_data = {
+                "date": "2026-03-05",
+                "start_time": "20:30",
+                "end_time": "22:30",
+                "type": "Humour",
+                "artist_name": "Comique Test",
+                "description": "Spectacle test à supprimer"
+            }
+            
+            create_response = requests.post(f"{self.base_url}/spectacle", json=spectacle_data, headers=headers, timeout=10)
+            if create_response.status_code == 200:
+                test_spectacle = create_response.json()
+                test_spectacle_id = test_spectacle.get('id')
+                
+                # Now delete it
+                delete_response = requests.delete(f"{self.base_url}/spectacle/{test_spectacle_id}", headers=headers, timeout=10)
+                success = delete_response.status_code == 200
+                
+                if success:
+                    details = f"✅ Spectacle deleted successfully: ID={test_spectacle_id}"
+                else:
+                    details = f"❌ Delete failed: Status={delete_response.status_code}, Error={delete_response.text[:100]}"
+            else:
+                success = False
+                details = f"❌ Failed to create test spectacle for deletion: {create_response.status_code}"
+            
+            self.log_test("Spectacle Delete Endpoint", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Spectacle Delete Endpoint", False, f"Error: {str(e)}")
+            return False
+
+    def test_mongodb_collections_validation(self):
+        """Test MongoDB collections contain the correct documents - Bug Fix Validation"""
+        try:
+            # This test validates that the collections are named correctly (karaoke vs karaokes, spectacle vs spectacles)
+            # We can't directly access MongoDB from here, but we can infer from API responses
+            
+            # Test 1: Check that our created events exist in the collections
+            karaoke_response = requests.get(f"{self.base_url}/karaoke", timeout=10)
+            spectacle_response = requests.get(f"{self.base_url}/spectacle", timeout=10)
+            
+            karaoke_success = karaoke_response.status_code == 200
+            spectacle_success = spectacle_response.status_code == 200
+            
+            if karaoke_success and spectacle_success:
+                karaoke_events = karaoke_response.json()
+                spectacle_events = spectacle_response.json()
+                
+                # Count our events
+                karaoke_count = len([k for k in karaoke_events if k.get('venue_id') == self.venue_profile_id])
+                spectacle_count = len([s for s in spectacle_events if s.get('venue_id') == self.venue_profile_id])
+                
+                # We should have at least 1 karaoke and 1 spectacle from our tests
+                if karaoke_count >= 1 and spectacle_count >= 1:
+                    details = f"✅ MongoDB collections validated: karaoke collection has {karaoke_count} events, spectacle collection has {spectacle_count} events"
+                    success = True
+                else:
+                    details = f"❌ MongoDB collections issue: karaoke={karaoke_count} events, spectacle={spectacle_count} events (expected ≥1 each)"
+                    success = False
+            else:
+                details = f"❌ API access failed: karaoke={karaoke_response.status_code}, spectacle={spectacle_response.status_code}"
+                success = False
+            
+            self.log_test("MongoDB Collections Validation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("MongoDB Collections Validation", False, f"Error: {str(e)}")
+            return False
+
+    def test_venue_authentication_required(self):
+        """Test that only venues can create karaoke/spectacle events - Security test"""
+        try:
+            # Test with musician token (should fail)
+            headers = {'Authorization': f'Bearer {self.musician_token}'}
+            
+            karaoke_data = {
+                "date": "2026-04-01",
+                "start_time": "20:00",
+                "title": "Test Unauthorized Karaoké"
+            }
+            
+            spectacle_data = {
+                "date": "2026-04-01",
+                "start_time": "20:00",
+                "type": "Concert",
+                "artist_name": "Test Unauthorized Artist"
+            }
+            
+            karaoke_response = requests.post(f"{self.base_url}/karaoke", json=karaoke_data, headers=headers, timeout=10)
+            spectacle_response = requests.post(f"{self.base_url}/spectacle", json=spectacle_data, headers=headers, timeout=10)
+            
+            # Both should return 403 Forbidden
+            karaoke_forbidden = karaoke_response.status_code == 403
+            spectacle_forbidden = spectacle_response.status_code == 403
+            
+            success = karaoke_forbidden and spectacle_forbidden
+            
+            if success:
+                details = "✅ Security validated: Musicians correctly rejected (403 Forbidden) for both karaoke and spectacle creation"
+            else:
+                details = f"❌ Security issue: karaoke={karaoke_response.status_code} (expected 403), spectacle={spectacle_response.status_code} (expected 403)"
+            
+            self.log_test("Venue Authentication Required", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Venue Authentication Required", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🎵 Starting Jam Connexion API Tests...")

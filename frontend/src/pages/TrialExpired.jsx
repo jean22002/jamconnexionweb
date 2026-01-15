@@ -111,8 +111,8 @@ export default function TrialExpired() {
           {/* Support */}
           <p className="text-sm text-muted-foreground mt-8">
             Questions ? Contactez-nous à{" "}
-            <a href="mailto:support@jamconnexion.fr" className="text-primary hover:underline">
-              support@jamconnexion.fr
+            <a href="mailto:jamconnexion11@gmail.com" className="text-primary hover:underline">
+              jamconnexion11@gmail.com
             </a>
           </p>
         </div>

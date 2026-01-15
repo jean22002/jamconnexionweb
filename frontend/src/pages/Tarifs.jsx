@@ -165,8 +165,8 @@ export default function Tarifs() {
         {/* Additional Info */}
         <div className="text-center mt-16 text-muted-foreground">
           <p>Questions ? Contactez-nous à{" "}
-            <a href="mailto:support@jamconnexion.fr" className="text-primary hover:underline">
-              support@jamconnexion.fr
+            <a href="mailto:jamconnexion11@gmail.com" className="text-primary hover:underline">
+              jamconnexion11@gmail.com
             </a>
           </p>
         </div>

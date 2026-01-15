@@ -7043,6 +7043,18 @@ class JamConnexionAPITester:
             self.test_venue_subscription_system,
             self.test_jam_events,
             self.test_concert_events,
+            # ============= KARAOKE AND SPECTACLE BUG FIX TESTS =============
+            self.test_karaoke_creation,
+            self.test_spectacle_creation,
+            self.test_karaoke_venue_listing,
+            self.test_spectacle_venue_listing,
+            self.test_karaoke_global_listing,
+            self.test_spectacle_global_listing,
+            self.test_karaoke_delete_endpoint,
+            self.test_spectacle_delete_endpoint,
+            self.test_mongodb_collections_validation,
+            self.test_venue_authentication_required,
+            # ============= END KARAOKE AND SPECTACLE TESTS =============
             # CRITICAL: Test the reported concert date issue
             self.test_concert_date_saving_issue,
             self.test_concert_date_database_verification,

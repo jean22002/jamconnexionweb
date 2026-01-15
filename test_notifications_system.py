@@ -107,6 +107,11 @@ class NotificationSystemTester:
     def create_venue_profile(self):
         """Créer le profil établissement pour les tests"""
         try:
+            # Debug: Check if venue token exists
+            if not hasattr(self, 'venue_token') or not self.venue_token:
+                self.log_test("Create Venue Profile", False, "No venue token available")
+                return False
+            
             venue_data = {
                 "name": "Test Venue Notifications",
                 "description": "Venue for testing notifications system",
@@ -125,6 +130,13 @@ class NotificationSystemTester:
             }
             
             headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Debug: Test auth first
+            auth_response = requests.get(f"{self.base_url}/auth/me", headers=headers, timeout=10)
+            if auth_response.status_code != 200:
+                self.log_test("Create Venue Profile", False, f"Auth failed: {auth_response.status_code}, {auth_response.text[:100]}")
+                return False
+            
             response = requests.post(f"{self.base_url}/venues", json=venue_data, headers=headers, timeout=10)
             success = response.status_code == 200
             

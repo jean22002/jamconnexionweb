@@ -75,7 +75,33 @@ class KaraokeSpectacleTestRunner:
         if response.status_code == 200:
             venue_auth = response.json()
             self.venue_token = venue_auth.get('token')
-            print(f"✅ Venue account created: {venue_auth.get('user', {}).get('id')}")
+            venue_user = venue_auth.get('user', {})
+            print(f"✅ Venue account created: {venue_user.get('id')}")
+            
+            # Create venue profile
+            venue_profile_data = {
+                "name": "Test Karaoké Club",
+                "description": "Club de test pour karaoké et spectacles",
+                "address": "123 Test Street",
+                "city": "Paris",
+                "postal_code": "75001",
+                "latitude": 48.8566,
+                "longitude": 2.3522,
+                "phone": "+33123456789",
+                "music_styles": ["Rock", "Pop", "Jazz"],
+                "has_stage": True,
+                "has_sound_engineer": True
+            }
+            
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            response = requests.post(f"{self.base_url}/venues", json=venue_profile_data, headers=headers, timeout=10)
+            if response.status_code == 200:
+                venue_profile = response.json()
+                self.venue_profile_id = venue_profile.get('id')
+                print(f"✅ Venue profile created: {self.venue_profile_id}")
+            else:
+                print(f"❌ Failed to create venue profile: {response.status_code} - {response.text[:100]}")
+                return False
         else:
             print(f"❌ Failed to create venue account: {response.status_code}")
             return False
@@ -93,34 +119,9 @@ class KaraokeSpectacleTestRunner:
             musician_auth = response.json()
             self.musician_token = musician_auth.get('token')
             print(f"✅ Musician account created: {musician_auth.get('user', {}).get('id')}")
-        else:
-            print(f"❌ Failed to create musician account: {response.status_code}")
-            return False
-        
-        # Create venue profile
-        venue_profile_data = {
-            "name": "Test Karaoké Club",
-            "description": "Club de test pour karaoké et spectacles",
-            "address": "123 Test Street",
-            "city": "Paris",
-            "postal_code": "75001",
-            "latitude": 48.8566,
-            "longitude": 2.3522,
-            "phone": "+33123456789",
-            "music_styles": ["Rock", "Pop", "Jazz"],
-            "has_stage": True,
-            "has_sound_engineer": True
-        }
-        
-        headers = {'Authorization': f'Bearer {self.venue_token}'}
-        response = requests.post(f"{self.base_url}/venues", json=venue_profile_data, headers=headers, timeout=10)
-        if response.status_code == 200:
-            venue_profile = response.json()
-            self.venue_profile_id = venue_profile.get('id')
-            print(f"✅ Venue profile created: {self.venue_profile_id}")
             return True
         else:
-            print(f"❌ Failed to create venue profile: {response.status_code} - {response.text[:100]}")
+            print(f"❌ Failed to create musician account: {response.status_code}")
             return False
     
     def test_karaoke_creation(self):

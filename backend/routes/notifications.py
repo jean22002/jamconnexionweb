@@ -14,10 +14,11 @@ def set_db(database):
     global db
     db = database
 
-async def get_current_user_local(authorization: str = None):
+async def get_current_user_local(authorization: str = Header(None)):
     """Import get_current_user locally to avoid circular imports"""
     from utils import get_current_user
-    return await get_current_user(authorization)
+    from fastapi import Header
+    return await get_current_user(authorization, db)
 
 @router.get("", response_model=List[NotificationResponse])
 async def get_notifications(current_user: dict = Depends(get_current_user_local)):

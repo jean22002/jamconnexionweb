@@ -80,7 +80,7 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-24 overflow-hidden">
+      <section className="relative pt-20 sm:pt-32 pb-16 sm:pb-24 overflow-hidden min-h-screen flex items-center">
         <div 
           className="absolute inset-0 z-0"
           style={{
@@ -92,9 +92,9 @@ export default function Landing() {
           <div className="absolute inset-0 bg-background/90"></div>
         </div>
         
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
+            <div className="space-y-6 sm:space-y-8 w-full">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30">
                 <Radio className="w-4 h-4 text-primary animate-pulse" />
                 <span className="font-mono text-xs uppercase tracking-wider text-primary">
@@ -102,34 +102,34 @@ export default function Landing() {
                 </span>
               </div>
               
-              <h1 className="font-heading font-bold text-5xl md:text-7xl tracking-tight leading-none animate-fade-up">
+              <h1 className="font-heading font-bold text-3xl sm:text-5xl md:text-7xl tracking-tight leading-tight sm:leading-none animate-fade-up">
                 Connectez les
                 <span className="block text-gradient">Musiciens & les Scènes locales</span>
               </h1>
               
-              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-lg animate-fade-up animation-delay-100">
+              <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-lg animate-fade-up animation-delay-100">
                 Trouvez les meilleurs spots pour jouer ou découvrez des talents locaux. 
                 La plateforme qui fait vibrer la scène musicale locale.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 animate-fade-up animation-delay-200 w-full max-w-2xl">
-                <Link to="/tarifs" className="w-full sm:w-auto">
+              <div className="flex flex-col gap-3 sm:gap-4 animate-fade-up animation-delay-200 w-full max-w-md mx-auto sm:mx-0">
+                <Link to="/tarifs" className="w-full">
                   <Button 
                     size="lg" 
-                    className="bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 hover:to-cyan-500 text-white rounded-full px-6 py-6 font-heading font-semibold hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] hover:-translate-y-1 transition-all w-full"
+                    className="bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 hover:to-cyan-500 text-white rounded-full px-6 py-5 sm:py-6 font-heading font-semibold hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] hover:-translate-y-1 transition-all w-full text-sm sm:text-base"
                     data-testid="hero-musician-btn"
                   >
-                    <Guitar className="w-5 h-5 mr-2" />
+                    <Guitar className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Je suis un musicien
                   </Button>
                 </Link>
-                <Link to="/tarifs" className="w-full sm:w-auto">
+                <Link to="/tarifs" className="w-full">
                   <Button 
                     size="lg" 
-                    className="bg-primary hover:bg-primary/90 rounded-full px-6 py-6 font-heading font-semibold hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] hover:-translate-y-1 transition-all w-full"
+                    className="bg-primary hover:bg-primary/90 rounded-full px-6 py-5 sm:py-6 font-heading font-semibold hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] hover:-translate-y-1 transition-all w-full text-sm sm:text-base"
                     data-testid="hero-venue-btn"
                   >
-                    <Mic2 className="w-5 h-5 mr-2" />
+                    <Mic2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Je suis un établissement
                   </Button>
                 </Link>

@@ -1594,25 +1594,25 @@ export default function VenueDashboard() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 mb-6 scrollbar-hide">
-            <TabsTrigger value="profile" className="rounded-full whitespace-nowrap flex-shrink-0">Profil</TabsTrigger>
-            <TabsTrigger value="jams" className="rounded-full whitespace-nowrap flex-shrink-0">Boeufs</TabsTrigger>
-            <TabsTrigger value="concerts" className="rounded-full whitespace-nowrap flex-shrink-0">Concerts</TabsTrigger>
-            <TabsTrigger value="karaoke" className="rounded-full whitespace-nowrap flex-shrink-0">Karaoké</TabsTrigger>
-            <TabsTrigger value="spectacle" className="rounded-full whitespace-nowrap flex-shrink-0">Spectacle</TabsTrigger>
-            <TabsTrigger value="planning" className="rounded-full whitespace-nowrap flex-shrink-0">Planning</TabsTrigger>
-            <TabsTrigger value="jacks" className="rounded-full whitespace-nowrap flex-shrink-0">
+          <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 mb-6 gap-1 scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-transparent">
+            <TabsTrigger value="profile" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Profil</TabsTrigger>
+            <TabsTrigger value="jams" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Bœufs</TabsTrigger>
+            <TabsTrigger value="concerts" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Concerts</TabsTrigger>
+            <TabsTrigger value="karaoke" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Karaoké</TabsTrigger>
+            <TabsTrigger value="spectacle" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Spectacle</TabsTrigger>
+            <TabsTrigger value="planning" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Planning</TabsTrigger>
+            <TabsTrigger value="jacks" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
               <Plug className="w-4 h-4 inline mr-1" />
               Jacks
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="rounded-full whitespace-nowrap flex-shrink-0">
+            <TabsTrigger value="notifications" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
               <Bell className="w-4 h-4 inline mr-1" />
               Notifications
             </TabsTrigger>
-            <TabsTrigger value="history" className="rounded-full whitespace-nowrap flex-shrink-0">Historique</TabsTrigger>
-            <TabsTrigger value="reviews" className="rounded-full whitespace-nowrap flex-shrink-0">Avis</TabsTrigger>
-            <TabsTrigger value="bands" className="rounded-full whitespace-nowrap flex-shrink-0">Groupes</TabsTrigger>
-            <TabsTrigger value="gallery" className="rounded-full whitespace-nowrap flex-shrink-0">Galerie</TabsTrigger>
+            <TabsTrigger value="history" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Historique</TabsTrigger>
+            <TabsTrigger value="reviews" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Avis</TabsTrigger>
+            <TabsTrigger value="bands" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Groupes</TabsTrigger>
+            <TabsTrigger value="gallery" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Galerie</TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}

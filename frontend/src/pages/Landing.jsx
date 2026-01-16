@@ -50,26 +50,26 @@ export default function Landing() {
               <span className="font-heading font-bold text-xl text-gradient">Jam Connexion</span>
             </Link>
             
-            <div className="flex items-center gap-2 sm:gap-4">
-              <Link to="/faq">
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white text-sm sm:text-base">
+            <div className="flex items-center gap-1 sm:gap-4">
+              <Link to="/faq" className="hidden xs:block">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white text-xs sm:text-base px-2 sm:px-4">
                   FAQ
                 </Button>
               </Link>
               <Link to="/tarifs">
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white text-sm sm:text-base" data-testid="nav-pricing">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white text-xs sm:text-base px-2 sm:px-4" data-testid="nav-pricing">
                   Tarifs
                 </Button>
               </Link>
               {user ? (
                 <Link to={user.role === "musician" ? "/musician" : "/venue"}>
-                  <Button size="sm" className="bg-primary hover:bg-primary/90 rounded-full px-3 sm:px-6 text-sm sm:text-base" data-testid="nav-dashboard">
+                  <Button size="sm" className="bg-primary hover:bg-primary/90 rounded-full px-3 sm:px-6 text-xs sm:text-base" data-testid="nav-dashboard">
                     Dashboard
                   </Button>
                 </Link>
               ) : (
                 <Link to="/auth">
-                  <Button size="sm" className="bg-primary hover:bg-primary/90 rounded-full px-3 sm:px-6 text-sm sm:text-base whitespace-nowrap" data-testid="nav-login">
+                  <Button size="sm" className="bg-primary hover:bg-primary/90 rounded-full px-2.5 sm:px-6 text-xs sm:text-base whitespace-nowrap" data-testid="nav-login">
                     Connexion
                   </Button>
                 </Link>

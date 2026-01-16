@@ -50,26 +50,26 @@ export default function Landing() {
               <span className="font-heading font-bold text-xl text-gradient">Jam Connexion</span>
             </Link>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Link to="/faq">
-                <Button variant="ghost" className="text-muted-foreground hover:text-white">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white text-sm sm:text-base">
                   FAQ
                 </Button>
               </Link>
               <Link to="/tarifs">
-                <Button variant="ghost" className="text-muted-foreground hover:text-white" data-testid="nav-pricing">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white text-sm sm:text-base" data-testid="nav-pricing">
                   Tarifs
                 </Button>
               </Link>
               {user ? (
                 <Link to={user.role === "musician" ? "/musician" : "/venue"}>
-                  <Button className="bg-primary hover:bg-primary/90 rounded-full px-6" data-testid="nav-dashboard">
+                  <Button size="sm" className="bg-primary hover:bg-primary/90 rounded-full px-3 sm:px-6 text-sm sm:text-base" data-testid="nav-dashboard">
                     Dashboard
                   </Button>
                 </Link>
               ) : (
                 <Link to="/auth">
-                  <Button className="bg-primary hover:bg-primary/90 rounded-full px-6" data-testid="nav-login">
+                  <Button size="sm" className="bg-primary hover:bg-primary/90 rounded-full px-3 sm:px-6 text-sm sm:text-base whitespace-nowrap" data-testid="nav-login">
                     Connexion
                   </Button>
                 </Link>

@@ -2359,13 +2359,13 @@ export default function MusicianDashboard() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 bg-muted/50 rounded-full p-1 mb-6">
-            <TabsTrigger value="map" className="rounded-full">Carte</TabsTrigger>
-            <TabsTrigger value="musicians" className="rounded-full">Musiciens</TabsTrigger>
-            <TabsTrigger value="venues" className="rounded-full">Établissements</TabsTrigger>
-            <TabsTrigger value="friends" className="rounded-full">Amis ({friends.length})</TabsTrigger>
-            <TabsTrigger value="subscriptions" className="rounded-full">Connexions</TabsTrigger>
-            <TabsTrigger value="bands" className="rounded-full">Groupes</TabsTrigger>
+          <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 mb-6 gap-1 scrollbar-thin scrollbar-thumb-cyan-500/50 scrollbar-track-transparent">
+            <TabsTrigger value="map" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Carte</TabsTrigger>
+            <TabsTrigger value="musicians" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Musiciens</TabsTrigger>
+            <TabsTrigger value="venues" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Établissements</TabsTrigger>
+            <TabsTrigger value="friends" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Amis ({friends.length})</TabsTrigger>
+            <TabsTrigger value="subscriptions" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Connexions</TabsTrigger>
+            <TabsTrigger value="bands" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Groupes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="map">

@@ -112,21 +112,21 @@ export default function Landing() {
                 La plateforme qui fait vibrer la scène musicale locale.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 animate-fade-up animation-delay-200">
-                <Link to="/tarifs">
+              <div className="flex flex-col sm:flex-row gap-4 animate-fade-up animation-delay-200 w-full max-w-2xl">
+                <Link to="/tarifs" className="w-full sm:w-auto">
                   <Button 
                     size="lg" 
-                    className="bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 hover:to-cyan-500 text-white rounded-full px-8 py-6 font-heading font-semibold hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] hover:-translate-y-1 transition-all w-full sm:w-auto"
+                    className="bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 hover:to-cyan-500 text-white rounded-full px-6 py-6 font-heading font-semibold hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] hover:-translate-y-1 transition-all w-full"
                     data-testid="hero-musician-btn"
                   >
                     <Guitar className="w-5 h-5 mr-2" />
                     Je suis un musicien
                   </Button>
                 </Link>
-                <Link to="/tarifs">
+                <Link to="/tarifs" className="w-full sm:w-auto">
                   <Button 
                     size="lg" 
-                    className="bg-primary hover:bg-primary/90 rounded-full px-8 py-6 font-heading font-semibold hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] hover:-translate-y-1 transition-all w-full sm:w-auto"
+                    className="bg-primary hover:bg-primary/90 rounded-full px-6 py-6 font-heading font-semibold hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] hover:-translate-y-1 transition-all w-full"
                     data-testid="hero-venue-btn"
                   >
                     <Mic2 className="w-5 h-5 mr-2" />

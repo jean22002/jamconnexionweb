@@ -175,6 +175,35 @@ export default function MelomaneDashboard() {
       console.error("Error fetching participations:", error);
     }
   }, [token]);
+  
+  const fetchSubscriptions = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/my-subscriptions`, { 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+      
+      // Enrichir avec les données des venues
+      const enrichedSubs = await Promise.all(
+        response.data.map(async (sub) => {
+          try {
+            const venueRes = await axios.get(`${API}/venues/${sub.venue_id}`);
+            return {
+              ...sub,
+              venue_name: venueRes.data.name,
+              city: venueRes.data.city,
+              venue_image: venueRes.data.profile_image
+            };
+          } catch (err) {
+            return sub;
+          }
+        })
+      );
+      
+      setSubscriptions(enrichedSubs);
+    } catch (error) {
+      console.error("Error fetching subscriptions:", error);
+    }
+  }, [token]);
 
   useEffect(() => {
     fetchVenues();

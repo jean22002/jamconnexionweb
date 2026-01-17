@@ -214,8 +214,10 @@ export default function VenueDetail() {
           headers: { Authorization: `Bearer ${token}` }
         });
         setMyParticipations(allRes.data || []);
-        // Check if currently participating in any active event at this venue
-        const currentForVenue = allRes.data.find(p => p.venue_id === id && p.active);
+        // Check if currently participating in any ACTIVE event at this venue
+        // IMPORTANT: Only consider participations where active=true
+        const activeParticipations = (allRes.data || []).filter(p => p.active !== false);
+        const currentForVenue = activeParticipations.find(p => p.venue_id === id);
         setCurrentParticipation(currentForVenue || null);
       }
     } catch (error) {

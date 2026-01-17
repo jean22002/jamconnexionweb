@@ -12,7 +12,7 @@ import os
 from datetime import datetime, timedelta
 
 class NotificationSystemTesterSimplified:
-    def __init__(self, base_url="https://jamfan-dashboard.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://music-fan-profile.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0

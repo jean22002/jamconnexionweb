@@ -52,7 +52,7 @@ async def create_melomane_profile(
         "longitude": longitude,
         "favorite_styles": data.favorite_styles or [],
         "favorite_venues": [],
-        "profile_picture": None,
+        "profile_picture": data.profile_picture,
         "cover_photo": None,
         "facebook": None,
         "instagram": None,

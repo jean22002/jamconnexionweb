@@ -25,7 +25,7 @@ import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete
 import { 
   Music, MapPin, LogOut, User, Loader2, Bell, 
   Calendar as CalendarIcon, Check, Trash2, Heart, MessageSquare,
-  Search, Radio, MapPinOff, Locate, X
+  Search, Radio, MapPinOff, Locate, X, ChevronDown, Home, Building2, Users as UsersIcon
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";

@@ -601,7 +601,10 @@ export default function VenueDetail() {
             <TabsTrigger value="info" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Profil</TabsTrigger>
             <TabsTrigger value="jams" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Bœufs ({jams.length})</TabsTrigger>
             <TabsTrigger value="concerts" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Concerts ({concerts.length})</TabsTrigger>
-            <TabsTrigger value="planning" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Candidatures ({planningSlots.length})</TabsTrigger>
+            {/* Candidatures tab only for musicians */}
+            {user?.role === "musician" && (
+              <TabsTrigger value="planning" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Candidatures ({planningSlots.length})</TabsTrigger>
+            )}
             <TabsTrigger value="bands" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Groupes ({bandsPlayed.length})</TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Avis ({totalReviews})</TabsTrigger>
             <TabsTrigger value="gallery" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Galerie ({venue?.gallery?.length || 0})</TabsTrigger>

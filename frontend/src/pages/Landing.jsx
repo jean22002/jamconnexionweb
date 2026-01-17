@@ -133,6 +133,16 @@ export default function Landing() {
                     Je suis un établissement
                   </Button>
                 </Link>
+                <Link to="/auth?role=melomane" className="w-full">
+                  <Button 
+                    size="lg" 
+                    className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-full px-6 py-5 sm:py-6 font-heading font-semibold hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] hover:-translate-y-1 transition-all w-full text-sm sm:text-base"
+                    data-testid="hero-melomane-btn"
+                  >
+                    <Music2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    Je suis mélomane
+                  </Button>
+                </Link>
               </div>
             </div>
             

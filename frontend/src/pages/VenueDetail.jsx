@@ -92,7 +92,7 @@ export default function VenueDetail() {
   }, [id]);
 
   const checkSubscription = useCallback(async () => {
-    if (!token || !user || user.role !== "musician") return;
+    if (!token || !user || (user.role !== "musician" && user.role !== "melomane")) return;
     try {
       const response = await axios.get(`${API}/venues/${id}/subscription-status`, {
         headers: { Authorization: `Bearer ${token}` }

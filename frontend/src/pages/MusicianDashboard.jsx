@@ -1022,13 +1022,13 @@ export default function MusicianDashboard() {
                   </DialogHeader>
                   
                   <Tabs defaultValue="info" className="mt-4">
-                    <TabsList className="grid w-full grid-cols-6 bg-muted/50">
-                      <TabsTrigger value="info">Infos</TabsTrigger>
-                      <TabsTrigger value="styles">Styles</TabsTrigger>
-                      <TabsTrigger value="solo">Solo</TabsTrigger>
-                      <TabsTrigger value="band">Groupe</TabsTrigger>
-                      <TabsTrigger value="concerts">Concerts</TabsTrigger>
-                      <TabsTrigger value="settings">Paramètres</TabsTrigger>
+                    <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 gap-1 scrollbar-thin scrollbar-thumb-cyan-500/50 scrollbar-track-transparent">
+                      <TabsTrigger value="info" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Infos</TabsTrigger>
+                      <TabsTrigger value="styles" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Styles</TabsTrigger>
+                      <TabsTrigger value="solo" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Solo</TabsTrigger>
+                      <TabsTrigger value="band" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Groupe</TabsTrigger>
+                      <TabsTrigger value="concerts" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Concerts</TabsTrigger>
+                      <TabsTrigger value="settings" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Paramètres</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="info" className="space-y-4 mt-4">

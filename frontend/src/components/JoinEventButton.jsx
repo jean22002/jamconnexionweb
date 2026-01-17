@@ -19,12 +19,15 @@ export default function JoinEventButton({
   
   // Sync local state with prop when it changes
   useEffect(() => {
-    setLocalParticipating(!!currentParticipation);
+    // Only set as participating if currentParticipation exists AND is active
+    const isActive = currentParticipation && currentParticipation.active !== false;
+    setLocalParticipating(isActive);
   }, [currentParticipation]);
   
   // Check if already participating in THIS event
-  // currentParticipation is either the participation object for this event, or null/undefined
-  const isParticipating = !!currentParticipation || localParticipating;
+  // Only consider as participating if currentParticipation exists AND is active
+  const isActiveParticipation = currentParticipation && currentParticipation.active !== false;
+  const isParticipating = isActiveParticipation || localParticipating;
 
   const handleJoin = async () => {
     if (!token) {

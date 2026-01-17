@@ -925,7 +925,8 @@ async def get_my_venue_concerts(current_user: dict = Depends(get_current_user)):
     for concert in concerts:
         participants_count = await db.event_participations.count_documents({
             "event_id": concert["id"],
-            "event_type": "concert"
+            "event_type": "concert",
+            "active": True
         })
         result.append(ConcertEventResponse(**concert, participants_count=participants_count))
     
@@ -1692,7 +1693,8 @@ async def get_venue_concerts(venue_id: str):
     for concert in concerts:
         participants_count = await db.event_participations.count_documents({
             "event_id": concert["id"],
-            "event_type": "concert"
+            "event_type": "concert",
+            "active": True
         })
         result.append(ConcertEventResponse(**concert, participants_count=participants_count))
     

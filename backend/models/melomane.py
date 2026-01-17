@@ -44,6 +44,7 @@ class MelomaneCreate(BaseModel):
     postal_code: Optional[str] = None
     country: Optional[str] = "France"
     favorite_styles: List[str] = []
+    profile_picture: Optional[str] = None
     notifications_enabled: bool = True
     notification_radius_km: float = 50.0
 

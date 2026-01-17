@@ -31,6 +31,7 @@ import SocialLinks from "../components/SocialLinks";
 import { StarRating } from "../components/StarRating";
 import { toast } from "sonner";
 import { MUSIC_STYLES_LIST } from "../data/music-styles";
+import { useNotifications } from "../hooks/useNotifications";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -49,6 +50,9 @@ const INSTRUMENTS_BASE = [
 
 export default function VenueDashboard() {
   const { user, token, logout, refreshUser } = useAuth();
+  
+  // Hook pour les notifications push
+  useNotifications(token, user);
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);

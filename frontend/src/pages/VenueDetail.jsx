@@ -143,8 +143,8 @@ export default function VenueDetail() {
 
 
   const handleSubscribe = async () => {
-    if (!token || !user || user.role !== "musician") {
-      toast.error("Connectez-vous en tant que musicien pour vous connecter");
+    if (!token || !user || (user.role !== "musician" && user.role !== "melomane")) {
+      toast.error("Connectez-vous pour vous connecter à cet établissement");
       return;
     }
 

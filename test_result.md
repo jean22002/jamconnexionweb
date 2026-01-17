@@ -753,6 +753,21 @@ backend:
         agent: "testing"
         comment: "✅ NOTIFICATIONS MÉLOMANE VALIDÉES - Tests API réussis. RÉSULTATS: ✅ GET /api/notifications fonctionne pour mélomanes authentifiés (0 notifications récupérées), ✅ GET /api/notifications/unread-count fonctionne (count: 0), ✅ Authentification JWT requise et fonctionnelle, ✅ Endpoints notifications accessibles aux mélomanes. Système de notifications mélomane opérationnel - les notifications seront générées automatiquement par le scheduler selon les participations et le rayon de notification configuré (50km)."
 
+  - task: "Melomane Account Suspension and Deletion - Frontend"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/MelomaneDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Ajout des fonctionnalités de suspension et suppression de compte pour les mélomanes dans le modal 'Mon Profil'. Section 'Gestion du compte' avec bordure rouge, bouton 'Suspendre' (icône Clock, bordure orange) et bouton 'Supprimer' (icône Trash2, bordure rouge). Modals de confirmation avec informations détaillées."
+      - working: true
+        agent: "testing"
+        comment: "🎉 FONCTIONNALITÉ DE SUSPENSION ET SUPPRESSION DE COMPTE MÉLOMANE ENTIÈREMENT VALIDÉE! Tests complets réussis (100% conforme aux spécifications): ✅ SECTION GESTION DU COMPTE: Section 'Gestion du compte' présente avec bordure rouge dans le modal 'Mon Profil', ✅ BOUTON SUSPENDRE: Bouton 'Suspendre' visible avec icône Clock et styling orange (border-orange-500/50), texte 'Suspendre temporairement pour 60 jours. Réactivation possible à tout moment', ✅ BOUTON SUPPRIMER: Bouton 'Supprimer' visible avec icône Trash2 et styling rouge (border-red-500/50), texte 'Suppression définitive et irréversible de toutes vos données', ✅ MODAL SUSPENSION: Modal 'Suspendre mon compte' s'ouvre correctement avec titre orange, avertissement '⚠️ Attention', informations '60 jours maximum', 'Profil non visible', 'Réactivation possible', boutons 'Annuler' et 'Confirmer', ✅ MODAL SUPPRESSION: Modal 'Supprimer mon compte' s'ouvre correctement avec titre rouge, avertissement '🚨 Action irréversible', liste des conséquences (données supprimées, participations perdues, connexions effacées, action non annulable), boutons 'Annuler' et 'Confirmer la suppression', ✅ FONCTIONNALITÉ ANNULER: Les boutons 'Annuler' ferment les modals sans effectuer d'action destructive, ✅ UI COHÉRENTE: Couleurs cohérentes (orange pour suspension, rouge pour suppression), icônes appropriées, styling professionnel. BACKEND ROUTES VALIDÉES: POST /api/account/suspend et DELETE /api/account/delete fonctionnels. Toutes les spécifications de la review request sont satisfaites à 100%."
+
   - task: "Melomane Profile Bug Fix - profile_picture Field"
     implemented: true
     working: true

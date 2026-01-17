@@ -1,892 +1,922 @@
 {
   "summary": {
-    "total_tests": 147,
-    "passed_tests": 36,
-    "success_rate": 24.489795918367346,
-    "timestamp": "2026-01-17T16:09:12.130026"
+    "total_tests": 152,
+    "passed_tests": 89,
+    "success_rate": 58.55263157894737,
+    "timestamp": "2026-01-17T16:59:41.982676"
   },
   "test_results": [
     {
       "test": "CRITICAL BUG TEST - Exception",
       "success": false,
       "details": "Error: cannot access local variable 'datetime' where it is not associated with a value",
-      "timestamp": "2026-01-17T16:08:16.822021"
+      "timestamp": "2026-01-17T16:57:35.745632"
     },
     {
-      "test": "Multi Musicians Test - Profile",
+      "test": "Multi Musicians Test - No Active Jam",
       "success": false,
-      "details": "Failed to create profile: 401",
-      "timestamp": "2026-01-17T16:08:17.211144"
+      "details": "No active jam available for testing",
+      "timestamp": "2026-01-17T16:57:36.095555"
     },
     {
       "test": "Concert Date Bug - Venue Profile",
       "success": false,
-      "details": "Failed to create venue profile: 401",
-      "timestamp": "2026-01-17T16:08:17.528919"
+      "details": "Failed to create venue profile: 520",
+      "timestamp": "2026-01-17T16:57:36.403470"
     },
     {
       "test": "Double Participation Bug Reproduction",
       "success": false,
       "details": "Error: cannot access local variable 'datetime' where it is not associated with a value",
-      "timestamp": "2026-01-17T16:08:17.530937"
+      "timestamp": "2026-01-17T16:57:36.404012"
     },
     {
       "test": "Health Check",
       "success": true,
       "details": "Status: 200, Response: healthy",
-      "timestamp": "2026-01-17T16:08:17.584255"
+      "timestamp": "2026-01-17T16:57:36.443344"
     },
     {
       "test": "Register Musician",
       "success": true,
-      "details": "User ID: 696fe1b7-97be-4c53-8cba-b9ef880bda46, Role: musician",
-      "timestamp": "2026-01-17T16:08:17.861083"
+      "details": "User ID: de1c0316-0697-4cb9-9a2a-f767bd8743e9, Role: musician",
+      "timestamp": "2026-01-17T16:57:36.706090"
     },
     {
       "test": "Register Venue",
       "success": true,
-      "details": "User ID: 39f9fd28-0ec3-4a3f-b894-74dbd89a8e63, Trial: trial",
-      "timestamp": "2026-01-17T16:08:18.145077"
+      "details": "User ID: 263c2119-6362-4ece-8722-bc1c05cb83bb, Trial: trial",
+      "timestamp": "2026-01-17T16:57:36.969662"
     },
     {
       "test": "Login",
       "success": true,
       "details": "Login successful for musician",
-      "timestamp": "2026-01-17T16:08:18.469985"
+      "timestamp": "2026-01-17T16:57:37.232119"
     },
     {
       "test": "Auth Me",
       "success": true,
       "details": "User: Test Venue, Role: venue",
-      "timestamp": "2026-01-17T16:08:18.536249"
+      "timestamp": "2026-01-17T16:57:37.276101"
     },
     {
       "test": "Create Venue Profile",
       "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:18.616344"
+      "details": "Status: 520, Error: Internal Server Error",
+      "timestamp": "2026-01-17T16:57:37.318035"
     },
     {
       "test": "Create Enhanced Musician Profile",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:18.688429"
+      "success": true,
+      "details": "Musician ID: 2e28b333-2215-4fa7-8df9-49f1b9a569d6, Pseudo: JazzMaster, Band: True",
+      "timestamp": "2026-01-17T16:57:37.360842"
     },
     {
       "test": "List Venues",
       "success": true,
-      "details": "Found 5 venues",
-      "timestamp": "2026-01-17T16:08:18.820764"
+      "details": "Found 7 venues",
+      "timestamp": "2026-01-17T16:57:37.403080"
     },
     {
       "test": "Nearby Venues Search",
       "success": true,
-      "details": "Found 4 nearby venues",
-      "timestamp": "2026-01-17T16:08:18.870130"
+      "details": "Found 6 nearby venues",
+      "timestamp": "2026-01-17T16:57:37.454576"
     },
     {
       "test": "Get Venue Profile",
       "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:18.910090"
+      "details": "Status: 520, Error: Internal Server Error",
+      "timestamp": "2026-01-17T16:57:37.494504"
     },
     {
       "test": "Friend Request System",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:19.320398"
+      "success": true,
+      "details": "Friend request sent successfully, Received 1 friend request(s), Friend request accepted",
+      "timestamp": "2026-01-17T16:57:37.911879"
     },
     {
       "test": "Venue Subscription System",
       "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:19.362856"
+      "details": "Status: 404, Error: {\"detail\":\"Venue not found\"}",
+      "timestamp": "2026-01-17T16:57:37.951325"
     },
     {
       "test": "Jam Events",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:19.398211"
+      "success": true,
+      "details": "Jam created: 2024-12-20 at Test Jazz Club, Total jams: 11",
+      "timestamp": "2026-01-17T16:57:38.040475"
     },
     {
       "test": "Concert Events",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:19.479065"
+      "success": true,
+      "details": "Concert created: Christmas Jazz Night on 2024-12-25, Total concerts: 9",
+      "timestamp": "2026-01-17T16:57:38.125063"
     },
     {
       "test": "Karaok\u00e9 Creation",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:19.520673"
+      "success": true,
+      "details": "Karaok\u00e9 created: ID=d69c6c41-4913-41d5-ac4b-84e02d9d6bc8, Title='Soir\u00e9e Karaok\u00e9 Rock', Date=2026-02-15",
+      "timestamp": "2026-01-17T16:57:38.169001"
     },
     {
       "test": "Spectacle Creation",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:19.556654"
+      "success": true,
+      "details": "Spectacle created: ID=e35eddc7-9f4d-40cf-90c8-b825c4d79257, Artist='Les Musiciens de Test', Date=2026-02-20",
+      "timestamp": "2026-01-17T16:57:38.215261"
     },
     {
       "test": "Karaok\u00e9 Venue Listing",
       "success": false,
       "details": "\u274c Karaok\u00e9 NOT found in venue listing: 0 total events, our event missing",
-      "timestamp": "2026-01-17T16:08:19.591491"
+      "timestamp": "2026-01-17T16:57:38.248845"
     },
     {
       "test": "Spectacle Venue Listing",
       "success": false,
       "details": "\u274c Spectacle NOT found in venue listing: 0 total events, our event missing",
-      "timestamp": "2026-01-17T16:08:19.625825"
+      "timestamp": "2026-01-17T16:57:38.325077"
     },
     {
       "test": "Karaok\u00e9 Global Listing",
-      "success": false,
-      "details": "Error: 'JamConnexionAPITester' object has no attribute 'karaoke_id'",
-      "timestamp": "2026-01-17T16:08:19.664150"
+      "success": true,
+      "details": "\u2705 Karaok\u00e9 appears in global listing: 2 total events",
+      "timestamp": "2026-01-17T16:57:38.364806"
     },
     {
       "test": "Spectacle Global Listing",
-      "success": false,
-      "details": "\u274c Spectacle NOT found in global listing: 0 total events",
-      "timestamp": "2026-01-17T16:08:19.702245"
+      "success": true,
+      "details": "\u2705 Spectacle appears in global listing: 1 total events",
+      "timestamp": "2026-01-17T16:57:38.398277"
     },
     {
       "test": "Karaok\u00e9 Delete Endpoint",
-      "success": false,
-      "details": "\u274c Failed to create test karaoke for deletion: 401",
-      "timestamp": "2026-01-17T16:08:19.735231"
+      "success": true,
+      "details": "\u2705 Karaok\u00e9 deleted successfully: ID=084b55b9-e35b-4ebd-8fcc-f16c4ffce476",
+      "timestamp": "2026-01-17T16:57:38.470576"
     },
     {
       "test": "Spectacle Delete Endpoint",
-      "success": false,
-      "details": "\u274c Failed to create test spectacle for deletion: 401",
-      "timestamp": "2026-01-17T16:08:19.774651"
+      "success": true,
+      "details": "\u2705 Spectacle deleted successfully: ID=cae68830-653f-4669-876e-85659516a779",
+      "timestamp": "2026-01-17T16:57:38.541336"
     },
     {
       "test": "MongoDB Collections Validation",
       "success": false,
       "details": "\u274c MongoDB collections issue: karaoke=0 events, spectacle=0 events (expected \u22651 each)",
-      "timestamp": "2026-01-17T16:08:19.842861"
+      "timestamp": "2026-01-17T16:57:38.611224"
     },
     {
       "test": "Venue Authentication Required",
-      "success": false,
-      "details": "\u274c Security issue: karaoke=401 (expected 403), spectacle=401 (expected 403)",
-      "timestamp": "2026-01-17T16:08:19.914614"
+      "success": true,
+      "details": "\u2705 Security validated: Musicians correctly rejected (403 Forbidden) for both karaoke and spectacle creation",
+      "timestamp": "2026-01-17T16:57:38.721428"
     },
     {
       "test": "Concert Date Saving Issue",
-      "success": false,
-      "details": "\u274c CRITICAL: Failed to create concert - Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:19.952024"
+      "success": true,
+      "details": "\u2705 Concert created with date: 2026-02-20 \u2705 Date correctly returned in GET /api/venues/me/concerts: 2026-02-20 \u2705 All required fields present: id, date, start_time, title, bands, participants_count",
+      "timestamp": "2026-01-17T16:57:38.800905"
     },
     {
       "test": "Concert Date Database Verification",
-      "success": false,
-      "details": "\u274c Failed to create test concert - Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:19.986624"
+      "success": true,
+      "details": "\u2705 Database storage verified - Date correctly stored and retrieved: 2026-03-15 | Fields: start_time:\u2705, title:\u2705, price:\u2705",
+      "timestamp": "2026-01-17T16:57:38.878311"
     },
     {
       "test": "Planning and Applications",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:20.027998"
+      "success": true,
+      "details": "Planning slot created for 2024-12-30",
+      "timestamp": "2026-01-17T16:57:38.954297"
     },
     {
       "test": "Planning Slot Complete Data Storage - Backend Bug Fix",
-      "success": false,
-      "details": "\u274c Failed to create slot: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:20.074528"
+      "success": true,
+      "details": "Complete planning slot created: 2025-01-25 \u2705 ALL FIELDS CORRECTLY SAVED AND RETRIEVED - BACKEND MODELS FIXED!",
+      "timestamp": "2026-01-17T16:57:39.036142"
     },
     {
       "test": "Planning Slot Musician Visibility - Frontend Bug Fix",
       "success": false,
-      "details": "No complete planning slot created in previous test",
-      "timestamp": "2026-01-17T16:08:20.075311"
+      "details": "\u274c Could not find complete planning slot in venue planning",
+      "timestamp": "2026-01-17T16:57:39.070272"
     },
     {
       "test": "Planning Slot Title/Time Bug Fix - Creation Test",
-      "success": false,
-      "details": "\u274c \u00c9chec cr\u00e9ation slot: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:20.109384"
+      "success": true,
+      "details": "Planning slot created with title and time: 2025-02-05 \u2705 TIME et TITLE correctement sauvegard\u00e9s",
+      "timestamp": "2026-01-17T16:57:39.151847"
     },
     {
       "test": "Planning Slot Title/Time Bug Fix - Persistence Test",
-      "success": false,
-      "details": "Failed to create initial slot",
-      "timestamp": "2026-01-17T16:08:20.151695"
+      "success": true,
+      "details": "\u2705 MODIFICATION ET PERSISTANCE R\u00c9USSIES - time='21:00' et title='Grande Soir\u00e9e Rock' correctement sauvegard\u00e9s",
+      "timestamp": "2026-01-17T16:57:39.330623"
     },
     {
       "test": "Planning Slot Title/Time Bug Fix - All Fields Test",
-      "success": false,
-      "details": "\u274c \u00c9chec cr\u00e9ation slot complet: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:20.188722"
+      "success": true,
+      "details": "Planning slot complet cr\u00e9\u00e9: 2025-02-15 \u2705 TOUS LES CHAMPS CORRECTEMENT PERSIST\u00c9S - Bug titre/heure R\u00c9SOLU!",
+      "timestamp": "2026-01-17T16:57:39.413261"
     },
     {
       "test": "Notifications Authentication Required",
       "success": true,
       "details": "Correctly rejected unauthenticated request",
-      "timestamp": "2026-01-17T16:08:20.219806"
+      "timestamp": "2026-01-17T16:57:39.452572"
     },
     {
       "test": "Notifications API - GET All",
       "success": true,
-      "details": "Retrieved 0 notifications",
-      "timestamp": "2026-01-17T16:08:20.302417"
+      "details": "Retrieved 1 notifications, First: Demande d'ami accept\u00e9e...",
+      "timestamp": "2026-01-17T16:57:39.490268"
     },
     {
       "test": "Notifications API - Unread Count",
       "success": true,
-      "details": "Unread notifications count: 0",
-      "timestamp": "2026-01-17T16:08:20.347090"
+      "details": "Unread notifications count: 1",
+      "timestamp": "2026-01-17T16:57:39.524288"
     },
     {
       "test": "Notifications API - Mark as Read",
       "success": true,
-      "details": "No notifications available to test with",
-      "timestamp": "2026-01-17T16:08:20.384820"
+      "details": "Marked notification as read: Demande d'ami accept\u00e9e...",
+      "timestamp": "2026-01-17T16:57:39.596677"
     },
     {
       "test": "Notifications API - Mark All Read",
       "success": true,
       "details": "Mark all read result: 0 notifications marked as read",
-      "timestamp": "2026-01-17T16:08:20.436947"
+      "timestamp": "2026-01-17T16:57:39.671477"
     },
     {
       "test": "Notifications API - Delete",
       "success": true,
-      "details": "No notifications available to delete (endpoint structure valid)",
-      "timestamp": "2026-01-17T16:08:20.497450"
+      "details": "Deleted notification: Demande d'ami accept\u00e9e...",
+      "timestamp": "2026-01-17T16:57:39.747366"
     },
     {
       "test": "Notifications User Filtering",
       "success": true,
       "details": "Musician notifications: 0, Venue notifications: 0",
-      "timestamp": "2026-01-17T16:08:20.578298"
+      "timestamp": "2026-01-17T16:57:39.815489"
     },
     {
       "test": "Create Test Events for Notifications",
-      "success": false,
-      "details": "Jam J-3: False, Jam Today: False",
-      "timestamp": "2026-01-17T16:08:20.667214"
+      "success": true,
+      "details": "Created test events: Jam J-3 (2026-01-20), Jam Today (2026-01-17)",
+      "timestamp": "2026-01-17T16:57:39.977411"
     },
     {
       "test": "Notifications Script Execution",
       "success": true,
       "details": "Script executed successfully. Output lines: 7",
-      "timestamp": "2026-01-17T16:08:20.926022"
+      "timestamp": "2026-01-17T16:57:40.198775"
     },
     {
       "test": "Verify Notifications Created",
       "success": true,
       "details": "Total notifications: 0, Jam reminders: 0, Nearby jams: 0",
-      "timestamp": "2026-01-17T16:08:20.968582"
+      "timestamp": "2026-01-17T16:57:40.235866"
     },
     {
       "test": "Notifications Daemon Status",
       "success": true,
-      "details": "Notifications daemon is RUNNING, Status: notifications_daemon             RUNNING   pid 50, uptime 0:26:30",
-      "timestamp": "2026-01-17T16:08:21.266903"
+      "details": "Notifications daemon is RUNNING, Status: notifications_daemon             RUNNING   pid 50, uptime 1:15:49",
+      "timestamp": "2026-01-17T16:57:40.426867"
     },
     {
       "test": "Notifications Daemon Logs",
       "success": true,
       "details": "Retrieved 0 log lines",
-      "timestamp": "2026-01-17T16:08:21.272645"
+      "timestamp": "2026-01-17T16:57:40.430316"
     },
     {
       "test": "Notifications",
       "success": true,
-      "details": "Retrieved 0 notifications",
-      "timestamp": "2026-01-17T16:08:21.354659"
+      "details": "Retrieved 0 notifications, Unread: 0",
+      "timestamp": "2026-01-17T16:57:40.500532"
     },
     {
       "test": "Create Active Jam Event",
       "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:21.392922"
+      "details": "Status: 400, Error: {\"detail\":\"Un b\u0153uf est d\u00e9j\u00e0 pr\u00e9vu le 2026-01-17. Vous ne pouvez pas cr\u00e9er deux b\u0153ufs le m\u00eame jour.\"}",
+      "timestamp": "2026-01-17T16:57:40.540414"
     },
     {
       "test": "Get Active Events",
       "success": true,
       "details": "Found 0 active events",
-      "timestamp": "2026-01-17T16:08:21.430738"
+      "timestamp": "2026-01-17T16:57:40.573677"
     },
     {
       "test": "Join Event Without Auth",
       "success": false,
       "details": "Error: 'JamConnexionAPITester' object has no attribute 'active_jam_id'",
-      "timestamp": "2026-01-17T16:08:21.431602"
+      "timestamp": "2026-01-17T16:57:40.574417"
     },
     {
       "test": "Join Event as Musician",
       "success": false,
       "details": "Error: 'JamConnexionAPITester' object has no attribute 'active_jam_id'",
-      "timestamp": "2026-01-17T16:08:21.431630"
+      "timestamp": "2026-01-17T16:57:40.574438"
     },
     {
       "test": "Double Participation Prevention",
       "success": false,
       "details": "Error: 'JamConnexionAPITester' object has no attribute 'active_jam_id'",
-      "timestamp": "2026-01-17T16:08:21.431638"
+      "timestamp": "2026-01-17T16:57:40.574445"
     },
     {
       "test": "Get My Current Participation",
       "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:21.468812"
+      "details": "No current participation found",
+      "timestamp": "2026-01-17T16:57:40.615774"
     },
     {
       "test": "Get Musician Participation (Public)",
       "success": false,
-      "details": "Status: 404, Error: {\"detail\":\"Musician not found\"}",
-      "timestamp": "2026-01-17T16:08:21.544292"
+      "details": "No current participation found",
+      "timestamp": "2026-01-17T16:57:40.650687"
     },
     {
       "test": "Get Event Participants",
       "success": false,
       "details": "Error: 'JamConnexionAPITester' object has no attribute 'active_jam_id'",
-      "timestamp": "2026-01-17T16:08:21.545220"
+      "timestamp": "2026-01-17T16:57:40.651422"
     },
     {
       "test": "Create Second Musician for Friends",
-      "success": false,
-      "details": "Profile creation failed: 401",
-      "timestamp": "2026-01-17T16:08:21.894015"
+      "success": true,
+      "details": "Friend musician created: e23385cf-cf77-462f-8240-cabe057c10d1, Profile: a24ce343-d819-4300-a51f-4f1fff83db98",
+      "timestamp": "2026-01-17T16:57:41.173853"
     },
     {
       "test": "Friend Notifications on Participation",
       "success": false,
-      "details": "Failed to create new jam: 401",
-      "timestamp": "2026-01-17T16:08:21.990357"
+      "details": "Failed to create new jam: 400",
+      "timestamp": "2026-01-17T16:57:41.287312"
     },
     {
       "test": "Leave Event",
       "success": false,
       "details": "Error: 'JamConnexionAPITester' object has no attribute 'active_jam_id'",
-      "timestamp": "2026-01-17T16:08:21.991716"
+      "timestamp": "2026-01-17T16:57:41.288723"
     },
     {
       "test": "Participation After Leaving",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:22.031257"
+      "success": true,
+      "details": "No active participation found (correct after leaving)",
+      "timestamp": "2026-01-17T16:57:41.322106"
     },
     {
       "test": "Broadcast Notification Without Auth",
       "success": true,
       "details": "Correctly rejected unauthenticated request",
-      "timestamp": "2026-01-17T16:08:22.065226"
+      "timestamp": "2026-01-17T16:57:41.356825"
     },
     {
       "test": "Broadcast Notification as Musician",
-      "success": false,
-      "details": "Unexpected status: 401, Expected: 403",
-      "timestamp": "2026-01-17T16:08:22.108459"
+      "success": true,
+      "details": "Correctly rejected musician request (only venues allowed)",
+      "timestamp": "2026-01-17T16:57:41.392391"
     },
     {
       "test": "Broadcast Notification (Venue Subscribed)",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:22.143049"
+      "success": true,
+      "details": "Broadcast sent successfully, ID: None, Musicians notified: 0",
+      "timestamp": "2026-01-17T16:57:41.445952"
     },
     {
       "test": "Get Broadcast History",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:22.182152"
+      "success": true,
+      "details": "Retrieved 1 broadcast notifications, Latest: '\ud83c\udfb5 Jam session ce soir \u00e0 20h! Venez nombreux avec v...'",
+      "timestamp": "2026-01-17T16:57:41.484429"
     },
     {
       "test": "Get Nearby Musicians Count",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:22.216402"
+      "success": true,
+      "details": "Found 29 musicians within 100km radius",
+      "timestamp": "2026-01-17T16:57:41.522076"
     },
     {
       "test": "Create Review Without Participation",
       "success": false,
       "details": "Unexpected status: 401, Expected: 403",
-      "timestamp": "2026-01-17T16:08:22.553512"
+      "timestamp": "2026-01-17T16:57:41.850536"
     },
     {
       "test": "Create Participation for Review",
       "success": false,
-      "details": "Failed to create jam: 401",
-      "timestamp": "2026-01-17T16:08:22.590650"
+      "details": "Failed to create jam: 400",
+      "timestamp": "2026-01-17T16:57:41.887166"
     },
     {
       "test": "Create Review With Participation",
       "success": false,
-      "details": "Failed to create profile: 401",
-      "timestamp": "2026-01-17T16:08:22.901840"
+      "details": "Failed to create jam: 400",
+      "timestamp": "2026-01-17T16:57:42.267313"
     },
     {
       "test": "Create Duplicate Review",
       "success": false,
       "details": "Unexpected status: 401, Expected: 400",
-      "timestamp": "2026-01-17T16:08:22.939652"
+      "timestamp": "2026-01-17T16:57:42.304316"
     },
     {
       "test": "Invalid Rating Review",
       "success": false,
       "details": "Unexpected status: 401, Expected: 400",
-      "timestamp": "2026-01-17T16:08:23.293781"
+      "timestamp": "2026-01-17T16:57:42.642977"
     },
     {
       "test": "Get Venue Reviews",
       "success": false,
       "details": "Status: 404, Error: {\"detail\":\"Venue not found\"}",
-      "timestamp": "2026-01-17T16:08:23.329872"
+      "timestamp": "2026-01-17T16:57:42.678014"
     },
     {
       "test": "Get Venue Average Rating",
       "success": true,
       "details": "Average rating: 0.0/5, Total reviews: 0",
-      "timestamp": "2026-01-17T16:08:23.367952"
+      "timestamp": "2026-01-17T16:57:42.711956"
     },
     {
       "test": "Venue Respond to Review",
       "success": false,
       "details": "Status: 401, Error: {\"detail\":\"Not authenticated\"}",
-      "timestamp": "2026-01-17T16:08:23.405065"
+      "timestamp": "2026-01-17T16:57:42.743685"
     },
     {
       "test": "Report Review",
       "success": false,
       "details": "Status: 401, Error: {\"detail\":\"Not authenticated\"}",
-      "timestamp": "2026-01-17T16:08:23.438251"
+      "timestamp": "2026-01-17T16:57:42.824277"
     },
     {
       "test": "Toggle Reviews Visibility",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:23.474490"
+      "success": true,
+      "details": "Reviews visibility turned off, Reviews visibility restored",
+      "timestamp": "2026-01-17T16:57:42.938516"
     },
     {
       "test": "Get Venue My Reviews",
       "success": false,
       "details": "Status: 404, Error: {\"detail\":\"Venue not found\"}",
-      "timestamp": "2026-01-17T16:08:23.522587"
+      "timestamp": "2026-01-17T16:57:42.972774"
     },
     {
       "test": "Setup Band Join Scenario",
-      "success": false,
-      "details": "Failed to create Musician A profile",
-      "timestamp": "2026-01-17T16:08:23.829600"
+      "success": true,
+      "details": "Setup complete - Musician A: ffc93d42-b8a0-46e8-82de-0297fa7c00b7 (band owner), Musician B: 5e7b6eae-05da-4be6-9138-740591ebe07a (wants to join)",
+      "timestamp": "2026-01-17T16:57:43.687928"
     },
     {
       "test": "Create Band Join Request",
-      "success": false,
-      "details": "Error: 'JamConnexionAPITester' object has no attribute 'musician_b_token'",
-      "timestamp": "2026-01-17T16:08:23.831615"
+      "success": true,
+      "details": "Join request created successfully, ID: 5b56b6a0-f5cf-45da-9769-d1efec45c8ab",
+      "timestamp": "2026-01-17T16:57:43.733075"
     },
     {
       "test": "Notification Created for Admin",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:23.866046"
+      "success": true,
+      "details": "Notification created for admin - 1 unread notifications",
+      "timestamp": "2026-01-17T16:57:43.771667"
     },
     {
       "test": "List Band Join Requests (Admin)",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:23.942629"
+      "success": true,
+      "details": "Found 1 join request(s) - From: DrummerBob, Band: The Rockers, Status: pending",
+      "timestamp": "2026-01-17T16:57:43.810861"
     },
     {
       "test": "Prevent Duplicate Join Request",
-      "success": false,
-      "details": "Error: 'JamConnexionAPITester' object has no attribute 'musician_b_token'",
-      "timestamp": "2026-01-17T16:08:23.943477"
+      "success": true,
+      "details": "Correctly prevented duplicate join request",
+      "timestamp": "2026-01-17T16:57:43.851226"
     },
     {
       "test": "Accept Band Join Request",
-      "success": false,
-      "details": "Error: 'JamConnexionAPITester' object has no attribute 'band_join_request_id'",
-      "timestamp": "2026-01-17T16:08:23.943504"
+      "success": true,
+      "details": "Join request accepted successfully",
+      "timestamp": "2026-01-17T16:57:43.888705"
     },
     {
       "test": "Notification Sent to Requester (Accept)",
-      "success": false,
-      "details": "Error: 'JamConnexionAPITester' object has no attribute 'musician_b_token'",
-      "timestamp": "2026-01-17T16:08:23.943512"
+      "success": true,
+      "details": "Notification sent to requester - 1 unread notifications",
+      "timestamp": "2026-01-17T16:57:43.924441"
     },
     {
       "test": "Create Second Join Request for Rejection",
-      "success": false,
-      "details": "Failed to create Musician C profile",
-      "timestamp": "2026-01-17T16:08:24.245553"
+      "success": true,
+      "details": "Second join request created for rejection test, ID: 7f66ed33-5f27-4433-845c-18c901424f4b",
+      "timestamp": "2026-01-17T16:57:44.300761"
     },
     {
       "test": "Reject Band Join Request",
-      "success": false,
-      "details": "Error: 'JamConnexionAPITester' object has no attribute 'second_join_request_id'",
-      "timestamp": "2026-01-17T16:08:24.247608"
+      "success": true,
+      "details": "Join request rejected successfully",
+      "timestamp": "2026-01-17T16:57:44.336435"
     },
     {
       "test": "Notification Sent to Requester (Reject)",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:24.291478"
+      "success": true,
+      "details": "Notification sent to requester - 1 unread notifications",
+      "timestamp": "2026-01-17T16:57:44.374998"
     },
     {
       "test": "Venue Cannot Create Join Request",
-      "success": false,
-      "details": "Error: 'JamConnexionAPITester' object has no attribute 'musician_a_profile_id'",
-      "timestamp": "2026-01-17T16:08:24.292749"
+      "success": true,
+      "details": "Correctly rejected venue request to join band",
+      "timestamp": "2026-01-17T16:57:44.451340"
     },
     {
       "test": "Non-Admin Cannot Accept/Reject",
-      "success": false,
-      "details": "Error: 'JamConnexionAPITester' object has no attribute 'musician_b_token'",
-      "timestamp": "2026-01-17T16:08:24.292778"
+      "success": true,
+      "details": "Correctly rejected non-admin attempt to accept request",
+      "timestamp": "2026-01-17T16:57:44.525952"
     },
     {
-      "test": "PUT Jam Update - Setup",
+      "test": "PUT Jam Update",
       "success": false,
-      "details": "Failed to create jam: 401",
-      "timestamp": "2026-01-17T16:08:24.337681"
+      "details": "Error: HTTPSConnectionPool(host='jamfan-dashboard.preview.emergentagent.com', port=443): Max retries exceeded with url: /api/venues/None/jams (Caused by ConnectTimeoutError(<HTTPSConnection(host='jamfan-dashboard.preview.emergentagent.com', port=443) at 0xfbbc6b98d090>, 'Connection to jamfan-dashboard.preview.emergentagent.com timed out. (connect timeout=10)'))",
+      "timestamp": "2026-01-17T16:57:54.614655"
     },
     {
-      "test": "PUT Concert Update - Setup",
+      "test": "PUT Concert Update",
       "success": false,
-      "details": "Failed to create concert: 401",
-      "timestamp": "2026-01-17T16:08:24.416654"
+      "details": "Concert updated successfully, ID: 9391da21-d165-4974-8be9-ec434d69c57b, All changes verified, WARNING: Changes not persisted",
+      "timestamp": "2026-01-17T16:58:08.132599"
     },
     {
       "test": "PUT Jam Unauthorized",
       "success": true,
       "details": "Correctly rejected unauthorized request",
-      "timestamp": "2026-01-17T16:08:24.474390"
+      "timestamp": "2026-01-17T16:58:08.182058"
     },
     {
       "test": "PUT Concert Unauthorized",
       "success": true,
       "details": "Correctly rejected unauthorized request",
-      "timestamp": "2026-01-17T16:08:24.514136"
+      "timestamp": "2026-01-17T16:58:08.215035"
     },
     {
       "test": "PUT Jam Not Found",
-      "success": false,
-      "details": "Unexpected status: 401, Expected: 404",
-      "timestamp": "2026-01-17T16:08:24.553024"
+      "success": true,
+      "details": "Correctly returned 404 for non-existent jam",
+      "timestamp": "2026-01-17T16:58:08.292864"
     },
     {
       "test": "PUT Concert Not Found",
-      "success": false,
-      "details": "Unexpected status: 401, Expected: 404",
-      "timestamp": "2026-01-17T16:08:24.588494"
+      "success": true,
+      "details": "Correctly returned 404 for non-existent concert",
+      "timestamp": "2026-01-17T16:58:08.329937"
     },
     {
       "test": "PUT Jam Invalid Data",
       "success": false,
-      "details": "Failed to create jam for test",
-      "timestamp": "2026-01-17T16:08:24.627975"
+      "details": "Unexpected status: 200, Expected: 400",
+      "timestamp": "2026-01-17T16:58:08.400207"
     },
     {
       "test": "Bands Data Analysis",
       "success": true,
-      "details": "Data analysis: 25 musicians, 15 have bands, 15 total bands. GPS: 0, City only: 10, No location: 5",
-      "timestamp": "2026-01-17T16:08:24.683774"
+      "details": "Data analysis: 34 musicians, 17 have bands, 17 total bands. GPS: 0, City only: 11, No location: 6",
+      "timestamp": "2026-01-17T16:58:08.454360"
     },
     {
       "test": "Bands Geolocation Search",
-      "success": true,
-      "details": "Found 0 bands within 100km of Paris, no bands have distance_km field",
-      "timestamp": "2026-01-17T16:08:28.771657"
+      "success": false,
+      "details": "Error: HTTPSConnectionPool(host='jamfan-dashboard.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)",
+      "timestamp": "2026-01-17T16:58:18.489974"
     },
     {
       "test": "Create Band Without GPS",
-      "success": false,
-      "details": "Profile creation failed: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:29.094886"
+      "success": true,
+      "details": "Created band without GPS: Test Band No GPS in Lyon",
+      "timestamp": "2026-01-17T16:58:18.804408"
     },
     {
       "test": "Geolocation Excludes No-GPS Bands",
       "success": false,
-      "details": "All bands: 15, Geo search: 3, Test band in all: True, in geo: True \u274c Band without GPS incorrectly included in geolocation search",
-      "timestamp": "2026-01-17T16:08:32.968337"
+      "details": "All bands: 18, Geo search: 4, Test band in all: True, in geo: True \u274c Band without GPS incorrectly included in geolocation search",
+      "timestamp": "2026-01-17T16:58:24.473239"
     },
     {
       "test": "Create Musicians with Bands for Geolocation",
-      "success": false,
-      "details": "Created 0 musicians with bands in different cities",
-      "timestamp": "2026-01-17T16:08:34.498843"
+      "success": true,
+      "details": "Created 5 musicians with bands in different cities",
+      "timestamp": "2026-01-17T16:58:29.088047"
     },
     {
       "test": "Bands Geolocation Search - Paris 100km",
       "success": false,
       "details": "Found 0 bands within 100km of Paris, 0 with distance calculated, 0 within 100km radius",
-      "timestamp": "2026-01-17T16:08:38.119555"
+      "timestamp": "2026-01-17T16:58:35.376542"
     },
     {
       "test": "Bands Geolocation Search - Paris 500km",
       "success": true,
-      "details": "Found 3 bands within 500km of Paris, 3 within 500km radius, vs 0 within 100km, Farthest: Bordeaux Acoustic at 497.0km",
-      "timestamp": "2026-01-17T16:08:42.416600"
+      "details": "Found 6 bands within 500km of Paris, 6 within 500km radius, vs 0 within 100km, Farthest: Bordeaux Acoustic at 497.0km",
+      "timestamp": "2026-01-17T16:58:41.593261"
     },
     {
       "test": "Bands Geolocation Search - Lyon 100km",
       "success": true,
-      "details": "Found 2 bands within 100km of Lyon, 2 within 100km radius, 2 Lyon-based bands found, Closest: Test Band No GPS at 0.7km",
-      "timestamp": "2026-01-17T16:08:46.136800"
+      "details": "Found 4 bands within 100km of Lyon, 4 within 100km radius, 4 Lyon-based bands found, Closest: Test Band No GPS at 0.7km",
+      "timestamp": "2026-01-17T16:58:47.688138"
     },
     {
       "test": "Bands Geolocation Precision Verification",
       "success": true,
       "details": "Found 0 bands within 50km of Paris, All distances within specified radius, Correctly sorted by distance",
-      "timestamp": "2026-01-17T16:08:49.716218"
+      "timestamp": "2026-01-17T16:58:53.746642"
     },
     {
       "test": "Bands Geolocation On-the-fly Geocoding",
       "success": true,
-      "details": "Geolocation search found 10 bands vs 15 total bands, 10 bands geocoded from city names, \u2705 On-the-fly geocoding working, Examples: Test Band No GPS (Lyon, 392.1km), Lyon Jazz Collective (Lyon, 392.1km), Bordeaux Acoustic (Bordeaux, 497.0km)",
-      "timestamp": "2026-01-17T16:08:53.422176"
+      "details": "Geolocation search found 17 bands vs 23 total bands, 17 bands geocoded from city names, \u2705 On-the-fly geocoding working, Examples: Test Band No GPS (Lyon, 392.1km), Lyon Jazz Collective (Lyon, 392.1km), Test Band No GPS (Lyon, 392.1km)",
+      "timestamp": "2026-01-17T16:58:59.944344"
     },
     {
       "test": "Looking For Profiles Field",
-      "success": false,
-      "details": "\u274c Profile creation failed: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:53.726117"
+      "success": true,
+      "details": "\u2705 Initial save successful: ['Batteur', 'Guitariste'], \u2705 Persistence verified: ['Batteur', 'Guitariste'], \u2705 Modification successful: ['Batteur', 'Guitariste', 'Bassiste'], \u2705 Final persistence verified: ['Batteur', 'Guitariste', 'Bassiste']",
+      "timestamp": "2026-01-17T16:59:00.424542"
     },
     {
       "test": "Create Multi-Group Planning Slot",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:53.762946"
+      "success": true,
+      "details": "Multi-group slot created: ac327e12-c893-4721-809a-2e9ae7b1b2a0, Needs: 2 groups, Accepted: 0, Open: True",
+      "timestamp": "2026-01-17T16:59:00.460126"
     },
     {
       "test": "Create Musicians for Multi-Group Test",
-      "success": false,
-      "details": "Failed to create first musician profile",
-      "timestamp": "2026-01-17T16:08:54.055050"
+      "success": true,
+      "details": "Created 2 musicians: c41fe802-06f0-4b66-aed2-407f9b875c93 (The Rock Stars), d13cd10f-815e-4d4c-9c43-73455836b2ef (The Pop Collective)",
+      "timestamp": "2026-01-17T16:59:01.063864"
     },
     {
       "test": "First Application Multi-Group",
-      "success": false,
-      "details": "Error: 'JamConnexionAPITester' object has no attribute 'multi_group_slot_id'",
-      "timestamp": "2026-01-17T16:08:54.056452"
+      "success": true,
+      "details": "First application submitted: c91d3dd1-e51d-48c7-9ef4-6007e9af65cb for The Rock Stars",
+      "timestamp": "2026-01-17T16:59:01.106359"
     },
     {
       "test": "Second Application Multi-Group",
-      "success": false,
-      "details": "Error: 'JamConnexionAPITester' object has no attribute 'musician2_token'",
-      "timestamp": "2026-01-17T16:08:54.056474"
+      "success": true,
+      "details": "Second application submitted: 5ef08a00-d160-47e2-9564-f6d01a88cf2c for The Pop Collective",
+      "timestamp": "2026-01-17T16:59:01.144555"
     },
     {
       "test": "Accept First Application - Slot Stays Open",
-      "success": false,
-      "details": "Error: 'JamConnexionAPITester' object has no attribute 'application1_id'",
-      "timestamp": "2026-01-17T16:08:54.056483"
+      "success": true,
+      "details": "First application accepted, Slot status: Open=True, Accepted=1/2",
+      "timestamp": "2026-01-17T16:59:01.232419"
     },
     {
       "test": "Accept Second Application - Slot Closes",
-      "success": false,
-      "details": "Error: 'JamConnexionAPITester' object has no attribute 'application2_id'",
-      "timestamp": "2026-01-17T16:08:54.056490"
+      "success": true,
+      "details": "Second application accepted, Slot status: Open=False, Accepted=2/2",
+      "timestamp": "2026-01-17T16:59:01.312815"
     },
     {
       "test": "Verify API Response Fields",
-      "success": false,
-      "details": "Error: 'JamConnexionAPITester' object has no attribute 'multi_group_slot_id'",
-      "timestamp": "2026-01-17T16:08:54.091495"
+      "success": true,
+      "details": "All required fields present: num_bands_needed=2, accepted_bands_count=2, is_open=False, applications_count=2",
+      "timestamp": "2026-01-17T16:59:01.352344"
     },
     {
       "test": "Single Group Behavior",
-      "success": false,
-      "details": "Failed to create single slot: 401",
-      "timestamp": "2026-01-17T16:08:54.126449"
+      "success": true,
+      "details": "Single group slot correctly closed immediately after acceptance",
+      "timestamp": "2026-01-17T16:59:01.514428"
     },
     {
       "test": "Three Plus Groups Behavior",
       "success": false,
-      "details": "Failed to create 3+ slot: 401",
-      "timestamp": "2026-01-17T16:08:54.161742"
+      "details": "Failed to create 3+ slot: 400",
+      "timestamp": "2026-01-17T16:59:01.550598"
     },
     {
       "test": "Jam Participants Count API - Setup",
       "success": false,
-      "details": "Failed to create jam: 401",
-      "timestamp": "2026-01-17T16:08:54.196938"
+      "details": "Failed to create jam: 400",
+      "timestamp": "2026-01-17T16:59:01.584913"
     },
     {
       "test": "Jam Join Button Functionality - Setup",
       "success": false,
-      "details": "Failed to create active jam: 401",
-      "timestamp": "2026-01-17T16:08:54.233649"
+      "details": "Failed to create active jam: 400",
+      "timestamp": "2026-01-17T16:59:01.619134"
     },
     {
       "test": "Jam Security Musician Only - Setup",
       "success": false,
-      "details": "Failed to create jam: 401",
-      "timestamp": "2026-01-17T16:08:54.307129"
+      "details": "Failed to create jam: 400",
+      "timestamp": "2026-01-17T16:59:01.700771"
     },
     {
       "test": "Jam Participants Counter Updates - Setup",
       "success": false,
-      "details": "Failed to create jam: 401",
-      "timestamp": "2026-01-17T16:08:54.340072"
+      "details": "Failed to create jam: 400",
+      "timestamp": "2026-01-17T16:59:01.740843"
     },
     {
       "test": "Notification System Setup",
       "success": false,
       "details": "Created: Musician A (The Rockers), Musician B (Jazz Masters), Test Bar venue",
-      "timestamp": "2026-01-17T16:08:55.240311"
+      "timestamp": "2026-01-17T16:59:02.679826"
     },
     {
       "test": "Create Planning Slot Tomorrow",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:55.276460"
+      "success": true,
+      "details": "Planning slot created for 2026-01-18, ID: 3d029b43-e926-49ee-a645-827ce7ecab84",
+      "timestamp": "2026-01-17T16:59:02.719056"
     },
     {
       "test": "TEST 1 - Application Rejection Notification",
-      "success": false,
-      "details": "Error: 'JamConnexionAPITester' object has no attribute 'test_planning_slot_id'",
-      "timestamp": "2026-01-17T16:08:55.277321"
+      "success": true,
+      "details": "\u2705 Rejection notification received: 'Candidature non retenue' - 'Votre candidature pour le 2026-01-18 n'a pas \u00e9t\u00e9 retenue'",
+      "timestamp": "2026-01-17T16:59:03.874095"
     },
     {
-      "test": "TEST 2 - Concert Creation",
-      "success": false,
-      "details": "Failed to create concert: 401",
-      "timestamp": "2026-01-17T16:08:55.311243"
+      "test": "TEST 2 - Concert Cancellation Notifications",
+      "success": true,
+      "details": "\u2705 Both musicians received cancellation notifications. A: 'Le concert du 2026-01-18 chez Test Bar a \u00e9t\u00e9 annul\u00e9.', B: 'Le concert du 2026-01-18 chez Test Bar a \u00e9t\u00e9 annul\u00e9.'",
+      "timestamp": "2026-01-17T16:59:05.063783"
     },
     {
-      "test": "TEST 3 - Planning Slot Creation",
+      "test": "TEST 3 - Accepted Application Cancellation Notification",
       "success": false,
-      "details": "Failed to create slot: 401",
-      "timestamp": "2026-01-17T16:08:55.346504"
+      "details": "Error: 'JamConnexionAPITester' object has no attribute 'test_bar_profile_id'",
+      "timestamp": "2026-01-17T16:59:07.305226"
     },
     {
-      "test": "TEST 4 - Multi-band Slot Creation",
+      "test": "TEST 4 - Slot Reopening After Deletion",
       "success": false,
-      "details": "Failed to create slot: 401",
-      "timestamp": "2026-01-17T16:08:55.378706"
+      "details": "Error: 'JamConnexionAPITester' object has no attribute 'test_bar_profile_id'",
+      "timestamp": "2026-01-17T16:59:07.508625"
     },
     {
-      "test": "TEST 5 - Planning Slot Creation",
+      "test": "TEST 5 - No Notification If Not Accepted",
       "success": false,
-      "details": "Failed to create slot: 401",
-      "timestamp": "2026-01-17T16:08:55.414119"
+      "details": "\u274c Unexpected cancellation notification sent. Found 1 cancellation notifications",
+      "timestamp": "2026-01-17T16:59:08.742638"
     },
     {
       "test": "Notification System Workflow - Create Slot",
       "success": false,
-      "details": "Failed to create planning slot: 401",
-      "timestamp": "2026-01-17T16:08:55.448753"
+      "details": "Failed to create planning slot: 400",
+      "timestamp": "2026-01-17T16:59:08.778713"
     },
     {
       "test": "Delete All Notifications",
-      "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:55.558023"
+      "success": true,
+      "details": "Successfully cleared 3 notifications",
+      "timestamp": "2026-01-17T16:59:08.886331"
     },
     {
       "test": "Musician Dashboard Navigation",
-      "success": false,
-      "details": "API access: Profil False, Recherche True, Connexions False, Notifications True",
-      "timestamp": "2026-01-17T16:08:55.740783"
+      "success": true,
+      "details": "All dashboard API endpoints accessible: Profil \u2713, Recherche \u2713, Connexions \u2713, Notifications \u2713",
+      "timestamp": "2026-01-17T16:59:09.077668"
     },
     {
       "test": "Bands Directory Department Filter (P1)",
-      "success": false,
-      "details": "Failed to create musician profile: 401",
-      "timestamp": "2026-01-17T16:08:56.029521"
+      "success": true,
+      "details": "All bands: 29, Paris (75): 2, Marseille (13): 0, Paris band found in Paris filter \u2713, Paris band correctly excluded from Marseille filter \u2713",
+      "timestamp": "2026-01-17T16:59:09.484974"
     },
     {
       "test": "Messaging Conversation Deletion (P1)",
       "success": false,
       "details": "Deleted 0 messages, A: 1\u21920, B: 1\u21920",
-      "timestamp": "2026-01-17T16:08:56.929395"
+      "timestamp": "2026-01-17T16:59:10.361815"
     },
     {
       "test": "Messaging Restriction - Everyone Allowed",
       "success": false,
-      "details": "Failed to create venue profile: 401",
-      "timestamp": "2026-01-17T16:08:57.222020"
+      "details": "Failed to create venue profile: 520",
+      "timestamp": "2026-01-17T16:59:10.662176"
     },
     {
       "test": "Messaging Restriction - Connected Only Blocked",
       "success": false,
-      "details": "Failed to update venue profile: 401",
-      "timestamp": "2026-01-17T16:08:57.255360"
+      "details": "\u274c Expected 403, got 200. Error: {\"id\":\"4505ed13-644b-462b-8008-6b81851e4dd9\",\"sender_id\":\"de1c0316-0697-4cb9-9a2a-f767bd8743e9\",\"sen",
+      "timestamp": "2026-01-17T16:59:10.738588"
     },
     {
       "test": "Messaging Restriction - With Accepted Application",
       "success": false,
-      "details": "Failed to create planning slot: 401",
-      "timestamp": "2026-01-17T16:08:57.289083"
+      "details": "Failed to create application: 403",
+      "timestamp": "2026-01-17T16:59:10.854578"
     },
     {
       "test": "Application Management Interface - Data",
       "success": false,
       "details": "Failed to login as test venue",
-      "timestamp": "2026-01-17T16:08:57.364390"
+      "timestamp": "2026-01-17T16:59:10.890540"
     },
     {
       "test": "Application Accept/Reject Functionality",
       "success": false,
       "details": "Failed to login as test venue",
-      "timestamp": "2026-01-17T16:08:57.398884"
+      "timestamp": "2026-01-17T16:59:10.928273"
     },
     {
       "test": "Register Melomane",
-      "success": true,
-      "details": "User ID: 4c801b98-6d1c-4281-8738-181e70e0274c, Role: melomane",
-      "timestamp": "2026-01-17T16:08:57.658039"
+      "success": false,
+      "details": "Status: 400, Error: {\"detail\":\"Adresse email d\u00e9j\u00e0 existante\"}",
+      "timestamp": "2026-01-17T16:59:11.012591"
     },
     {
       "test": "Login Melomane",
       "success": true,
       "details": "Login successful for melomane, Token received: True",
-      "timestamp": "2026-01-17T16:08:57.914335"
+      "timestamp": "2026-01-17T16:59:11.275483"
     },
     {
       "test": "Create Melomane Profile",
-      "success": true,
-      "details": "Melomane ID: a164f02f-b231-4c1a-8e06-5d6eaed3fa8b, Pseudo: M\u00e9lomane Passionn\u00e9, City: Paris",
-      "timestamp": "2026-01-17T16:08:58.504292"
+      "success": false,
+      "details": "Error: 'JamConnexionAPITester' object has no attribute 'melomane_token'",
+      "timestamp": "2026-01-17T16:59:11.276146"
     },
     {
       "test": "Get Melomane Profile",
-      "success": true,
-      "details": "Profile retrieved: M\u00e9lomane Passionn\u00e9, Events attended: 0",
-      "timestamp": "2026-01-17T16:08:58.540281"
+      "success": false,
+      "details": "Error: 'JamConnexionAPITester' object has no attribute 'melomane_token'",
+      "timestamp": "2026-01-17T16:59:11.276166"
     },
     {
       "test": "Melomane Jam Participation",
       "success": false,
-      "details": "Status: 401, Error: {\"detail\":\"Invalid or expired token\"}",
-      "timestamp": "2026-01-17T16:08:58.647866"
+      "details": "Error: 'JamConnexionAPITester' object has no attribute 'melomane_token'",
+      "timestamp": "2026-01-17T16:59:11.353004"
     },
     {
       "test": "Melomane Concert Participation",
       "success": false,
-      "details": "Error: HTTPSConnectionPool(host='jamfan-dashboard.preview.emergentagent.com', port=443): Max retries exceeded with url: /api/events/fcb3bd3b-81ed-42b1-807b-945867436e4a/join?event_type=concert (Caused by ConnectTimeoutError(<HTTPSConnection(host='jamfan-dashboard.preview.emergentagent.com', port=443) at 0xff9a76418f90>, 'Connection to jamfan-dashboard.preview.emergentagent.com timed out. (connect timeout=10)'))",
-      "timestamp": "2026-01-17T16:09:08.774326"
+      "details": "Error: 'JamConnexionAPITester' object has no attribute 'melomane_token'",
+      "timestamp": "2026-01-17T16:59:11.466102"
     },
     {
       "test": "Get Melomane Participations",
-      "success": true,
-      "details": "Retrieved 0 participations",
-      "timestamp": "2026-01-17T16:09:08.826623"
+      "success": false,
+      "details": "Error: 'JamConnexionAPITester' object has no attribute 'melomane_token'",
+      "timestamp": "2026-01-17T16:59:11.467382"
     },
     {
       "test": "Remove Melomane Participation",
       "success": false,
-      "details": "No participations to remove",
-      "timestamp": "2026-01-17T16:09:11.938315"
+      "details": "Error: 'JamConnexionAPITester' object has no attribute 'melomane_token'",
+      "timestamp": "2026-01-17T16:59:11.467401"
     },
     {
       "test": "Melomane Notifications",
       "success": false,
-      "details": "Retrieved 0 notifications, Unread count failed: 401",
-      "timestamp": "2026-01-17T16:09:12.072039"
+      "details": "Error: 'JamConnexionAPITester' object has no attribute 'melomane_token'",
+      "timestamp": "2026-01-17T16:59:11.467408"
     },
     {
       "test": "List All Melomanes",
       "success": true,
-      "details": "Retrieved 1 melomanes, Found our melomane: M\u00e9lomane Passionn\u00e9 from Paris",
-      "timestamp": "2026-01-17T16:09:12.128953"
+      "details": "Retrieved 7 melomanes, Found our melomane: M\u00e9lomane Passionn\u00e9 from Paris",
+      "timestamp": "2026-01-17T16:59:11.527911"
+    },
+    {
+      "test": "Melomane Profile Bug Fix - Registration",
+      "success": true,
+      "details": "\u2705 Melomane registered: f587ed39-b69c-491d-afca-246da8a663ed, Role: melomane",
+      "timestamp": "2026-01-17T16:59:11.787074"
+    },
+    {
+      "test": "Melomane Profile Bug Fix - Create Profile",
+      "success": false,
+      "details": "Error: HTTPSConnectionPool(host='jamfan-dashboard.preview.emergentagent.com', port=443): Max retries exceeded with url: /api/melomanes/ (Caused by ConnectTimeoutError(<HTTPSConnection(host='jamfan-dashboard.preview.emergentagent.com', port=443) at 0xfbbc6b98fbd0>, 'Connection to jamfan-dashboard.preview.emergentagent.com timed out. (connect timeout=10)'))",
+      "timestamp": "2026-01-17T16:59:21.840661"
+    },
+    {
+      "test": "Melomane Profile Bug Fix - Get Profile",
+      "success": false,
+      "details": "Error: HTTPSConnectionPool(host='jamfan-dashboard.preview.emergentagent.com', port=443): Max retries exceeded with url: /api/melomanes/me (Caused by ConnectTimeoutError(<HTTPSConnection(host='jamfan-dashboard.preview.emergentagent.com', port=443) at 0xfbbc6b983610>, 'Connection to jamfan-dashboard.preview.emergentagent.com timed out. (connect timeout=10)'))",
+      "timestamp": "2026-01-17T16:59:31.870322"
+    },
+    {
+      "test": "Melomane Profile Bug Fix - Update Profile",
+      "success": false,
+      "details": "Error: HTTPSConnectionPool(host='jamfan-dashboard.preview.emergentagent.com', port=443): Max retries exceeded with url: /api/melomanes/me (Caused by ConnectTimeoutError(<HTTPSConnection(host='jamfan-dashboard.preview.emergentagent.com', port=443) at 0xfbbc6b9a0b10>, 'Connection to jamfan-dashboard.preview.emergentagent.com timed out. (connect timeout=10)'))",
+      "timestamp": "2026-01-17T16:59:41.905306"
+    },
+    {
+      "test": "Melomane Profile Bug Fix - Final Verification",
+      "success": false,
+      "details": "\u274c FAILED - Status: 404, Error: {\"detail\":\"Melomane profile not found\"}",
+      "timestamp": "2026-01-17T16:59:41.981752"
     }
   ]
 }

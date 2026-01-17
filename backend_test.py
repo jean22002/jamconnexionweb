@@ -7333,6 +7333,279 @@ class JamConnexionAPITester:
             self.log_test("List All Melomanes", False, f"Error: {str(e)}")
             return False
 
+    # ============= MELOMANE PROFILE BUG FIX TESTS (SPECIFIC TO REVIEW REQUEST) =============
+    
+    def test_melomane_profile_bug_fix_registration(self):
+        """Test melomane registration with exact credentials from review request"""
+        try:
+            test_data = {
+                "email": "melomane.final.test@test.fr",
+                "password": "Test1234!",
+                "name": "Test Final Melomane",
+                "role": "melomane"
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/register", json=test_data, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                self.melomane_bug_fix_token = data.get('token')
+                self.melomane_bug_fix_user = data.get('user')
+                details = f"✅ Melomane registered: {self.melomane_bug_fix_user.get('id')}, Role: {self.melomane_bug_fix_user.get('role')}"
+            else:
+                details = f"❌ Status: {response.status_code}, Error: {response.text[:200]}"
+            
+            self.log_test("Melomane Profile Bug Fix - Registration", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Melomane Profile Bug Fix - Registration", False, f"Error: {str(e)}")
+            return False
+
+    def test_melomane_profile_bug_fix_create_profile(self):
+        """Test creating melomane profile with exact data from review request - VALIDATE profile_picture FIELD"""
+        try:
+            # Exact data from review request
+            melomane_data = {
+                "pseudo": "Mélomane Final Test",
+                "bio": "Test de sauvegarde du profil",
+                "city": "Carcassonne",
+                "region": "Occitanie",
+                "postal_code": "11000",
+                "favorite_styles": ["Metal symphonique", "Rock"],
+                "profile_picture": "",
+                "notifications_enabled": True,
+                "notification_radius_km": 50
+            }
+            
+            headers = {'Authorization': f'Bearer {self.melomane_bug_fix_token}'}
+            response = requests.post(f"{self.base_url}/melomanes/", json=melomane_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                self.melomane_bug_fix_profile_id = data.get('id')
+                details = f"✅ PROFILE CREATED - ID: {self.melomane_bug_fix_profile_id}, Pseudo: {data.get('pseudo')}"
+                
+                # CRITICAL: Verify profile_picture field is present (this was the bug)
+                if 'profile_picture' in data:
+                    details += f" ✅ profile_picture field PRESENT: '{data.get('profile_picture')}'"
+                    
+                    # Verify all expected fields from review request
+                    expected_fields = {
+                        'pseudo': 'Mélomane Final Test',
+                        'bio': 'Test de sauvegarde du profil',
+                        'city': 'Carcassonne',
+                        'region': 'Occitanie',
+                        'postal_code': '11000',
+                        'profile_picture': '',
+                        'notifications_enabled': True,
+                        'notification_radius_km': 50
+                    }
+                    
+                    field_errors = []
+                    for field, expected in expected_fields.items():
+                        if data.get(field) != expected:
+                            field_errors.append(f"{field} (expected: {expected}, got: {data.get(field)})")
+                    
+                    if field_errors:
+                        details += f" ❌ FIELD ERRORS: {', '.join(field_errors)}"
+                        success = False
+                    else:
+                        details += f" ✅ ALL FIELDS CORRECT"
+                        
+                    # Check favorite_styles array
+                    expected_styles = ["Metal symphonique", "Rock"]
+                    actual_styles = data.get('favorite_styles', [])
+                    if set(actual_styles) == set(expected_styles):
+                        details += f" ✅ favorite_styles correct: {actual_styles}"
+                    else:
+                        details += f" ❌ favorite_styles wrong (expected: {expected_styles}, got: {actual_styles})"
+                        success = False
+                else:
+                    details += f" ❌ profile_picture field MISSING - BUG NOT FIXED!"
+                    success = False
+                    
+            else:
+                details = f"❌ FAILED - Status: {response.status_code}, Error: {response.text[:200]}"
+            
+            self.log_test("Melomane Profile Bug Fix - Create Profile", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Melomane Profile Bug Fix - Create Profile", False, f"Error: {str(e)}")
+            return False
+
+    def test_melomane_profile_bug_fix_get_profile(self):
+        """Test GET /api/melomanes/me - Verify profile_picture field is saved and retrieved"""
+        try:
+            headers = {'Authorization': f'Bearer {self.melomane_bug_fix_token}'}
+            response = requests.get(f"{self.base_url}/melomanes/me", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                details = f"✅ PROFILE RETRIEVED - Pseudo: {data.get('pseudo')}, City: {data.get('city')}"
+                
+                # CRITICAL: Verify profile_picture field persists in database
+                if 'profile_picture' in data:
+                    details += f" ✅ profile_picture field PERSISTED: '{data.get('profile_picture')}'"
+                    
+                    # Verify complete data integrity
+                    expected_complete_data = {
+                        'pseudo': 'Mélomane Final Test',
+                        'bio': 'Test de sauvegarde du profil',
+                        'city': 'Carcassonne',
+                        'region': 'Occitanie',
+                        'postal_code': '11000',
+                        'profile_picture': '',
+                        'notifications_enabled': True,
+                        'notification_radius_km': 50
+                    }
+                    
+                    persistence_errors = []
+                    for field, expected in expected_complete_data.items():
+                        if data.get(field) != expected:
+                            persistence_errors.append(f"{field} (expected: {expected}, got: {data.get(field)})")
+                    
+                    if persistence_errors:
+                        details += f" ❌ PERSISTENCE ERRORS: {', '.join(persistence_errors)}"
+                        success = False
+                    else:
+                        details += f" ✅ ALL DATA PERSISTED CORRECTLY"
+                else:
+                    details += f" ❌ profile_picture field LOST IN DATABASE - BUG NOT FIXED!"
+                    success = False
+                    
+            else:
+                details = f"❌ FAILED - Status: {response.status_code}, Error: {response.text[:200]}"
+            
+            self.log_test("Melomane Profile Bug Fix - Get Profile", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Melomane Profile Bug Fix - Get Profile", False, f"Error: {str(e)}")
+            return False
+
+    def test_melomane_profile_bug_fix_update_profile(self):
+        """Test PUT /api/melomanes/me with exact update data from review request"""
+        try:
+            # Exact update data from review request
+            update_data = {
+                "pseudo": "Mélomane Modifié",
+                "bio": "Bio mise à jour",
+                "city": "Paris",
+                "favorite_styles": ["Jazz", "Blues"]
+            }
+            
+            headers = {'Authorization': f'Bearer {self.melomane_bug_fix_token}'}
+            response = requests.put(f"{self.base_url}/melomanes/me", json=update_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                details = f"✅ PROFILE UPDATED - New Pseudo: {data.get('pseudo')}, New City: {data.get('city')}"
+                
+                # Verify updates applied correctly
+                expected_updates = {
+                    'pseudo': 'Mélomane Modifié',
+                    'bio': 'Bio mise à jour',
+                    'city': 'Paris'
+                }
+                
+                update_errors = []
+                for field, expected in expected_updates.items():
+                    if data.get(field) != expected:
+                        update_errors.append(f"{field} (expected: {expected}, got: {data.get(field)})")
+                
+                if update_errors:
+                    details += f" ❌ UPDATE ERRORS: {', '.join(update_errors)}"
+                    success = False
+                else:
+                    details += f" ✅ UPDATES APPLIED CORRECTLY"
+                    
+                # CRITICAL: Verify profile_picture field is preserved during update
+                if 'profile_picture' in data:
+                    details += f" ✅ profile_picture PRESERVED during update: '{data.get('profile_picture')}'"
+                else:
+                    details += f" ❌ profile_picture field LOST during update - BUG NOT FULLY FIXED!"
+                    success = False
+                    
+                # Verify favorite_styles update
+                expected_new_styles = ["Jazz", "Blues"]
+                actual_new_styles = data.get('favorite_styles', [])
+                if set(actual_new_styles) == set(expected_new_styles):
+                    details += f" ✅ favorite_styles updated correctly: {actual_new_styles}"
+                else:
+                    details += f" ❌ favorite_styles update failed (expected: {expected_new_styles}, got: {actual_new_styles})"
+                    success = False
+                    
+            else:
+                details = f"❌ FAILED - Status: {response.status_code}, Error: {response.text[:200]}"
+            
+            self.log_test("Melomane Profile Bug Fix - Update Profile", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Melomane Profile Bug Fix - Update Profile", False, f"Error: {str(e)}")
+            return False
+
+    def test_melomane_profile_bug_fix_final_verification(self):
+        """Test final GET /api/melomanes/me - Complete validation of bug fix"""
+        try:
+            headers = {'Authorization': f'Bearer {self.melomane_bug_fix_token}'}
+            response = requests.get(f"{self.base_url}/melomanes/me", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                details = f"✅ FINAL VERIFICATION - Pseudo: {data.get('pseudo')}, City: {data.get('city')}"
+                
+                # Verify final state matches expected result from review request
+                expected_final_state = {
+                    'pseudo': 'Mélomane Modifié',
+                    'bio': 'Bio mise à jour',
+                    'city': 'Paris',
+                    'region': 'Occitanie',  # Should be preserved
+                    'postal_code': '11000',  # Should be preserved
+                    'profile_picture': '',  # CRITICAL: Should be preserved
+                    'notifications_enabled': True,  # Should be preserved
+                    'notification_radius_km': 50  # Should be preserved
+                }
+                
+                final_errors = []
+                for field, expected in expected_final_state.items():
+                    if data.get(field) != expected:
+                        final_errors.append(f"{field} (expected: {expected}, got: {data.get(field)})")
+                
+                if final_errors:
+                    details += f" ❌ FINAL STATE ERRORS: {', '.join(final_errors)}"
+                    success = False
+                else:
+                    details += f" ✅ FINAL STATE PERFECT"
+                    
+                # Final verification of profile_picture field
+                if 'profile_picture' in data:
+                    details += f" ✅ profile_picture CONFIRMED in final state: '{data.get('profile_picture')}'"
+                else:
+                    details += f" ❌ profile_picture MISSING in final state - BUG NOT FIXED!"
+                    success = False
+                    
+                # Final verification of favorite_styles
+                expected_final_styles = ["Jazz", "Blues"]
+                actual_final_styles = data.get('favorite_styles', [])
+                if set(actual_final_styles) == set(expected_final_styles):
+                    details += f" ✅ favorite_styles final state correct: {actual_final_styles}"
+                else:
+                    details += f" ❌ favorite_styles final state wrong (expected: {expected_final_styles}, got: {actual_final_styles})"
+                    success = False
+                    
+            else:
+                details = f"❌ FAILED - Status: {response.status_code}, Error: {response.text[:200]}"
+            
+            self.log_test("Melomane Profile Bug Fix - Final Verification", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Melomane Profile Bug Fix - Final Verification", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🎵 Starting Jam Connexion API Tests...")

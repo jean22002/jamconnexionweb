@@ -70,6 +70,9 @@ export default function MelomaneDashboard() {
   const [nearbyVenues, setNearbyVenues] = useState([]);
   const [showRadiusCircle, setShowRadiusCircle] = useState(true);
   
+  // Subscription state for Connexions tab
+  const [subscriptions, setSubscriptions] = useState([]);
+  
   const [profileForm, setProfileForm] = useState({
     pseudo: "",
     bio: "",

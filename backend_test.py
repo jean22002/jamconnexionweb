@@ -6989,6 +6989,350 @@ class JamConnexionAPITester:
             self.log_test("Venue Authentication Required", False, f"Error: {str(e)}")
             return False
 
+    # ============= MELOMANE TESTS =============
+    
+    def test_register_melomane(self):
+        """Test melomane registration"""
+        try:
+            test_data = {
+                "email": "melomane.test@test.fr",
+                "password": "Test1234!",
+                "name": "Test Melomane",
+                "role": "melomane"
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/register", json=test_data, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                self.melomane_token = data.get('token')
+                self.melomane_user = data.get('user')
+                details = f"User ID: {self.melomane_user.get('id')}, Role: {self.melomane_user.get('role')}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Register Melomane", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Register Melomane", False, f"Error: {str(e)}")
+            return False
+
+    def test_login_melomane(self):
+        """Test melomane login"""
+        try:
+            login_data = {
+                "email": "melomane.test@test.fr",
+                "password": "Test1234!"
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/login", json=login_data, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                token = data.get('token')
+                user = data.get('user')
+                details = f"Login successful for {user.get('role')}, Token received: {bool(token)}"
+                # Verify role is melomane
+                if user.get('role') != 'melomane':
+                    success = False
+                    details += f", Expected role 'melomane', got '{user.get('role')}'"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Login Melomane", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Login Melomane", False, f"Error: {str(e)}")
+            return False
+
+    def test_create_melomane_profile(self):
+        """Test melomane profile creation"""
+        try:
+            melomane_data = {
+                "pseudo": "Mélomane Passionné",
+                "bio": "J'adore la musique live !",
+                "city": "Paris",
+                "favorite_styles": ["Rock", "Jazz"],
+                "notifications_enabled": True,
+                "notification_radius_km": 50
+            }
+            
+            headers = {'Authorization': f'Bearer {self.melomane_token}'}
+            response = requests.post(f"{self.base_url}/melomanes/", json=melomane_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                self.melomane_profile_id = data.get('id')
+                details = f"Melomane ID: {self.melomane_profile_id}, Pseudo: {data.get('pseudo')}, City: {data.get('city')}"
+                # Verify all fields are saved correctly
+                expected_fields = {
+                    'pseudo': 'Mélomane Passionné',
+                    'bio': 'J\'adore la musique live !',
+                    'city': 'Paris',
+                    'favorite_styles': ['Rock', 'Jazz'],
+                    'notifications_enabled': True,
+                    'notification_radius_km': 50
+                }
+                for field, expected_value in expected_fields.items():
+                    if data.get(field) != expected_value:
+                        details += f", ERROR: {field} expected {expected_value}, got {data.get(field)}"
+                        success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Create Melomane Profile", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Create Melomane Profile", False, f"Error: {str(e)}")
+            return False
+
+    def test_get_melomane_profile(self):
+        """Test GET /api/melomanes/me"""
+        try:
+            headers = {'Authorization': f'Bearer {self.melomane_token}'}
+            response = requests.get(f"{self.base_url}/melomanes/me", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                details = f"Profile retrieved: {data.get('pseudo')}, Events attended: {data.get('events_attended', 0)}"
+                # Verify profile data
+                if data.get('pseudo') != 'Mélomane Passionné':
+                    success = False
+                    details += f", ERROR: Expected pseudo 'Mélomane Passionné', got '{data.get('pseudo')}'"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Get Melomane Profile", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get Melomane Profile", False, f"Error: {str(e)}")
+            return False
+
+    def test_melomane_event_participation_jam(self):
+        """Test melomane participation in jam event"""
+        try:
+            # First get available venues and their events
+            venues_response = requests.get(f"{self.base_url}/venues", timeout=10)
+            if venues_response.status_code != 200:
+                self.log_test("Melomane Jam Participation", False, "Could not get venues list")
+                return False
+            
+            venues = venues_response.json()
+            if not venues:
+                self.log_test("Melomane Jam Participation", False, "No venues available")
+                return False
+            
+            # Get jams from first venue
+            venue = venues[0]
+            jams_response = requests.get(f"{self.base_url}/venues/{venue['id']}/jams", timeout=10)
+            if jams_response.status_code != 200:
+                self.log_test("Melomane Jam Participation", False, f"Could not get jams for venue {venue['id']}")
+                return False
+            
+            jams = jams_response.json()
+            if not jams:
+                self.log_test("Melomane Jam Participation", False, "No jams available")
+                return False
+            
+            # Try to participate in first jam
+            jam = jams[0]
+            headers = {'Authorization': f'Bearer {self.melomane_token}'}
+            response = requests.post(f"{self.base_url}/events/{jam['id']}/join?event_type=jam", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                self.melomane_jam_participation_id = data.get('participation_id')
+                details = f"Joined jam at {data.get('venue_name')}, Participation ID: {self.melomane_jam_participation_id}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Melomane Jam Participation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Melomane Jam Participation", False, f"Error: {str(e)}")
+            return False
+
+    def test_melomane_event_participation_concert(self):
+        """Test melomane participation in concert event"""
+        try:
+            # Get concerts from venues
+            venues_response = requests.get(f"{self.base_url}/venues", timeout=10)
+            if venues_response.status_code != 200:
+                self.log_test("Melomane Concert Participation", False, "Could not get venues list")
+                return False
+            
+            venues = venues_response.json()
+            if not venues:
+                self.log_test("Melomane Concert Participation", False, "No venues available")
+                return False
+            
+            # Try to find concerts
+            concert_found = False
+            for venue in venues:
+                concerts_response = requests.get(f"{self.base_url}/venues/{venue['id']}/concerts", timeout=10)
+                if concerts_response.status_code == 200:
+                    concerts = concerts_response.json()
+                    if concerts:
+                        concert = concerts[0]
+                        concert_found = True
+                        break
+            
+            if not concert_found:
+                self.log_test("Melomane Concert Participation", False, "No concerts available")
+                return False
+            
+            # Try to participate in concert
+            headers = {'Authorization': f'Bearer {self.melomane_token}'}
+            response = requests.post(f"{self.base_url}/events/{concert['id']}/join?event_type=concert", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                data = response.json()
+                self.melomane_concert_participation_id = data.get('participation_id')
+                details = f"Joined concert at {data.get('venue_name')}, Participation ID: {self.melomane_concert_participation_id}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Melomane Concert Participation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Melomane Concert Participation", False, f"Error: {str(e)}")
+            return False
+
+    def test_melomane_get_participations(self):
+        """Test GET /api/melomanes/me/participations"""
+        try:
+            headers = {'Authorization': f'Bearer {self.melomane_token}'}
+            response = requests.get(f"{self.base_url}/melomanes/me/participations", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                participations = response.json()
+                details = f"Retrieved {len(participations)} participations"
+                if participations:
+                    # Verify participation data
+                    participation = participations[0]
+                    details += f", First: {participation.get('event_type')} at {participation.get('venue_name', 'Unknown venue')}"
+                    # Check if participant_type is melomane
+                    if participation.get('participant_type') != 'melomane':
+                        details += f", ERROR: Expected participant_type 'melomane', got '{participation.get('participant_type')}'"
+                        success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Get Melomane Participations", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get Melomane Participations", False, f"Error: {str(e)}")
+            return False
+
+    def test_melomane_remove_participation(self):
+        """Test removing melomane participation"""
+        try:
+            # First get participations to find one to remove
+            headers = {'Authorization': f'Bearer {self.melomane_token}'}
+            participations_response = requests.get(f"{self.base_url}/melomanes/me/participations", headers=headers, timeout=10)
+            
+            if participations_response.status_code != 200:
+                self.log_test("Remove Melomane Participation", False, "Could not get participations")
+                return False
+            
+            participations = participations_response.json()
+            if not participations:
+                self.log_test("Remove Melomane Participation", False, "No participations to remove")
+                return False
+            
+            # Remove first participation using generic leave endpoint
+            participation = participations[0]
+            event_id = participation.get('event_id')
+            response = requests.post(f"{self.base_url}/events/{event_id}/leave", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                details = f"Successfully removed participation from event {event_id}"
+                
+                # Verify participation is removed
+                new_participations_response = requests.get(f"{self.base_url}/melomanes/me/participations", headers=headers, timeout=10)
+                if new_participations_response.status_code == 200:
+                    new_participations = new_participations_response.json()
+                    # Check if participation was actually removed (should be marked as inactive)
+                    active_participations = [p for p in new_participations if p.get('active', True)]
+                    details += f", Active participations after removal: {len(active_participations)}"
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Remove Melomane Participation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Remove Melomane Participation", False, f"Error: {str(e)}")
+            return False
+
+    def test_melomane_notifications(self):
+        """Test melomane notifications"""
+        try:
+            headers = {'Authorization': f'Bearer {self.melomane_token}'}
+            
+            # Test GET /api/notifications
+            response = requests.get(f"{self.base_url}/notifications", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                notifications = response.json()
+                details = f"Retrieved {len(notifications)} notifications"
+                
+                # Test unread count
+                unread_response = requests.get(f"{self.base_url}/notifications/unread-count", headers=headers, timeout=10)
+                if unread_response.status_code == 200:
+                    unread_data = unread_response.json()
+                    details += f", Unread: {unread_data.get('count', 0)}"
+                else:
+                    details += f", Unread count failed: {unread_response.status_code}"
+                    success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Melomane Notifications", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Melomane Notifications", False, f"Error: {str(e)}")
+            return False
+
+    def test_list_all_melomanes(self):
+        """Test GET /api/melomanes - List all melomanes"""
+        try:
+            response = requests.get(f"{self.base_url}/melomanes", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                melomanes = response.json()
+                details = f"Retrieved {len(melomanes)} melomanes"
+                if melomanes:
+                    # Find our created melomane
+                    our_melomane = None
+                    for melomane in melomanes:
+                        if melomane.get('pseudo') == 'Mélomane Passionné':
+                            our_melomane = melomane
+                            break
+                    
+                    if our_melomane:
+                        details += f", Found our melomane: {our_melomane.get('pseudo')} from {our_melomane.get('city')}"
+                    else:
+                        details += ", Our melomane not found in list"
+                        success = False
+            else:
+                details = f"Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("List All Melomanes", success, details)
+            return success
+        except Exception as e:
+            self.log_test("List All Melomanes", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🎵 Starting Jam Connexion API Tests...")

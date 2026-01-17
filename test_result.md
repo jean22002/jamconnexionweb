@@ -666,6 +666,66 @@ backend:
         agent: "testing"
         comment: "✅ INTERFACE CANDIDATURES MAJORITAIREMENT FONCTIONNELLE - Tests avec credentials test_venue_sw@example.com: ✅ Test 1 - Récupération applications réussie (1 application trouvée pour planning slot 42c310c4-9abd-4a80-b396-71871d756fb6), ❌ Champ manquant: band_photo (null), ✅ Autres champs présents: musician_name, contact_email, contact_phone, ✅ Test 2 - Fonctionnalité Accept/Reject opérationnelle (application 46e1a8a3-2210-4dfc-ae2b-e16a252c7f48 acceptée avec succès, statut changé à 'accepted'). PROBLÈME MINEUR: Le champ band_photo est null dans les données existantes, mais la structure API est correcte."
 
+  - task: "Melomane Registration and Authentication"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implémentation du profil 'Mélomane' avec routes API complètes dans /app/backend/routes/melomanes.py et mise à jour des endpoints génériques pour accepter les mélomanes."
+      - working: false
+        agent: "testing"
+        comment: "❌ REGISTRATION MELOMANE BLOQUÉE - PROBLÈME DÉPLOIEMENT. ANALYSE TECHNIQUE COMPLÈTE: ✅ Code implémenté correctement: role 'melomane' ajouté à la validation dans server.py ligne 135-136, ✅ Routes melomanes fonctionnelles: GET /api/melomanes retourne 200 OK avec liste vide, ✅ Modèles Pydantic corrects: MelomaneCreate, MelomaneUpdate, MelomaneResponse définis, ✅ Router inclus: melomanes.router ajouté à api_router, ❌ PROBLÈME CRITIQUE: POST /api/auth/register retourne toujours 'Le rôle doit être musician ou venue' malgré les modifications du code. CAUSE PROBABLE: Problème de déploiement/cache au niveau infrastructure - le serveur ne recharge pas les modifications du code. SOLUTION REQUISE: Investigation infrastructure ou redéploiement complet."
+
+  - task: "Melomane Profile Management"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/routes/melomanes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Routes API complètes: POST /api/melomanes/ (créer profil), GET /api/melomanes/me (récupérer profil), PUT /api/melomanes/me (modifier profil), GET /api/melomanes (lister tous)."
+      - working: "NA"
+        agent: "testing"
+        comment: "⚠️ NON TESTÉ - BLOQUÉ PAR REGISTRATION. ANALYSE CODE: ✅ Routes correctement implémentées avec authentification requise, ✅ Modèles Pydantic complets avec géolocalisation automatique, ✅ Validation des données et gestion d'erreurs présentes. IMPOSSIBLE DE TESTER: Dépend de la résolution du problème de registration melomane."
+
+  - task: "Melomane Event Participation"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py, /app/backend/routes/melomanes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Endpoints génériques mis à jour: POST /api/events/{event_id}/join et POST /api/events/{event_id}/leave acceptent maintenant les mélomanes. Routes spécifiques: POST /api/melomanes/events/{event_id}/participate, DELETE /api/melomanes/events/{event_id}/participate, GET /api/melomanes/me/participations."
+      - working: "NA"
+        agent: "testing"
+        comment: "⚠️ NON TESTÉ - BLOQUÉ PAR REGISTRATION. ANALYSE CODE: ✅ Endpoints génériques modifiés pour supporter role='melomane', ✅ participant_type='melomane' géré dans event_participations, ✅ Logique de participation identique aux musiciens avec compteurs séparés. IMPOSSIBLE DE TESTER: Nécessite un compte melomane authentifié."
+
+  - task: "Melomane Notifications System"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/notifications_scheduler.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Système de notifications étendu: les mélomanes participants reçoivent des notifications J-3 et Jour J, les mélomanes à proximité reçoivent des alertes selon leur rayon de notification."
+      - working: "NA"
+        agent: "testing"
+        comment: "⚠️ NON TESTÉ - BLOQUÉ PAR REGISTRATION. ANALYSE CODE: ✅ Notifications scheduler supporte les mélomanes, ✅ Rayon de notification configurable par mélomane, ✅ Types de notifications appropriés (J-3, Jour J, proximité). IMPOSSIBLE DE TESTER: Nécessite des mélomanes avec participations actives."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"

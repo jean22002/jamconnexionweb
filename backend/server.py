@@ -1058,8 +1058,8 @@ async def find_nearby_venues(data: NearbySearchRequest):
 
 @api_router.post("/venues/{venue_id}/subscribe")
 async def subscribe_to_venue(venue_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != "musician":
-        raise HTTPException(status_code=403, detail="Only musicians can subscribe to venues")
+    if current_user["role"] not in ["musician", "melomane"]:
+        raise HTTPException(status_code=403, detail="Only musicians and melomanes can subscribe to venues")
     
     venue = await db.venues.find_one({"id": venue_id}, {"_id": 0})
     if not venue:
@@ -1079,6 +1079,7 @@ async def subscribe_to_venue(venue_id: str, current_user: dict = Depends(get_cur
         "id": sub_id,
         "venue_id": venue_id,
         "user_id": current_user["id"],
+        "user_role": current_user["role"],
         "created_at": now
     }
     

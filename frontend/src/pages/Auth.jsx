@@ -65,6 +65,8 @@ export default function Auth() {
 
   const backgroundImage = role === "venue" 
     ? "https://images.pexels.com/photos/9419374/pexels-photo-9419374.jpeg"
+    : role === "melomane"
+    ? "https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg"
     : "https://images.pexels.com/photos/10438494/pexels-photo-10438494.jpeg";
 
   return (

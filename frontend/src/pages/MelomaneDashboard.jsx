@@ -52,6 +52,16 @@ export default function MelomaneDashboard() {
   const [activeTab, setActiveTab] = useState("map");
   const [mapCenter, setMapCenter] = useState([46.603354, 1.888334]);
   
+  // Geo and search states
+  const [searchRadius, setSearchRadius] = useState(50);
+  const [searchCity, setSearchCity] = useState("");
+  const [geoPosition, setGeoPosition] = useState(null);
+  const [geoEnabled, setGeoEnabled] = useState(false);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoError, setGeoError] = useState(null);
+  const [nearbyVenues, setNearbyVenues] = useState([]);
+  const [showRadiusCircle, setShowRadiusCircle] = useState(true);
+  
   const [profileForm, setProfileForm] = useState({
     pseudo: "",
     bio: "",

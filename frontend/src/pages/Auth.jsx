@@ -26,7 +26,7 @@ export default function Auth() {
 
   useEffect(() => {
     const urlRole = searchParams.get("role");
-    if (urlRole && ["musician", "venue"].includes(urlRole)) {
+    if (urlRole && ["musician", "venue", "melomane"].includes(urlRole)) {
       setRole(urlRole);
       setMode("register");
     }

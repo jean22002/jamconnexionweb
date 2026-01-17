@@ -105,7 +105,7 @@ export default function Auth() {
           <div className="w-full max-w-md space-y-8">
             <div className="text-center lg:text-left">
               <h2 className="font-heading font-bold text-3xl mb-2">
-                {mode === "login" ? "Bon retour!" : "Créer un compte"}
+                {mode === "login" ? "Connexion" : "Créer un compte"}
               </h2>
               <p className="text-muted-foreground">
                 {mode === "login" 

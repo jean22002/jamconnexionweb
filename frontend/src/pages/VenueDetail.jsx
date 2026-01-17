@@ -550,7 +550,7 @@ export default function VenueDetail() {
               </div>
               
               <div className="flex flex-col gap-2">
-                {user?.role === "musician" && (
+                {(user?.role === "musician" || user?.role === "melomane") && (
                   <Button 
                     onClick={handleSubscribe} 
                     disabled={subscribing}

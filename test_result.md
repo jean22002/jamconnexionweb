@@ -869,12 +869,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Melomane Registration and Authentication"
-    - "Melomane Profile Management"
-    - "Melomane Event Participation"
-    - "Melomane Notifications System"
-  stuck_tasks:
-    - "Melomane Registration and Authentication"
+    - "Melomane Profile Bug Fix - profile_picture Field"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
@@ -888,6 +884,7 @@ agent_communication:
     message: "🎉 JAM PARTICIPATION BUG TESTING COMPLETED - BACKEND SYSTEM WORKING PERFECTLY! Comprehensive tests performed on the reported bug where musician participation in jams wasn't being counted. RESULTS: ✅ All 9 critical tests passed (100% success rate). TESTED FLOW: 1) Created musician and venue with active jam, 2) Musician successfully joined jam via POST /api/events/{jam_id}/join?event_type=jam, 3) Participation correctly stored in database with active: true, 4) Participant counter correctly shows 1 via GET /api/venues/{venue_id}/jams, 5) Musician's current participation correctly retrieved via GET /api/musicians/me/current-participation with event_type: 'jam', 6) Musician successfully left jam via POST /api/events/{jam_id}/leave, 7) Participation correctly deactivated (active: false), 8) Participant counter correctly updated to 0 after leaving. CONCLUSION: The reported bug where 'le compteur de participants ne s'actualise pas' and 'le bouton ne change pas' appears to be RESOLVED at the backend level. All participation endpoints are functioning correctly with proper counter updates."
 
   - agent: "testing"
+    message: "🎉 MELOMANE PROFILE BUG FIX VALIDATION COMPLETE - 100% SUCCESS! Comprehensive testing of the profile_picture field bug fix as requested in the review request. CORRECTION VALIDATED: ✅ Ajout du champ profile_picture au modèle MelomaneCreate dans /app/backend/models/melomane.py, ✅ Mise à jour de la route de création pour utiliser data.profile_picture au lieu de None. TESTS PERFORMED (5/5 - 100%): ✅ TEST 1 - Melomane registration: Account created with role='melomane', email='melomane.final.test.{timestamp}@test.fr', password='Test1234!', name='Test Final Melomane', ✅ TEST 2 - Profile creation with profile_picture: POST /api/melomanes/ with exact data from review request (pseudo='Mélomane Final Test', bio='Test de sauvegarde du profil', city='Carcassonne', region='Occitanie', postal_code='11000', favorite_styles=['Metal symphonique', 'Rock'], profile_picture='', notifications_enabled=true, notification_radius_km=50), ✅ TEST 3 - Profile verification: GET /api/melomanes/me returns all data correctly with profile_picture field present and persisted, ✅ TEST 4 - Profile update: PUT /api/melomanes/me with exact update data (pseudo='Mélomane Modifié', bio='Bio mise à jour', city='Paris', favorite_styles=['Jazz', 'Blues']) works perfectly, profile_picture field preserved during update, ✅ TEST 5 - Final verification: GET /api/melomanes/me confirms final state correct with profile_picture field present. BUG RESOLUTION CONFIRMED: Le champ profile_picture est maintenant correctement géré dans toutes les opérations CRUD du profil mélomane. Bug de sauvegarde du profil mélomane entièrement résolu!"
     message: "🎯 POST-REFACTORING VALIDATION COMPLETED - CRITICAL SYSTEMS OPERATIONAL! Comprehensive testing of backend after refactoring with models/utils/6 routers extraction. RESULTS (9/10 critical tests passed - 90% success): ✅ AUTHENTICATION: Register venue, login, and /auth/me endpoints working perfectly, ✅ STRIPE PAYMENTS: Checkout session creation functional with valid Stripe URLs, ✅ CORE ENDPOINTS: Health check, venues listing, musicians listing all operational, ✅ UPLOADS: Image upload system working correctly, ✅ ACCOUNT MANAGEMENT: Basic account status endpoint functional. ❌ MINOR ISSUE: Account subscription status endpoint returning 401 (token validation issue) - likely needs venue profile creation first. CONCLUSION: The backend refactoring was SUCCESSFUL with no major regressions. All critical authentication, payment, and core API endpoints are functioning correctly. The system is ready for production use with only one minor endpoint issue that doesn't affect core functionality."
 
   - agent: "testing"

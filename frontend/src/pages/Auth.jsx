@@ -168,16 +168,15 @@ export default function Auth() {
                       
                       <button
                         type="button"
-                        onClick={() => setRole("venue")}
-                        className={`p-4 rounded-xl border-2 transition-all ${
-                          role === "venue" 
-                            ? "border-secondary bg-secondary/10" 
-                            : "border-white/10 hover:border-white/30"
-                        }`}
+                        onClick={() => {
+                          // Rediriger vers le formulaire d'inscription établissement dédié
+                          navigate("/venue-register");
+                        }}
+                        className={`p-4 rounded-xl border-2 transition-all border-white/10 hover:border-secondary/50 hover:bg-secondary/10`}
                         data-testid="role-venue"
                       >
-                        <Mic2 className={`w-8 h-8 mx-auto mb-2 ${role === "venue" ? "text-secondary" : "text-muted-foreground"}`} />
-                        <p className={`font-medium ${role === "venue" ? "text-white" : "text-muted-foreground"}`}>
+                        <Mic2 className={`w-8 h-8 mx-auto mb-2 text-secondary`} />
+                        <p className={`font-medium text-white`}>
                           Établissement
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">14,99€/mois</p>

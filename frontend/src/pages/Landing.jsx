@@ -123,7 +123,7 @@ export default function Landing() {
                     Je suis un musicien
                   </Button>
                 </Link>
-                <Link to="/tarifs" className="w-full">
+                <Link to="/venue-register" className="w-full">
                   <Button 
                     size="lg" 
                     className="bg-primary hover:bg-primary/90 rounded-full px-6 py-5 sm:py-6 font-heading font-semibold hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] hover:-translate-y-1 transition-all w-full text-sm sm:text-base"

@@ -137,13 +137,14 @@ export default function MelomaneDashboard() {
       }
       
       const method = profile ? "put" : "post";
+      const endpoint = profile ? `${API}/melomanes/me` : `${API}/melomanes/`;
       
       // Log pour debug
       console.log('Saving profile with method:', method);
       console.log('Profile data:', profileForm);
-      console.log('Endpoint:', `${API}/melomanes${profile ? "/me" : ""}`);
+      console.log('Endpoint:', endpoint);
       
-      const response = await axios[method](`${API}/melomanes${profile ? "/me" : ""}`, profileForm, { 
+      const response = await axios[method](endpoint, profileForm, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       

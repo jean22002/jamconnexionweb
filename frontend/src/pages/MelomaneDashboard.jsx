@@ -260,66 +260,6 @@ export default function MelomaneDashboard() {
             </Link>
             
             <div className="flex items-center gap-4">
-              {/* Menu Connexion */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="gap-2">
-                    <Home className="w-4 h-4" />
-                    Connexion
-                    <ChevronDown className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="glassmorphism border-white/10 min-w-[200px]">
-                  <DropdownMenuLabel>Navigation</DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem asChild>
-                    <Link to="/" className="cursor-pointer">
-                      <Home className="w-4 h-4 mr-2" />
-                      Page d'accueil
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/faq" className="cursor-pointer">
-                      <MessageSquare className="w-4 h-4 mr-2" />
-                      FAQ
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {/* Menu Établissements */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="gap-2">
-                    <Building2 className="w-4 h-4" />
-                    Établissements
-                    <ChevronDown className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="glassmorphism border-white/10 min-w-[200px]">
-                  <DropdownMenuLabel>Découvrir</DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem onClick={() => setActiveTab("map")}>
-                    <MapPin className="w-4 h-4 mr-2" />
-                    Carte des établissements
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => {
-                    setActiveTab("map");
-                    if (geoPosition) {
-                      setMapCenter([geoPosition.latitude, geoPosition.longitude]);
-                    }
-                  }}>
-                    <Locate className="w-4 h-4 mr-2" />
-                    Établissements à proximité
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem onClick={() => setActiveTab("participations")}>
-                    <CalendarIcon className="w-4 h-4 mr-2" />
-                    Mes participations
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              
               {/* Messages */}
               <Link to="/messages-improved">
                 <Button variant="ghost" className="relative">

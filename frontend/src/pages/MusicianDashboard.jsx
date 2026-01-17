@@ -2661,17 +2661,17 @@ export default function MusicianDashboard() {
                   setSelectedRegion(null);
                   setSelectedDepartment(null);
                 }}>
-                  <TabsList className="grid w-full grid-cols-5 bg-muted/50 rounded-full p-1">
-                    <TabsTrigger value="all" className="rounded-full">
+                  <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 gap-1 scrollbar-thin scrollbar-thumb-cyan-500/50 scrollbar-track-transparent">
+                    <TabsTrigger value="all" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
                       Tous ({musicians.length})
                     </TabsTrigger>
-                    <TabsTrigger value="france" className="rounded-full">
+                    <TabsTrigger value="france" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
                       France ({musicians.filter(m => !m.country || m.country === 'France').length})
                     </TabsTrigger>
-                    <TabsTrigger value="region" className="rounded-full">
+                    <TabsTrigger value="region" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
                       Par Région
                     </TabsTrigger>
-                    <TabsTrigger value="department" className="rounded-full">
+                    <TabsTrigger value="department" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
                       Par Département
                     </TabsTrigger>
                     <TabsTrigger value="country" className="rounded-full">
@@ -2958,14 +2958,14 @@ export default function MusicianDashboard() {
                 setSelectedRegion(null);
                 setSelectedDepartment(null);
               }}>
-                <TabsList className="grid w-full grid-cols-4 bg-muted/50 rounded-full p-1">
-                  <TabsTrigger value="all" className="rounded-full">
+                <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 gap-1 scrollbar-thin scrollbar-thumb-cyan-500/50 scrollbar-track-transparent">
+                  <TabsTrigger value="all" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
                     Tous ({venues.length})
                   </TabsTrigger>
-                  <TabsTrigger value="france" className="rounded-full">
+                  <TabsTrigger value="france" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
                     France ({venues.filter(v => !v.country || v.country === 'France').length})
                   </TabsTrigger>
-                  <TabsTrigger value="region" className="rounded-full">
+                  <TabsTrigger value="region" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
                     Par Région
                   </TabsTrigger>
                   <TabsTrigger value="department" className="rounded-full">

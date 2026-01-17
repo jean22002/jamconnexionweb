@@ -191,3 +191,18 @@ export function VenueImageUpload({ value, onChange, token, photoType = "profile"
     />
   );
 }
+
+export function MelomaneImageUpload({ value, onChange, token, disabled }) {
+  return (
+    <ImageUpload
+      value={value}
+      onChange={onChange}
+      token={token}
+      uploadEndpoint="/upload/melomane-photo"
+      placeholder="Photo de profil"
+      icon={User}
+      previewClassName="w-24 h-24 rounded-full"
+      disabled={disabled}
+    />
+  );
+}

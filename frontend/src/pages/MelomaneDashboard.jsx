@@ -558,6 +558,13 @@ export default function MelomaneDashboard() {
                         setGeoLoading(true);
                         setGeoError(null);
                         if (navigator.geolocation) {
+                          // Options pour améliorer la précision
+                          const options = {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 0
+                          };
+                          
                           navigator.geolocation.getCurrentPosition(
                             (position) => {
                               const pos = {
@@ -572,13 +579,31 @@ export default function MelomaneDashboard() {
                               toast.success("Géolocalisation activée");
                             },
                             (error) => {
-                              setGeoError("Erreur de géolocalisation. Vérifiez vos autorisations.");
+                              let errorMsg = "Erreur de géolocalisation";
+                              switch(error.code) {
+                                case error.PERMISSION_DENIED:
+                                  errorMsg = "Permission refusée. Autorisez la géolocalisation dans votre navigateur.";
+                                  break;
+                                case error.POSITION_UNAVAILABLE:
+                                  errorMsg = "Position indisponible. Vérifiez votre connexion GPS.";
+                                  break;
+                                case error.TIMEOUT:
+                                  errorMsg = "Délai dépassé. Réessayez.";
+                                  break;
+                                default:
+                                  errorMsg = "Erreur inconnue de géolocalisation.";
+                              }
+                              setGeoError(errorMsg);
                               setGeoLoading(false);
-                            }
+                              toast.error(errorMsg);
+                            },
+                            options
                           );
                         } else {
-                          setGeoError("Géolocalisation non supportée par votre navigateur");
+                          const msg = "Géolocalisation non supportée par votre navigateur";
+                          setGeoError(msg);
                           setGeoLoading(false);
+                          toast.error(msg);
                         }
                       } else {
                         setGeoEnabled(false);

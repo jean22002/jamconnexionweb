@@ -562,7 +562,7 @@ export default function VenueDetail() {
                 )}
                 
                 {/* Show join button if there's an active event */}
-                {user?.role === "musician" && activeEvents.length > 0 && (
+                {(user?.role === "musician" || user?.role === "melomane") && activeEvents.length > 0 && (
                   <JoinEventButton 
                     event={activeEvents[0]}
                     venueId={id}
@@ -774,7 +774,7 @@ export default function VenueDetail() {
                         <p className="text-sm text-muted-foreground"><strong>Règlement:</strong> {jam.rules}</p>
                       </div>
                     )}
-                    {user?.role === "musician" && (
+                    {(user?.role === "musician" || user?.role === "melomane") && (
                       <div className="mt-4">
                         <JoinEventButton 
                           event={{ ...jam, type: 'jam' }}
@@ -825,8 +825,8 @@ export default function VenueDetail() {
                       👥 {concert.participants_count || 0} participant{(concert.participants_count || 0) > 1 ? 's' : ''}
                     </p>
                     
-                    {/* Bouton "Je participe" pour les musiciens */}
-                    {user?.role === "musician" && (
+                    {/* Bouton "Je participe" pour les musiciens et mélomanes */}
+                    {(user?.role === "musician" || user?.role === "melomane") && (
                       <div className="mt-4">
                         <JoinEventButton 
                           event={{ ...concert, type: 'concert' }}

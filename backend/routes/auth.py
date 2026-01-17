@@ -19,8 +19,8 @@ async def register(data: UserRegister):
     if existing:
         raise HTTPException(status_code=400, detail="Adresse email déjà existante")
     
-    if data.role not in ["musician", "venue"]:
-        raise HTTPException(status_code=400, detail="Le rôle doit être 'musician' ou 'venue'")
+    if data.role not in ["musician", "venue", "melomane"]:
+        raise HTTPException(status_code=400, detail="Le rôle doit être 'musician', 'venue' ou 'melomane'")
     
     user_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()

@@ -1341,9 +1341,9 @@ async def get_active_events(venue_id: str):
 
 @api_router.post("/events/{event_id}/join")
 async def join_event(event_id: str, event_type: str = "jam", current_user: dict = Depends(get_current_user)):
-    """Join an event and notify friends"""
-    if current_user["role"] != "musician":
-        raise HTTPException(status_code=403, detail="Only musicians can join events")
+    """Join an event and notify friends (for musicians and melomanes)"""
+    if current_user["role"] not in ["musician", "melomane"]:
+        raise HTTPException(status_code=403, detail="Only musicians and melomanes can join events")
     
     # Find the event
     if event_type == "jam":
@@ -1356,18 +1356,29 @@ async def join_event(event_id: str, event_type: str = "jam", current_user: dict 
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
-    # Allow participation in advance for both concerts and jams
-    # Users can register their interest before the event starts
-    
-    # Get musician profile
-    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
-    if not musician:
-        raise HTTPException(status_code=404, detail="Musician profile not found")
+    # Get profile based on role
+    if current_user["role"] == "musician":
+        profile = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+        if not profile:
+            raise HTTPException(status_code=404, detail="Musician profile not found")
+        profile_id = profile["id"]
+        profile_pseudo = profile.get("pseudo", current_user["name"])
+        profile_image = profile.get("profile_image")
+        participant_type = "musician"
+    else:  # melomane
+        profile = await db.melomanes.find_one({"user_id": current_user["id"]}, {"_id": 0})
+        if not profile:
+            raise HTTPException(status_code=404, detail="Melomane profile not found")
+        profile_id = profile["id"]
+        profile_pseudo = profile.get("pseudo", current_user["name"])
+        profile_image = profile.get("profile_picture")
+        participant_type = "melomane"
     
     # Check if already participating (active)
     existing = await db.event_participations.find_one({
         "event_id": event_id,
-        "musician_id": musician["id"],
+        "participant_id": current_user["id"],
+        "participant_type": participant_type,
         "active": True
     })
     if existing:
@@ -1376,7 +1387,8 @@ async def join_event(event_id: str, event_type: str = "jam", current_user: dict 
     # Check if there's an inactive participation to reactivate
     inactive_participation = await db.event_participations.find_one({
         "event_id": event_id,
-        "musician_id": musician["id"],
+        "participant_id": current_user["id"],
+        "participant_type": participant_type,
         "active": False
     })
     
@@ -1408,10 +1420,16 @@ async def join_event(event_id: str, event_type: str = "jam", current_user: dict 
             "event_date": event["date"],
             "event_start": event.get("start_time", ""),
             "event_end": event.get("end_time", "23:59"),
-            "musician_id": musician["id"],
-            "musician_user_id": current_user["id"],
-            "musician_pseudo": musician.get("pseudo", current_user["name"]),
-            "musician_image": musician.get("profile_image"),
+            "participant_id": current_user["id"],
+            "participant_type": participant_type,
+            "profile_id": profile_id,
+            "participant_pseudo": profile_pseudo,
+            "participant_image": profile_image,
+            # Keep old fields for backward compatibility with musicians
+            "musician_id": profile_id if participant_type == "musician" else None,
+            "musician_user_id": current_user["id"] if participant_type == "musician" else None,
+            "musician_pseudo": profile_pseudo if participant_type == "musician" else None,
+            "musician_image": profile_image if participant_type == "musician" else None,
             "active": True,
             "joined_at": now
         }

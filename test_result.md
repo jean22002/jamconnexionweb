@@ -842,8 +842,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Automatic Notifications System - Complete Implementation"
-  stuck_tasks: []
+    - "Melomane Registration and Authentication"
+    - "Melomane Profile Management"
+    - "Melomane Event Participation"
+    - "Melomane Notifications System"
+  stuck_tasks:
+    - "Melomane Registration and Authentication"
   test_all: false
   test_priority: "high_first"
 

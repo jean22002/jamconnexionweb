@@ -4,7 +4,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { Music, Guitar, Mic2, ArrowLeft, Loader2 } from "lucide-react";
+import { Music, Guitar, Mic2, Music2, ArrowLeft, Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
 

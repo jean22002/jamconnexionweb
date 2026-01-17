@@ -190,29 +190,40 @@ export default function VenueDetail() {
   }, [id]);
 
   const fetchCurrentParticipation = useCallback(async () => {
-    if (!token || !user || user.role !== "musician") {
+    if (!token || !user || (user.role !== "musician" && user.role !== "melomane")) {
       setLoadingParticipations(false);
       return;
     }
     setLoadingParticipations(true);
     try {
-      // Fetch current live participation (for jams)
-      const currentRes = await axios.get(`${API}/musicians/me/current-participation`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setCurrentParticipation(currentRes.data);
-      
-      // Fetch all active participations (for concerts)
-      const allRes = await axios.get(`${API}/musicians/me/participations`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setMyParticipations(allRes.data || []);
+      if (user.role === "musician") {
+        // Fetch current live participation (for jams)
+        const currentRes = await axios.get(`${API}/musicians/me/current-participation`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setCurrentParticipation(currentRes.data);
+        
+        // Fetch all active participations (for concerts)
+        const allRes = await axios.get(`${API}/musicians/me/participations`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setMyParticipations(allRes.data || []);
+      } else if (user.role === "melomane") {
+        // For melomanes, fetch participations from melomane API
+        const allRes = await axios.get(`${API}/melomanes/me/participations`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setMyParticipations(allRes.data || []);
+        // Check if currently participating in any active event at this venue
+        const currentForVenue = allRes.data.find(p => p.venue_id === id && p.active);
+        setCurrentParticipation(currentForVenue || null);
+      }
     } catch (error) {
       console.error("Error fetching participation:", error);
     } finally {
       setLoadingParticipations(false);
     }
-  }, [token, user]);
+  }, [token, user, id]);
 
   useEffect(() => {
     fetchVenue();

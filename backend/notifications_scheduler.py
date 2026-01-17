@@ -83,10 +83,11 @@ async def check_and_send_event_notifications():
     # Bœufs dans 3 jours
     jams_j3 = await db.jams.find({"date": three_days_str}, {"_id": 0}).to_list(100)
     for jam in jams_j3:
-        # Trouver les participants (musiciens et mélomanes)
+        # Trouver les participants ACTIFS (musiciens et mélomanes)
         participants = await db.event_participations.find({
             "event_id": jam["id"],
-            "event_type": "jam"
+            "event_type": "jam",
+            "active": True
         }, {"_id": 0}).to_list(1000)
         
         for participant in participants:
@@ -105,10 +106,11 @@ async def check_and_send_event_notifications():
     # Concerts dans 3 jours
     concerts_j3 = await db.concerts.find({"date": three_days_str}, {"_id": 0}).to_list(100)
     for concert in concerts_j3:
-        # Trouver les participants (musiciens et mélomanes)
+        # Trouver les participants ACTIFS (musiciens et mélomanes)
         participants = await db.event_participations.find({
             "event_id": concert["id"],
-            "event_type": "concert"
+            "event_type": "concert",
+            "active": True
         }, {"_id": 0}).to_list(1000)
         
         for participant in participants:
@@ -130,10 +132,11 @@ async def check_and_send_event_notifications():
     # Bœufs aujourd'hui
     jams_today = await db.jams.find({"date": today_str}, {"_id": 0}).to_list(100)
     for jam in jams_today:
-        # 1. Notifier les participants (musiciens et mélomanes)
+        # 1. Notifier les participants ACTIFS (musiciens et mélomanes)
         participants = await db.event_participations.find({
             "event_id": jam["id"],
-            "event_type": "jam"
+            "event_type": "jam",
+            "active": True
         }, {"_id": 0}).to_list(1000)
         
         for participant in participants:
@@ -194,10 +197,11 @@ async def check_and_send_event_notifications():
     # Concerts aujourd'hui
     concerts_today = await db.concerts.find({"date": today_str}, {"_id": 0}).to_list(100)
     for concert in concerts_today:
-        # 1. Notifier les participants (musiciens et mélomanes)
+        # 1. Notifier les participants ACTIFS (musiciens et mélomanes)
         participants = await db.event_participations.find({
             "event_id": concert["id"],
-            "event_type": "concert"
+            "event_type": "concert",
+            "active": True
         }, {"_id": 0}).to_list(1000)
         
         for participant in participants:

@@ -210,7 +210,8 @@ export default function MelomaneDashboard() {
     fetchProfile();
     fetchNotifications();
     fetchParticipations();
-  }, [fetchVenues, fetchProfile, fetchNotifications, fetchParticipations]);
+    fetchSubscriptions();
+  }, [fetchVenues, fetchProfile, fetchNotifications, fetchParticipations, fetchSubscriptions]);
 
   const handleSaveProfile = async () => {
     try {

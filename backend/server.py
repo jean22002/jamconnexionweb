@@ -91,6 +91,8 @@ import routes.messages as messages
 import routes.reviews as reviews
 import routes.notifications as notifications
 import routes.melomanes as melomanes
+import routes.musicians as musicians
+import routes.venues as venues
 
 # Include refactored routers (these replace old endpoints)
 api_router.include_router(auth_router)

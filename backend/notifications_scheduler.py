@@ -250,6 +250,47 @@ async def check_and_send_event_notifications():
                         notified_nearby += 1
             
             print(f"✅ {notified_nearby} musiciens à proximité (70km) notifiés")
+        
+        # 3. Notifier les mélomanes dans le rayon défini par leurs préférences
+        if venue and venue.get("latitude") and venue.get("longitude"):
+            venue_lat = venue["latitude"]
+            venue_lon = venue["longitude"]
+            
+            # Trouver tous les mélomanes avec notifications activées
+            melomanes = await db.melomanes.find({"notifications_enabled": True}, {"_id": 0}).to_list(10000)
+            notified_melomanes = 0
+            
+            for melomane in melomanes:
+                # Vérifier que le mélomane n'est pas déjà participant
+                is_participant = await db.event_participations.find_one({
+                    "event_id": concert["id"],
+                    "participant_id": melomane["user_id"],
+                    "participant_type": "melomane"
+                })
+                
+                if is_participant:
+                    continue
+                
+                # Calculer la distance si le mélomane a des coordonnées GPS
+                melomane_lat = melomane.get("latitude")
+                melomane_lon = melomane.get("longitude")
+                notification_radius = melomane.get("notification_radius_km", 50)
+                
+                if melomane_lat and melomane_lon:
+                    distance = haversine_distance(venue_lat, venue_lon, melomane_lat, melomane_lon)
+                    
+                    if distance <= notification_radius:
+                        await send_notification(
+                            db,
+                            melomane["user_id"],
+                            "concert_nearby",
+                            f"🎸 Concert ce soir près de chez vous !",
+                            f"Un concert {'/'.join(concert.get('music_styles', [])[:2]) if concert.get('music_styles') else concert.get('title', 'Concert')} a lieu ce soir à {concert['start_time']} à {concert['venue_name']} ({venue['city']}) - À {int(distance)}km de vous",
+                            f"/venues/{concert['venue_id']}"
+                        )
+                        notified_melomanes += 1
+            
+            print(f"✅ {notified_melomanes} mélomanes à proximité notifiés")
     
     print(f"✅ {len(concerts_today)} concerts Jour J traités")
     

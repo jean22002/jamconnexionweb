@@ -147,15 +147,15 @@ export default function Messages() {
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-muted/50 rounded-full p-1 mb-6">
-            <TabsTrigger value="inbox" className="rounded-full">
+          <TabsList className="flex w-full bg-muted/50 rounded-full p-1 mb-6 gap-1">
+            <TabsTrigger value="inbox" className="rounded-full flex-1 whitespace-nowrap">
               <Inbox className="w-4 h-4 mr-2" />
               Reçus ({inbox.length})
               {unreadCount > 0 && (
                 <span className="ml-2 px-2 py-0.5 bg-destructive text-xs rounded-full">{unreadCount}</span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="sent" className="rounded-full">
+            <TabsTrigger value="sent" className="rounded-full flex-1 whitespace-nowrap">
               <SendHorizontal className="w-4 h-4 mr-2" />
               Envoyés ({sent.length})
             </TabsTrigger>

@@ -116,17 +116,17 @@ export default function Auth() {
             </div>
 
             <Tabs value={mode} onValueChange={setMode} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-muted/50 rounded-full p-1">
+              <TabsList className="flex w-full bg-muted/50 rounded-full p-1 gap-1">
                 <TabsTrigger 
                   value="login" 
-                  className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white"
+                  className="rounded-full flex-1 data-[state=active]:bg-primary data-[state=active]:text-white"
                   data-testid="tab-login"
                 >
                   Connexion
                 </TabsTrigger>
                 <TabsTrigger 
                   value="register" 
-                  className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white"
+                  className="rounded-full flex-1 data-[state=active]:bg-primary data-[state=active]:text-white"
                   data-testid="tab-register"
                 >
                   Inscription

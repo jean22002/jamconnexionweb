@@ -78,12 +78,44 @@ export default function MelomaneDashboard() {
     try {
       const response = await axios.get(`${API}/venues`);
       setVenues(response.data);
+      
+      // Calculer les établissements à proximité si GPS activé
+      if (geoPosition && response.data) {
+        const nearby = response.data
+          .filter(v => v.latitude && v.longitude)
+          .map(v => {
+            const distance = calculateDistance(
+              geoPosition.latitude,
+              geoPosition.longitude,
+              v.latitude,
+              v.longitude
+            );
+            return { ...v, distance_km: distance.toFixed(1) };
+          })
+          .filter(v => parseFloat(v.distance_km) <= searchRadius)
+          .sort((a, b) => parseFloat(a.distance_km) - parseFloat(b.distance_km));
+        
+        setNearbyVenues(nearby);
+      }
     } catch (error) {
       console.error("Error fetching venues:", error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [geoPosition, searchRadius]);
+  
+  // Fonction pour calculer la distance entre deux points GPS
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Rayon de la Terre en km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
 
   const fetchProfile = useCallback(async () => {
     try {

@@ -30,6 +30,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
 import { MUSIC_STYLES_LIST } from "../data/music-styles";
+import { useNotifications } from "../hooks/useNotifications";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -50,6 +51,10 @@ const venueIcon = L.divIcon({
 
 export default function MelomaneDashboard() {
   const { user, token, logout } = useAuth();
+  
+  // Hook pour les notifications push
+  useNotifications(token, user);
+  
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);

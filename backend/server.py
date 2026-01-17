@@ -1108,8 +1108,8 @@ async def get_subscription_status(venue_id: str, current_user: dict = Depends(ge
 
 @api_router.get("/my-subscriptions")
 async def get_my_subscriptions(current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != "musician":
-        raise HTTPException(status_code=403, detail="Only musicians can view subscriptions")
+    if current_user["role"] not in ["musician", "melomane"]:
+        raise HTTPException(status_code=403, detail="Only musicians and melomanes can view subscriptions")
     
     subs = await db.venue_subscriptions.find({"user_id": current_user["id"]}, {"_id": 0}).to_list(100)
     

@@ -256,9 +256,9 @@ export default function Auth() {
                       required
                     />
                     <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight cursor-pointer">
-                      J'accepte les{" "}
+                      J&apos;accepte les{" "}
                       <Link to="/cgu" className="text-primary hover:underline" target="_blank">
-                        Conditions Générales d'Utilisation
+                        Conditions Générales d&apos;Utilisation
                       </Link>
                       {" "}et les{" "}
                       <Link to="/cgv" className="text-primary hover:underline" target="_blank">

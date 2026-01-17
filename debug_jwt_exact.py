@@ -17,7 +17,7 @@ def test_jwt_exact():
     
     # Get a fresh token
     register_data = {
-        "email": "jwt.exact@test.fr",
+        "email": f"jwt.exact.{datetime.now().strftime('%H%M%S')}@test.fr",
         "password": "Test1234!",
         "name": "JWT Exact",
         "role": "melomane"

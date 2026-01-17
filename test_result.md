@@ -721,16 +721,19 @@ backend:
         comment: "✅ PARTICIPATION ÉVÉNEMENTS MÉLOMANE VALIDÉE - Tests exhaustifs réussis. RÉSULTATS DÉTAILLÉS: ✅ Récupération établissements: GET /api/venues fonctionne (5 établissements), ✅ Récupération événements: GET /api/venues/{venue_id}/jams retourne événements disponibles, ✅ Participation bœuf: POST /api/events/{jam_id}/join?event_type=jam réussie, participation_id retourné, ✅ Stockage correct: participant_type='melomane' dans collection event_participations avec active=true, ✅ Vérification participation: GET /api/melomanes/me/participations retourne participations avec tous champs requis (id, event_id, event_type, venue_name, participant_type), ✅ Retrait participation: POST /api/events/{event_id}/leave fonctionne, participation désactivée (active=false). Système de participation mélomane 100% fonctionnel selon spécifications."
 
   - task: "Melomane Event Participation - Frontend Integration"
-    implemented: false
+    implemented: true
     working: false
     file: "/app/frontend/src/pages/VenueDetail.jsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL ISSUE IDENTIFIED - MELOMANES CANNOT PARTICIPATE IN EVENTS VIA FRONTEND. COMPREHENSIVE TESTING RESULTS: ✅ Melomane registration and login working correctly, ✅ Melomane dashboard accessible with all tabs (Carte, Mes Participations, Établissements, Connexions), ✅ Navigation to venue pages working, ❌ CRITICAL PROBLEM: JoinEventButton is only shown when user?.role === 'musician' (lines 565, 777, 829 in VenueDetail.jsx), ❌ Melomanes cannot see 'Je participe' buttons on any events (bœufs, concerts, karaoke, spectacle), ❌ No way for melomanes to participate in events through the UI despite backend support. ROOT CAUSE: Frontend code restricts participation buttons to musicians only. IMPACT: Complete melomane participation flow is broken - users cannot participate in events as requested in review. SOLUTION NEEDED: Update VenueDetail.jsx to show JoinEventButton for both musicians AND melomanes (user?.role === 'musician' || user?.role === 'melomane')."
+      - working: false
+        agent: "testing"
+        comment: "🎯 RE-TEST APRÈS CORRECTION SUPPOSÉE - PROBLÈME PERSISTE! TESTS EXHAUSTIFS EFFECTUÉS: ✅ Code VenueDetail.jsx vérifié - lignes 565, 777, 829 montrent bien (user?.role === 'musician' || user?.role === 'melomane'), ✅ Connexion mélomane réussie (melomane2.test@test.fr), ✅ Navigation vers établissements fonctionnelle, ✅ Accès aux pages venues réussi (Test Concert Date Venue), ✅ Onglets Bœufs (2) et Concerts (0) détectés, ❌ PROBLÈME CRITIQUE CONFIRMÉ: Aucun bouton 'Je participe' visible sur les événements bœufs malgré 2 bœufs actifs (2026-01-15, 2026-01-18), ❌ Aucun bouton 'Ne plus participer' visible, ❌ 7 éléments d'événements détectés mais aucun bouton de participation. CONCLUSION: La restriction frontend n'a PAS été correctement supprimée ou il y a un autre problème empêchant l'affichage des boutons pour les mélomanes. Le flow de participation reste complètement cassé pour les mélomanes. IMPACT: Les mélomanes ne peuvent toujours pas participer aux événements via l'interface utilisateur."
 
   - task: "Melomane Notifications System"
     implemented: true

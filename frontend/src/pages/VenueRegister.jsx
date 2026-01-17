@@ -24,8 +24,7 @@ export default function VenueRegister() {
     mentionsLegales: false,
     cgu: false,
     cgv: false,
-    confidentialite: false,
-    cookies: false
+    confidentialite: false
   });
 
   const allLegalAccepted = Object.values(legalAcceptance).every(val => val === true);

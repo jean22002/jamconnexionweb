@@ -11,7 +11,7 @@ import { Textarea } from "../components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { ProfileImageUpload } from "../components/ui/image-upload";
+import { ProfileImageUpload, MelomaneImageUpload } from "../components/ui/image-upload";
 import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
 import { 
   Music, MapPin, LogOut, User, Loader2, Bell, 
@@ -274,7 +274,7 @@ export default function MelomaneDashboard() {
                   <div className="space-y-4 mt-4">
                     <div className="space-y-2">
                       <Label>Photo de profil</Label>
-                      <ProfileImageUpload
+                      <MelomaneImageUpload
                         value={profileForm.profile_picture}
                         onChange={(url) => setProfileForm({ ...profileForm, profile_picture: url })}
                         token={token}

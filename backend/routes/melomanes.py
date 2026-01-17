@@ -94,8 +94,8 @@ async def update_melomane_profile(
     
     # Geocode city if changed
     if "city" in update_data and update_data["city"]:
-        from utils.geocoding import geocode_city
-        lat, lon = geocode_city(update_data["city"])
+        from utils import geocode_city
+        lat, lon = await geocode_city(update_data["city"])
         update_data["latitude"] = lat
         update_data["longitude"] = lon
     

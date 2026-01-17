@@ -131,13 +131,22 @@ export default function MelomaneDashboard() {
   const handleSaveProfile = async () => {
     try {
       const method = profile ? "put" : "post";
-      await axios[method](`${API}/melomanes${profile ? "/me" : ""}`, profileForm, { 
+      
+      // Log pour debug
+      console.log('Saving profile with method:', method);
+      console.log('Profile data:', profileForm);
+      console.log('Endpoint:', `${API}/melomanes${profile ? "/me" : ""}`);
+      
+      const response = await axios[method](`${API}/melomanes${profile ? "/me" : ""}`, profileForm, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
+      
+      console.log('Save response:', response.data);
       toast.success("Profil mis à jour!");
       setEditingProfile(false);
       fetchProfile();
     } catch (error) {
+      console.error('Save error:', error.response?.data || error.message);
       toast.error(error.response?.data?.detail || "Erreur");
     }
   };

@@ -447,29 +447,263 @@ export default function MelomaneDashboard() {
 
           {/* Map Tab */}
           <TabsContent value="map">
-            <div className="glassmorphism rounded-2xl p-6">
-              <h2 className="font-heading font-semibold text-xl mb-4">Établissements musicaux</h2>
-              <div className="h-[600px] rounded-xl overflow-hidden">
-                <MapContainer center={mapCenter} zoom={6} className="h-full w-full">
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                  {venues.map((venue) => (
-                    venue.latitude && venue.longitude && (
-                      <Marker key={venue.id} position={[venue.latitude, venue.longitude]} icon={venueIcon}>
+            {/* Geolocation Controls */}
+            <div className="glassmorphism rounded-xl p-4 mb-6">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                {/* Status & Toggle */}
+                <div className="flex items-center gap-3">
+                  <Button 
+                    onClick={() => {
+                      if (!geoEnabled) {
+                        setGeoLoading(true);
+                        setGeoError(null);
+                        if (navigator.geolocation) {
+                          navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                              const pos = {
+                                latitude: position.coords.latitude,
+                                longitude: position.coords.longitude,
+                                accuracy: position.coords.accuracy
+                              };
+                              setGeoPosition(pos);
+                              setGeoEnabled(true);
+                              setMapCenter([pos.latitude, pos.longitude]);
+                              setGeoLoading(false);
+                              toast.success("Géolocalisation activée");
+                            },
+                            (error) => {
+                              setGeoError("Erreur de géolocalisation. Vérifiez vos autorisations.");
+                              setGeoLoading(false);
+                            }
+                          );
+                        } else {
+                          setGeoError("Géolocalisation non supportée par votre navigateur");
+                          setGeoLoading(false);
+                        }
+                      } else {
+                        setGeoEnabled(false);
+                        setGeoPosition(null);
+                        setNearbyVenues([]);
+                        toast.info("Géolocalisation désactivée");
+                      }
+                    }}
+                    variant={geoEnabled ? "default" : "outline"}
+                    className={`rounded-full gap-2 ${geoEnabled ? 'bg-green-500 hover:bg-green-600' : 'border-white/20'}`}
+                  >
+                    {geoEnabled ? (
+                      <>
+                        <Radio className="w-4 h-4 animate-pulse" />
+                        GPS Actif
+                      </>
+                    ) : (
+                      <>
+                        <MapPinOff className="w-4 h-4" />
+                        GPS Inactif
+                      </>
+                    )}
+                  </Button>
+                  
+                  {geoLoading && (
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Localisation...
+                    </div>
+                  )}
+                </div>
+
+                {/* Center on user */}
+                <Button 
+                  onClick={() => {
+                    if (geoPosition) {
+                      setMapCenter([geoPosition.latitude, geoPosition.longitude]);
+                    }
+                  }}
+                  variant="outline" 
+                  className="rounded-full gap-2 border-white/20"
+                  disabled={!geoPosition}
+                >
+                  <Locate className="w-4 h-4" />
+                  Centrer
+                </Button>
+
+                {/* Radius Control */}
+                <div className="flex-1 flex items-center gap-4">
+                  <Label className="text-sm whitespace-nowrap">Rayon: {searchRadius}km</Label>
+                  <Slider
+                    value={[searchRadius]}
+                    onValueChange={([value]) => setSearchRadius(value)}
+                    min={5}
+                    max={100}
+                    step={5}
+                    className="w-32 md:w-48"
+                  />
+                </div>
+
+                {/* Search by city */}
+                <div className="flex gap-2 flex-1">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input 
+                      placeholder="Rechercher une ville..." 
+                      value={searchCity} 
+                      onChange={(e) => setSearchCity(e.target.value)} 
+                      className="pl-9 h-10 bg-black/20 border-white/10" 
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Error message */}
+              {geoError && (
+                <div className="mt-3 p-3 bg-destructive/20 rounded-lg text-destructive text-sm">
+                  {geoError}
+                </div>
+              )}
+
+              {/* Position info */}
+              {geoPosition && (
+                <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                  <span>Position: {geoPosition.latitude.toFixed(4)}, {geoPosition.longitude.toFixed(4)}</span>
+                  <span>Précision: ±{Math.round(geoPosition.accuracy)}m</span>
+                  {nearbyVenues.length > 0 && (
+                    <span className="text-secondary font-medium">{nearbyVenues.length} établissement(s) à proximité</span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="h-[500px] rounded-2xl overflow-hidden neon-border relative z-0">
+                <MapContainer center={mapCenter} zoom={geoPosition ? 12 : 6} className="h-full w-full" style={{ background: 'hsl(240 25% 10%)' }}>
+                  <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+                  
+                  {/* User position marker */}
+                  {geoPosition && (
+                    <>
+                      <Marker 
+                        position={[geoPosition.latitude, geoPosition.longitude]} 
+                        icon={L.divIcon({
+                          className: 'user-pulse-marker',
+                          html: `
+                            <div style="position: relative; display: flex; align-items: center; justify-content: center;">
+                              <div style="width: 20px; height: 20px; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); border-radius: 50%; box-shadow: 0 0 20px rgba(34, 197, 94, 0.8); border: 3px solid white; animation: pulse 2s ease-in-out infinite;"></div>
+                            </div>
+                          `,
+                          iconSize: [20, 20],
+                          iconAnchor: [10, 10],
+                          popupAnchor: [0, -10]
+                        })}
+                      >
                         <Popup>
                           <div className="text-center">
-                            <h3 className="font-heading font-semibold text-lg">{venue.name}</h3>
-                            <p className="text-sm text-muted-foreground">{venue.city}</p>
-                            <Link to={`/venue/${venue.id}`}>
-                              <Button className="mt-2 bg-primary hover:bg-primary/90 rounded-full" size="sm">
-                                Voir le profil
-                              </Button>
-                            </Link>
+                            <p className="font-semibold">Vous êtes ici</p>
+                            <p className="text-xs text-gray-500">Précision: ±{Math.round(geoPosition.accuracy)}m</p>
                           </div>
                         </Popup>
                       </Marker>
-                    )
-                  ))}
+                      
+                      {/* Search radius circle */}
+                      {showRadiusCircle && (
+                        <Circle
+                          center={[geoPosition.latitude, geoPosition.longitude]}
+                          radius={searchRadius * 1000}
+                          pathOptions={{
+                            color: 'hsl(290 80% 60%)',
+                            fillColor: 'hsl(290 80% 60%)',
+                            fillOpacity: 0.1,
+                            weight: 2,
+                            dashArray: '5, 10'
+                          }}
+                        />
+                      )}
+                    </>
+                  )}
+                  
+                  {/* Venue markers */}
+                  {venues && venues.map((venue) => {
+                    if (!venue.latitude || !venue.longitude) return null;
+                    return (
+                      <Marker 
+                        key={venue.id} 
+                        position={[venue.latitude, venue.longitude]} 
+                        icon={venueIcon}
+                        eventHandlers={{
+                          click: () => {
+                            window.location.href = `/venue/${venue.id}`;
+                          }
+                        }}
+                      >
+                        <Tooltip 
+                          permanent 
+                          direction="right" 
+                          offset={[15, -5]}
+                          className="venue-name-tooltip"
+                        >
+                          <div className="text-xs font-semibold cursor-pointer hover:text-primary">
+                            {venue.name}
+                          </div>
+                        </Tooltip>
+                        <Popup>
+                          <div className="min-w-[200px]">
+                            <h3 className="font-semibold text-lg mb-1">{venue.name}</h3>
+                            <p className="text-sm text-gray-600 mb-1">{venue.city}</p>
+                            <Link to={`/venue/${venue.id}`}><Button size="sm" className="w-full bg-primary text-white">Voir détails</Button></Link>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    );
+                  })}
                 </MapContainer>
+
+                {/* Map controls overlay */}
+                <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-[1000]">
+                  <Button
+                    onClick={() => setShowRadiusCircle(!showRadiusCircle)}
+                    variant="outline"
+                    size="sm"
+                    className={`rounded-full bg-background/80 backdrop-blur ${showRadiusCircle ? 'border-primary text-primary' : 'border-white/20'}`}
+                  >
+                    {showRadiusCircle ? 'Masquer zone' : 'Afficher zone'}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-heading font-semibold text-xl">
+                    {geoPosition && nearbyVenues.length > 0 
+                      ? `${nearbyVenues.length} établissement${nearbyVenues.length > 1 ? 's' : ''} à proximité`
+                      : `${venues.length} établissement${venues.length > 1 ? 's' : ''} répertorié${venues.length > 1 ? 's' : ''}`
+                    }
+                  </h2>
+                  {nearbyVenues.length > 0 && geoPosition && (
+                    <span className="text-xs text-secondary">
+                      Dans un rayon de {searchRadius}km
+                    </span>
+                  )}
+                </div>
+                {loading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-[420px] overflow-y-auto pr-2">
+                    {(nearbyVenues.length > 0 ? nearbyVenues : venues).map((venue) => (
+                      <Link key={venue.id} to={`/venue/${venue.id}`}>
+                        <div className="card-venue p-4 hover:border-primary/50 transition-all cursor-pointer">
+                          <h3 className="font-heading font-semibold">{venue.name}</h3>
+                          <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                            <MapPin className="w-3 h-3" />
+                            {venue.city}
+                          </p>
+                          {venue.distance_km && (
+                            <p className="text-xs text-primary mt-1">📍 {venue.distance_km} km</p>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </TabsContent>

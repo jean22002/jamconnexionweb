@@ -109,6 +109,7 @@ notifications.set_db(db)
 melomanes.set_db(db)
 musicians.set_db(db)
 venues.set_db(db)
+events.set_db(db)
 
 api_router.include_router(messages_router)
 api_router.include_router(reviews_router)
@@ -116,6 +117,7 @@ api_router.include_router(notifications_router)
 api_router.include_router(melomanes.router)
 api_router.include_router(musicians.router)
 api_router.include_router(venues.router)
+api_router.include_router(events.router)
 
 # Helper function needed by legacy routes
 async def get_current_user(authorization: str = Header(None)):

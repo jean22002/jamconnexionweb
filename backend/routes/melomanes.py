@@ -35,8 +35,8 @@ async def create_melomane_profile(
     # Geocode city if provided
     latitude, longitude = None, None
     if data.city:
-        from utils.geocoding import geocode_city
-        lat, lon = geocode_city(data.city)
+        from utils import geocode_city
+        lat, lon = await geocode_city(data.city)
         latitude, longitude = lat, lon
     
     melomane_doc = {

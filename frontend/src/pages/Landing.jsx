@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Button } from "../components/ui/button";
-import { Music, MapPin, Users, Mic2, Guitar, Radio, ArrowRight, Check } from "lucide-react";
+import { Music, MapPin, Users, Mic2, Guitar, Radio, ArrowRight, Check, Music2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;

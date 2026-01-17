@@ -352,6 +352,25 @@ async def upload_venue_photo(
     
     return {"url": url}
 
+@api_router.post("/upload/melomane-photo")
+async def upload_melomane_photo(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload melomane profile photo"""
+    if current_user["role"] != "melomane":
+        raise HTTPException(status_code=403, detail="Only melomanes can upload melomane photos")
+    
+    url = await save_upload_file(file, "melomanes")
+    
+    # Update melomane profile with new photo
+    await db.melomanes.update_one(
+        {"user_id": current_user["id"]},
+        {"$set": {"profile_picture": url}}
+    )
+    
+    return {"url": url}
+
 # ============= VENUE GALLERY =============
 
 @api_router.post("/venues/me/gallery")

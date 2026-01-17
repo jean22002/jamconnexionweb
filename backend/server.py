@@ -128,6 +128,7 @@ async def get_current_user(authorization: str = Header(None)):
 
 @api_router.post("/auth/register", response_model=TokenResponse)
 async def register(data: UserRegister):
+    print(f"DEBUG: Registration attempt with role: {data.role}")  # Debug line
     existing = await db.users.find_one({"email": data.email})
     if existing:
         raise HTTPException(status_code=400, detail="Adresse email déjà existante")

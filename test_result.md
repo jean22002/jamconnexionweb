@@ -738,6 +738,21 @@ backend:
         agent: "testing"
         comment: "✅ NOTIFICATIONS MÉLOMANE VALIDÉES - Tests API réussis. RÉSULTATS: ✅ GET /api/notifications fonctionne pour mélomanes authentifiés (0 notifications récupérées), ✅ GET /api/notifications/unread-count fonctionne (count: 0), ✅ Authentification JWT requise et fonctionnelle, ✅ Endpoints notifications accessibles aux mélomanes. Système de notifications mélomane opérationnel - les notifications seront générées automatiquement par le scheduler selon les participations et le rayon de notification configuré (50km)."
 
+  - task: "Melomane Profile Bug Fix - profile_picture Field"
+    implemented: true
+    working: true
+    file: "/app/backend/models/melomane.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Correction appliquée: Ajout du champ profile_picture au modèle MelomaneCreate dans /app/backend/models/melomane.py. Mise à jour de la route de création pour utiliser data.profile_picture au lieu de None."
+      - working: true
+        agent: "testing"
+        comment: "🎉 BUG FIX VALIDATION SUCCESSFUL - TESTS COMPLETS RÉUSSIS (5/5 - 100%)! RÉSULTATS DÉTAILLÉS: ✅ TEST 1 - Inscription mélomane: Utilisateur créé avec role='melomane', email unique, token JWT valide reçu, ✅ TEST 2 - Création profil avec profile_picture: Profil créé avec pseudo='Mélomane Final Test', bio='Test de sauvegarde du profil', city='Carcassonne', region='Occitanie', postal_code='11000', favorite_styles=['Metal symphonique', 'Rock'], profile_picture='', notifications_enabled=true, notification_radius_km=50, ✅ TEST 3 - Vérification profil: GET /api/melomanes/me retourne toutes les données correctement avec profile_picture field présent et persisté, ✅ TEST 4 - Mise à jour profil: PUT /api/melomanes/me avec pseudo='Mélomane Modifié', bio='Bio mise à jour', city='Paris', favorite_styles=['Jazz', 'Blues'] fonctionne parfaitement, profile_picture field préservé pendant la mise à jour, ✅ TEST 5 - Re-vérification finale: GET /api/melomanes/me confirme état final correct avec profile_picture field présent. CORRECTION VALIDÉE: Le champ profile_picture est maintenant correctement géré dans toutes les opérations CRUD du profil mélomane. Bug de sauvegarde du profil mélomane entièrement résolu!"
+
 metadata:
   created_by: "main_agent"
   version: "1.0"

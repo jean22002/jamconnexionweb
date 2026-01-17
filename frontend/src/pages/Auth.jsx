@@ -224,6 +224,29 @@ export default function Auth() {
                   />
                 </div>
 
+                {mode === "register" && (
+                  <div className="flex items-start space-x-3 pt-2">
+                    <input
+                      type="checkbox"
+                      id="terms"
+                      checked={acceptedTerms}
+                      onChange={(e) => setAcceptedTerms(e.target.checked)}
+                      className="mt-1 h-4 w-4 rounded border-white/20 bg-black/20 text-primary focus:ring-primary focus:ring-offset-0"
+                      required
+                    />
+                    <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight cursor-pointer">
+                      J'accepte les{" "}
+                      <Link to="/cgu" className="text-primary hover:underline" target="_blank">
+                        Conditions Générales d'Utilisation
+                      </Link>
+                      {" "}et les{" "}
+                      <Link to="/cgv" className="text-primary hover:underline" target="_blank">
+                        Conditions Générales de Vente
+                      </Link>
+                    </label>
+                  </div>
+                )}
+
                 <Button 
                   type="submit" 
                   className="w-full h-12 bg-primary hover:bg-primary/90 rounded-full font-heading font-semibold hover:shadow-[0_0_20px_rgba(217,70,239,0.5)] transition-all"

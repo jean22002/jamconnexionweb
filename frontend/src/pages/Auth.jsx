@@ -144,7 +144,7 @@ export default function Auth() {
                   {/* Role Selection */}
                   <div className="space-y-3">
                     <Label>Je suis</Label>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <button
                         type="button"
                         onClick={() => setRole("musician")}
@@ -176,7 +176,24 @@ export default function Auth() {
                         <p className={`font-medium ${role === "venue" ? "text-white" : "text-muted-foreground"}`}>
                           Établissement
                         </p>
-                        <p className="text-xs text-secondary mt-1">2 mois offerts</p>
+                        <p className="text-xs text-muted-foreground mt-1">14,99€/mois</p>
+                      </button>
+                      
+                      <button
+                        type="button"
+                        onClick={() => setRole("melomane")}
+                        className={`p-4 rounded-xl border-2 transition-all ${
+                          role === "melomane" 
+                            ? "border-orange-500 bg-orange-500/10" 
+                            : "border-white/10 hover:border-white/30"
+                        }`}
+                        data-testid="role-melomane"
+                      >
+                        <Music2 className={`w-8 h-8 mx-auto mb-2 ${role === "melomane" ? "text-orange-500" : "text-muted-foreground"}`} />
+                        <p className={`font-medium ${role === "melomane" ? "text-white" : "text-muted-foreground"}`}>
+                          Mélomane
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">Gratuit</p>
                       </button>
                     </div>
                   </div>

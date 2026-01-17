@@ -39,8 +39,10 @@ class MelomaneBugFixTester:
     def test_melomane_registration(self):
         """Test 1: Create melomane account with exact credentials from review request"""
         try:
+            # Use unique email to avoid conflicts
+            timestamp = datetime.now().strftime('%H%M%S')
             test_data = {
-                "email": "melomane.final.test@test.fr",
+                "email": f"melomane.final.test.{timestamp}@test.fr",
                 "password": "Test1234!",
                 "name": "Test Final Melomane",
                 "role": "melomane"

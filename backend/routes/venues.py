@@ -156,7 +156,9 @@ async def list_venues(city: Optional[str] = None, style: Optional[str] = None):
         user_subscription_status = user.get("subscription_status") if user else None
         if user_subscription_status in ["active", "trial"]:
             subscribers_count = await db.venue_subscriptions.count_documents({"venue_id": v["id"]})
-            result.append(VenueProfileResponse(**v, subscription_status=user_subscription_status, subscribers_count=subscribers_count))
+            v["subscription_status"] = user_subscription_status
+            v["subscribers_count"] = subscribers_count
+            result.append(VenueProfileResponse(**v))
     
     return result
 

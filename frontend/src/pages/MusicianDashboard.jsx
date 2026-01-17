@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useAutoGeolocation } from "../hooks/useGeolocation";
+import { useNotifications } from "../hooks/useNotifications";
 import { toast } from "sonner";
 import JoinEventButton from "../components/JoinEventButton";
 import ParticipationBadge from "../components/ParticipationBadge";
@@ -236,6 +237,10 @@ function FollowUser({ position, enabled }) {
 
 export default function MusicianDashboard() {
   const { user, token, logout } = useAuth();
+  
+  // Hook pour les notifications push
+  useNotifications(token, user);
+  
   const [venues, setVenues] = useState([]);
   const [musicians, setMusicians] = useState([]);
   const [loading, setLoading] = useState(true);

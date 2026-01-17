@@ -293,13 +293,6 @@ export default function MelomaneDashboard() {
             </Link>
             
             <div className="flex items-center gap-4">
-              {/* Messages */}
-              <Link to="/messages-improved">
-                <Button variant="ghost" className="relative">
-                  <MessageSquare className="w-5 h-5" />
-                </Button>
-              </Link>
-
               {/* Notifications */}
               <Dialog>
                 <DialogTrigger asChild>

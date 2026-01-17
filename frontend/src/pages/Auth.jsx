@@ -16,6 +16,7 @@ export default function Auth() {
   const [mode, setMode] = useState("login");
   const [role, setRole] = useState(searchParams.get("role") || "");
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   
   const [formData, setFormData] = useState({
     email: "",
@@ -43,6 +44,11 @@ export default function Auth() {
       } else {
         if (!role) {
           toast.error("Veuillez sélectionner un type de compte");
+          setLoading(false);
+          return;
+        }
+        if (!acceptedTerms) {
+          toast.error("Vous devez accepter les conditions générales d'utilisation");
           setLoading(false);
           return;
         }

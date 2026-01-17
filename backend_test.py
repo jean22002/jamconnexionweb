@@ -7809,7 +7809,13 @@ class JamConnexionAPITester:
             self.test_melomane_get_participations,
             self.test_melomane_remove_participation,
             self.test_melomane_notifications,
-            self.test_list_all_melomanes
+            self.test_list_all_melomanes,
+            # MELOMANE PROFILE BUG FIX TESTS (SPECIFIC TO REVIEW REQUEST)
+            self.test_melomane_profile_bug_fix_registration,
+            self.test_melomane_profile_bug_fix_create_profile,
+            self.test_melomane_profile_bug_fix_get_profile,
+            self.test_melomane_profile_bug_fix_update_profile,
+            self.test_melomane_profile_bug_fix_final_verification
         ]
         
         for test in tests:

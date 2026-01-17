@@ -24,7 +24,8 @@ export default function VenueRegister() {
     mentionsLegales: false,
     cgu: false,
     cgv: false,
-    confidentialite: false
+    confidentialite: false,
+    cookies: false
   });
 
   const allLegalAccepted = Object.values(legalAcceptance).every(val => val === true);
@@ -350,6 +351,25 @@ export default function VenueRegister() {
                   }
                   checked={legalAcceptance.confidentialite}
                   onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, confidentialite: Boolean(checked) })}
+                />
+
+                {/* Cookies */}
+                <LegalSection
+                  title="POLITIQUE DE COOKIES"
+                  content={
+                    <div className="space-y-4 text-sm">
+                      <p className="font-semibold">Utilisation</p>
+                      <p>Jam Connexion utilise des cookies nécessaires au fonctionnement du site, de sécurité, et de mesure d'audience (si activés).</p>
+
+                      <p className="font-semibold">Consentement</p>
+                      <p>Un bandeau permet d'accepter ou refuser les cookies non essentiels.</p>
+
+                      <p className="font-semibold">Durée</p>
+                      <p>Les cookies sont conservés pour une durée maximale de 13 mois.</p>
+                    </div>
+                  }
+                  checked={legalAcceptance.cookies}
+                  onCheckedChange={(checked) => setLegalAcceptance({ ...legalAcceptance, cookies: Boolean(checked) })}
                 />
               </div>
 

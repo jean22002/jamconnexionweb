@@ -83,16 +83,17 @@ async def check_and_send_event_notifications():
     # Bœufs dans 3 jours
     jams_j3 = await db.jams.find({"date": three_days_str}, {"_id": 0}).to_list(100)
     for jam in jams_j3:
-        # Trouver les participants
+        # Trouver les participants (musiciens et mélomanes)
         participants = await db.event_participations.find({
             "event_id": jam["id"],
             "event_type": "jam"
         }, {"_id": 0}).to_list(1000)
         
         for participant in participants:
+            user_id = participant.get("participant_id") or participant.get("musician_id")
             await send_notification(
                 db,
-                participant["musician_id"],
+                user_id,
                 "jam_reminder",
                 f"Rappel : Bœuf dans 3 jours !",
                 f"Le bœuf \"{jam.get('music_styles', [''])[0] if jam.get('music_styles') else 'Jam Session'}\" à {jam['venue_name']} aura lieu le {jam['date']} à {jam['start_time']}",
@@ -104,16 +105,17 @@ async def check_and_send_event_notifications():
     # Concerts dans 3 jours
     concerts_j3 = await db.concerts.find({"date": three_days_str}, {"_id": 0}).to_list(100)
     for concert in concerts_j3:
-        # Trouver les participants
+        # Trouver les participants (musiciens et mélomanes)
         participants = await db.event_participations.find({
             "event_id": concert["id"],
             "event_type": "concert"
         }, {"_id": 0}).to_list(1000)
         
         for participant in participants:
+            user_id = participant.get("participant_id") or participant.get("musician_id")
             await send_notification(
                 db,
-                participant["musician_id"],
+                user_id,
                 "concert_reminder",
                 f"Rappel : Concert dans 3 jours !",
                 f"Le concert \"{concert.get('title', 'Concert')}\" à {concert['venue_name']} aura lieu le {concert['date']} à {concert['start_time']}",
@@ -128,16 +130,17 @@ async def check_and_send_event_notifications():
     # Bœufs aujourd'hui
     jams_today = await db.jams.find({"date": today_str}, {"_id": 0}).to_list(100)
     for jam in jams_today:
-        # 1. Notifier les participants
+        # 1. Notifier les participants (musiciens et mélomanes)
         participants = await db.event_participations.find({
             "event_id": jam["id"],
             "event_type": "jam"
         }, {"_id": 0}).to_list(1000)
         
         for participant in participants:
+            user_id = participant.get("participant_id") or participant.get("musician_id")
             await send_notification(
                 db,
-                participant["musician_id"],
+                user_id,
                 "jam_reminder",
                 f"🎸 C'est aujourd'hui : Bœuf à {jam['start_time']} !",
                 f"Le bœuf à {jam['venue_name']} commence à {jam['start_time']}. À ce soir !",
@@ -191,16 +194,17 @@ async def check_and_send_event_notifications():
     # Concerts aujourd'hui
     concerts_today = await db.concerts.find({"date": today_str}, {"_id": 0}).to_list(100)
     for concert in concerts_today:
-        # 1. Notifier les participants
+        # 1. Notifier les participants (musiciens et mélomanes)
         participants = await db.event_participations.find({
             "event_id": concert["id"],
             "event_type": "concert"
         }, {"_id": 0}).to_list(1000)
         
         for participant in participants:
+            user_id = participant.get("participant_id") or participant.get("musician_id")
             await send_notification(
                 db,
-                participant["musician_id"],
+                user_id,
                 "concert_reminder",
                 f"🎤 C'est aujourd'hui : Concert à {concert['start_time']} !",
                 f"Le concert \"{concert.get('title', 'Concert')}\" à {concert['venue_name']} commence à {concert['start_time']}. À ce soir !",

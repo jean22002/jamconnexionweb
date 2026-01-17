@@ -93,6 +93,8 @@ export default function Auth() {
             <p className="text-muted-foreground text-lg max-w-md">
               {role === "venue" 
                 ? "Attirez des musiciens talentueux dans votre établissement"
+                : role === "melomane"
+                ? "Découvrez les meilleurs concerts et événements musicaux"
                 : "Trouvez les meilleurs spots pour jouer près de chez vous"
               }
             </p>

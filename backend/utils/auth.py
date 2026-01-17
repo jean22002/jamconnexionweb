@@ -3,6 +3,12 @@ import jwt
 import os
 from fastapi import HTTPException, Header
 from datetime import datetime, timezone, timedelta
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Load environment variables
+ROOT_DIR = Path(__file__).parent.parent
+load_dotenv(ROOT_DIR / '.env')
 
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default_secret')
 JWT_ALGORITHM = "HS256"

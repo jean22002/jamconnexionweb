@@ -1460,16 +1460,20 @@ async def join_event(event_id: str, event_type: str = "jam", current_user: dict 
 
 @api_router.post("/events/{event_id}/leave")
 async def leave_event(event_id: str, current_user: dict = Depends(get_current_user)):
-    """Leave an event (deactivate participation)"""
-    if current_user["role"] != "musician":
-        raise HTTPException(status_code=403, detail="Only musicians can leave events")
+    """Leave an event (deactivate participation) - for musicians and melomanes"""
+    if current_user["role"] not in ["musician", "melomane"]:
+        raise HTTPException(status_code=403, detail="Only musicians and melomanes can leave events")
     
-    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
-    if not musician:
-        raise HTTPException(status_code=404, detail="Musician profile not found")
+    # Determine participant type
+    participant_type = "musician" if current_user["role"] == "musician" else "melomane"
     
     result = await db.event_participations.update_one(
-        {"event_id": event_id, "musician_id": musician["id"], "active": True},
+        {
+            "event_id": event_id, 
+            "participant_id": current_user["id"],
+            "participant_type": participant_type,
+            "active": True
+        },
         {"$set": {"active": False, "left_at": datetime.now(timezone.utc).isoformat()}}
     )
     
@@ -1479,7 +1483,8 @@ async def leave_event(event_id: str, current_user: dict = Depends(get_current_us
         # Vérifier si une participation inactive existe déjà
         inactive_participation = await db.event_participations.find_one({
             "event_id": event_id, 
-            "musician_id": musician["id"], 
+            "participant_id": current_user["id"],
+            "participant_type": participant_type,
             "active": False
         })
         if inactive_participation:

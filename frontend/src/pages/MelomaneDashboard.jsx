@@ -130,6 +130,12 @@ export default function MelomaneDashboard() {
 
   const handleSaveProfile = async () => {
     try {
+      // Validation
+      if (!profileForm.pseudo || profileForm.pseudo.trim() === "") {
+        toast.error("Le pseudo est obligatoire");
+        return;
+      }
+      
       const method = profile ? "put" : "post";
       
       // Log pour debug
@@ -147,7 +153,8 @@ export default function MelomaneDashboard() {
       fetchProfile();
     } catch (error) {
       console.error('Save error:', error.response?.data || error.message);
-      toast.error(error.response?.data?.detail || "Erreur");
+      const errorMsg = error.response?.data?.detail || error.message || "Erreur lors de la sauvegarde";
+      toast.error(errorMsg);
     }
   };
 

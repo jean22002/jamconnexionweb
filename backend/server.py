@@ -1447,8 +1447,8 @@ async def join_event(event_id: str, event_type: str = "jam", current_user: dict 
         await create_notification(
             friend_id,
             "friend_at_event",
-            f"🎵 {musician.get('pseudo', current_user['name'])} est en jam!",
-            f"Participe au boeuf musical chez {event['venue_name']}",
+            f"🎵 {profile_pseudo} est à un événement!",
+            f"Participe à un événement chez {event['venue_name']}",
             f"/venue/{event['venue_id']}"
         )
     

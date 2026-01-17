@@ -40,7 +40,7 @@ export default function Auth() {
       if (mode === "login") {
         const user = await login(formData.email, formData.password);
         toast.success("Connexion réussie!");
-        navigate(user.role === "musician" ? "/musician" : "/venue");
+        navigate(user.role === "musician" ? "/musician" : user.role === "venue" ? "/venue" : "/melomane");
       } else {
         if (!role) {
           toast.error("Veuillez sélectionner un type de compte");
@@ -54,7 +54,7 @@ export default function Auth() {
         }
         const user = await register(formData.email, formData.password, formData.name, role);
         toast.success("Compte créé avec succès!");
-        navigate(user.role === "musician" ? "/musician" : "/venue");
+        navigate(user.role === "musician" ? "/musician" : user.role === "venue" ? "/venue" : "/melomane");
       }
     } catch (error) {
       toast.error(error.response?.data?.detail || "Une erreur est survenue");

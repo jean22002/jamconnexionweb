@@ -7525,7 +7525,18 @@ class JamConnexionAPITester:
             self.test_messaging_restriction_connected_only_blocked,
             self.test_messaging_restriction_with_accepted_application,
             self.test_application_management_interface_data,
-            self.test_application_accept_reject_functionality
+            self.test_application_accept_reject_functionality,
+            # ============= MELOMANE TESTS - NEW FUNCTIONALITY =============
+            self.test_register_melomane,
+            self.test_login_melomane,
+            self.test_create_melomane_profile,
+            self.test_get_melomane_profile,
+            self.test_melomane_event_participation_jam,
+            self.test_melomane_event_participation_concert,
+            self.test_melomane_get_participations,
+            self.test_melomane_remove_participation,
+            self.test_melomane_notifications,
+            self.test_list_all_melomanes
         ]
         
         for test in tests:

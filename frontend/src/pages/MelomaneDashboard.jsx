@@ -483,6 +483,8 @@ export default function MelomaneDashboard() {
             <TabsTrigger value="participations" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
               Mes Participations ({participations.length})
             </TabsTrigger>
+            <TabsTrigger value="etablissements" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Établissements</TabsTrigger>
+            <TabsTrigger value="connexions" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Connexions</TabsTrigger>
           </TabsList>
 
           {/* Map Tab */}

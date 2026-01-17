@@ -5,6 +5,7 @@ import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import MusicianDashboard from "./pages/MusicianDashboard";
 import VenueDashboard from "./pages/VenueDashboard";
+import MelomaneDashboard from "./pages/MelomaneDashboard";
 import VenueDetail from "./pages/VenueDetail";
 import MusicianDetail from "./pages/MusicianDetail";
 import Messages from "./pages/Messages";
@@ -35,7 +36,7 @@ const ProtectedRoute = ({ children, allowedRole }) => {
   }
   
   if (allowedRole && user.role !== allowedRole) {
-    return <Navigate to={user.role === "musician" ? "/musician" : "/venue"} replace />;
+    return <Navigate to={user.role === "musician" ? "/musician" : user.role === "venue" ? "/venue" : "/melomane"} replace />;
   }
   
   return children;
@@ -53,7 +54,7 @@ const PublicRoute = ({ children }) => {
   }
   
   if (user) {
-    return <Navigate to={user.role === "musician" ? "/musician" : "/venue"} replace />;
+    return <Navigate to={user.role === "musician" ? "/musician" : user.role === "venue" ? "/venue" : "/melomane"} replace />;
   }
   
   return children;
@@ -89,6 +90,14 @@ function App() {
             element={
               <ProtectedRoute allowedRole="venue">
                 <VenueDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/melomane" 
+            element={
+              <ProtectedRoute allowedRole="melomane">
+                <MelomaneDashboard />
               </ProtectedRoute>
             } 
           />

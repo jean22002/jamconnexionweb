@@ -194,8 +194,8 @@ async def get_my_participations(current_user: dict = Depends(get_current_user_lo
     user_id = current_user["id"]
     
     participations = await db.event_participations.find({
-        "participant_id": user_id,
-        "participant_type": "melomane"
+        "user_id": user_id,
+        "user_role": "melomane"
     }, {"_id": 0}).to_list(1000)
     
     return participations

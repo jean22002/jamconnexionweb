@@ -576,7 +576,8 @@ export default function MusicianDashboard() {
     fetchNotifications();
     fetchFriends();
     fetchCurrentParticipation();
-  }, [fetchData, fetchProfile, fetchNotifications, fetchFriends, fetchCurrentParticipation]);
+    fetchParticipations();
+  }, [fetchData, fetchProfile, fetchNotifications, fetchFriends, fetchCurrentParticipation, fetchParticipations]);
 
   // Polling for participation status (every 30 seconds)
   useEffect(() => {

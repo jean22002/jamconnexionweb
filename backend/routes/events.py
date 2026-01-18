@@ -623,7 +623,7 @@ async def get_event_participants(event_id: str):
 
 @router.get("/musicians/me/participations")
 async def get_my_participations(current_user: dict = Depends(get_current_user)):
-    """Get all my event participations"""
+    """Get all my event participations with enriched data"""
     if current_user["role"] not in ["musician", "melomane"]:
         raise HTTPException(status_code=403, detail="Only musicians and melomanes can access this")
     
@@ -632,4 +632,38 @@ async def get_my_participations(current_user: dict = Depends(get_current_user)):
         "active": True
     }, {"_id": 0}).to_list(1000)
     
-    return participations
+    # Enrich with event and venue details
+    enriched_participations = []
+    for participation in participations:
+        event_id = participation.get("event_id")
+        event_type = participation.get("event_type")
+        
+        # Get event details based on type
+        event = None
+        if event_type == "jam":
+            event = await db.jams.find_one({"id": event_id}, {"_id": 0})
+        elif event_type == "concert":
+            event = await db.concerts.find_one({"id": event_id}, {"_id": 0})
+        elif event_type == "karaoke":
+            event = await db.karaoke_events.find_one({"id": event_id}, {"_id": 0})
+        elif event_type == "spectacle":
+            event = await db.spectacle_events.find_one({"id": event_id}, {"_id": 0})
+        
+        if event:
+            # Get venue details
+            venue = await db.venues.find_one({"id": event.get("venue_id")}, {"_id": 0, "name": 1, "city": 1})
+            
+            # Merge all data
+            enriched_participations.append({
+                **participation,
+                "venue_id": event.get("venue_id"),
+                "venue_name": venue.get("name") if venue else "Établissement inconnu",
+                "venue_city": venue.get("city") if venue else None,
+                "event_date": event.get("date"),
+                "event_time": event.get("start_time"),
+                "event_title": event.get("title") if event_type == "concert" else None
+            })
+        else:
+            enriched_participations.append(participation)
+    
+    return enriched_participations

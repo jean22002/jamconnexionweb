@@ -366,8 +366,8 @@ export default function VenueDashboard() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const method = profile ? "put" : "post";
-      await axios[method](`${API}/venues`, formData, { headers: { Authorization: `Bearer ${token}` } });
+      // Always use PUT since we're logged in as a venue (profile must exist)
+      await axios.put(`${API}/venues`, formData, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Profil sauvegardé!");
       setEditing(false);
       fetchProfile();

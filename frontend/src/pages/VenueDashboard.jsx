@@ -3919,6 +3919,29 @@ export default function VenueDashboard() {
                           </p>
                         </div>
                       </div>
+                      
+                      <div 
+                        className={`flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${notificationTarget === 'all' ? 'border-green-500 bg-green-500/10' : 'border-white/10 hover:border-white/20'}`}
+                        onClick={() => setNotificationTarget('all')}
+                      >
+                        <input 
+                          type="radio" 
+                          name="target" 
+                          value="all" 
+                          checked={notificationTarget === 'all'}
+                          onChange={() => setNotificationTarget('all')}
+                          className="w-4 h-4"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <Users className="w-4 h-4 text-green-500" />
+                            <span className="font-semibold">Jacks ET Musiciens à proximité</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Estimation : {subscribers.length + nearbyMusiciansCount} destinataire{(subscribers.length + nearbyMusiciansCount) > 1 ? 's' : ''} (combiné)
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   

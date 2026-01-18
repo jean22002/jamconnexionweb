@@ -937,16 +937,33 @@ export default function MelomaneDashboard() {
                   {participations.map((participation) => (
                     <div key={participation.id} className="card-venue p-5">
                       <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <p className="font-heading font-semibold text-lg">
+                        <div className="flex-1">
+                          <p className="font-heading font-semibold text-lg mb-1">
                             {participation.event_type === 'jam' ? '🎸 Bœuf musical' :
                              participation.event_type === 'concert' ? '🎤 Concert' :
                              participation.event_type === 'karaoke' ? '🎤 Karaoké' :
                              participation.event_type === 'spectacle' ? '🎭 Spectacle' : 'Événement'}
                           </p>
-                          <p className="text-sm text-muted-foreground">Événement ID: {participation.event_id}</p>
+                          {participation.event_title && (
+                            <p className="text-sm font-medium text-foreground/90 mb-1">{participation.event_title}</p>
+                          )}
+                          <p className="text-sm text-muted-foreground flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {participation.venue_name || 'Établissement inconnu'}
+                            {participation.venue_city && ` • ${participation.venue_city}`}
+                          </p>
+                          {participation.event_date && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              📅 {new Date(participation.event_date).toLocaleDateString('fr-FR', { 
+                                weekday: 'long', 
+                                day: 'numeric', 
+                                month: 'long' 
+                              })}
+                              {participation.event_time && ` à ${participation.event_time}`}
+                            </p>
+                          )}
                         </div>
-                        <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs flex items-center gap-1">
+                        <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs flex items-center gap-1 ml-2">
                           <Check className="w-3 h-3" />
                           Participant
                         </span>

@@ -532,22 +532,22 @@ export default function VenueDetail() {
               {venue.has_pa_system && <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">Sono</span>}
             </div>
             
-            <div className="flex items-start justify-between">
-              <div>
-                <h1 className="font-heading font-bold text-3xl md:text-4xl mb-2">{venue.name}</h1>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <MapPin className="w-4 h-4" />
-                    <span>{venue.address}, {venue.postal_code} {venue.city}</span>
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h1 className="font-heading font-bold text-3xl md:text-4xl mb-2 truncate">{venue.name}</h1>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                    <MapPin className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">{venue.address}, {venue.postal_code} {venue.city}</span>
                   </div>
                   
                   {/* GPS Navigation Buttons */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-full transition-colors"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-full transition-colors whitespace-nowrap"
                       title="Ouvrir dans Google Maps"
                     >
                       <Navigation className="w-3 h-3" />
@@ -557,7 +557,7 @@ export default function VenueDetail() {
                       href={`https://waze.com/ul?ll=${venue.latitude},${venue.longitude}&navigate=yes`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-xs rounded-full transition-colors"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-xs rounded-full transition-colors whitespace-nowrap"
                       title="Ouvrir dans Waze"
                     >
                       <Navigation className="w-3 h-3" />
@@ -567,7 +567,8 @@ export default function VenueDetail() {
                 </div>
               </div>
               
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 w-full md:w-auto"
+>
                 {(user?.role === "musician" || user?.role === "melomane") && (
                   <Button 
                     onClick={handleSubscribe} 

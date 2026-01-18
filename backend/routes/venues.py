@@ -172,11 +172,11 @@ async def get_venue(venue_id: str):
     user = await db.users.find_one({"id": venue["user_id"]}, {"_id": 0})
     subscribers_count = await db.venue_subscriptions.count_documents({"venue_id": venue_id})
     
-    return VenueProfileResponse(
-        **venue,
-        subscription_status=user.get("subscription_status") if user else None,
-        subscribers_count=subscribers_count
-    )
+    # Add subscription_status and subscribers_count to the venue dict
+    venue["subscription_status"] = user.get("subscription_status") if user else None
+    venue["subscribers_count"] = subscribers_count
+    
+    return VenueProfileResponse(**venue)
 
 
 @router.post("/venues/nearby", response_model=List[VenueProfileResponse])

@@ -668,3 +668,170 @@ async def get_concerts_profitability(current_user: dict = Depends(get_current_us
             result.append(venue_data)
     
     return result
+
+
+@router.post("/venues/me/notify-subscribers")
+async def notify_subscribers(
+    message: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Send notification to venue subscribers (Jacks)"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can send notifications")
+    
+    venue_id = current_user["id"]
+    notification_message = message.get("message", "")
+    
+    if not notification_message:
+        raise HTTPException(status_code=400, detail="Message is required")
+    
+    # Get all subscribers
+    subscriptions = await db.venue_subscriptions.find({"venue_id": venue_id}, {"_id": 0}).to_list(1000)
+    
+    # Create notifications for each subscriber
+    notifications_created = 0
+    for sub in subscriptions:
+        notification = {
+            "id": str(uuid.uuid4()),
+            "recipient_id": sub["subscriber_id"],
+            "recipient_role": sub["subscriber_role"],
+            "sender_id": venue_id,
+            "sender_role": "venue",
+            "type": "broadcast",
+            "message": notification_message,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "read": False
+        }
+        await db.notifications.insert_one(notification)
+        notifications_created += 1
+    
+    return {"recipients_count": notifications_created, "message": "Notifications sent successfully"}
+
+
+@router.post("/venues/me/broadcast-notification")
+async def broadcast_notification(
+    message: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Send notification to nearby musicians"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can send notifications")
+    
+    venue_id = current_user["id"]
+    notification_message = message.get("message", "")
+    radius = message.get("radius", 100)  # km
+    
+    if not notification_message:
+        raise HTTPException(status_code=400, detail="Message is required")
+    
+    # Get venue location
+    venue = await db.venues.find_one({"id": venue_id}, {"_id": 0})
+    if not venue or not venue.get("latitude") or not venue.get("longitude"):
+        raise HTTPException(status_code=400, detail="Venue location not set")
+    
+    venue_lat = venue["latitude"]
+    venue_lon = venue["longitude"]
+    
+    # Find nearby musicians
+    all_musicians = await db.musicians.find({}, {"_id": 0}).to_list(10000)
+    nearby_musicians = []
+    
+    for musician in all_musicians:
+        if musician.get("latitude") and musician.get("longitude"):
+            distance = haversine_distance(
+                venue_lat, venue_lon,
+                musician["latitude"], musician["longitude"]
+            )
+            if distance <= radius:
+                nearby_musicians.append(musician)
+    
+    # Create notifications for nearby musicians
+    notifications_created = 0
+    for musician in nearby_musicians:
+        notification = {
+            "id": str(uuid.uuid4()),
+            "recipient_id": musician["user_id"],
+            "recipient_role": "musician",
+            "sender_id": venue_id,
+            "sender_role": "venue",
+            "type": "broadcast",
+            "message": notification_message,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "read": False
+        }
+        await db.notifications.insert_one(notification)
+        notifications_created += 1
+    
+    return {"recipients_count": notifications_created, "message": "Notifications sent successfully"}
+
+
+@router.post("/venues/me/notify-all")
+async def notify_all(
+    message: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Send notification to both subscribers AND nearby musicians"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can send notifications")
+    
+    venue_id = current_user["id"]
+    notification_message = message.get("message", "")
+    radius = message.get("radius", 100)  # km
+    
+    if not notification_message:
+        raise HTTPException(status_code=400, detail="Message is required")
+    
+    # Get all subscribers
+    subscriptions = await db.venue_subscriptions.find({"venue_id": venue_id}, {"_id": 0}).to_list(1000)
+    subscriber_ids = {sub["subscriber_id"] for sub in subscriptions}
+    
+    # Get venue location
+    venue = await db.venues.find_one({"id": venue_id}, {"_id": 0})
+    if not venue or not venue.get("latitude") or not venue.get("longitude"):
+        raise HTTPException(status_code=400, detail="Venue location not set")
+    
+    venue_lat = venue["latitude"]
+    venue_lon = venue["longitude"]
+    
+    # Find nearby musicians
+    all_musicians = await db.musicians.find({}, {"_id": 0}).to_list(10000)
+    nearby_musician_ids = set()
+    
+    for musician in all_musicians:
+        if musician.get("latitude") and musician.get("longitude"):
+            distance = haversine_distance(
+                venue_lat, venue_lon,
+                musician["latitude"], musician["longitude"]
+            )
+            if distance <= radius:
+                nearby_musician_ids.add(musician["user_id"])
+    
+    # Combine both sets (subscribers + nearby musicians, avoiding duplicates)
+    all_recipient_ids = subscriber_ids.union(nearby_musician_ids)
+    
+    # Create notifications for all recipients
+    notifications_created = 0
+    for recipient_id in all_recipient_ids:
+        # Determine recipient role
+        recipient_role = "musician"  # Default
+        for sub in subscriptions:
+            if sub["subscriber_id"] == recipient_id:
+                recipient_role = sub["subscriber_role"]
+                break
+        
+        notification = {
+            "id": str(uuid.uuid4()),
+            "recipient_id": recipient_id,
+            "recipient_role": recipient_role,
+            "sender_id": venue_id,
+            "sender_role": "venue",
+            "type": "broadcast",
+            "message": notification_message,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "read": False
+        }
+        await db.notifications.insert_one(notification)
+        notifications_created += 1
+    
+    return {"recipients_count": notifications_created, "message": "Notifications sent successfully"}
+

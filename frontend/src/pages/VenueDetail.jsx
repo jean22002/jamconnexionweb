@@ -82,13 +82,19 @@ export default function VenueDetail() {
         axios.get(`${API}/venues/${id}/spectacle`),
         axios.get(`${API}/venues/${id}/planning`)
       ]);
-      setJams(jamsRes.data);
-      setConcerts(concertsRes.data);
-      setKaraokes(karaokeRes.data);
-      setSpectacles(spectacleRes.data);
-      setPlanningSlots(planningRes.data.filter(s => s.is_open));
+      setJams(Array.isArray(jamsRes.data) ? jamsRes.data : []);
+      setConcerts(Array.isArray(concertsRes.data) ? concertsRes.data : []);
+      setKaraokes(Array.isArray(karaokeRes.data) ? karaokeRes.data : []);
+      setSpectacles(Array.isArray(spectacleRes.data) ? spectacleRes.data : []);
+      setPlanningSlots(Array.isArray(planningRes.data) ? planningRes.data.filter(s => s.is_open) : []);
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error fetching events:", error);
+      // Ensure arrays stay as empty arrays even on error
+      setJams([]);
+      setConcerts([]);
+      setKaraokes([]);
+      setSpectacles([]);
+      setPlanningSlots([]);
     }
   }, [id]);
 

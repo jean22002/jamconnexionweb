@@ -469,7 +469,10 @@ export default function VenueDetail() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Link to={user?.role === "musician" ? "/musician" : "/"} className="inline-flex items-center gap-2 text-muted-foreground hover:text-white transition-colors mb-6">
+        <Link 
+          to={user?.role === "musician" ? "/musician" : user?.role === "melomane" ? "/melomane" : "/"} 
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-white transition-colors mb-6"
+        >
           <ArrowLeft className="w-4 h-4" /> Retour
         </Link>
 

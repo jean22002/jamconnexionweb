@@ -28,10 +28,6 @@ logger = logging.getLogger(__name__)
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default_secret')
 JWT_ALGORITHM = "HS256"
 
-def set_db(database):
-    global db
-    db = database
-
 async def get_current_user(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing or invalid authorization header")

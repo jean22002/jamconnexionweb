@@ -192,9 +192,10 @@ export default function VenueDetail() {
     setLoadingBands(true);
     try {
       const response = await axios.get(`${API}/venues/${id}/bands-played`);
-      setBandsPlayed(response.data);
+      setBandsPlayed(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching bands:", error);
+      setBandsPlayed([]);
     } finally {
       setLoadingBands(false);
     }

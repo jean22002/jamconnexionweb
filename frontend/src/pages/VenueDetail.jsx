@@ -113,9 +113,10 @@ export default function VenueDetail() {
   const fetchActiveEvents = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/venues/${id}/active-events`);
-      setActiveEvents(response.data);
+      setActiveEvents(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching active events:", error);
+      setActiveEvents([]);
     }
   }, [id]);
 

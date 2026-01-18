@@ -698,19 +698,23 @@ async def notify_subscribers(
     # Create notifications for each subscriber
     notifications_created = 0
     for sub in subscriptions:
-        notification = {
-            "id": str(uuid.uuid4()),
-            "recipient_id": sub["subscriber_id"],
-            "recipient_role": sub["subscriber_role"],
-            "sender_id": current_user["id"],
-            "sender_role": "venue",
-            "type": "broadcast",
-            "message": notification_message,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "read": False
-        }
-        await db.notifications.insert_one(notification)
-        notifications_created += 1
+        try:
+            notification = {
+                "id": str(uuid.uuid4()),
+                "recipient_id": sub["subscriber_id"],
+                "recipient_role": sub["subscriber_role"],
+                "sender_id": current_user["id"],
+                "sender_role": "venue",
+                "type": "broadcast",
+                "message": notification_message,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "read": False
+            }
+            result = await db.notifications.insert_one(notification)
+            logger.info(f"Notification inserted: {result.inserted_id}")
+            notifications_created += 1
+        except Exception as e:
+            logger.error(f"Failed to insert notification: {e}")
     
     return {"recipients_count": notifications_created, "message": "Notifications sent successfully"}
 

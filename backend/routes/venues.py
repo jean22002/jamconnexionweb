@@ -462,6 +462,170 @@ async def get_venue_active_events(venue_id: str):
 async def get_bands_played(venue_id: str):
     """Get list of bands that have played at this venue"""
     # Get all past concerts for this venue
+
+
+
+# ============= MY VENUE EVENTS =============
+
+@router.get("/venues/me/jams")
+async def get_my_venue_jams(current_user: dict = Depends(get_current_user)):
+    """Get all jams for my venue"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venue accounts can access this")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    jams = await db.jams.find({"venue_id": venue["id"]}, {"_id": 0}).sort("date", 1).to_list(100)
+    return jams
+
+
+@router.get("/venues/me/concerts")
+async def get_my_venue_concerts(current_user: dict = Depends(get_current_user)):
+    """Get all concerts for my venue"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venue accounts can access this")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    concerts = await db.concerts.find({"venue_id": venue["id"]}, {"_id": 0}).sort("date", 1).to_list(100)
+    
+    # Add participants count for each concert
+    result = []
+    for concert in concerts:
+        participants_count = await db.event_participations.count_documents({
+            "event_id": concert["id"],
+            "event_type": "concert",
+            "active": True
+        })
+        concert["participants_count"] = participants_count
+        result.append(concert)
+    
+    return result
+
+
+@router.get("/venues/me/karaoke")
+async def get_my_venue_karaoke(current_user: dict = Depends(get_current_user)):
+    """Get all karaoke events for my venue"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venue accounts can access this")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    karaoke = await db.karaoke.find({"venue_id": venue["id"]}, {"_id": 0}).sort("date", 1).to_list(100)
+    return karaoke
+
+
+@router.get("/venues/me/spectacle")
+async def get_my_venue_spectacle(current_user: dict = Depends(get_current_user)):
+    """Get all spectacle events for my venue"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venue accounts can access this")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    spectacles = await db.spectacle.find({"venue_id": venue["id"]}, {"_id": 0}).sort("date", 1).to_list(100)
+    return spectacles
+
+
+# ============= VENUE STATISTICS =============
+
+@router.get("/venues/me/jams/profitability")
+async def get_jams_profitability(current_user: dict = Depends(get_current_user)):
+    """Get profitability stats for venue's jams"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venue accounts can access this")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Get past jams
+    today = datetime.now(timezone.utc).date().isoformat()
+    past_jams = await db.jams.find({
+        "venue_id": venue["id"],
+        "date": {"$lt": today}
+    }, {"_id": 0}).to_list(1000)
+    
+    total_revenue = 0
+    total_costs = 0
+    profitable_count = 0
+    
+    for jam in past_jams:
+        revenue = jam.get("revenue", 0) or 0
+        costs = jam.get("costs", 0) or 0
+        total_revenue += revenue
+        total_costs += costs
+        
+        if revenue > costs:
+            profitable_count += 1
+    
+    total_profit = total_revenue - total_costs
+    avg_profit_per_jam = total_profit / len(past_jams) if past_jams else 0
+    profitability_rate = (profitable_count / len(past_jams) * 100) if past_jams else 0
+    
+    return {
+        "total_jams": len(past_jams),
+        "total_revenue": total_revenue,
+        "total_costs": total_costs,
+        "total_profit": total_profit,
+        "avg_profit_per_jam": round(avg_profit_per_jam, 2),
+        "profitable_count": profitable_count,
+        "profitability_rate": round(profitability_rate, 2)
+    }
+
+
+@router.get("/venues/me/concerts/profitability")
+async def get_concerts_profitability(current_user: dict = Depends(get_current_user)):
+    """Get profitability stats for venue's concerts"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venue accounts can access this")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Get past concerts
+    today = datetime.now(timezone.utc).date().isoformat()
+    past_concerts = await db.concerts.find({
+        "venue_id": venue["id"],
+        "date": {"$lt": today}
+    }, {"_id": 0}).to_list(1000)
+    
+    total_revenue = 0
+    total_costs = 0
+    profitable_count = 0
+    
+    for concert in past_concerts:
+        revenue = concert.get("revenue", 0) or 0
+        costs = concert.get("costs", 0) or 0
+        total_revenue += revenue
+        total_costs += costs
+        
+        if revenue > costs:
+            profitable_count += 1
+    
+    total_profit = total_revenue - total_costs
+    avg_profit_per_concert = total_profit / len(past_concerts) if past_concerts else 0
+    profitability_rate = (profitable_count / len(past_concerts) * 100) if past_concerts else 0
+    
+    return {
+        "total_concerts": len(past_concerts),
+        "total_revenue": total_revenue,
+        "total_costs": total_costs,
+        "total_profit": total_profit,
+        "avg_profit_per_concert": round(avg_profit_per_concert, 2),
+        "profitable_count": profitable_count,
+        "profitability_rate": round(profitability_rate, 2)
+    }
+
     today = datetime.now(timezone.utc).date().isoformat()
     
     past_concerts = await db.concerts.find({

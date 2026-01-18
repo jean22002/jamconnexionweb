@@ -255,6 +255,7 @@ export default function MusicianDashboard() {
   const [friendRequests, setFriendRequests] = useState([]);
   const [sentRequests, setSentRequests] = useState([]); // Nouvelles demandes envoyées
   const [subscriptions, setSubscriptions] = useState([]);
+  const [participations, setParticipations] = useState([]); // Participations musicien
   const [activeTab, setActiveTab] = useState("map");
   const [currentParticipation, setCurrentParticipation] = useState(null);
   const [selectedRegion, setSelectedRegion] = useState(null);

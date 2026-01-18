@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 class KaraokeSpectacleTestRunner:
-    def __init__(self, base_url="https://venue-profile-fix.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://venue-connections.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.venue_token = None
         self.musician_token = None

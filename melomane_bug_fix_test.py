@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 
 class MelomaneBugFixTester:
-    def __init__(self, base_url="https://venue-profile-fix.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://venue-connections.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0

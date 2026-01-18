@@ -110,7 +110,7 @@ reviews.set_db(db)
 notifications.set_db(db)
 melomanes.set_db(db)
 musicians.set_db(db)
-venues.set_db(db)
+# venues.set_db(db)  # venues.py now has its own MongoDB connection
 events.set_db(db)
 planning.set_db(db)
 bands.set_db(db)

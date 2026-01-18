@@ -421,20 +421,28 @@ export default function VenueDashboard() {
 
     setSendingBroadcast(true);
     try {
-      const endpoint = notificationTarget === 'subscribers' 
-        ? `${API}/venues/me/notify-subscribers`
-        : `${API}/venues/me/broadcast-notification`;
+      let endpoint, targetText;
+      
+      if (notificationTarget === 'subscribers') {
+        endpoint = `${API}/venues/me/notify-subscribers`;
+        targetText = 'abonné(s)';
+      } else if (notificationTarget === 'nearby') {
+        endpoint = `${API}/venues/me/broadcast-notification`;
+        targetText = 'musicien(s)';
+      } else if (notificationTarget === 'all') {
+        endpoint = `${API}/venues/me/notify-all`;
+        targetText = 'destinataire(s)';
+      }
       
       const response = await axios.post(
         endpoint,
         { 
           message: broadcastMessage,
-          radius: notificationTarget === 'nearby' ? 100 : undefined  // 100 km pour les musiciens proches
+          radius: (notificationTarget === 'nearby' || notificationTarget === 'all') ? 100 : undefined
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      const targetText = notificationTarget === 'subscribers' ? 'abonné(s)' : 'musicien(s)';
       toast.success(`Notification envoyée à ${response.data.recipients_count} ${targetText} ! 🎵`);
       setBroadcastMessage("");
       fetchBroadcastHistory();

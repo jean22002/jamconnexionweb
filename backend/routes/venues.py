@@ -133,8 +133,11 @@ async def get_my_venue(current_user: dict = Depends(get_current_user)):
                 {"$set": {"subscription_status": "expired"}}
             )
     
+    # Remove duplicate fields from venue dict before merging
+    venue_data = {k: v for k, v in venue.items() if k not in ["subscription_status", "trial_end", "trial_days_left", "subscribers_count"]}
+    
     return VenueProfileResponse(
-        **venue,
+        **venue_data,
         subscription_status=subscription_status,
         trial_end=trial_end,
         trial_days_left=trial_days_left,

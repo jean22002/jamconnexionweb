@@ -955,11 +955,6 @@ export default function MusicianDashboard() {
             </Link>
             
             <div className="flex items-center gap-4">
-              {/* Participation Badge in Header */}
-              {currentParticipation && (
-                <ParticipationBadge eventInfo={currentParticipation} className="hidden md:inline-flex" />
-              )}
-              
               {/* Messages */}
               <Link to="/messages-improved">
                 <Button variant="ghost" className="relative">

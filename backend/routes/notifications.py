@@ -95,3 +95,15 @@ async def delete_notification(notification_id: str, current_user: dict = Depends
     await db.notifications.delete_one({"id": notification_id})
     
     return {"message": "Notification deleted"}
+
+@router.delete("")
+async def delete_all_notifications(current_user: dict = Depends(get_current_user_local)):
+    """Delete all notifications for current user"""
+    result = await db.notifications.delete_many({
+        "$or": [
+            {"recipient_id": current_user["id"]},
+            {"user_id": current_user["id"]}
+        ]
+    })
+    
+    return {"message": f"{result.deleted_count} notifications deleted"}

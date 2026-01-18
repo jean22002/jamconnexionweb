@@ -2705,7 +2705,12 @@ async def mark_all_notifications_read(current_user: dict = Depends(get_current_u
 @api_router.delete("/notifications")
 async def delete_all_notifications(current_user: dict = Depends(get_current_user)):
     """Delete all notifications for the current user"""
-    await db.notifications.delete_many({"user_id": current_user["id"]})
+    await db.notifications.delete_many({
+        "$or": [
+            {"recipient_id": current_user["id"]},
+            {"user_id": current_user["id"]}
+        ]
+    })
     return {"message": "All notifications deleted"}
 
 # ============= VENUE BROADCAST NOTIFICATIONS =============

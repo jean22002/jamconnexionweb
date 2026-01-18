@@ -722,16 +722,18 @@ async def broadcast_notification(
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can send notifications")
     
-    venue_id = current_user["id"]
+    # Get venue profile
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
     notification_message = message.get("message", "")
     radius = message.get("radius", 100)  # km
     
     if not notification_message:
         raise HTTPException(status_code=400, detail="Message is required")
     
-    # Get venue location
-    venue = await db.venues.find_one({"id": venue_id}, {"_id": 0})
-    if not venue or not venue.get("latitude") or not venue.get("longitude"):
+    if not venue.get("latitude") or not venue.get("longitude"):
         raise HTTPException(status_code=400, detail="Venue location not set")
     
     venue_lat = venue["latitude"]
@@ -757,7 +759,7 @@ async def broadcast_notification(
             "id": str(uuid.uuid4()),
             "recipient_id": musician["user_id"],
             "recipient_role": "musician",
-            "sender_id": venue_id,
+            "sender_id": current_user["id"],
             "sender_role": "venue",
             "type": "broadcast",
             "message": notification_message,

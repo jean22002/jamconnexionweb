@@ -393,3 +393,57 @@ async def remove_friend(friend_user_id: str, current_user: dict = Depends(get_cu
         raise HTTPException(status_code=404, detail="Friendship not found")
     
     return {"message": "Friend removed"}
+
+
+
+
+# ============= MUSICIAN PARTICIPATIONS =============
+
+@router.get("/musicians/me/current-participation")
+async def get_current_participation(current_user: dict = Depends(get_current_user)):
+    """Get current/upcoming event participation for the musician"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can access this")
+    
+    from datetime import datetime, timezone
+    today = datetime.now(timezone.utc).date().isoformat()
+    
+    # Get active participations
+    participations = await db.event_participations.find({
+        "user_id": current_user["id"],
+        "active": True
+    }, {"_id": 0}).to_list(100)
+    
+    result = []
+    for participation in participations:
+        event_type = participation.get("event_type")
+        event_id = participation.get("event_id")
+        
+        # Get event details
+        event = None
+        if event_type == "jam":
+            event = await db.jams.find_one({"id": event_id}, {"_id": 0})
+        elif event_type == "concert":
+            event = await db.concerts.find_one({"id": event_id}, {"_id": 0})
+        elif event_type == "karaoke":
+            event = await db.karaoke.find_one({"id": event_id}, {"_id": 0})
+        elif event_type == "spectacle":
+            event = await db.spectacle.find_one({"id": event_id}, {"_id": 0})
+        
+        if event and event.get("date", "") >= today:
+            # Get venue details
+            venue = await db.venues.find_one({"id": event.get("venue_id")}, {"_id": 0})
+            
+            result.append({
+                "participation_id": participation.get("id"),
+                "event_id": event_id,
+                "event_type": event_type,
+                "event": event,
+                "venue": venue,
+                "joined_at": participation.get("created_at")
+            })
+    
+    # Sort by event date
+    result.sort(key=lambda x: x.get("event", {}).get("date", ""))
+    
+    return result

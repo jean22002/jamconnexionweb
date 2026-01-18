@@ -8,7 +8,7 @@ import os
 import requests
 
 def debug_jwt_token():
-    base_url = "https://music-fan-profile.preview.emergentagent.com/api"
+    base_url = "https://venue-profile-fix.preview.emergentagent.com/api"
     
     # Get a fresh token
     register_data = {

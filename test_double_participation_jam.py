@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timedelta
 
 class DoubleParticipationJamTester:
-    def __init__(self, base_url="https://music-fan-profile.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://venue-profile-fix.preview.emergentagent.com/api"):
         self.base_url = base_url
 
     def test_double_participation_jam_bug_reproduction(self):

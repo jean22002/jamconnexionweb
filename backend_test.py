@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 class JamConnexionAPITester:
-    def __init__(self, base_url="https://music-fan-profile.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://venue-profile-fix.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0
@@ -8514,7 +8514,7 @@ class JamConnexionAPITester:
         try:
             headers = {'Authorization': f'Bearer {self.venue_token}'}
             checkout_data = {
-                "origin_url": "https://music-fan-profile.preview.emergentagent.com"
+                "origin_url": "https://venue-profile-fix.preview.emergentagent.com"
             }
             
             response = requests.post(f"{self.base_url}/payments/checkout", json=checkout_data, headers=headers, timeout=15)
@@ -8546,7 +8546,7 @@ class JamConnexionAPITester:
         try:
             headers = {'Authorization': f'Bearer {self.musician_token}'}
             checkout_data = {
-                "origin_url": "https://music-fan-profile.preview.emergentagent.com"
+                "origin_url": "https://venue-profile-fix.preview.emergentagent.com"
             }
             
             response = requests.post(f"{self.base_url}/payments/checkout", json=checkout_data, headers=headers, timeout=10)
@@ -8567,7 +8567,7 @@ class JamConnexionAPITester:
         """Test Stripe checkout session creation without authentication (should fail - 401)"""
         try:
             checkout_data = {
-                "origin_url": "https://music-fan-profile.preview.emergentagent.com"
+                "origin_url": "https://venue-profile-fix.preview.emergentagent.com"
             }
             
             response = requests.post(f"{self.base_url}/payments/checkout", json=checkout_data, timeout=10)

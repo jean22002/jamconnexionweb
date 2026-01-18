@@ -832,6 +832,42 @@ async def notify_all(
             "read": False
         }
         await db.notifications.insert_one(notification)
+
+
+@router.get("/venues/me/broadcast-history")
+async def get_broadcast_history(current_user: dict = Depends(get_current_user)):
+    """Get broadcast notification history for this venue"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can view broadcast history")
+    
+    # Get all notifications sent by this venue (grouped by message)
+    # We'll aggregate them to show unique messages with recipient counts
+    notifications = await db.notifications.find({
+        "sender_id": current_user["id"],
+        "sender_role": "venue",
+        "type": "broadcast"
+    }, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    
+    # Group by message and created_at to show unique broadcasts
+    history = {}
+    for notif in notifications:
+        # Create a key based on message and approximate time (rounded to minute)
+        created_at = notif.get("created_at", "")
+        message = notif.get("message", "")
+        key = f"{message}_{created_at[:16]}"  # Group by minute
+        
+        if key not in history:
+            history[key] = {
+                "message": message,
+                "created_at": created_at,
+                "recipients_count": 0
+            }
+        history[key]["recipients_count"] += 1
+    
+    # Convert to list and sort by date
+    result = sorted(history.values(), key=lambda x: x["created_at"], reverse=True)
+    return result
+
         notifications_created += 1
     
     return {"recipients_count": notifications_created, "message": "Notifications sent successfully"}

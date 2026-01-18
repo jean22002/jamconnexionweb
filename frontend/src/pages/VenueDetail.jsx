@@ -166,7 +166,7 @@ export default function VenueDetail() {
       if (isSubscribed) {
         // Unsubscribe
         await axios.delete(
-          `${API}/venues/${id}/subscribe`,
+          `${API}/venues/${id}/unsubscribe`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setIsSubscribed(false);
@@ -184,7 +184,8 @@ export default function VenueDetail() {
       fetchVenue(); // Refresh subscriber count
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Erreur lors de la connexion");
+      const action = isSubscribed ? "déconnexion" : "connexion";
+      toast.error(`Erreur lors de la ${action}`);
     } finally {
       setSubscribing(false);
     }

@@ -175,7 +175,9 @@ export default function MelomaneDashboard() {
       const response = await axios.get(`${API}/melomanes/me/participations`, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
-      setParticipations(response.data);
+      // Only keep active participations
+      const activeParticipations = (response.data || []).filter(p => p.active !== false);
+      setParticipations(activeParticipations);
     } catch (error) {
       console.error("Error fetching participations:", error);
     }

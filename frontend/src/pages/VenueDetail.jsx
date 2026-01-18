@@ -145,10 +145,12 @@ export default function VenueDetail() {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Filter applications for this venue only
-      const venueApplications = response.data.filter(app => app.venue_id === id);
+      const allApps = Array.isArray(response.data) ? response.data : [];
+      const venueApplications = allApps.filter(app => app.venue_id === id);
       setMyApplications(venueApplications);
     } catch (error) {
       console.error("Error fetching applications:", error);
+      setMyApplications([]);
     }
   }, [id, token, user]);
 

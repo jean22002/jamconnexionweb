@@ -478,7 +478,7 @@ export default function VenueDetail() {
         </Link>
 
         {/* Expired Subscription Warning */}
-        {venue.subscription_status === "expired" && (
+        {venue?.subscription_status === "expired" && (
           <div className="glassmorphism border-2 border-orange-500/50 rounded-2xl p-6 mb-6">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">

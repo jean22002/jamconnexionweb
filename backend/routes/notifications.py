@@ -23,7 +23,12 @@ async def get_current_user_local(authorization: str = Header(None)):
 async def get_notifications(current_user: dict = Depends(get_current_user_local)):
     """Get all notifications for current user"""
     notifications = await db.notifications.find(
-        {"user_id": current_user["id"]},
+        {
+            "$or": [
+                {"recipient_id": current_user["id"]},
+                {"user_id": current_user["id"]}
+            ]
+        },
         {"_id": 0}
     ).sort("created_at", -1).limit(50).to_list(50)
     
@@ -33,8 +38,10 @@ async def get_notifications(current_user: dict = Depends(get_current_user_local)
 async def get_unread_count(current_user: dict = Depends(get_current_user_local)):
     """Get count of unread notifications"""
     count = await db.notifications.count_documents({
-        "user_id": current_user["id"],
-        "read": False
+        "$or": [
+            {"recipient_id": current_user["id"], "read": False},
+            {"user_id": current_user["id"], "read": False}
+        ]
     })
     
     return {"count": count}
@@ -47,7 +54,8 @@ async def mark_notification_as_read(notification_id: str, current_user: dict = D
     if not notification:
         raise HTTPException(status_code=404, detail="Notification not found")
     
-    if notification["user_id"] != current_user["id"]:
+    # Check if user is recipient (either user_id or recipient_id)
+    if notification.get("user_id") != current_user["id"] and notification.get("recipient_id") != current_user["id"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     await db.notifications.update_one(
@@ -61,7 +69,12 @@ async def mark_notification_as_read(notification_id: str, current_user: dict = D
 async def mark_all_as_read(current_user: dict = Depends(get_current_user_local)):
     """Mark all notifications as read"""
     result = await db.notifications.update_many(
-        {"user_id": current_user["id"], "read": False},
+        {
+            "$or": [
+                {"recipient_id": current_user["id"], "read": False},
+                {"user_id": current_user["id"], "read": False}
+            ]
+        },
         {"$set": {"read": True}}
     )
     
@@ -75,7 +88,8 @@ async def delete_notification(notification_id: str, current_user: dict = Depends
     if not notification:
         raise HTTPException(status_code=404, detail="Notification not found")
     
-    if notification["user_id"] != current_user["id"]:
+    # Check if user is recipient (either user_id or recipient_id)
+    if notification.get("user_id") != current_user["id"] and notification.get("recipient_id") != current_user["id"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     await db.notifications.delete_one({"id": notification_id})

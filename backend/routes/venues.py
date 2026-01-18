@@ -838,6 +838,9 @@ async def notify_all(
             "read": False
         }
         await db.notifications.insert_one(notification)
+        notifications_created += 1
+    
+    return {"recipients_count": notifications_created, "message": "Notifications sent successfully"}
 
 
 @router.get("/venues/me/broadcast-history")

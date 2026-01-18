@@ -126,11 +126,14 @@ export default function VenueDetail() {
         axios.get(`${API}/venues/${id}/reviews`),
         axios.get(`${API}/venues/${id}/average-rating`)
       ]);
-      setReviews(reviewsRes.data);
-      setAverageRating(ratingRes.data.average_rating);
-      setTotalReviews(ratingRes.data.total_reviews);
+      setReviews(Array.isArray(reviewsRes.data) ? reviewsRes.data : []);
+      setAverageRating(ratingRes.data.average_rating || 0);
+      setTotalReviews(ratingRes.data.total_reviews || 0);
     } catch (error) {
       console.error("Error fetching reviews:", error);
+      setReviews([]);
+      setAverageRating(0);
+      setTotalReviews(0);
     }
   }, [id]);
 

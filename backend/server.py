@@ -2657,8 +2657,15 @@ async def notify_venue_subscribers(venue_id: str, notif_type: str, title: str, m
 
 @api_router.get("/notifications", response_model=List[NotificationResponse])
 async def get_notifications(current_user: dict = Depends(get_current_user)):
+    # Get notifications where user is recipient (broadcast notifications use recipient_id)
+    # OR where user_id matches (for other notification types)
     notifications = await db.notifications.find(
-        {"user_id": current_user["id"]},
+        {
+            "$or": [
+                {"recipient_id": current_user["id"]},
+                {"user_id": current_user["id"]}
+            ]
+        },
         {"_id": 0}
     ).sort("created_at", -1).to_list(50)
     

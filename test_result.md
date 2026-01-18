@@ -735,6 +735,21 @@ backend:
         agent: "testing"
         comment: "🎯 RE-TEST APRÈS CORRECTION SUPPOSÉE - PROBLÈME PERSISTE! TESTS EXHAUSTIFS EFFECTUÉS: ✅ Code VenueDetail.jsx vérifié - lignes 565, 777, 829 montrent bien (user?.role === 'musician' || user?.role === 'melomane'), ✅ Connexion mélomane réussie (melomane2.test@test.fr), ✅ Navigation vers établissements fonctionnelle, ✅ Accès aux pages venues réussi (Test Concert Date Venue), ✅ Onglets Bœufs (2) et Concerts (0) détectés, ❌ PROBLÈME CRITIQUE CONFIRMÉ: Aucun bouton 'Je participe' visible sur les événements bœufs malgré 2 bœufs actifs (2026-01-15, 2026-01-18), ❌ Aucun bouton 'Ne plus participer' visible, ❌ 7 éléments d'événements détectés mais aucun bouton de participation. CONCLUSION: La restriction frontend n'a PAS été correctement supprimée ou il y a un autre problème empêchant l'affichage des boutons pour les mélomanes. Le flow de participation reste complètement cassé pour les mélomanes. IMPACT: Les mélomanes ne peuvent toujours pas participer aux événements via l'interface utilisateur."
 
+  - task: "Pricing Page Display"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/Pricing.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Page Tarifs (/pricing) créée avec 3 cartes de tarification : Musicien (Gratuit), Mélomane (Gratuit), Établissement (14,99€/mois avec badge Populaire). Chaque carte contient titre, prix, liste de fonctionnalités avec icônes check, et bouton CTA avec data-testid approprié."
+      - working: true
+        agent: "testing"
+        comment: "🎉 PAGE TARIFS ENTIÈREMENT FONCTIONNELLE - TOUS LES CRITÈRES VALIDÉS (100%)! Tests exhaustifs réalisés sur https://music-fan-profile.preview.emergentagent.com/pricing. RÉSULTATS DÉTAILLÉS: ✅ 3 cartes de tarification affichées côte à côte sur desktop dans layout grid responsive, ✅ CARTE MUSICIEN: Titre 'Musicien', prix 'Gratuit', icône guitare, liste de 6 fonctionnalités avec icônes check, bouton 'Créer mon compte gratuit' avec data-testid='musician-signup-btn', ✅ CARTE MÉLOMANE: Titre 'Mélomane', prix 'Gratuit', design violet au centre, icône musique, liste de 6 fonctionnalités avec icônes check violettes, bouton gradient 'Créer mon profil mélomane' avec data-testid='melomane-signup-btn', ✅ CARTE ÉTABLISSEMENT: Titre 'Établissement', prix '14,99€/mois', badge 'Populaire' en haut à droite, mention '2 mois d'essai gratuit inclus', liste de 7 fonctionnalités avec icônes check, bouton 'Commencer l'essai gratuit' avec data-testid='venue-signup-btn', ✅ Toutes les cartes contiennent titre, prix, description, liste de fonctionnalités avec icônes check, et bouton CTA fonctionnel. Page parfaitement responsive et conforme aux spécifications demandées."
+
   - task: "Melomane Notifications System"
     implemented: true
     working: true

@@ -272,6 +272,213 @@ async def get_subscription_status(venue_id: str, current_user: dict = Depends(ge
 @router.get("/my-subscriptions")
 async def get_my_subscriptions(current_user: dict = Depends(get_current_user)):
     """Get all venues the current user is subscribed to"""
+
+
+# ============= VENUE GALLERY =============
+
+@router.post("/venues/me/gallery")
+async def add_gallery_photo(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    """Add a photo to venue gallery (max 20 photos)"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can manage gallery")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Check gallery limit
+    current_gallery = venue.get("gallery", [])
+    if len(current_gallery) >= 20:
+        raise HTTPException(status_code=400, detail="Limite de 20 photos atteinte. Supprimez des photos avant d'en ajouter.")
+    
+    # Upload file
+    try:
+        file_url = await save_upload_file(file, "gallery")
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Upload error: {e}")
+        raise HTTPException(status_code=500, detail="Erreur lors du téléchargement")
+    
+    # Add to gallery
+    await db.venues.update_one(
+        {"user_id": current_user["id"]},
+        {"$push": {"gallery": file_url}}
+    )
+    
+    return {"url": file_url, "message": "Photo ajoutée à la galerie"}
+
+
+@router.delete("/venues/me/gallery")
+async def remove_gallery_photo(photo_url: str, current_user: dict = Depends(get_current_user)):
+    """Remove a photo from venue gallery"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can manage gallery")
+    
+    result = await db.venues.update_one(
+        {"user_id": current_user["id"]},
+        {"$pull": {"gallery": photo_url}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Photo not found in gallery")
+    
+    return {"message": "Photo supprimée de la galerie"}
+
+
+# ============= VENUE SUBSCRIBERS =============
+
+@router.get("/venues/me/subscribers")
+async def get_venue_subscribers(current_user: dict = Depends(get_current_user)):
+    """Get list of subscribers (musicians and melomanes) for current venue"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can view their subscribers")
+    
+    # Get venue profile
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Get all subscriptions for this venue
+    subscriptions = await db.venue_subscriptions.find({"venue_id": venue["id"]}, {"_id": 0}).to_list(1000)
+    
+    # Get profiles for each subscriber
+    subscribers = []
+    for sub in subscriptions:
+        subscriber_role = sub.get("subscriber_role", "musician")
+        
+        if subscriber_role == "musician":
+            musician = await db.musicians.find_one({"user_id": sub["subscriber_id"]}, {"_id": 0})
+            if musician:
+                subscribers.append({
+                    "id": musician.get("id"),
+                    "user_id": musician.get("user_id"),
+                    "role": "musician",
+                    "pseudo": musician.get("pseudo", "Musicien"),
+                    "profile_image": musician.get("profile_image"),
+                    "city": musician.get("city"),
+                    "department": musician.get("department"),
+                    "instruments": musician.get("instruments", []),
+                    "music_styles": musician.get("music_styles", []),
+                    "subscribed_at": sub.get("created_at")
+                })
+        elif subscriber_role == "melomane":
+            melomane = await db.melomanes.find_one({"user_id": sub["subscriber_id"]}, {"_id": 0})
+            if melomane:
+                subscribers.append({
+                    "id": melomane.get("id"),
+                    "user_id": melomane.get("user_id"),
+                    "role": "melomane",
+                    "pseudo": melomane.get("pseudo", "Mélomane"),
+                    "profile_picture": melomane.get("profile_picture"),
+                    "city": melomane.get("city"),
+                    "favorite_styles": melomane.get("favorite_styles", []),
+                    "subscribed_at": sub.get("created_at")
+                })
+    
+    return subscribers
+
+
+@router.get("/venues/me/nearby-musicians-count")
+async def get_nearby_musicians_count(radius_km: float = 50, current_user: dict = Depends(get_current_user)):
+    """Count musicians within a radius of the venue"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can access this")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    if not venue.get("latitude") or not venue.get("longitude"):
+        return {"count": 0, "message": "Venue location not set"}
+    
+    # Get all musicians with location
+    musicians = await db.musicians.find({
+        "latitude": {"$exists": True},
+        "longitude": {"$exists": True}
+    }, {"_id": 0, "latitude": 1, "longitude": 1}).to_list(2000)
+    
+    # Count musicians within radius
+    count = 0
+    for musician in musicians:
+        if musician.get("latitude") and musician.get("longitude"):
+            distance = haversine_distance(
+                venue["latitude"], venue["longitude"],
+                musician["latitude"], musician["longitude"]
+            )
+            if distance <= radius_km:
+                count += 1
+    
+    return {"count": count, "radius_km": radius_km}
+
+
+# ============= VENUE ACTIVE EVENTS =============
+
+@router.get("/venues/{venue_id}/active-events")
+async def get_venue_active_events(venue_id: str):
+    """Get all active events for a venue (jams, concerts, karaoke, spectacles)"""
+    from datetime import datetime
+    today = datetime.now(timezone.utc).date().isoformat()
+    
+    # Get all event types
+    jams = await db.jams.find({
+        "venue_id": venue_id,
+        "date": {"$gte": today}
+    }, {"_id": 0}).sort("date", 1).to_list(50)
+    
+    concerts = await db.concerts.find({
+        "venue_id": venue_id,
+        "date": {"$gte": today}
+    }, {"_id": 0}).sort("date", 1).to_list(50)
+    
+    karaoke = await db.karaoke.find({
+        "venue_id": venue_id,
+        "date": {"$gte": today}
+    }, {"_id": 0}).sort("date", 1).to_list(50)
+    
+    spectacles = await db.spectacle.find({
+        "venue_id": venue_id,
+        "date": {"$gte": today}
+    }, {"_id": 0}).sort("date", 1).to_list(50)
+    
+    # Add type to each event
+    for j in jams:
+        j["event_type"] = "jam"
+    for c in concerts:
+        c["event_type"] = "concert"
+    for k in karaoke:
+        k["event_type"] = "karaoke"
+    for s in spectacles:
+        s["event_type"] = "spectacle"
+    
+    # Combine and sort all events
+    all_events = jams + concerts + karaoke + spectacles
+    all_events.sort(key=lambda x: x.get("date", ""))
+    
+    return all_events
+
+
+@router.get("/venues/{venue_id}/bands-played")
+async def get_bands_played(venue_id: str):
+    """Get list of bands that have played at this venue"""
+    # Get all past concerts for this venue
+    today = datetime.now(timezone.utc).date().isoformat()
+    
+    past_concerts = await db.concerts.find({
+        "venue_id": venue_id,
+        "date": {"$lt": today}
+    }, {"_id": 0}).to_list(1000)
+    
+    # Extract unique band names
+    bands_played = set()
+    for concert in past_concerts:
+        for band in concert.get("bands", []):
+            band_name = band.get("name")
+            if band_name:
+                bands_played.add(band_name)
+    
+    return {"bands": sorted(list(bands_played)), "count": len(bands_played)}
+
     subscriptions = await db.venue_subscriptions.find(
         {"subscriber_id": current_user["id"]},
         {"_id": 0}

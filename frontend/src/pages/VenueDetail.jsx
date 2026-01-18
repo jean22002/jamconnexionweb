@@ -590,18 +590,6 @@ export default function VenueDetail() {
                     )}
                   </Button>
                 )}
-                
-                {/* Show join button if there's an active event */}
-                {(user?.role === "musician" || user?.role === "melomane") && activeEvents.length > 0 && (
-                  <JoinEventButton 
-                    event={activeEvents[0]}
-                    venueId={id}
-                    token={token}
-                    currentParticipation={currentParticipation}
-                    onParticipationChange={handleParticipationChange}
-                    loadingParticipations={loadingParticipations}
-                  />
-                )}
               </div>
             </div>
             

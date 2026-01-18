@@ -2692,7 +2692,12 @@ async def mark_notification_read(notif_id: str, current_user: dict = Depends(get
 @api_router.post("/notifications/read-all")
 async def mark_all_notifications_read(current_user: dict = Depends(get_current_user)):
     await db.notifications.update_many(
-        {"user_id": current_user["id"]},
+        {
+            "$or": [
+                {"recipient_id": current_user["id"]},
+                {"user_id": current_user["id"]}
+            ]
+        },
         {"$set": {"read": True}}
     )
     return {"message": "All marked as read"}

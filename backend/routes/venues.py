@@ -679,7 +679,12 @@ async def notify_subscribers(
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can send notifications")
     
-    venue_id = current_user["id"]
+    # Get venue profile
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    venue_id = venue["id"]
     notification_message = message.get("message", "")
     
     if not notification_message:
@@ -695,7 +700,7 @@ async def notify_subscribers(
             "id": str(uuid.uuid4()),
             "recipient_id": sub["subscriber_id"],
             "recipient_role": sub["subscriber_role"],
-            "sender_id": venue_id,
+            "sender_id": current_user["id"],
             "sender_role": "venue",
             "type": "broadcast",
             "message": notification_message,

@@ -354,11 +354,14 @@ export default function VenueDashboard() {
     const interval = setInterval(() => {
       if (profile && !editing) {
         fetchEvents(); // Refresh events to get updated participant counts
+        if (activeTab === "jacks") {
+          fetchSubscribers(); // Refresh subscribers when on Jacks tab
+        }
       }
     }, 30000); // 30 seconds
 
     return () => clearInterval(interval);
-  }, [profile, editing, fetchEvents]);
+  }, [profile, editing, fetchEvents, activeTab]);
 
   const handleSave = async () => {
     setSaving(true);

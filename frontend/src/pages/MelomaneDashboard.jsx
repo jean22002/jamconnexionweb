@@ -177,7 +177,42 @@ export default function MelomaneDashboard() {
       });
       // Only keep active participations
       const activeParticipations = (response.data || []).filter(p => p.active !== false);
-      setParticipations(activeParticipations);
+      
+      // Enrich with event and venue details
+      const enrichedParticipations = await Promise.all(
+        activeParticipations.map(async (participation) => {
+          try {
+            // Fetch event details based on event type
+            let eventRes;
+            if (participation.event_type === 'jam') {
+              eventRes = await axios.get(`${API}/venues/${participation.venue_id || 'unknown'}/jams`);
+              const event = eventRes.data.find(e => e.id === participation.event_id);
+              return {
+                ...participation,
+                venue_name: event?.venue_name || 'Établissement inconnu',
+                event_date: event?.date,
+                event_time: event?.start_time
+              };
+            } else if (participation.event_type === 'concert') {
+              eventRes = await axios.get(`${API}/venues/${participation.venue_id || 'unknown'}/concerts`);
+              const event = eventRes.data.find(e => e.id === participation.event_id);
+              return {
+                ...participation,
+                venue_name: event?.venue_name || 'Établissement inconnu',
+                event_date: event?.date,
+                event_time: event?.start_time,
+                event_title: event?.title
+              };
+            }
+            return participation;
+          } catch (err) {
+            console.error("Error enriching participation:", err);
+            return participation;
+          }
+        })
+      );
+      
+      setParticipations(enrichedParticipations);
     } catch (error) {
       console.error("Error fetching participations:", error);
     }

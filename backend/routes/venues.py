@@ -868,7 +868,3 @@ async def get_broadcast_history(current_user: dict = Depends(get_current_user)):
     result = sorted(history.values(), key=lambda x: x["created_at"], reverse=True)
     return result
 
-        notifications_created += 1
-    
-    return {"recipients_count": notifications_created, "message": "Notifications sent successfully"}
-

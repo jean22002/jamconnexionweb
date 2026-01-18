@@ -272,6 +272,12 @@ async def get_subscription_status(venue_id: str, current_user: dict = Depends(ge
 @router.get("/my-subscriptions")
 async def get_my_subscriptions(current_user: dict = Depends(get_current_user)):
     """Get all venues the current user is subscribed to"""
+    subscriptions = await db.venue_subscriptions.find(
+        {"subscriber_id": current_user["id"]},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    return subscriptions
 
 
 # ============= VENUE GALLERY =============

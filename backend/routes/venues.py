@@ -1,7 +1,7 @@
 """
 Venues router - Handles venue profiles and subscriptions
 """
-from fastapi import APIRouter, HTTPException, Depends, Header
+from fastapi import APIRouter, HTTPException, Depends, Header, UploadFile, File
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
@@ -13,7 +13,7 @@ from models import (
     VenueProfile, VenueProfileResponse,
     VenueSubscription, NearbySearchRequest
 )
-from utils import haversine_distance
+from utils import haversine_distance, save_upload_file
 
 router = APIRouter()
 db = None

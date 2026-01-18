@@ -307,6 +307,79 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Melomanes Section */}
+      <section className="py-24 md:py-32 relative">
+        <div className="absolute inset-0 bg-gradient-to-tl from-purple-500/5 via-transparent to-pink-500/5"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="glassmorphism rounded-3xl p-8 neon-border order-2 lg:order-1">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
+                  <Music2 className="w-8 h-8 text-purple-400" />
+                </div>
+                <p className="font-mono text-xs uppercase tracking-wider text-purple-400 mb-2">Profil Mélomane</p>
+                <div className="flex items-baseline justify-center gap-2">
+                  <span className="font-heading font-bold text-5xl text-gradient">Gratuit</span>
+                </div>
+                <p className="text-purple-400 mt-2 font-medium">100% gratuit, toujours</p>
+              </div>
+              
+              <ul className="space-y-4 mb-8">
+                {[
+                  "Inscription gratuite",
+                  "Accès à tous les événements",
+                  "Notifications des concerts",
+                  "Connexion aux établissements",
+                  "Suivi de vos participations"
+                ].map((item, index) => (
+                  <li key={index} className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center">
+                      <Check className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <span className="text-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              
+              <Link to="/auth?role=melomane">
+                <Button 
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-full py-6 font-heading font-semibold hover:shadow-[0_0_20px_rgba(168,85,247,0.5)] transition-all"
+                >
+                  Créer mon profil mélomane
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            </div>
+            
+            <div className="space-y-6 order-1 lg:order-2">
+              <h2 className="font-heading font-semibold text-3xl md:text-5xl tracking-tight">
+                Gratuit pour les <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">mélomanes</span>
+              </h2>
+              <p className="text-muted-foreground text-lg">
+                Passionnés de musique live ? Découvrez tous les concerts, bœufs et événements musicaux près de chez vous. 
+                Participez à la vie musicale locale et ne ratez plus aucun événement !
+              </p>
+              
+              <ul className="space-y-4">
+                {[
+                  "Voir tous les événements à proximité",
+                  "Marquer votre participation aux concerts",
+                  "Suivre vos établissements favoris",
+                  "Recevoir des notifications (J-3 et Jour J)"
+                ].map((item, index) => (
+                  <li key={index} className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center">
+                      <Check className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <span className="text-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t border-white/10 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

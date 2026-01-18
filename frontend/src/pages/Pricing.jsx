@@ -42,7 +42,7 @@ export default function Pricing() {
             Tarifs <span className="text-gradient">simples</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Une offre gratuite pour les musiciens et mélomanes, un abonnement accessible pour les établissements
+            Musiciens et mélomanes : accès gratuit. Établissements : abonnement simple pour booster votre visibilité
           </p>
         </div>
 

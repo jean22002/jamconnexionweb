@@ -110,12 +110,12 @@ export default function Pricing() {
             
             <ul className="space-y-4 mb-8">
               {[
-                "Voir tous les événements",
-                "Géolocalisation en temps réel",
-                "Marquer votre participation",
-                "Suivre vos établissements favoris",
-                "Notifications J-3 et Jour J",
-                "Profil personnalisable"
+                "Inscription gratuite",
+                "Accès à tous les événements",
+                "Notifications des concerts",
+                "Connexion aux établissements",
+                "Suivi de vos participations",
+                "Carte interactive géolocalisée"
               ].map((item, index) => (
                 <li key={index} className="flex items-start gap-3">
                   <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">

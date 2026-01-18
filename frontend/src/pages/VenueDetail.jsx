@@ -603,13 +603,13 @@ export default function VenueDetail() {
         <Tabs defaultValue="info" className="w-full">
           <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 mb-6 gap-1 scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-transparent">
             <TabsTrigger value="info" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Profil</TabsTrigger>
-            <TabsTrigger value="jams" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Bœufs ({jams.length})</TabsTrigger>
-            <TabsTrigger value="concerts" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Concerts ({concerts.length})</TabsTrigger>
+            <TabsTrigger value="jams" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Bœufs ({jams?.length || 0})</TabsTrigger>
+            <TabsTrigger value="concerts" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Concerts ({concerts?.length || 0})</TabsTrigger>
             {/* Candidatures tab only for musicians */}
             {user?.role === "musician" && (
-              <TabsTrigger value="planning" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Candidatures ({planningSlots.length})</TabsTrigger>
+              <TabsTrigger value="planning" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Candidatures ({planningSlots?.length || 0})</TabsTrigger>
             )}
-            <TabsTrigger value="bands" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Groupes ({bandsPlayed.length})</TabsTrigger>
+            <TabsTrigger value="bands" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Groupes ({bandsPlayed?.length || 0})</TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Avis ({totalReviews})</TabsTrigger>
             <TabsTrigger value="gallery" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Galerie ({venue?.gallery?.length || 0})</TabsTrigger>
           </TabsList>

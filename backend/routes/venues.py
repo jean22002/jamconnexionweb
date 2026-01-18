@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 import jwt
 import os
 import logging
+from motor.motor_asyncio import AsyncIOMotorClient
 
 from models import (
     VenueProfile, VenueProfileResponse,
@@ -16,7 +17,12 @@ from models import (
 from utils import haversine_distance, save_upload_file
 
 router = APIRouter()
-db = None
+
+# MongoDB connection
+mongo_url = os.environ['MONGO_URL']
+client = AsyncIOMotorClient(mongo_url)
+db = client[os.environ['DB_NAME']]
+
 logger = logging.getLogger(__name__)
 
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default_secret')

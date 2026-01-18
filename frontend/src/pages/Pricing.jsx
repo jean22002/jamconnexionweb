@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
-import { Music, Check, ArrowRight, Guitar, Mic2 } from "lucide-react";
+import { Music, Check, ArrowRight, Guitar, Mic2, Music2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Pricing() {
@@ -42,11 +42,11 @@ export default function Pricing() {
             Tarifs <span className="text-gradient">simples</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Une offre gratuite pour les musiciens, un abonnement accessible pour les établissements
+            Une offre gratuite pour les musiciens et mélomanes, un abonnement accessible pour les établissements
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Musician Plan */}
           <div className="glassmorphism rounded-3xl p-8 border border-secondary/30">
             <div className="flex items-center gap-4 mb-6">
@@ -87,6 +87,51 @@ export default function Pricing() {
                 data-testid="musician-signup-btn"
               >
                 Créer mon compte gratuit
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+          </div>
+
+          {/* Melomane Plan */}
+          <div className="glassmorphism rounded-3xl p-8 border border-purple-500/30">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-purple-500/20 flex items-center justify-center">
+                <Music2 className="w-7 h-7 text-purple-400" />
+              </div>
+              <div>
+                <h2 className="font-heading font-bold text-2xl">Mélomane</h2>
+                <p className="text-purple-400 font-semibold">Gratuit</p>
+              </div>
+            </div>
+            
+            <p className="text-muted-foreground mb-8">
+              Découvrez tous les événements musicaux près de chez vous et participez à la vie musicale locale.
+            </p>
+            
+            <ul className="space-y-4 mb-8">
+              {[
+                "Voir tous les événements",
+                "Géolocalisation en temps réel",
+                "Marquer votre participation",
+                "Suivre vos établissements favoris",
+                "Notifications J-3 et Jour J",
+                "Profil personnalisable"
+              ].map((item, index) => (
+                <li key={index} className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="w-4 h-4 text-purple-400" />
+                  </div>
+                  <span className="text-foreground">{item}</span>
+                </li>
+              ))}
+            </ul>
+            
+            <Link to="/auth?role=melomane">
+              <Button 
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full py-6 font-heading font-semibold transition-all"
+                data-testid="melomane-signup-btn"
+              >
+                Créer mon profil mélomane
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>

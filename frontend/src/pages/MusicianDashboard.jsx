@@ -546,6 +546,18 @@ export default function MusicianDashboard() {
     }
   }, [token]);
 
+  const fetchParticipations = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/musicians/me/participations`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setParticipations(response.data || []);
+    } catch (error) {
+      console.error("Error fetching participations:", error);
+      setParticipations([]);
+    }
+  }, [token]);
+
   const fetchCurrentParticipation = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/musicians/me/current-participation`, {

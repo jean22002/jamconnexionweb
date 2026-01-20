@@ -919,3 +919,26 @@ async def delete_broadcast_from_history(broadcast_id: str, current_user: dict = 
         logger.error(f"Error deleting broadcast: {e}")
         raise HTTPException(status_code=500, detail="Error deleting broadcast")
 
+
+@router.delete("/venues/me/broadcast-history")
+async def delete_all_broadcast_history(current_user: dict = Depends(get_current_user)):
+    """Delete ALL broadcast notifications from history for this venue"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can delete broadcast history")
+    
+    try:
+        # Delete all broadcast notifications sent by this venue
+        result = await db.notifications.delete_many({
+            "sender_id": current_user["id"],
+            "sender_role": "venue",
+            "type": "broadcast"
+        })
+        
+        return {
+            "message": f"All broadcast history deleted successfully ({result.deleted_count} notifications removed)",
+            "deleted_count": result.deleted_count
+        }
+    except Exception as e:
+        logger.error(f"Error deleting all broadcast history: {e}")
+        raise HTTPException(status_code=500, detail="Error deleting broadcast history")
+

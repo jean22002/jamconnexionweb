@@ -188,6 +188,20 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
               {eventInfo}
             </div>
           )}
+          
+          {/* Afficher les noms des groupes pour les concerts */}
+          {concert && concert.bands && concert.bands.length > 0 && (
+            <div className="text-[8px] mt-1 leading-tight space-y-0.5">
+              {concert.bands.slice(0, 2).map((band, idx) => (
+                <div key={idx} className="truncate font-semibold text-white/90">
+                  🎸 {band.name}
+                </div>
+              ))}
+              {concert.bands.length > 2 && (
+                <div className="text-white/70">+{concert.bands.length - 2} autre{concert.bands.length - 2 > 1 ? 's' : ''}</div>
+              )}
+            </div>
+          )}
         </div>
       </button>
     );

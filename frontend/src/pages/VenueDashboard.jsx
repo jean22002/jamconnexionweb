@@ -1010,7 +1010,7 @@ export default function VenueDashboard() {
           accommodation_capacity: planningSlot.accommodation_capacity || 0,
           accommodation_tbd: planningSlot.accommodation_tbd || false
         });
-        setSelectedDate(date);
+        setSelectedDate(dateObj);
         setShowPlanningModal(true);
       } else {
         // Pas d'événement, créer un nouveau créneau de planning
@@ -1019,7 +1019,7 @@ export default function VenueDashboard() {
           return;
         }
         setEditingPlanningSlotId(null); // Pas d'édition
-        setSelectedDate(date);
+        setSelectedDate(dateObj);
         setPlanningForm({
           ...planningForm,
           date: dateStr,

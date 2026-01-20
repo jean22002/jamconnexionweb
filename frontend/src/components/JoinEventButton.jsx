@@ -74,9 +74,11 @@ export default function JoinEventButton({
       // Update local state immediately for instant UI feedback
       setLocalParticipating(false);
       
-      // Notify parent to refresh participation status and wait for it
+      // Notify parent to refresh participation status
       if (onParticipationChange) {
-        await onParticipationChange(false, event.id, event.type); // false = leaving
+        onParticipationChange(false, event.id, event.type).catch(err => {
+          console.error("Error in onParticipationChange:", err);
+        });
       }
     } catch (error) {
       // Si la participation n'est pas trouvée, c'est que l'utilisateur a déjà quitté
@@ -84,10 +86,14 @@ export default function JoinEventButton({
         toast.info("Vous avez déjà quitté cet événement");
         setLocalParticipating(false);
         if (onParticipationChange) {
-          await onParticipationChange(false, event.id, event.type); // false = leaving
+          onParticipationChange(false, event.id, event.type).catch(err => {
+            console.error("Error in onParticipationChange:", err);
+          });
         }
       } else {
         toast.error(error.response?.data?.detail || "Erreur");
+        // Ne pas bloquer l'UI même en cas d'erreur
+        setLocalParticipating(false);
       }
     } finally {
       setLoading(false);

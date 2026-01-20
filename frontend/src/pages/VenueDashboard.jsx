@@ -367,13 +367,23 @@ export default function VenueDashboard() {
         fetchEvents(); // Refresh events to get updated participant counts
         fetchProfile(); // Refresh profile to update subscribers count
         if (activeTab === "jacks") {
-          fetchSubscribers(); // Refresh subscribers when on Jacks tab
+          // Appeler directement l'API au lieu d'utiliser la fonction qui n'existe pas encore
+          const token = localStorage.getItem("token");
+          if (token && profile?.id) {
+            axios.get(`${API}/venues/me/subscribers`, {
+              headers: { Authorization: `Bearer ${token}` }
+            }).then(response => {
+              setSubscribers(response.data || []);
+            }).catch(err => {
+              console.error("Error fetching subscribers:", err);
+            });
+          }
         }
       }
     }, 10000); // 10 secondes pour un rafraîchissement plus rapide
 
     return () => clearInterval(interval);
-  }, [profile, editing, fetchEvents, fetchProfile, fetchSubscribers, activeTab]);
+  }, [profile, editing, fetchEvents, fetchProfile, activeTab]);
 
   const handleSave = async () => {
     setSaving(true);

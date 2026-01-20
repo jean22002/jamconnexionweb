@@ -978,8 +978,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Event Participation - Re-participation Bug Fix"
-    - "VenueDashboard - Real-time Participant Counter Updates"
+    - "Planning Calendar - Date Click Bug Fix (date.getFullYear is not a function)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

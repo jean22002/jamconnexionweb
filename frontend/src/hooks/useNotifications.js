@@ -36,10 +36,38 @@ export const useNotifications = (token, user) => {
       try {
         const registration = await navigator.serviceWorker.register('/service-worker.js');
         serviceWorkerRef.current = registration;
-        console.log('Service Worker enregistré:', registration);
+        console.log('[App] Service Worker enregistré avec succès');
+        
+        // Enregistrer le background sync si disponible
+        if ('sync' in registration) {
+          console.log('[App] Background Sync disponible');
+        }
+        
+        // Enregistrer le periodic sync si disponible (pour futures apps smartphone)
+        if ('periodicSync' in registration) {
+          console.log('[App] Periodic Background Sync disponible');
+          try {
+            await registration.periodicSync.register('update-notifications', {
+              minInterval: 15 * 60 * 1000 // 15 minutes
+            });
+            console.log('[App] Periodic sync enregistré');
+          } catch (err) {
+            console.log('[App] Periodic sync non supporté:', err.message);
+          }
+        }
+        
+        // Écouter les messages du service worker
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          if (event.data.type === 'SYNC_NOTIFICATIONS') {
+            console.log('[App] Demande de sync des notifications depuis SW');
+            // Rafraîchir les notifications
+            window.dispatchEvent(new CustomEvent('refresh-notifications'));
+          }
+        });
+        
         return registration;
       } catch (error) {
-        console.error('Erreur lors de l\'enregistrement du Service Worker:', error);
+        console.error('[App] Erreur lors de l\'enregistrement du Service Worker:', error);
         return null;
       }
     }

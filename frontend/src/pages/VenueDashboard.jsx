@@ -3194,6 +3194,8 @@ export default function VenueDashboard() {
                 eventsByDate={eventsByDate}
                 concerts={concerts}
                 jams={jams}
+                karaokes={karaokes}
+                spectacles={spectacles}
                 planningSlots={planningSlots}
               />
 

@@ -13,7 +13,7 @@ def test_jwt_exact():
     JWT_SECRET = "jamconnexion_secret_key_2024_super_secure"
     JWT_ALGORITHM = "HS256"
     
-    base_url = "https://venue-connections.preview.emergentagent.com/api"
+    base_url = "https://venue-profile-fix-1.preview.emergentagent.com/api"
     
     # Get a fresh token
     register_data = {

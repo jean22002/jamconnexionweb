@@ -7,7 +7,7 @@ import requests
 import json
 
 def test_melomane_token():
-    base_url = "https://venue-connections.preview.emergentagent.com/api"
+    base_url = "https://venue-profile-fix-1.preview.emergentagent.com/api"
     
     # Step 1: Register melomane
     print("🔍 Step 1: Registering melomane...")

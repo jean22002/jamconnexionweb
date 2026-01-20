@@ -365,6 +365,7 @@ export default function VenueDashboard() {
     const interval = setInterval(() => {
       if (profile && !editing) {
         fetchEvents(); // Refresh events to get updated participant counts
+        fetchProfile(); // Refresh profile to update subscribers count
         if (activeTab === "jacks") {
           fetchSubscribers(); // Refresh subscribers when on Jacks tab
         }
@@ -372,7 +373,7 @@ export default function VenueDashboard() {
     }, 10000); // 10 secondes pour un rafraîchissement plus rapide
 
     return () => clearInterval(interval);
-  }, [profile, editing, fetchEvents, activeTab]);
+  }, [profile, editing, fetchEvents, fetchProfile, fetchSubscribers, activeTab]);
 
   const handleSave = async () => {
     setSaving(true);

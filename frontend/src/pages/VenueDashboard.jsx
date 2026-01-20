@@ -360,7 +360,7 @@ export default function VenueDashboard() {
     if (profile) fetchEvents();
   }, [profile, fetchEvents]);
 
-  // Auto-refresh events every 30 seconds to update participant counts in real-time
+  // Auto-refresh events every 10 seconds to update participant counts in real-time
   useEffect(() => {
     const interval = setInterval(() => {
       if (profile && !editing) {
@@ -369,7 +369,7 @@ export default function VenueDashboard() {
           fetchSubscribers(); // Refresh subscribers when on Jacks tab
         }
       }
-    }, 30000); // 30 seconds
+    }, 10000); // 10 secondes pour un rafraîchissement plus rapide
 
     return () => clearInterval(interval);
   }, [profile, editing, fetchEvents, activeTab]);

@@ -3155,6 +3155,14 @@ export default function VenueDashboard() {
                     <span className="text-sm">Bœuf</span>
                   </div>
                   <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded bg-pink-500/20 border-2 border-pink-500"></div>
+                    <span className="text-sm">Karaoké</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded bg-cyan-500/20 border-2 border-cyan-500"></div>
+                    <span className="text-sm">Spectacle</span>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded bg-yellow-500/20 border-2 border-yellow-500"></div>
                     <span className="text-sm">Ouvert</span>
                   </div>

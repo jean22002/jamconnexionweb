@@ -1038,6 +1038,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Notification History Deletion Feature"
     - "Calendar Colors Bug Fix - Karaoke and Spectacle Colors"
     - "PWA Features Testing"
     - "Mobile Tabs Responsiveness"

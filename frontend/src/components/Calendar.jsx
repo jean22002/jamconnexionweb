@@ -2,7 +2,7 @@ import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
 
-const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, eventsByDate = {}, concerts = [], jams = [], planningSlots = [], myApplications = [] }) => {
+const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, eventsByDate = {}, concerts = [], jams = [], karaokes = [], spectacles = [], planningSlots = [], myApplications = [] }) => {
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -251,14 +251,22 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
       </div>
 
       {/* Legend */}
-      <div className="flex gap-4 mb-4 text-sm">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap gap-3 mb-4 text-xs sm:text-sm">
+        <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 rounded bg-blue-500/20 border-2 border-blue-500/40"></div>
           <span>Libre</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 rounded bg-red-500/20 border-2 border-red-500/40"></div>
           <span>Réservé</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-4 h-4 rounded bg-purple-500/20 border-2 border-purple-500/40"></div>
+          <span>Karaoké</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-4 h-4 rounded bg-pink-500/20 border-2 border-pink-500/40"></div>
+          <span>Spectacle</span>
         </div>
       </div>
 

@@ -342,6 +342,18 @@ backend:
         agent: "testing"
         comment: "❌ STRIPE PAYMENT FLOW TESTING BLOCKED - AUTHENTICATION REQUIRED. COMPREHENSIVE TESTING ATTEMPTED: ❌ Unable to create test venue account due to registration flow complexity (terms acceptance, multi-step process), ❌ All protected routes (/trial-expired, /payment/success, /payment/cancel) properly redirect to /auth when not authenticated, ✅ SECURITY CONFIRMED: Payment pages are properly protected and require venue authentication, ✅ CODE ANALYSIS PASSED: TrialExpired.jsx correctly implements payment button with Stripe checkout API call (POST /api/payments/checkout), PaymentSuccess.jsx has proper polling mechanism for payment status verification, PaymentCancel.jsx provides proper user flow back to subscription. ⚠️ CRITICAL LIMITATION: Cannot test complete user journey without valid venue authentication. LIVE STRIPE KEYS DETECTED: System uses sk_live_... keys, so actual payment completion was correctly avoided. RECOMMENDATION: Main agent should provide test venue credentials or simplify registration flow for testing purposes."
 
+  - task: "Event Participation - Re-participation Bug Fix"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py, /app/frontend/src/components/JoinEventButton.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Bug fix applied: Backend now allows users to re-participate in events after leaving them. Frontend polling reduced to 10 seconds for real-time participant counter updates on venue dashboard."
+
   - task: "VenueDashboard - Real-time Participant Counter Updates"
     implemented: false
     working: false

@@ -2032,3 +2032,58 @@ Le système est maintenant actif et s'exécutera automatiquement tous les jours 
       - working: true
         agent: "testing"
         comment: "🎉 BUG FIX VALIDÉ - CORRECTION ENTIÈREMENT FONCTIONNELLE! Tests complets effectués selon la review request française (5/5 phases - 100%). RÉSULTATS DÉTAILLÉS: ✅ PHASE 1 - Connexion établissement: Login testvenue@test.com réussi, redirection vers dashboard établissement confirmée, ✅ PHASE 2 - Accès onglet Planning: Navigation vers onglet Planning réussie, calendrier visuel chargé correctement (Janvier 2026), ✅ PHASE 3 - Test clic dates: Interface calendrier accessible, légende Libre/Réservé présente, dates du calendrier visibles (1-31), ✅ PHASE 4 - Vérification erreurs: AUCUNE erreur 'date.getFullYear is not a function' détectée dans la console JavaScript, ✅ PHASE 5 - Interface réactive: Calendrier reste fonctionnel, navigation entre mois opérationnelle, aucune erreur critique. CORRECTION TECHNIQUE VALIDÉE: La fonction handleDateClick (lignes 947-980) convertit maintenant correctement les paramètres date string en objets Date avant d'appeler getFullYear(). Le bug critique signalé par l'utilisateur est ENTIÈREMENT RÉSOLU. Les établissements peuvent maintenant cliquer sur les dates du calendrier sans erreur JavaScript."
+
+#====================================================================================================
+# FORK JOB - Bug Fixes Session
+#====================================================================================================
+
+## DATE: 2026-01-20
+## AGENT: main (fork agent)
+
+### BUGS CORRECTED IN THIS SESSION
+
+#### BUG P0 - Venue Profile Save Error ✅ FIXED
+**Problem:** Error when saving venue profile (établissement)
+**Root Cause:** VenueProfile Pydantic model included `subscription_status` and `trial_end` fields that should only be in VenueProfileResponse (read-only fields)
+**Solution:** Removed these fields from VenueProfile model in `/app/backend/models/venue.py` (lines 36-37 deleted)
+**Testing:** Manual API test with curl confirmed PUT /api/venues now works correctly
+**Status:** ✅ FIXED AND TESTED
+
+#### BUG P1 - Calendar Colors Incomplete ✅ FIXED
+**Problem:** Legend showed Karaoké and Spectacle colors but calendar didn't display them
+**Solution Applied:**
+1. Updated Calendar.jsx dayClassName logic to handle `eventType === 'karaoke'` (purple) and `eventType === 'spectacle'` (pink)
+2. Updated legend to show all 4 event types with proper colors (Libre, Réservé, Karaoké, Spectacle)
+3. Passed `karaokes` and `spectacles` props from VenueDashboard to Calendar component
+**Files Modified:**
+- `/app/frontend/src/components/Calendar.jsx` - Added karaoke/spectacle rendering logic
+- `/app/frontend/src/pages/VenueDashboard.jsx` - Passed new props to Calendar
+**Status:** ✅ FIXED - Needs frontend testing
+
+### BUGS PENDING INVESTIGATION
+
+#### BUG P2 - PWA Features Not Fully Tested
+**Status:** NOT STARTED
+**Priority:** medium
+**Approach:** Requires frontend testing agent to test PWA installation and offline functionality
+
+#### BUG P3 - Persistent Cache Issues (User Side)
+**Status:** NOT STARTED  
+**Priority:** low
+**Approach:** Need to investigate service worker caching strategy and browser cache headers
+
+#### BUG P4 - Overlapping Tabs on Mobile
+**Status:** NOT STARTED
+**Priority:** low  
+**Approach:** Need to test mobile responsive layout for tab components
+
+### FILES MODIFIED IN THIS SESSION
+1. `/app/backend/models/venue.py` - Removed subscription_status and trial_end from VenueProfile
+2. `/app/frontend/src/components/Calendar.jsx` - Added karaoke/spectacle color logic and updated legend
+3. `/app/frontend/src/pages/VenueDashboard.jsx` - Passed karaokes/spectacles props to Calendar
+
+### NEXT STEPS
+1. Call frontend testing agent to validate calendar color changes (Bug P1)
+2. Call frontend testing agent to test PWA features (Bug P2)
+3. Investigate cache and mobile tab issues (Bug P3, P4)
+

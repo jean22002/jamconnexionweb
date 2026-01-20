@@ -43,6 +43,28 @@ async def register(data: UserRegister):
     }
     
     await db.users.insert_one(user_doc)
+    
+    # Créer automatiquement le profil correspondant au rôle
+    if data.role == "musician":
+        musician_profile = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "pseudo": data.name,
+            "instruments": [],
+            "music_styles": [],
+            "created_at": now
+        }
+        await db.musicians.insert_one(musician_profile)
+    elif data.role == "melomane":
+        melomane_profile = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "pseudo": data.name,
+            "favorite_styles": [],
+            "created_at": now
+        }
+        await db.melomanes.insert_one(melomane_profile)
+    
     token = create_token(user_id, data.email, data.role)
     
     return TokenResponse(

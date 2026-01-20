@@ -578,6 +578,17 @@ export default function MusicianDashboard() {
     fetchParticipations();
   }, [fetchData, fetchProfile, fetchNotifications, fetchFriends, fetchCurrentParticipation, fetchParticipations]);
 
+  // Polling pour rafraîchir les notifications toutes les 15 secondes
+  useEffect(() => {
+    if (!token) return;
+    
+    const notificationInterval = setInterval(() => {
+      fetchNotifications();
+    }, 15000); // 15 secondes
+    
+    return () => clearInterval(notificationInterval);
+  }, [token, fetchNotifications]);
+
   // Polling for participation status (every 30 seconds)
   useEffect(() => {
     const interval = setInterval(() => {

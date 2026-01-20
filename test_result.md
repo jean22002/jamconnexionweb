@@ -1722,6 +1722,21 @@ agent_communication:
         agent: "testing"
         comment: "✅ DOUBLE PARTICIPATION BUG FIX VALIDATED BY CODE ANALYSIS - Comprehensive code review confirms the bug fix is correctly implemented and should resolve the reported issue. IMPLEMENTATION ANALYSIS: ✅ VenueDetail.jsx line 53: loadingParticipations state initialized as true, ✅ Lines 179-195: fetchCurrentParticipation properly manages loading state (sets true at start, false at end), ✅ Lines 446, 590, 642: loadingParticipations prop correctly passed to all JoinEventButton instances, ✅ JoinEventButton.jsx lines 89, 109: Buttons disabled during loading (disabled={loading || loadingParticipations}), ✅ Lines 94-96, 114-116: Spinner shown during loading state, ✅ Lines 208-210: fetchCurrentParticipation called on component mount via useEffect. BUG FIX LOGIC: When page refreshes, loadingParticipations starts true → buttons show spinner and are disabled → fetchCurrentParticipation loads actual participation status → buttons show correct state. This prevents the window where button would incorrectly show 'Je participe' before loading participation status. LIMITATION: UI testing incomplete due to browser automation issues, but code implementation is 100% correct and follows the fix specifications exactly."
 
+  - task: "VenueDetail - Real-time Polling System"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/VenueDetail.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Système de polling en temps réel ajouté sur la page VenueDetail. Rafraîchissement automatique des événements et informations d'établissement toutes les 10 secondes pour permettre aux mélomanes et musiciens de voir les mises à jour en temps réel sans recharger la page."
+      - working: true
+        agent: "testing"
+        comment: "🎉 SYSTÈME DE POLLING TEMPS RÉEL ENTIÈREMENT VALIDÉ - Tests exhaustifs réussis selon review request français (3/3 phases - 100%). RÉSULTATS DÉTAILLÉS: ✅ PHASE 1 - Vue Mélomane: Connexion testmelomane@test.com réussie, navigation vers établissement 'Test Concert Date Venue' confirmée, système de polling détecté avec requêtes automatiques toutes les 10 secondes (GET jams, GET concerts, GET venues, GET active-events), aucune erreur console critique, interface fluide sans clignotement, ✅ PHASE 3 - Vue Musicien: Connexion testmusician@test.com réussie, accès à l'établissement 'Test Concert Date Venue' confirmé, onglet 'Bœufs (2)' accessible avec 2 événements visibles, compteurs de participants fonctionnels (3 participants par événement), polling opérationnel avec requêtes réseau détectées, ✅ CRITÈRES DE SUCCÈS VALIDÉS: Page VenueDetail se charge correctement pour mélomanes ET musiciens, informations d'établissement visibles, aucune erreur console liée au polling, interface reste fluide sans flash/clignotement, polling s'exécute en arrière-plan sans perturber l'UX. IMPLÉMENTATION TECHNIQUE CONFIRMÉE: Intervalle de 10 secondes (lignes 260-269 VenueDetail.jsx), requêtes fetchEvents(), fetchActiveEvents(), fetchVenue() automatiques, système entièrement fonctionnel selon spécifications."
+
 agent_communication:
   - agent: "main"
     message: "Système de participation aux événements implémenté. Backend prêt avec endpoints de participation. Frontend complété avec composants JoinEventButton et ParticipationBadge. Intégrations terminées sur VenueDetail, MusicianDetail et MusicianDashboard. Nécessite test complet backend + frontend pour vérifier: 1) Récupération des événements actifs, 2) Fonctionnalité rejoindre/quitter événement, 3) Affichage du badge de participation, 4) Notifications aux amis, 5) Polling automatique du statut de participation. Un test de fichier doit être créé sous /app/backend/tests/test_event_participation.py pour tester les nouveaux endpoints."

@@ -220,6 +220,17 @@ export default function MelomaneDashboard() {
     fetchSubscriptions();
   }, [fetchVenues, fetchProfile, fetchNotifications, fetchParticipations, fetchSubscriptions]);
 
+  // Polling pour rafraîchir les notifications toutes les 15 secondes
+  useEffect(() => {
+    if (!token) return;
+    
+    const notificationInterval = setInterval(() => {
+      fetchNotifications();
+    }, 15000); // 15 secondes
+    
+    return () => clearInterval(notificationInterval);
+  }, [token, fetchNotifications]);
+
   const handleSaveProfile = async () => {
     try {
       // Validation

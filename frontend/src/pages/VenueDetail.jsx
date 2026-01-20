@@ -257,15 +257,16 @@ export default function VenueDetail() {
     fetchMyApplications();
   }, [checkSubscription, fetchCurrentParticipation, fetchMyApplications]);
 
-  // Auto-refresh events every 30 seconds to update participant counts in real-time
+  // Auto-refresh events and venue info every 10 seconds to update in real-time
   useEffect(() => {
     const interval = setInterval(() => {
       fetchEvents(); // Refresh events to get updated participant counts
       fetchActiveEvents(); // Refresh active events
-    }, 30000); // 30 seconds
+      fetchVenue(); // Refresh venue profile info (subscribers count, etc.)
+    }, 10000); // 10 secondes pour un rafraîchissement plus rapide
 
     return () => clearInterval(interval);
-  }, [fetchEvents, fetchActiveEvents]);
+  }, [fetchEvents, fetchActiveEvents, fetchVenue]);
 
   const submitApplication = async () => {
     if (!selectedSlot) return;

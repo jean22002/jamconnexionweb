@@ -945,10 +945,13 @@ export default function VenueDashboard() {
   };
 
   const handleDateClick = async (date) => {
+    // S'assurer que date est un objet Date
+    const dateObj = date instanceof Date ? date : new Date(date);
+    
     // Format date sans conversion UTC
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${day}`;
     
     // Vérifier s'il y a un événement à cette date

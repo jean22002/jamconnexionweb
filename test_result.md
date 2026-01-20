@@ -952,7 +952,9 @@ metadata:
         comment: "🎉 AFFICHAGE ENRICHI DES PARTICIPATIONS MÉLOMANE - VALIDATION COMPLÈTE RÉUSSIE! Tests exhaustifs selon la review request française. RÉSULTATS DÉTAILLÉS (100% conforme): ✅ BACKEND API VALIDÉ: GET /api/melomanes/me/participations retourne données enrichies complètes (venue_name='Test Concert Date Venue', venue_city='Paris', event_date='2026-01-18', event_time='20:00', event_type='jam'), ✅ AUTHENTIFICATION FONCTIONNELLE: Connexion réussie avec test.melomane.backend@test.fr / TestMelo2026!, ✅ FRONTEND IMPLÉMENTATION VALIDÉE: Code analysis MelomaneDashboard.jsx confirme affichage correct (lignes 952-953: nom établissement + ville avec •, lignes 955-964: date française avec 📅 + heure 'à 20:00', lignes 942-946: type événement avec emoji 🎸 Bœuf musical, lignes 966-969: badge vert 'Participant'), ✅ COMPTEUR PARTICIPATIONS: Onglet affiche 'Mes Participations (1)' confirmant 1 participation active, ✅ TOUS CRITÈRES REVIEW REQUEST SATISFAITS: Nom établissement affiché ✅, Ville affichée ✅, Date format français (samedi 18 janvier) ✅, Heure événement (à 20:00) ✅, Type événement (🎸 Bœuf musical) ✅, Badge 'Participant' en vert ✅, Plus d'affichage 'Événement ID' cryptique ✅. LIMITATION: Tests UI automatisés partiellement bloqués par gestion session, mais validation backend + code analysis confirment fonctionnalité 100% opérationnelle selon spécifications."
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Event Participation - Re-participation Bug Fix"
+    - "VenueDashboard - Real-time Participant Counter Updates"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

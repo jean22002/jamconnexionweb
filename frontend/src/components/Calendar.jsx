@@ -144,6 +144,22 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
       if (jam && jam.participants_count !== undefined) {
         eventInfo = `${jam.participants_count} participant${jam.participants_count > 1 ? 's' : ''}`;
       }
+    } else if (eventType === 'karaoke') {
+      // Violet pour les karaoké
+      colorClasses = 'bg-purple-500/20 text-purple-400 border-2 border-purple-500/40 hover:bg-purple-500/30 cursor-pointer';
+      label = 'Karaoké';
+      const karaoke = karaokes.find(k => k.date === dateStr);
+      if (karaoke && karaoke.title) {
+        eventInfo = karaoke.title.length > 20 ? karaoke.title.substring(0, 20) + '...' : karaoke.title;
+      }
+    } else if (eventType === 'spectacle') {
+      // Rose pour les spectacles
+      colorClasses = 'bg-pink-500/20 text-pink-400 border-2 border-pink-500/40 hover:bg-pink-500/30 cursor-pointer';
+      label = 'Spectacle';
+      const spectacle = spectacles.find(s => s.date === dateStr);
+      if (spectacle && spectacle.artist_name) {
+        eventInfo = spectacle.artist_name.length > 20 ? spectacle.artist_name.substring(0, 20) + '...' : spectacle.artist_name;
+      }
     } else if (isBooked) {
       // Rouge pour autres réservations (au cas où)
       colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 cursor-pointer';

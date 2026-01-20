@@ -355,12 +355,12 @@ backend:
         comment: "Bug fix applied: Backend now allows users to re-participate in events after leaving them. Frontend polling reduced to 10 seconds for real-time participant counter updates on venue dashboard."
 
   - task: "VenueDashboard - Real-time Participant Counter Updates"
-    implemented: false
-    working: false
+    implemented: true
+    working: "NA"
     file: "/app/frontend/src/pages/VenueDashboard.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: false
         agent: "testing"

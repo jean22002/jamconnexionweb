@@ -1631,6 +1631,9 @@ export default function VenueDashboard() {
             <TabsTrigger value="karaoke" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Karaoké</TabsTrigger>
             <TabsTrigger value="spectacle" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Spectacle</TabsTrigger>
             <TabsTrigger value="planning" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Planning</TabsTrigger>
+            <TabsTrigger value="candidatures" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
+              Candidatures
+            </TabsTrigger>
             <TabsTrigger value="jacks" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
               <Plug className="w-4 h-4 inline mr-1" />
               Jacks

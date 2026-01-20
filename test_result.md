@@ -2016,3 +2016,15 @@ Le système est maintenant actif et s'exécutera automatiquement tous les jours 
 
   - agent: "testing"
     message: "🎭 MELOMANE SYSTEM TESTING - IMPLEMENTATION COMPLETE BUT DEPLOYMENT BLOCKED! Comprehensive analysis of the new Melomane functionality implementation as requested in review request. IMPLEMENTATION STATUS: ✅ BACKEND ROUTES: All melomane routes implemented in /app/backend/routes/melomanes.py (POST /api/melomanes/, GET /api/melomanes/me, PUT /api/melomanes/me, GET /api/melomanes, participation endpoints), ✅ MODELS: Complete Pydantic models (MelomaneCreate, MelomaneUpdate, MelomaneResponse) with geolocation support, ✅ GENERIC ENDPOINTS: POST /api/events/{event_id}/join and /api/events/{event_id}/leave updated to support melomanes, ✅ NOTIFICATIONS: System extended to support melomane notifications (J-3, Jour J, proximity alerts), ✅ PUBLIC ENDPOINT: GET /api/melomanes working correctly (returns empty list). ❌ CRITICAL DEPLOYMENT ISSUE: POST /api/auth/register still rejects melomane role despite code modifications - server not reloading changes. TESTING BLOCKED: Cannot test authentication-required endpoints without melomane registration working. INFRASTRUCTURE ISSUE: Code changes present in files but not taking effect in running server, suggesting deployment/caching problem. RECOMMENDATION: Main agent must investigate deployment pipeline or perform complete system restart to resolve registration issue."
+
+  - task: "Planning Calendar - Date Click Bug Fix (date.getFullYear is not a function)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/VenueDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Bug fix applied: Modified handleDateClick function in VenueDashboard.jsx to properly convert date parameter to Date object before calling getFullYear(). Added check: const dateObj = date instanceof Date ? date : new Date(date); This prevents 'date.getFullYear is not a function' error when date is passed as string."

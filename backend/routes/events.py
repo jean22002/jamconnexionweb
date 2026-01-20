@@ -576,17 +576,32 @@ async def join_event(event_id: str, event_type: str, current_user: dict = Depend
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
-    # Check if already participating
-    existing = await db.event_participations.find_one({
+    # Check if already participating (active)
+    existing_active = await db.event_participations.find_one({
         "event_id": event_id,
         "user_id": current_user["id"],
         "active": True
     })
     
-    if existing:
+    if existing_active:
         raise HTTPException(status_code=400, detail="Already participating in this event")
     
-    # Create participation
+    # Check if there's an inactive participation (previously left)
+    existing_inactive = await db.event_participations.find_one({
+        "event_id": event_id,
+        "user_id": current_user["id"],
+        "active": False
+    })
+    
+    if existing_inactive:
+        # Reactivate the existing participation
+        await db.event_participations.update_one(
+            {"id": existing_inactive["id"]},
+            {"$set": {"active": True, "rejoined_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        return {"message": "Successfully joined event", "participation_id": existing_inactive["id"]}
+    
+    # Create new participation
     participation_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
     

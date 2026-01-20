@@ -870,6 +870,7 @@ async def get_broadcast_history(current_user: dict = Depends(get_current_user)):
         
         if key not in history:
             history[key] = {
+                "id": key,  # Add unique ID for deletion
                 "message": message,
                 "created_at": created_at,
                 "recipients_count": 0
@@ -879,4 +880,42 @@ async def get_broadcast_history(current_user: dict = Depends(get_current_user)):
     # Convert to list and sort by date
     result = sorted(history.values(), key=lambda x: x["created_at"], reverse=True)
     return result
+
+
+@router.delete("/venues/me/broadcast-history/{broadcast_id}")
+async def delete_broadcast_from_history(broadcast_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a broadcast notification from history (deletes all notifications with matching message and time)"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can delete broadcast history")
+    
+    # Parse the broadcast_id to extract message and time
+    # Format: {message}_{timestamp[:16]}
+    try:
+        # Find the last underscore that separates message from timestamp
+        parts = broadcast_id.rsplit("_", 1)
+        if len(parts) != 2:
+            raise HTTPException(status_code=400, detail="Invalid broadcast ID format")
+        
+        message = parts[0]
+        time_prefix = parts[1]
+        
+        # Delete all notifications matching this broadcast (message + time window)
+        result = await db.notifications.delete_many({
+            "sender_id": current_user["id"],
+            "sender_role": "venue",
+            "type": "broadcast",
+            "message": message,
+            "created_at": {"$regex": f"^{time_prefix}"}
+        })
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Broadcast not found")
+        
+        return {
+            "message": f"Broadcast deleted successfully ({result.deleted_count} notifications removed)",
+            "deleted_count": result.deleted_count
+        }
+    except Exception as e:
+        logger.error(f"Error deleting broadcast: {e}")
+        raise HTTPException(status_code=500, detail="Error deleting broadcast")
 

@@ -4033,7 +4033,33 @@ export default function VenueDashboard() {
 
               {/* Broadcast History */}
               <div className="glassmorphism rounded-2xl p-6">
-                <h2 className="font-heading font-semibold text-xl mb-4">Historique des notifications</h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-heading font-semibold text-xl">Historique des notifications</h2>
+                  {broadcastHistory.length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        if (window.confirm(`Êtes-vous sûr de vouloir supprimer TOUT l'historique des notifications ? (${broadcastHistory.length} notification${broadcastHistory.length > 1 ? 's' : ''})\n\nCette action est irréversible.`)) {
+                          try {
+                            const response = await axios.delete(`${API}/venues/me/broadcast-history`, {
+                              headers: { Authorization: `Bearer ${token}` }
+                            });
+                            toast.success(`${response.data.deleted_count} notification${response.data.deleted_count > 1 ? 's supprimées' : ' supprimée'}`);
+                            // Clear history
+                            setBroadcastHistory([]);
+                          } catch (error) {
+                            toast.error('Erreur lors de la suppression');
+                          }
+                        }
+                      }}
+                      className="text-red-400 hover:text-red-300 border-red-500/30 hover:border-red-500/50 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Tout effacer
+                    </Button>
+                  )}
+                </div>
                 
                 {broadcastHistory.length === 0 ? (
                   <p className="text-muted-foreground text-center py-8">

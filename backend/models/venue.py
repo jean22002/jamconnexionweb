@@ -33,8 +33,6 @@ class VenueProfile(BaseModel):
     show_reviews: bool = True
     allow_messages_from: str = "everyone"
     gallery: List[str] = []
-    subscription_status: Optional[str] = "trial"
-    trial_end: Optional[str] = None
 
 class VenueProfileResponse(BaseModel):
     id: str

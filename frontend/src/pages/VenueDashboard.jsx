@@ -4053,9 +4053,35 @@ export default function VenueDashboard() {
                               minute: '2-digit'
                             })}
                           </span>
-                          <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
-                            {broadcast.recipients_count} destinataires
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
+                              {broadcast.recipients_count} destinataire{broadcast.recipients_count > 1 ? 's' : ''}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={async () => {
+                                if (window.confirm('Êtes-vous sûr de vouloir supprimer cette notification de l\'historique ?')) {
+                                  try {
+                                    await axios.delete(`${API}/venues/me/broadcast-history/${encodeURIComponent(broadcast.id)}`, {
+                                      headers: { Authorization: `Bearer ${token}` }
+                                    });
+                                    toast.success('Notification supprimée de l\'historique');
+                                    // Refresh history
+                                    const response = await axios.get(`${API}/venues/me/broadcast-history`, {
+                                      headers: { Authorization: `Bearer ${token}` }
+                                    });
+                                    setBroadcastHistory(response.data);
+                                  } catch (error) {
+                                    toast.error('Erreur lors de la suppression');
+                                  }
+                                }
+                              }}
+                              className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                         <p className="text-sm">{broadcast.message}</p>
                       </div>

@@ -2600,7 +2600,7 @@ async def delete_application(app_id: str, current_user: dict = Depends(get_curre
 
 @api_router.get("/venues/me/subscribers")
 async def get_venue_subscribers(current_user: dict = Depends(get_current_user)):
-    """Get list of subscribers (musicians) for current venue"""
+    """Get list of subscribers (musicians and melomanes) for current venue"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can view their subscribers")
     
@@ -2612,22 +2612,46 @@ async def get_venue_subscribers(current_user: dict = Depends(get_current_user)):
     # Get all subscriptions for this venue from the CORRECT collection
     subscriptions = await db.venue_subscriptions.find({"venue_id": venue["id"]}, {"_id": 0}).to_list(1000)
     
-    # Get musician profiles for each subscriber
+    # Get profiles for each subscriber (both musicians and melomanes)
     subscribers = []
     for sub in subscriptions:
-        musician = await db.musicians.find_one({"user_id": sub["user_id"]}, {"_id": 0})
-        if musician:
-            subscribers.append({
-                "id": musician.get("id"),
-                "user_id": musician.get("user_id"),
-                "pseudo": musician.get("pseudo", "Musicien"),
-                "profile_image": musician.get("profile_image"),
-                "city": musician.get("city"),
-                "department": musician.get("department"),
-                "instruments": musician.get("instruments", []),
-                "music_styles": musician.get("music_styles", []),
-                "subscribed_at": sub.get("created_at")
-            })
+        # Get user to determine role
+        user = await db.users.find_one({"id": sub["user_id"]}, {"_id": 0})
+        if not user:
+            continue
+            
+        if user["role"] == "musician":
+            # Get musician profile
+            musician = await db.musicians.find_one({"user_id": sub["user_id"]}, {"_id": 0})
+            if musician:
+                subscribers.append({
+                    "id": musician.get("id"),
+                    "user_id": musician.get("user_id"),
+                    "role": "musician",
+                    "pseudo": musician.get("pseudo", "Musicien"),
+                    "profile_image": musician.get("profile_image"),
+                    "city": musician.get("city"),
+                    "department": musician.get("department"),
+                    "instruments": musician.get("instruments", []),
+                    "music_styles": musician.get("music_styles", []),
+                    "subscribed_at": sub.get("created_at")
+                })
+        elif user["role"] == "melomane":
+            # Get melomane profile
+            melomane = await db.melomanes.find_one({"user_id": sub["user_id"]}, {"_id": 0})
+            if melomane:
+                subscribers.append({
+                    "id": melomane.get("id"),
+                    "user_id": melomane.get("user_id"),
+                    "role": "melomane",
+                    "pseudo": melomane.get("pseudo", "Mélomane"),
+                    "profile_image": melomane.get("profile_picture"),  # Note: melomanes use 'profile_picture'
+                    "city": melomane.get("city"),
+                    "department": melomane.get("department"),
+                    "instruments": [],  # Melomanes don't have instruments
+                    "music_styles": melomane.get("favorite_styles", []),
+                    "subscribed_at": sub.get("created_at")
+                })
     
     return subscribers
 

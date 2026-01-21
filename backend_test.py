@@ -123,12 +123,22 @@ class NotificationEndpointsTester:
             
             headers = {'Authorization': f'Bearer {self.musician_token}'}
             response = requests.post(f"{self.base_url}/musicians", json=musician_profile_data, headers=headers, timeout=10)
-            if response.status_code != 200:
-                self.log_test("Setup - Musician Profile", False, f"Failed to create musician profile: {response.status_code}")
+            
+            if response.status_code == 200:
+                musician_profile = response.json()
+                self.musician_profile_id = musician_profile.get('id')
+            elif response.status_code == 400 and "already exists" in response.text:
+                # Profile already exists, get it
+                response = requests.get(f"{self.base_url}/musicians/me", headers=headers, timeout=10)
+                if response.status_code == 200:
+                    musician_profile = response.json()
+                    self.musician_profile_id = musician_profile.get('id')
+                else:
+                    self.log_test("Setup - Get Existing Musician Profile", False, f"Failed to get existing profile: {response.status_code}")
+                    return False
+            else:
+                self.log_test("Setup - Musician Profile", False, f"Failed to create musician profile: {response.status_code}, {response.text}")
                 return False
-                
-            musician_profile = response.json()
-            self.musician_profile_id = musician_profile.get('id')
             
             self.log_test("Setup Test Accounts", True, f"Venue: {self.venue_profile_id}, Musician: {self.musician_profile_id}")
             return True

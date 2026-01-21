@@ -2814,6 +2814,44 @@ export default function VenueDashboard() {
                           </div>
                         )}
                         {concert.price && <p className="text-sm text-secondary mt-2">{concert.price}€</p>}
+                        
+                        {/* Catering and Accommodation Info */}
+                        {(concert.has_catering || concert.has_accommodation) && (
+                          <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
+                            {concert.has_catering && (
+                              <div className="flex items-start gap-2 text-sm">
+                                <span className="text-lg">🍽️</span>
+                                <div className="flex-1">
+                                  <p className="font-medium text-green-400">Catering disponible</p>
+                                  {concert.catering_drinks > 0 && (
+                                    <p className="text-xs text-muted-foreground">
+                                      {concert.catering_drinks} boisson{concert.catering_drinks > 1 ? 's' : ''} par personne
+                                    </p>
+                                  )}
+                                  {concert.catering_tbd && (
+                                    <p className="text-xs text-yellow-400">À définir</p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            {concert.has_accommodation && (
+                              <div className="flex items-start gap-2 text-sm">
+                                <span className="text-lg">🛏️</span>
+                                <div className="flex-1">
+                                  <p className="font-medium text-blue-400">Hébergement possible</p>
+                                  {concert.accommodation_capacity > 0 && (
+                                    <p className="text-xs text-muted-foreground">
+                                      Jusqu'à {concert.accommodation_capacity} personne{concert.accommodation_capacity > 1 ? 's' : ''}
+                                    </p>
+                                  )}
+                                  {concert.accommodation_tbd && (
+                                    <p className="text-xs text-yellow-400">À définir</p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     );
                   })}

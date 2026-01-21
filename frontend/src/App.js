@@ -8,6 +8,7 @@ import VenueDashboard from "./pages/VenueDashboard";
 import MelomaneDashboard from "./pages/MelomaneDashboard";
 import VenueDetail from "./pages/VenueDetail";
 import MusicianDetail from "./pages/MusicianDetail";
+import MelomaneDetail from "./pages/MelomaneDetail";
 import Messages from "./pages/Messages";
 import MessagesImproved from "./pages/MessagesImproved";
 import FAQ from "./pages/FAQ";
@@ -77,6 +78,7 @@ function App() {
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/venue/:id" element={<VenueDetail />} />
           <Route path="/musician/:id" element={<MusicianDetail />} />
+          <Route path="/melomane/:id" element={<MelomaneDetail />} />
           <Route 
             path="/musician" 
             element={

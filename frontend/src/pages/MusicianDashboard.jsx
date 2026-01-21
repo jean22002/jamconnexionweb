@@ -973,7 +973,12 @@ export default function MusicianDashboard() {
               </Link>
 
               {/* Notifications */}
-              <Dialog>
+              <Dialog onOpenChange={(open) => {
+                if (open && unreadCount > 0) {
+                  // Marquer toutes les notifications comme lues quand on ouvre le panneau
+                  markAllRead();
+                }
+              }}>
                 <DialogTrigger asChild>
                   <Button variant="ghost" className="relative" data-testid="notifications-btn">
                     <Bell className="w-5 h-5" />

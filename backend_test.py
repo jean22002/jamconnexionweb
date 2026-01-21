@@ -485,35 +485,48 @@ class JamConnexionAPITester:
                 self.log_test("Concert Catering & Accommodation - Retrieval", False, "No catering concert created in previous test")
                 return False
             
-            response = requests.get(f"{self.base_url}/concerts/{self.catering_concert_id}", timeout=10)
+            # Use venue concerts endpoint since there's no individual concert GET endpoint
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            response = requests.get(f"{self.base_url}/venues/me/concerts", headers=headers, timeout=10)
             success = response.status_code == 200
             
             if success:
-                concert = response.json()
+                concerts = response.json()
                 
-                # Verify ALL catering and accommodation fields are present and correct
-                expected_fields = {
-                    'has_catering': True,
-                    'catering_drinks': 2,
-                    'catering_respect': True,
-                    'catering_tbd': False,
-                    'has_accommodation': True,
-                    'accommodation_capacity': 5,
-                    'accommodation_tbd': False
-                }
+                # Find our catering concert in the list
+                catering_concert = None
+                for concert in concerts:
+                    if concert.get('id') == self.catering_concert_id:
+                        catering_concert = concert
+                        break
                 
-                missing_fields = []
-                for field, expected_value in expected_fields.items():
-                    if field not in concert:
-                        missing_fields.append(f"{field} (missing)")
-                    elif concert.get(field) != expected_value:
-                        missing_fields.append(f"{field} (expected: {expected_value}, got: {concert.get(field)})")
-                
-                if missing_fields:
-                    details = f"❌ MISSING/INCORRECT FIELDS: {', '.join(missing_fields)}"
-                    success = False
+                if catering_concert:
+                    # Verify ALL catering and accommodation fields are present and correct
+                    expected_fields = {
+                        'has_catering': True,
+                        'catering_drinks': 2,
+                        'catering_respect': True,
+                        'catering_tbd': False,
+                        'has_accommodation': True,
+                        'accommodation_capacity': 5,
+                        'accommodation_tbd': False
+                    }
+                    
+                    missing_fields = []
+                    for field, expected_value in expected_fields.items():
+                        if field not in catering_concert:
+                            missing_fields.append(f"{field} (missing)")
+                        elif catering_concert.get(field) != expected_value:
+                            missing_fields.append(f"{field} (expected: {expected_value}, got: {catering_concert.get(field)})")
+                    
+                    if missing_fields:
+                        details = f"❌ MISSING/INCORRECT FIELDS: {', '.join(missing_fields)}"
+                        success = False
+                    else:
+                        details = f"✅ Tous les champs catering/hébergement récupérés correctement via /venues/me/concerts"
                 else:
-                    details = f"✅ Tous les champs catering/hébergement récupérés correctement"
+                    details = f"❌ Concert avec catering non trouvé dans la liste (total: {len(concerts)} concerts)"
+                    success = False
             else:
                 details = f"❌ Status: {response.status_code}, Error: {response.text[:100]}"
             

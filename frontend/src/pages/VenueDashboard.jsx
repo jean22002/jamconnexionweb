@@ -197,7 +197,11 @@ export default function VenueDashboard() {
 
   const [concertForm, setConcertForm] = useState({
     date: "", start_time: "", end_time: "", title: "", description: "",
-    bands: [], price: "", music_styles: []
+    bands: [], price: "", music_styles: [],
+    // Catering
+    has_catering: false, catering_drinks: 0, catering_respect: false, catering_tbd: false,
+    // Accommodation
+    has_accommodation: false, accommodation_capacity: 0, accommodation_tbd: false
   });
 
   const [karaokeForm, setKaraokeForm] = useState({

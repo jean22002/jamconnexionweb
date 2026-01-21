@@ -7933,6 +7933,12 @@ class JamConnexionAPITester:
             self.test_venue_subscription_system,
             self.test_jam_events,
             self.test_concert_events,
+            # ============= CATERING & ACCOMMODATION TESTS (Review Request) =============
+            self.test_concert_catering_accommodation_creation,
+            self.test_concert_catering_accommodation_retrieval,
+            self.test_concert_catering_accommodation_update,
+            self.test_concert_without_catering_accommodation,
+            self.test_venue_concerts_list_with_catering_fields,
             # ============= KARAOKE AND SPECTACLE BUG FIX TESTS =============
             self.test_karaoke_creation,
             self.test_spectacle_creation,

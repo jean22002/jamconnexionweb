@@ -1053,7 +1053,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Bug Fix - Voir Profil Abonnés (Jacks) - Erreur 'Profil non trouvé'"
+    - "Melomane Profile Page Implementation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

@@ -413,6 +413,279 @@ class JamConnexionAPITester:
             self.log_test("Concert Events", False, f"Error: {str(e)}")
             return False
 
+    # ============= CATERING & ACCOMMODATION TESTS =============
+
+    def test_concert_catering_accommodation_creation(self):
+        """Test 1: Création de Concert avec Catering et Hébergement"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Create concert with catering and accommodation
+            concert_data = {
+                "date": "2026-02-15",
+                "start_time": "20:00",
+                "title": "Concert Test Catering",
+                "description": "Concert de test avec catering et hébergement",
+                "bands": [],
+                "music_styles": ["Rock"],
+                # Catering fields
+                "has_catering": True,
+                "catering_drinks": 2,
+                "catering_respect": True,
+                "catering_tbd": False,
+                # Accommodation fields
+                "has_accommodation": True,
+                "accommodation_capacity": 5,
+                "accommodation_tbd": False
+            }
+            
+            response = requests.post(f"{self.base_url}/concerts", json=concert_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                concert_response = response.json()
+                self.catering_concert_id = concert_response.get('id')
+                
+                # Verify all catering and accommodation fields are present
+                expected_fields = {
+                    'has_catering': True,
+                    'catering_drinks': 2,
+                    'catering_respect': True,
+                    'catering_tbd': False,
+                    'has_accommodation': True,
+                    'accommodation_capacity': 5,
+                    'accommodation_tbd': False
+                }
+                
+                missing_fields = []
+                for field, expected_value in expected_fields.items():
+                    if field not in concert_response:
+                        missing_fields.append(f"{field} (missing)")
+                    elif concert_response.get(field) != expected_value:
+                        missing_fields.append(f"{field} (expected: {expected_value}, got: {concert_response.get(field)})")
+                
+                if missing_fields:
+                    details = f"❌ MISSING/INCORRECT FIELDS: {', '.join(missing_fields)}"
+                    success = False
+                else:
+                    details = f"✅ Concert créé avec catering et hébergement: ID {self.catering_concert_id}"
+            else:
+                details = f"❌ Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Concert Catering & Accommodation - Creation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Concert Catering & Accommodation - Creation", False, f"Error: {str(e)}")
+            return False
+
+    def test_concert_catering_accommodation_retrieval(self):
+        """Test 2: Récupération du Concert avec tous les champs"""
+        try:
+            if not hasattr(self, 'catering_concert_id'):
+                self.log_test("Concert Catering & Accommodation - Retrieval", False, "No catering concert created in previous test")
+                return False
+            
+            response = requests.get(f"{self.base_url}/concerts/{self.catering_concert_id}", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                concert = response.json()
+                
+                # Verify ALL catering and accommodation fields are present and correct
+                expected_fields = {
+                    'has_catering': True,
+                    'catering_drinks': 2,
+                    'catering_respect': True,
+                    'catering_tbd': False,
+                    'has_accommodation': True,
+                    'accommodation_capacity': 5,
+                    'accommodation_tbd': False
+                }
+                
+                missing_fields = []
+                for field, expected_value in expected_fields.items():
+                    if field not in concert:
+                        missing_fields.append(f"{field} (missing)")
+                    elif concert.get(field) != expected_value:
+                        missing_fields.append(f"{field} (expected: {expected_value}, got: {concert.get(field)})")
+                
+                if missing_fields:
+                    details = f"❌ MISSING/INCORRECT FIELDS: {', '.join(missing_fields)}"
+                    success = False
+                else:
+                    details = f"✅ Tous les champs catering/hébergement récupérés correctement"
+            else:
+                details = f"❌ Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Concert Catering & Accommodation - Retrieval", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Concert Catering & Accommodation - Retrieval", False, f"Error: {str(e)}")
+            return False
+
+    def test_concert_catering_accommodation_update(self):
+        """Test 3: Mise à Jour du Concert"""
+        try:
+            if not hasattr(self, 'catering_concert_id'):
+                self.log_test("Concert Catering & Accommodation - Update", False, "No catering concert created")
+                return False
+            
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Update concert with modified catering and accommodation values
+            update_data = {
+                "date": "2026-02-15",
+                "start_time": "20:00",
+                "title": "Concert Test Catering - Updated",
+                "description": "Concert de test avec catering et hébergement mis à jour",
+                "bands": [],
+                "music_styles": ["Rock"],
+                # Updated catering fields
+                "has_catering": True,
+                "catering_drinks": 3,  # Changed from 2 to 3
+                "catering_respect": True,
+                "catering_tbd": False,
+                # Updated accommodation fields
+                "has_accommodation": True,
+                "accommodation_capacity": 8,  # Changed from 5 to 8
+                "accommodation_tbd": False
+            }
+            
+            response = requests.put(f"{self.base_url}/concerts/{self.catering_concert_id}", json=update_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                concert_response = response.json()
+                
+                # Verify updated values
+                if (concert_response.get('catering_drinks') == 3 and 
+                    concert_response.get('accommodation_capacity') == 8):
+                    details = f"✅ Concert mis à jour: catering_drinks={concert_response.get('catering_drinks')}, accommodation_capacity={concert_response.get('accommodation_capacity')}"
+                else:
+                    details = f"❌ Valeurs incorrectes après mise à jour: catering_drinks={concert_response.get('catering_drinks')}, accommodation_capacity={concert_response.get('accommodation_capacity')}"
+                    success = False
+            else:
+                details = f"❌ Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Concert Catering & Accommodation - Update", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Concert Catering & Accommodation - Update", False, f"Error: {str(e)}")
+            return False
+
+    def test_concert_without_catering_accommodation(self):
+        """Test 4: Création de Concert SANS Catering/Hébergement"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            # Create concert without catering and accommodation (default values)
+            concert_data = {
+                "date": "2026-03-01",
+                "start_time": "19:00",
+                "title": "Concert Sans Catering",
+                "description": "Concert de test sans catering ni hébergement",
+                "bands": [],
+                "music_styles": ["Jazz"],
+                # Explicitly set to false/default values
+                "has_catering": False,
+                "has_accommodation": False
+            }
+            
+            response = requests.post(f"{self.base_url}/concerts", json=concert_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                concert_response = response.json()
+                self.no_catering_concert_id = concert_response.get('id')
+                
+                # Verify default values are correct
+                expected_defaults = {
+                    'has_catering': False,
+                    'catering_drinks': 0,
+                    'catering_respect': False,
+                    'catering_tbd': False,
+                    'has_accommodation': False,
+                    'accommodation_capacity': 0,
+                    'accommodation_tbd': False
+                }
+                
+                incorrect_defaults = []
+                for field, expected_value in expected_defaults.items():
+                    actual_value = concert_response.get(field)
+                    if actual_value != expected_value:
+                        incorrect_defaults.append(f"{field} (expected: {expected_value}, got: {actual_value})")
+                
+                if incorrect_defaults:
+                    details = f"❌ VALEURS PAR DÉFAUT INCORRECTES: {', '.join(incorrect_defaults)}"
+                    success = False
+                else:
+                    details = f"✅ Concert créé sans catering/hébergement avec valeurs par défaut correctes: ID {self.no_catering_concert_id}"
+            else:
+                details = f"❌ Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Concert Without Catering & Accommodation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Concert Without Catering & Accommodation", False, f"Error: {str(e)}")
+            return False
+
+    def test_venue_concerts_list_with_catering_fields(self):
+        """Test 5: Liste des Concerts d'un Établissement avec nouveaux champs"""
+        try:
+            headers = {'Authorization': f'Bearer {self.venue_token}'}
+            
+            response = requests.get(f"{self.base_url}/venues/me/concerts", headers=headers, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                concerts = response.json()
+                
+                # Find our catering concert in the list
+                catering_concert = None
+                no_catering_concert = None
+                
+                for concert in concerts:
+                    if hasattr(self, 'catering_concert_id') and concert.get('id') == self.catering_concert_id:
+                        catering_concert = concert
+                    elif hasattr(self, 'no_catering_concert_id') and concert.get('id') == self.no_catering_concert_id:
+                        no_catering_concert = concert
+                
+                results = []
+                
+                # Check catering concert
+                if catering_concert:
+                    if (catering_concert.get('has_catering') == True and 
+                        catering_concert.get('catering_drinks') == 3 and  # Updated value
+                        catering_concert.get('has_accommodation') == True and
+                        catering_concert.get('accommodation_capacity') == 8):  # Updated value
+                        results.append("✅ Concert avec catering trouvé avec bonnes valeurs")
+                    else:
+                        results.append("❌ Concert avec catering a des valeurs incorrectes")
+                        success = False
+                
+                # Check no-catering concert
+                if no_catering_concert:
+                    if (no_catering_concert.get('has_catering') == False and 
+                        no_catering_concert.get('has_accommodation') == False):
+                        results.append("✅ Concert sans catering trouvé avec bonnes valeurs")
+                    else:
+                        results.append("❌ Concert sans catering a des valeurs incorrectes")
+                        success = False
+                
+                if results:
+                    details = f"Total concerts: {len(concerts)}, " + ", ".join(results)
+                else:
+                    details = f"❌ Concerts de test non trouvés dans la liste (total: {len(concerts)})"
+                    success = False
+            else:
+                details = f"❌ Status: {response.status_code}, Error: {response.text[:100]}"
+            
+            self.log_test("Venue Concerts List with Catering Fields", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Venue Concerts List with Catering Fields", False, f"Error: {str(e)}")
+            return False
+
     def test_planning_and_applications(self):
         """Test planning slots and application system"""
         try:

@@ -1486,7 +1486,20 @@ export default function VenueDashboard() {
               )}
               
               {/* Notifications */}
-              <Dialog open={showNotificationsDialog} onOpenChange={setShowNotificationsDialog}>
+              <Dialog open={showNotificationsDialog} onOpenChange={(open) => {
+                setShowNotificationsDialog(open);
+                if (open && unreadCount > 0) {
+                  // Marquer toutes les notifications comme lues quand on ouvre le panneau
+                  (async () => {
+                    try {
+                      await axios.post(`${API}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                      fetchNotifications();
+                    } catch (error) {
+                      console.error("Error marking notifications as read:", error);
+                    }
+                  })();
+                }
+              }}>
                 <DialogTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10 relative">
                     <Bell className="w-4 h-4" />

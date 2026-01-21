@@ -1038,11 +1038,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Notification History Deletion Feature"
-    - "Calendar Colors Bug Fix - Karaoke and Spectacle Colors"
-    - "PWA Features Testing"
-    - "Mobile Tabs Responsiveness"
-    - "Cache Behavior Analysis"
+    - "Concert Catering & Accommodation Backend API"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

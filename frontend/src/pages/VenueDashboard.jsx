@@ -5352,6 +5352,130 @@ export default function VenueDashboard() {
                   </>
                 )}
 
+                {/* Catering Section - uniquement pour les concerts */}
+                {selectedEventType === 'concert' && (
+                  <div className="space-y-3 p-4 bg-black/10 rounded-lg border border-white/10">
+                    <Label className="text-base flex items-center gap-2">
+                      🍽️ Catering <span className="text-xs text-muted-foreground">(la ration pour les ménestrels)</span>
+                    </Label>
+                    
+                    <div className="flex items-center gap-2">
+                      <Switch 
+                        checked={selectedEvent.has_catering || false} 
+                        onCheckedChange={(c) => setSelectedEvent({ ...selectedEvent, has_catering: c, catering_drinks: c ? selectedEvent.catering_drinks : 0 })} 
+                        disabled={!isEditingEvent}
+                      />
+                      <Label>Restauration disponible</Label>
+                    </div>
+
+                    {selectedEvent.has_catering && (
+                      <div className="space-y-3 pl-6 border-l-2 border-primary/30">
+                        <div className="space-y-2">
+                          <Label>Boissons par personne</Label>
+                          {isEditingEvent ? (
+                            <Select 
+                              value={selectedEvent.catering_drinks?.toString() || "0"} 
+                              onValueChange={(value) => setSelectedEvent({ ...selectedEvent, catering_drinks: parseInt(value) })}
+                            >
+                              <SelectTrigger className="bg-black/20 border-white/10">
+                                <SelectValue placeholder="Sélectionnez" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background border-white/10">
+                                {[...Array(11)].map((_, i) => (
+                                  <SelectItem key={i} value={i.toString()}>{i === 0 ? "Aucune" : `${i} boisson${i > 1 ? 's' : ''}`}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">
+                              {selectedEvent.catering_drinks === 0 ? "Aucune" : `${selectedEvent.catering_drinks} boisson${selectedEvent.catering_drinks > 1 ? 's' : ''}`}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id="concert-edit-catering-respect"
+                            checked={selectedEvent.catering_respect || false}
+                            onChange={(e) => setSelectedEvent({ ...selectedEvent, catering_respect: e.target.checked })}
+                            className="w-4 h-4 text-primary bg-black/20 border-white/10 rounded"
+                            disabled={!isEditingEvent}
+                          />
+                          <Label htmlFor="concert-edit-catering-respect" className="text-sm">
+                            Ne pas abuser de la gentillesse du patron
+                          </Label>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id="concert-edit-catering-tbd"
+                            checked={selectedEvent.catering_tbd || false}
+                            onChange={(e) => setSelectedEvent({ ...selectedEvent, catering_tbd: e.target.checked })}
+                            className="w-4 h-4 text-primary bg-black/20 border-white/10 rounded"
+                            disabled={!isEditingEvent}
+                          />
+                          <Label htmlFor="concert-edit-catering-tbd" className="text-sm">
+                            À définir
+                          </Label>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Accommodation Section - uniquement pour les concerts */}
+                {selectedEventType === 'concert' && (
+                  <div className="space-y-3 p-4 bg-black/10 rounded-lg border border-white/10">
+                    <Label className="text-base flex items-center gap-2">
+                      🛏️ Hébergement possible
+                    </Label>
+                    
+                    <div className="flex items-center gap-2">
+                      <Switch 
+                        checked={selectedEvent.has_accommodation || false} 
+                        onCheckedChange={(c) => setSelectedEvent({ ...selectedEvent, has_accommodation: c, accommodation_capacity: c ? selectedEvent.accommodation_capacity : 0 })} 
+                        disabled={!isEditingEvent}
+                      />
+                      <Label>Hébergement disponible</Label>
+                    </div>
+
+                    {selectedEvent.has_accommodation && (
+                      <div className="space-y-2 pl-6 border-l-2 border-primary/30">
+                        <Label>Nombre de personnes</Label>
+                        {isEditingEvent ? (
+                          <div className="grid grid-cols-5 gap-2">
+                            {[...Array(10)].map((_, i) => {
+                              const capacity = i + 1;
+                              return (
+                                <button
+                                  key={capacity}
+                                  type="button"
+                                  onClick={() => setSelectedEvent({ ...selectedEvent, accommodation_capacity: capacity })}
+                                  className={`
+                                    p-2 rounded-lg border-2 transition-all font-semibold
+                                    ${selectedEvent.accommodation_capacity === capacity 
+                                      ? 'bg-primary/20 border-primary text-primary' 
+                                      : 'bg-black/20 border-white/10 hover:border-white/30'
+                                    }
+                                  `}
+                                >
+                                  {capacity}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            {selectedEvent.accommodation_capacity || 0} personne{selectedEvent.accommodation_capacity > 1 ? 's' : ''}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Boutons d'action */}
                 <div className="flex gap-3 pt-4">
                   {isEditingEvent ? (

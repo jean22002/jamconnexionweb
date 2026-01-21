@@ -381,7 +381,7 @@ async def get_venue_subscribers(current_user: dict = Depends(get_current_user)):
                     "user_id": melomane.get("user_id"),
                     "role": "melomane",
                     "pseudo": melomane.get("pseudo", "Mélomane"),
-                    "profile_picture": melomane.get("profile_picture"),
+                    "profile_image": melomane.get("profile_picture"),  # Map to profile_image for consistency
                     "city": melomane.get("city"),
                     "favorite_styles": melomane.get("favorite_styles", []),
                     "subscribed_at": sub.get("created_at")

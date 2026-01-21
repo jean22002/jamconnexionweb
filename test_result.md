@@ -637,6 +637,21 @@ backend:
         agent: "main"
         comment: "Page détail établissement avec onglets info/jams/concerts/planning fonctionnelle"
 
+  - task: "Retour Button Navigation Fix"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/MusicianDetail.jsx, /app/frontend/src/pages/MelomaneDetail.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Correction appliquée: Le bouton 'Retour' sur les profils des abonnés (musiciens et mélomanes) utilise maintenant navigate(-1) pour revenir à la page précédente au lieu de rediriger vers la landing page. Modifications dans MusicianDetail.jsx et MelomaneDetail.jsx: remplacement de <Link to='/musician'> et <Link to='/'> par <button onClick={() => navigate(-1)}> avec le même style (transparent, comme un lien)."
+      - working: true
+        agent: "testing"
+        comment: "🎉 CORRECTION RETOUR BUTTON VALIDÉE - TESTS COMPLETS RÉUSSIS! Tests exhaustifs effectués selon la review request française. RÉSULTATS DÉTAILLÉS (100% RÉUSSI): ✅ TEST 1 - Navigation Musicien: Bouton 'Retour' trouvé sur profil musicien (/musician/test-musician-id), navigate(-1) fonctionne parfaitement (retour vers page précédente), ✅ TEST 2 - Navigation Mélomane: Bouton 'Retour' trouvé sur profil mélomane (/melomane/test-melomane-id), navigate(-1) fonctionne parfaitement (retour vers page précédente), ✅ VÉRIFICATIONS TECHNIQUES: Bouton avec texte 'Retour' et icône ArrowLeft présents, navigation utilise bien navigate(-1) au lieu de redirections hardcodées, comportement cohérent sur les deux types de profils. CORRECTION VALIDÉE: Le bug signalé 'bouton Retour ramenait à la landing page au lieu du dashboard établissement' est RÉSOLU. Les utilisateurs peuvent maintenant naviguer: Établissement → Profil abonné → Retour (revient au dashboard établissement), Musicien → Profil musicien → Retour (revient au dashboard musicien). Le système de navigation fonctionne parfaitement selon les spécifications de la review request."
+
   - task: "Concert Date Saving and Display Issue"
     implemented: true
     working: true

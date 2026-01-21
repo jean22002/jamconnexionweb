@@ -1053,7 +1053,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Concert Catering & Accommodation Backend API"
+    - "Bug Fix - Voir Profil Abonnés (Jacks) - Erreur 'Profil non trouvé'"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

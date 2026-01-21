@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "🎯 TEST COMPLET DU SYSTÈME DE PAIEMENT STRIPE - PRIORITÉ ABSOLUE. Migration de emergentintegrations vers la bibliothèque officielle Stripe pour gérer les abonnements récurrents. Le système permet aux établissements de souscrire un abonnement mensuel de 14,99€ après leur période d'essai de 60 jours."
+user_problem_statement: "Bonjour ! Je viens d'ajouter les champs Catering et Hébergement aux concerts. J'ai besoin de tester cette fonctionnalité complète. CONTEXTE: Application Jam Connexion - Feature: Catering et Hébergement pour les concerts. MODIFICATIONS: Backend (models/event.py) - Ajouté 7 nouveaux champs au modèle ConcertEvent et ConcertEventResponse. Frontend (VenueDashboard.jsx) - Ajouté sections Catering et Hébergement dans formulaires création/édition concert et affichage cartes. TESTS REQUIS: Création concert avec catering/hébergement, récupération avec tous champs, mise à jour, création sans catering, liste concerts établissement."
 
 backend:
   - task: "Stripe Payment System - Backend Integration"

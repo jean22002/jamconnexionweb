@@ -1888,6 +1888,21 @@ agent_communication:
         agent: "testing"
         comment: "🎉 SYSTÈME DE POLLING TEMPS RÉEL ENTIÈREMENT VALIDÉ - Tests exhaustifs réussis selon review request français (3/3 phases - 100%). RÉSULTATS DÉTAILLÉS: ✅ PHASE 1 - Vue Mélomane: Connexion testmelomane@test.com réussie, navigation vers établissement 'Test Concert Date Venue' confirmée, système de polling détecté avec requêtes automatiques toutes les 10 secondes (GET jams, GET concerts, GET venues, GET active-events), aucune erreur console critique, interface fluide sans clignotement, ✅ PHASE 3 - Vue Musicien: Connexion testmusician@test.com réussie, accès à l'établissement 'Test Concert Date Venue' confirmé, onglet 'Bœufs (2)' accessible avec 2 événements visibles, compteurs de participants fonctionnels (3 participants par événement), polling opérationnel avec requêtes réseau détectées, ✅ CRITÈRES DE SUCCÈS VALIDÉS: Page VenueDetail se charge correctement pour mélomanes ET musiciens, informations d'établissement visibles, aucune erreur console liée au polling, interface reste fluide sans flash/clignotement, polling s'exécute en arrière-plan sans perturber l'UX. IMPLÉMENTATION TECHNIQUE CONFIRMÉE: Intervalle de 10 secondes (lignes 260-269 VenueDetail.jsx), requêtes fetchEvents(), fetchActiveEvents(), fetchVenue() automatiques, système entièrement fonctionnel selon spécifications."
 
+  - task: "Notification Auto-Read System - All Dashboards"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/MusicianDashboard.jsx, /app/frontend/src/pages/VenueDashboard.jsx, /app/frontend/src/pages/MelomaneDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Amélioration UX du système de notifications. Quand l'utilisateur ouvre le panneau de notifications, elles sont automatiquement marquées comme lues et le badge disparaît. Implémentation: MusicianDashboard.jsx (onOpenChange avec markAllRead), VenueDashboard.jsx (onOpenChange avec axios.post('/notifications/read-all')), MelomaneDashboard.jsx (onOpenChange avec markAllRead). Styles: notifications non lues (bg-primary/10 border border-primary/30), notifications lues (bg-muted/30 ou bg-black/20)."
+      - working: "NA"
+        agent: "testing"
+        comment: "⚠️ TESTING BLOCKED BY AUTHENTICATION ISSUES - Cannot complete notification auto-read testing due to login failures. CODE ANALYSIS CONFIRMS CORRECT IMPLEMENTATION: ✅ MusicianDashboard.jsx (lines 976-982): onOpenChange handler with markAllRead() call when open && unreadCount > 0, ✅ VenueDashboard.jsx (lines 1489-1495): onOpenChange handler with axios.post('/notifications/read-all') call, ✅ MelomaneDashboard.jsx (lines 315-320): onOpenChange handler with markAllRead() call, ✅ Notification styling correctly implemented: unread (bg-primary/10 border border-primary/30), read (bg-muted/30 or bg-black/20). AUTHENTICATION ISSUES: All test accounts fail with 401 Unauthorized (testmusician@test.com, testvenue@test.com, testmelomane@test.com), registration redirects to /tarifs instead of forms. RECOMMENDATION: Fix authentication or provide working credentials to complete testing. Implementation appears functionally correct based on code review."
+
 agent_communication:
   - agent: "main"
     message: "Système de participation aux événements implémenté. Backend prêt avec endpoints de participation. Frontend complété avec composants JoinEventButton et ParticipationBadge. Intégrations terminées sur VenueDetail, MusicianDetail et MusicianDashboard. Nécessite test complet backend + frontend pour vérifier: 1) Récupération des événements actifs, 2) Fonctionnalité rejoindre/quitter événement, 3) Affichage du badge de participation, 4) Notifications aux amis, 5) Polling automatique du statut de participation. Un test de fichier doit être créé sous /app/backend/tests/test_event_participation.py pour tester les nouveaux endpoints."

@@ -698,6 +698,13 @@ async def notify_subscribers(
     # Get all subscribers
     subscriptions = await db.venue_subscriptions.find({"venue_id": venue_id}, {"_id": 0}).to_list(1000)
     
+    # Check if there are any subscribers
+    if len(subscriptions) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Aucun abonné (Jack) trouvé. Personne ne recevra la notification."
+        )
+    
     # Create notifications for each subscriber
     notifications_created = 0
     for sub in subscriptions:
@@ -760,6 +767,13 @@ async def broadcast_notification(
             )
             if distance <= radius:
                 nearby_musicians.append(musician)
+    
+    # Check if there are any nearby musicians
+    if len(nearby_musicians) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Aucun musicien trouvé dans un rayon de {radius} km. Essayez d'augmenter le rayon de recherche."
+        )
     
     # Create notifications for nearby musicians
     notifications_created = 0

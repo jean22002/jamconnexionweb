@@ -45,6 +45,15 @@ class ConcertEvent(BaseModel):
     bands: List[ConcertBand] = []
     price: Optional[str] = None
     music_styles: List[str] = []
+    # Catering
+    has_catering: bool = False
+    catering_drinks: int = 0
+    catering_respect: bool = False
+    catering_tbd: bool = False
+    # Accommodation
+    has_accommodation: bool = False
+    accommodation_capacity: int = 0
+    accommodation_tbd: bool = False
 
 class ConcertEventResponse(BaseModel):
     id: str
@@ -60,6 +69,15 @@ class ConcertEventResponse(BaseModel):
     music_styles: List[str] = []
     participants_count: int = 0
     created_at: str
+    # Catering
+    has_catering: bool = False
+    catering_drinks: int = 0
+    catering_respect: bool = False
+    catering_tbd: bool = False
+    # Accommodation
+    has_accommodation: bool = False
+    accommodation_capacity: int = 0
+    accommodation_tbd: bool = False
 
 class KaraokeEvent(BaseModel):
     date: str

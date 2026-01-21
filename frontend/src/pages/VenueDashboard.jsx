@@ -3939,11 +3939,17 @@ export default function VenueDashboard() {
                         </div>
                       </div>
                       <div className="mt-4">
-                        <Link to={`/musician/${subscriber.id}`}>
-                          <Button variant="outline" className="w-full rounded-full gap-2">
-                            <User className="w-4 h-4" /> Voir profil
-                          </Button>
-                        </Link>
+                        {subscriber.role === 'musician' ? (
+                          <Link to={`/musician/${subscriber.id}`}>
+                            <Button variant="outline" className="w-full rounded-full gap-2">
+                              <User className="w-4 h-4" /> Voir profil
+                            </Button>
+                          </Link>
+                        ) : (
+                          <div className="text-center text-sm text-muted-foreground py-2">
+                            Profil mélomane
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

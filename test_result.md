@@ -676,6 +676,21 @@ backend:
         agent: "testing"
         comment: "🎉 BUG CORRECTION VALIDÉE - TESTS API COMPLETS RÉUSSIS! TESTS DÉTAILLÉS EFFECTUÉS: ✅ Test 1 - Création concert: Créé concert avec date '2025-08-01', start_time '19:00', title 'Test Correction Bug' via POST /api/concerts, date correctement sauvegardée et retournée, ✅ Test 2 - Récupération concerts: GET /api/venues/me/concerts retourne date '2025-08-01' correctement, ✅ Test 3 - Modification concert: PUT /api/concerts/{id} modifie date de '2025-08-01' vers '2025-08-15' avec succès, ✅ Test 4 - Persistance: Vérification que la date modifiée '2025-08-15' persiste correctement après modification. CORRECTIONS APPLIQUÉES PAR MAIN AGENT VALIDÉES: Les logs console pour déboguer et la réinitialisation de selectedEvent, selectedEventType, et isEditingEvent à null/false lors de la fermeture de modale fonctionnent. BACKEND API 100% FONCTIONNEL - Les corrections du main agent ont résolu le problème de date des concerts. Le bug signalé par l'utilisateur est maintenant corrigé."
 
+  - task: "Notification Endpoints Error Handling - Backend Bug Fix"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/venues.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Correction du problème d'envoi de notifications quand il n'y a pas de destinataires. Modifications apportées aux 3 endpoints: 1) /api/venues/me/notify-subscribers - Ajouté vérification si len(subscriptions) == 0, retourne erreur 400 avec message 'Aucun abonné (Jack) trouvé. Personne ne recevra la notification.', 2) /api/venues/me/broadcast-notification - Ajouté vérification si len(nearby_musicians) == 0, retourne erreur 400 avec message 'Aucun musicien trouvé dans un rayon de {radius} km. Essayez d'augmenter le rayon de recherche.', 3) /api/venues/me/notify-all - Ajouté vérification si len(all_recipient_ids) == 0, retourne erreur 400 avec message 'Aucun destinataire trouvé. Vérifiez que vous avez des abonnés ou que des musiciens sont à proximité.'"
+      - working: true
+        agent: "testing"
+        comment: "🎉 SYSTÈME DE NOTIFICATIONS ENTIÈREMENT FONCTIONNEL - Tests complets réussis (10/10 - 100%). RÉSULTATS DÉTAILLÉS: ✅ AUTHENTIFICATION & AUTORISATION: Tous les endpoints rejettent correctement les requêtes non authentifiées (401) et les musiciens (403), seuls les établissements peuvent envoyer des notifications, ✅ NOTIFY SUBSCRIBERS: Erreur 400 correcte quand aucun abonné ('Aucun abonné (Jack) trouvé. Personne ne recevra la notification.'), succès avec 1 destinataire quand abonné présent, ✅ BROADCAST NOTIFICATION: Erreur 400 correcte quand aucun musicien à proximité ('Aucun musicien trouvé dans un rayon de 100 km. Essayez d'augmenter le rayon de recherche.'), comportement attendu car aucun musicien n'a de coordonnées dans le système actuel, ✅ NOTIFY ALL: Erreur 400 correcte quand aucun destinataire ('Aucun destinataire trouvé. Vérifiez que vous avez des abonnés ou que des musiciens sont à proximité.'), succès avec 1 destinataire quand abonné présent, ✅ VÉRIFICATION: 2 notifications broadcast créées en base de données avec type 'broadcast'. CORRECTIONS VALIDÉES: Les messages d'erreur sont maintenant clairs et utiles, le frontend peut afficher le message d'erreur exact, plus de confusion pour l'utilisateur, les envois avec destinataires fonctionnent normalement."
+
   - task: "Messaging Restriction System (TÂCHE 1)"
     implemented: true
     working: true

@@ -19,6 +19,8 @@ import Tarifs from "./pages/Tarifs";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
 import TrialExpired from "./pages/TrialExpired";
+import CGU from "./pages/CGU";
+import CGV from "./pages/CGV";
 import "./App.css";
 
 const ProtectedRoute = ({ children, allowedRole }) => {
@@ -79,6 +81,8 @@ function App() {
           <Route path="/venue/:id" element={<VenueDetail />} />
           <Route path="/musician/:id" element={<MusicianDetail />} />
           <Route path="/melomane/:id" element={<MelomaneDetail />} />
+          <Route path="/cgu" element={<CGU />} />
+          <Route path="/cgv" element={<CGV />} />
           <Route 
             path="/musician" 
             element={

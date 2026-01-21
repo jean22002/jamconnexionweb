@@ -826,6 +826,13 @@ async def notify_all(
     # Combine both sets (subscribers + nearby musicians, avoiding duplicates)
     all_recipient_ids = {**nearby_musician_ids, **subscriber_ids}  # subscriber_ids overwrites if duplicate
     
+    # Check if there are any recipients
+    if len(all_recipient_ids) == 0:
+        raise HTTPException(
+            status_code=400, 
+            detail="Aucun destinataire trouvé. Vérifiez que vous avez des abonnés ou que des musiciens sont à proximité."
+        )
+    
     # Create notifications for all recipients
     notifications_created = 0
     for recipient_id, recipient_role in all_recipient_ids.items():

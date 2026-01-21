@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "../components/ui/button";
 import { 
@@ -13,6 +13,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 export default function MelomaneDetail() {
   const { id } = useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [melomane, setMelomane] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -68,9 +69,12 @@ export default function MelomaneDetail() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-white transition-colors mb-6">
+        <button 
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-white transition-colors mb-6 cursor-pointer bg-transparent border-none"
+        >
           <ArrowLeft className="w-4 h-4" /> Retour
-        </Link>
+        </button>
 
         {/* Profile Header */}
         <div className="glassmorphism rounded-3xl p-8 mb-8">

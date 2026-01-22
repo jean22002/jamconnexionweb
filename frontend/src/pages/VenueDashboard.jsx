@@ -1650,6 +1650,32 @@ export default function VenueDashboard() {
           <p className="text-muted-foreground">Gérez votre établissement et vos événements</p>
         </div>
 
+        {/* Profile Completion Alert */}
+        {profile && !isProfileComplete() && (
+          <div className="glassmorphism border-2 border-yellow-500/50 rounded-2xl p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-5 h-5 text-yellow-500" />
+              </div>
+              <div className="flex-1">
+                <p className="font-heading font-semibold text-lg mb-1">
+                  Complétez votre profil
+                </p>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Merci de bien remplir tous les champs de votre profil (nom, adresse, ville, téléphone, description) afin de pouvoir commencer à créer des événements et être visible par les musiciens.
+                </p>
+                <Button 
+                  onClick={() => setActiveTab('profile')} 
+                  size="sm"
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black rounded-full"
+                >
+                  Compléter mon profil
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Subscription Card */}
         {user?.subscription_status !== "active" && (
           <div className="glassmorphism rounded-2xl p-6 mb-8 neon-border">

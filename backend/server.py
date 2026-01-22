@@ -3895,9 +3895,9 @@ async def geocode_address(data: dict):
         raise HTTPException(status_code=400, detail="City is required")
     
     try:
-        latitude, longitude = await geocode_city(city, postal_code)
+        latitude, longitude = await geocode_city(city)
         
-        if latitude == 0 and longitude == 0:
+        if not latitude or not longitude:
             raise HTTPException(status_code=404, detail="Unable to geocode the provided address")
         
         return {
@@ -3906,6 +3906,8 @@ async def geocode_address(data: dict):
             "city": city,
             "postal_code": postal_code
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Geocoding error: {str(e)}")
         raise HTTPException(status_code=500, detail="Error during geocoding")

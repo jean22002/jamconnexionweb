@@ -678,6 +678,12 @@ export default function MusicianDashboard() {
     }
   }, [activeTab, bandFilters, bandSearchMode, bandSearchRadius, geoPosition]);
 
+  useEffect(() => {
+    if (activeTab === "my-applications") {
+      fetchMyApplications();
+    }
+  }, [activeTab]);
+
   // Toggle geolocation tracking
   const toggleGeolocation = () => {
     setGeoEnabled(!geoEnabled);

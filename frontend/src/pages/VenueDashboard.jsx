@@ -189,6 +189,13 @@ export default function VenueDashboard() {
     allow_messages_from: "everyone" // "everyone" or "connected_only"
   });
 
+  // Check if profile is complete
+  const isProfileComplete = () => {
+    if (!profile) return false;
+    const requiredFields = ['name', 'address', 'city', 'postal_code', 'description', 'phone'];
+    return requiredFields.every(field => profile[field] && profile[field].trim() !== '');
+  };
+
   const [jamForm, setJamForm] = useState({
     date: "", start_time: "", end_time: "", music_styles: [],
     rules: "", has_instruments: false, has_pa_system: false,

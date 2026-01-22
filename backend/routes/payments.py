@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
 STRIPE_PRICE_ID = os.environ.get('STRIPE_PRICE_ID', 'price_1SpH8aBykagrgoTUBAdOU10z')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
-SUBSCRIPTION_PRICE = 14.99
+SUBSCRIPTION_PRICE = 12.99
 
 stripe.api_key = STRIPE_API_KEY
 

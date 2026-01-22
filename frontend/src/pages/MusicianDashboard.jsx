@@ -893,6 +893,41 @@ export default function MusicianDashboard() {
     }
   };
 
+  const handleChangePassword = async () => {
+    // Validation
+    if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      toast.error("Veuillez remplir tous les champs");
+      return;
+    }
+    
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error("Les nouveaux mots de passe ne correspondent pas");
+      return;
+    }
+    
+    if (passwordForm.newPassword.length < 8) {
+      toast.error("Le nouveau mot de passe doit contenir au moins 8 caractères");
+      return;
+    }
+    
+    setChangingPassword(true);
+    try {
+      await axios.post(`${API}/auth/change-password`, {
+        old_password: passwordForm.oldPassword,
+        new_password: passwordForm.newPassword
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      toast.success("Mot de passe modifié avec succès ! Un email de confirmation vous a été envoyé.");
+      setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur lors du changement de mot de passe");
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   const addConcert = () => {
     if (newConcert.date && newConcert.city) {
       setProfileForm({

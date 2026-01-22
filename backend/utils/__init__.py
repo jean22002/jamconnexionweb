@@ -1,6 +1,7 @@
 from .auth import hash_password, verify_password, create_token, get_current_user
 from .geocoding import geocode_city, haversine_distance
 from .upload import save_upload_file
+from .email import send_email, get_password_change_email_html
 
 __all__ = [
     'hash_password',
@@ -9,5 +10,7 @@ __all__ = [
     'get_current_user',
     'geocode_city',
     'haversine_distance',
-    'save_upload_file'
+    'save_upload_file',
+    'send_email',
+    'get_password_change_email_html'
 ]

@@ -1,4 +1,4 @@
-from .user import UserRegister, UserLogin, UserResponse, TokenResponse
+from .user import UserRegister, UserLogin, UserResponse, TokenResponse, ChangePasswordRequest
 from .musician import (
     BandInfo,
     MusicianConcert,

@@ -2753,14 +2753,13 @@ export default function MusicianDashboard() {
                 <div>
                   <Label>Région</Label>
                   <Select 
-                    value={candidatureFilters.region}
+                    value={candidatureFilters.region || undefined}
                     onValueChange={(value) => setCandidatureFilters({...candidatureFilters, region: value, department: ''})}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Toutes les régions" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Toutes les régions</SelectItem>
                       {REGIONS_FRANCE.map(region => (
                         <SelectItem key={region} value={region}>{region}</SelectItem>
                       ))}
@@ -2770,7 +2769,7 @@ export default function MusicianDashboard() {
                 <div>
                   <Label>Département</Label>
                   <Select 
-                    value={candidatureFilters.department}
+                    value={candidatureFilters.department || undefined}
                     onValueChange={(value) => setCandidatureFilters({...candidatureFilters, department: value})}
                     disabled={!candidatureFilters.region}
                   >
@@ -2778,7 +2777,6 @@ export default function MusicianDashboard() {
                       <SelectValue placeholder="Tous les départements" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Tous les départements</SelectItem>
                       {candidatureFilters.region && DEPARTEMENTS_FRANCE
                         .filter(d => d.region === candidatureFilters.region)
                         .map(dept => (
@@ -2793,14 +2791,13 @@ export default function MusicianDashboard() {
                 <div>
                   <Label>Style musical</Label>
                   <Select 
-                    value={candidatureFilters.musicStyle}
+                    value={candidatureFilters.musicStyle || undefined}
                     onValueChange={(value) => setCandidatureFilters({...candidatureFilters, musicStyle: value})}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Tous les styles" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Tous les styles</SelectItem>
                       {MUSIC_STYLES_LIST.map(style => (
                         <SelectItem key={style} value={style}>{style}</SelectItem>
                       ))}

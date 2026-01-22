@@ -1,174 +1,156 @@
 <analysis>**original_problem_statement:**
-L'utilisateur a demandé une série d'améliorations et de corrections pour une application de mise en relation entre musiciens et établissements :
-1.  **Fonctionnalités de Base :** Ajout de textes légaux (CGU, etc.), mise à jour du prix de l'abonnement, correction de bugs d'affichage responsive.
-2.  **Types d'Événements :** Ajout de Karaoké et Spectacle comme nouveaux types d'événements.
-3.  **Profils & Candidatures :**
-    *   Implémenter un calendrier sur le profil de l'établissement pour que les musiciens voient et postulent aux créneaux.
-    *   Ajouter des champs association et label de musique aux profils de groupe.
-    *   Permettre l'ajout d'une photo de couverture pour les groupes.
-    *   Ajouter un bouton Voir le profil complet sur les cartes de groupe.
-4.  **Gestion des Comptes :**
-    *   Permettre aux utilisateurs de suspendre (60 jours) ou de supprimer leur compte.
-    *   Empêcher l'inscription avec une adresse e-mail déjà utilisée.
-    *   Nettoyer la base de données des comptes de test.
-5.  **Abonnement & Paiement (Stripe) :**
-    *   Retirer les compteurs de la page d'accueil et les afficher uniquement lorsque le nombre d'utilisateurs dépasse 100.
-    *   Mettre en place un système d'essai gratuit de 60 jours pour les nouveaux établissements.
-    *   Après l'essai, bloquer l'accès et rediriger l'utilisateur vers une page de paiement Stripe pour souscrire à un abonnement mensuel de 14,99 €.
-    *   Utiliser les clés d'API Stripe LIVE et le Price ID fournis par l'utilisateur.
-    *   Assurer que le système est robuste et que chaque utilisateur a sa propre date de fin d'essai.
+L'utilisateur a initialement signalé une série de bugs hérités, notamment une erreur lors de la sauvegarde du profil d'un établissement. Au cours de la session, l'utilisateur a ajouté de nombreuses nouvelles demandes de fonctionnalités et rapports de bugs, notamment :
+1.  **Gestion de l'historique des notifications** : Pouvoir supprimer les notifications envoyées (individuellement et en totalité).
+2.  **Champs de concert** : Ajouter et afficher des informations sur le Catering (restauration) et l' Hébergement.
+3.  **Profils des abonnés** : Résoudre les bugs profil non trouvé et implémenter la visualisation des profils mélomanes.
+4.  **Navigation** : Corriger le bouton Retour pour qu'il ramène à la page précédente et non à l'accueil.
+5.  **Refactoring** : Nettoyer la base de code, en particulier les fichiers de test obsolètes.
+6.  **Logique de notification** : Améliorer les messages d'erreur et le comportement de la cloche de notification (le badge doit disparaître après lecture).
+7.  **Pages légales** : Créer et lier les pages de Conditions Générales (CGU/CGV) manquantes.
+8.  **Tarification** : Mettre à jour le prix de l'abonnement de 14,99€ à 12,99€ sur toute la plateforme.
+9.  **Flux d'inscription** : Résoudre un bug critique qui empêchait la création correcte des profils d'établissement.
+10. **Nouvelle fonctionnalité (Musicien)** : Ajouter un onglet de recherche de Candidatures avec des filtres (date, région, style).
+11. **Déplacement de fonctionnalité** : Déplacer l'onglet Candidatures du profil musicien vers son tableau de bord principal.
 
 **User's preferred language**: French
 
 **what currently exists?**
-- Les textes légaux, l'avertissement, la mise à jour des prix et les corrections de responsive ont été effectués.
-- Le calendrier de candidature pour les musiciens est fonctionnel.
-- Les profils de groupe ont été enrichis avec les champs d'association, de label et une photo de couverture. Le bouton Voir le profil a été ajouté.
-- La gestion de compte (suspension, suppression, validation d'e-mail unique) est implémentée côté backend et frontend.
-- La logique pour le système d'essai de 60 jours est en place (champs en BDD, vérification à la connexion, redirection vers une page ).
-- L'intégration Stripe est partiellement en place mais **cassée**. Les clés LIVE et le Price ID sont dans les variables d'environnement, mais la création de la session de paiement pour un abonnement échoue.
+L'application est une plateforme full-stack (React + FastAPI + MongoDB) où la plupart des bugs et fonctionnalités demandés au cours de cette session ont été implémentés. Les corrections majeures incluent le flux de création de profil, la navigation, les liens légaux et la logique de notification. De nouvelles fonctionnalités ont été ajoutées, comme la gestion de l'historique des notifications, des champs de concert supplémentaires, une page de profil public pour les mélomanes, et un système de recherche de candidatures pour les musiciens. Un nettoyage de base des fichiers de test a été effectué.
 
 **Last working item**:
-- **Last item agent was working**: Correction du bug de création de session d'abonnement Stripe. L'agent a identifié que la bibliothèque  utilisée n'est pas adaptée pour les abonnements récurrents (elle force le ). Après confirmation du support, la décision a été prise de migrer vers la bibliothèque Python officielle de Stripe.
+- **Last item agent was working**: L'agent était en train de déplacer la fonctionnalité Candidatures depuis la modale de profil du musicien vers le tableau de bord principal. Le code a été retiré de son ancien emplacement mais n'a pas encore été inséré dans le nouveau.
 - **Status**: IN PROGRESS
-- **Agent Testing Done**: N (La dernière tentative de correction a échoué)
-- **Which testing method agent to use?**: backend testing agent (Après correction, un test complet du flux de paiement sera nécessaire).
+- **Agent Testing Done**: N
+- **Which testing method agent to use?**: Frontend testing agent. Une fois que la section sera réinsérée dans , un test complet du tableau de bord musicien sera nécessaire pour valider le bon fonctionnement de la nouvelle section et l'absence de régressions.
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-- **Issue 1**: La création de la session de paiement Stripe pour un abonnement échoue. (P0 - BLOCKER)
-- **Issue 2**: Les événements Karaoké et Spectacle ne s'affichent pas dans la liste après leur création. (P1)
-- **Issue 3**: Les avis ne sont pas visibles sur le profil Test Bar. (P2)
-- **Issue 4**: Le correctif du bug des boutons de navigation GPS (pointe vers la mauvaise adresse) est en attente de vérification par l'utilisateur. (P3)
-- **Issue 5**: L'interface de gestion des candidatures est en attente de validation par l'utilisateur. (P4)
+- **Issue 1**: La fonctionnalité Candidatures est actuellement cassée (P0).
 
 **Issues Detail**:
-- **Issue 1: Échec de la création de session d'abonnement Stripe**
-    - **Attempted fixes**: L'agent a essayé de passer le Price ID via les paramètres , , et  à la bibliothèque . Toutes les tentatives ont échoué car la bibliothèque force le  de Stripe, alors qu'un Price ID récurrent nécessite le . L'erreur renvoyée par l'API Stripe était You cannot use ... Please either switch to mode or use only one-time prices.
+- **Issue 1: La fonctionnalité Candidatures est actuellement cassée**
+    - **Attempted fixes**: L'agent a supprimé l'onglet et son contenu de l'ancienne modale de profil dans . Le travail a été interrompu avant de l'ajouter au nouvel emplacement.
     - **Next debug checklist**:
-        1.  Remplacer l'utilisation de  par la bibliothèque officielle .
-        2.  Installer la bibliothèque : Looking in indexes: https://pypi.org/simple, https://d33sy5i8bnduwe.cloudfront.net/simple/
-Requirement already satisfied: stripe in /root/.venv/lib/python3.11/site-packages (14.1.0)
-Requirement already satisfied: typing_extensions>=4.5.0 in /root/.venv/lib/python3.11/site-packages (from stripe) (4.15.0)
-Requirement already satisfied: requests>=2.20 in /root/.venv/lib/python3.11/site-packages (from stripe) (2.32.5)
-Requirement already satisfied: charset_normalizer<4,>=2 in /root/.venv/lib/python3.11/site-packages (from requests>=2.20->stripe) (3.4.4)
-Requirement already satisfied: idna<4,>=2.5 in /root/.venv/lib/python3.11/site-packages (from requests>=2.20->stripe) (3.11)
-Requirement already satisfied: urllib3<3,>=1.21.1 in /root/.venv/lib/python3.11/site-packages (from requests>=2.20->stripe) (2.6.2)
-Requirement already satisfied: certifi>=2017.4.17 in /root/.venv/lib/python3.11/site-packages (from requests>=2.20->stripe) (2025.11.12).
-        3.  Dans , au sein de l'endpoint , réécrire la logique en utilisant .
-        4.  S'assurer que l'appel inclut les paramètres corrects : , , , , et .
-        5.  Intégrer la clé secrète du webhook () dans le  et l'utiliser pour sécuriser l'endpoint de webhook .
-    - **Why fix this issue and what will be achieved with the fix?**: C'est la fonctionnalité de monétisation principale de l'application. Sans cette correction, les utilisateurs ne peuvent pas s'abonner après leur période d'essai, ce qui rend l'application inutilisable à long terme.
+        1.  Reprendre le travail dans .
+        2.  Insérer le bloc de code JSX pour la section Candidatures dans la partie principale du tableau de bord, comme prévu (par exemple, après la section Bœufs).
+        3.  Vérifier que tous les états React () et fonctions () associés sont correctement portés et fonctionnels dans le nouveau contexte.
+        4.  Lancer l'agent de test frontend pour s'assurer que la fonctionnalité de recherche est visible, utilisable et ne casse pas le reste du tableau de bord.
+    - **Why fix this issue and what will be achieved with the fix?**: C'est une fonctionnalité clé demandée par l'utilisateur. La corriger la rendra plus visible et accessible, conformément à la dernière demande de l'utilisateur.
     - **Status**: IN PROGRESS
     - **Is recurring issue?**: N
-    - **Should Test frontend/backend/both after fix?**: both
-    - **Blocked on other issue**: None
-
-- **Issue 2: Les événements Karaoké/Spectacle ne s'affichent pas après création**
-    - **Status**: NOT STARTED (dans ce fork)
-    - **Details**: Problème hérité, probablement lié à une mauvaise gestion du rafraîchissement de l'état (state) dans  après un appel POST.
+    - **Should Test frontend/backend/both after fix?**: frontend
 
 **In progress Task List**:
-- **Task 1: Migrer la création de session Stripe vers la bibliothèque officielle (P0)**
-    - **Where to resume**: Fichier , endpoint .
-    - **What will be achieved with this?**: Un flux de paiement fonctionnel permettant aux utilisateurs de souscrire à un abonnement après leur période d'essai.
-    - **Status**: NOT STARTED (La décision de migrer vient d'être prise).
-    - **Should Test frontend/backend/both after fix?**: both
-    - **Blocked on something**: Non
+- **Task 1: Finaliser le déplacement de la fonctionnalité Candidatures**
+    - **Where to resume**: Dans . Le code de la section a déjà été préparé et doit être inséré dans la structure principale du JSX du tableau de bord.
+    - **What will be achieved with this?**: La fonctionnalité de recherche de candidatures sera une section principale du tableau de bord musicien, améliorant son expérience utilisateur.
+    - **Status**: IN PROGRESS
+    - **Should Test frontend/backend/both after fix?**: frontend
 
 **Upcoming and Future Tasks**
--   **Upcoming Tasks**:
-    *   **(P1)** Intégrer la clé secrète du webhook Stripe () pour sécuriser les notifications de paiement.
-    *   **(P2)** Résoudre le bug d'affichage des événements Karaoké et Spectacle.
-    *   **(P3)** Obtenir la validation de l'utilisateur pour l'ensemble des fonctionnalités héritées (Avis, GPS, UI candidatures).
--   **Future Tasks**:
-    *   **(Refactor - CRITICAL)** Décomposer les composants monolithiques  et .
-    *   **(Refactor - HIGHLY RECOMMENDED)** Scinder le fichier backend monolithique  en plusieurs routeurs.
+- **Upcoming Tasks**:
+    - **(P1)** Implémenter la logique fonctionnelle pour le bouton Ajouter au calendrier.
+    - **(P2)** Tester de manière approfondie les fonctionnalités PWA / arrière-plan.
+- **Future Tasks**:
+    - Améliorer les notifications avec un vrai support push (ex: Firebase Cloud Messaging).
+    - Décomposer les composants frontend monolithiques (, ).
+    - Nettoyer les dépendances inutilisées.
+    - Créer une vidéo de démonstration du site.
 
 **Completed work in this session**
--   Ajout d'un bouton Voir le profil complet sur les cartes de groupe dans .
--   Affichage des informations de label et d'association dans le profil détaillé du groupe.
--   Implémentation de l'upload de photo de couverture pour les groupes dans .
--   Nettoyage complet de la base de données des comptes de test à la demande de l'utilisateur.
--   Modification de la page d'accueil () pour n'afficher les compteurs que si le nombre d'utilisateurs > 100.
--   Mise à jour du prix de l'abonnement à 14,99 € sur la page d'accueil.
--   Implémentation complète (backend et frontend) de la suppression et suspension de compte pour musiciens et établissements.
--   Traduction et vérification du message d'erreur pour les inscriptions avec un e-mail déjà existant.
--   Mise à jour des textes sur les pages de flux de paiement (, ).
--   Création de la page .
--   Mise à jour du backend pour utiliser les clés Stripe LIVE et le Price ID de l'utilisateur.
+- **Correction du flux de création de profil établissement** (FAIT) : Le bug critique qui empêchait la création (POST) d'un profil a été résolu.
+- **Gestion de l'historique des notifications** (FAIT) : Ajout de la suppression unique et de la suppression totale des notifications envoyées.
+- **Amélioration de l'expérience de notification** (FAIT) : Le badge de la cloche disparaît à l'ouverture, et les erreurs pour 0 destinataire sont plus claires.
+- **Profils d'abonnés musiciens et mélomanes** (FAIT) : Correction du lien profil non trouvé et création d'une page de profil public pour les mélomanes.
+- **Mise à jour du prix de l'abonnement** (FAIT) : Le prix a été changé de 14,99€ à 12,99€ dans tout le code.
+- **Correction de la navigation** (FAIT) : Le bouton Retour des pages de profil redirige désormais correctement.
+- **Pages légales** (FAIT) : Création et liaison des pages CGU/CGV manquantes.
+- **Champs de concert** (FAIT) : Ajout des champs Catering et Hébergement.
+- **Refactoring léger** (FAIT) : Nettoyage et organisation des fichiers de test.
+- **Implémentation de la recherche de candidatures** (FAIT, en cours de déplacement) : Création du backend et du frontend pour la recherche filtrée.
 
 **Earlier issues found/mentioned but not fixed**
--   Les problèmes mentionnés dans **All Pending/In progress Issue list** (avis non visibles, validation GPS, validation UI gestion) ont été reportés des forks précédents et n'ont pas été traités dans cette session.
-
-**Known issue recurrence from previous fork**
--   La tendance aux données qui ne se rafraîchissent pas après une action de création (POST) semble être un problème récurrent, se manifestant avec les événements Karaoké et potentiellement d'autres fonctionnalités.
+- **Issue 1: Problème de cache persistant**
+    - **Debug checklist**: L'utilisateur a signalé ce problème au début. Bien qu'un cas spécifique ait été résolu, une enquête plus approfondie sur les stratégies de cache (en-têtes, service worker) pourrait être nécessaire si d'autres problèmes surviennent.
+    - **Why to solve this issue and what will be achieved with this?**: Améliorer la fraîcheur des données affichées à l'utilisateur.
+    - **Should Test frontend/backend/both after fix**: frontend
+    - **Is recurring issue?**: Y
+- **Issue 2: Onglets superposés sur mobile**
+    - **Debug checklist**: Le rapport de test initial a indiqué Aucun problème détecté, mais cela n'a pas été testé spécifiquement. Utiliser les outils de développement du navigateur pour simuler une vue mobile sur les pages de tableau de bord et vérifier le comportement des .
+    - **Why to solve this issue and what will be achieved with this?**: Améliorer l'utilisabilité de l'application sur les appareils mobiles.
+    - **Should Test frontend/backend/both after fix**: frontend
+    - **Is recurring issue?**: Y
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Stripe Integration**: L'agent a tenté d'utiliser  mais a été bloqué par ses limitations. La migration vers la bibliothèque  officielle est la prochaine étape critique.
--   **Subscription Logic**: Mise en place d'une logique basée sur  et  pour gérer l'accès des utilisateurs.
--   **State Management (React)**: Utilisation de ,  pour gérer l'état local des composants. Le bug des karaokés est probablement lié à un problème de rafraîchissement de l'état.
+- **Logique API conditionnelle**: Correction du flux de création de profil en utilisant  pour la création et  pour la mise à jour, géré côté frontend.
+- **Routage et rendu conditionnels (React)**: Correction des liens de profil d'abonné en se basant sur le  de l'utilisateur pour naviguer vers la bonne page.
+- **Filtrage d'API (FastAPI)**: Création d'un endpoint de recherche qui utilise des paramètres de requête pour filtrer les résultats de la base de données.
+- **Navigation (React Router)**: Correction du bouton Retour en utilisant  pour passer l'URL de retour.
 
 **key DB schema**
--   **users**: Contient maintenant  (date d'expiration de l'essai),  (booléen), et  (date de fin de suspension).
+- **events**: Le modèle de données pour les concerts inclut désormais les champs optionnels  et .
 
 **All files of reference**
--   : Fichier central pour la correction du bug Stripe et l'intégration du webhook secret.
--   : Contient les clés Stripe LIVE, le Price ID et le futur Webhook Secret.
--   : Point de départ du flux de paiement pour l'utilisateur.
--   : Contient la logique qui redirige les utilisateurs expirés.
+- : Fichier principal à modifier pour terminer la tâche en cours.
+- : Contient la logique backend pour la recherche de candidatures.
+- : Fichier de référence pour de nombreuses fonctionnalités et corrections implémentées.
+- : Fichier nouvellement créé pour l'affichage des profils mélomanes.
+- : Document résumant le nettoyage de code effectué.
 
 **Areas that need refactoring**:
--   **CRITICAL**:  et  sont extrêmement complexes et difficiles à maintenir.
--   **HIGHLY RECOMMENDED**:  doit être découpé en routeurs pour améliorer la lisibilité et la maintenance.
+-  (~5600 lignes) et  (~3900 lignes) sont extrêmement volumineux et devraient être décomposés en composants plus petits.
+-  (~3900 lignes) est également un monolithe et mériterait d'être divisé en modules plus logiques.
 
 **key api endpoints**
--   : **(CASSÉ)** Crée une session de paiement Stripe. Doit être corrigé.
--   : Vérifie le statut d'abonnement d'un utilisateur.
--   : Suspend le compte d'un utilisateur.
--   : Supprime le compte d'un utilisateur.
--   : Endpoint pour recevoir les événements de Stripe (doit être sécurisé avec le webhook secret).
+- : **(NOUVEAU)** Recherche les créneaux de candidature avec des filtres.
+- : **(NOUVEAU)** Supprime un historique de diffusion.
+- : **(NOUVEAU)** Supprime tout l'historique de diffusion.
+- : **(MODIFIÉ)** Accepte maintenant  et .
+- : **(CORRIGÉ)** Le frontend l'appelle désormais correctement pour la création de profil.
+- : **(MODIFIÉ)** Retourne maintenant le  de l'abonné.
+- : **(VÉRIFIÉ)** Endpoint utilisé pour la nouvelle page de détail des mélomanes.
 
 **Critical Info for New Agent**
--   **Priorité Absolue (P0)**: Votre première action doit être de corriger l'endpoint . Remplacez la bibliothèque  par la bibliothèque  officielle pour créer des sessions de paiement en .
--   **Clés LIVE**: L'application est configurée avec les clés Stripe **LIVE**. Soyez prudent. Utilisez les numéros de carte de test de Stripe pour les simulations de paiement.
--   **Webhook Secret**: L'utilisateur a fourni une clé secrète de webhook : . Une fois le checkout réparé, vous devez l'ajouter au fichier  et l'utiliser pour vérifier la signature des webhooks reçus par Stripe.
--   **Confusion de l'utilisateur**: L'utilisateur a été plusieurs fois confus à propos des déploiements qui échouaient et de la différence entre l'environnement de prévisualisation et la production. Communiquez très clairement lorsque les modifications sont prêtes à être déployées et demandez à l'utilisateur de vérifier que le déploiement a réussi.
+- **Priorité Absolue**: Terminer le déplacement de la section Candidatures dans . Le code a été retiré, il faut maintenant l'insérer au bon endroit dans le corps du tableau de bord et le tester.
+- **Contexte de la base de données**: La base de données a été vidée au cours de la session suite à une action externe. Les données de test sont donc rares, ce qui peut impacter les tests. Soyez prêt à recréer des données si nécessaire.
+- **Interaction utilisateur**: L'utilisateur est très réactif et fournit des retours constants. Attendez-vous à un flux de travail très interactif.
+
+**documents and test reports created in this job**
+- 
+- 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **LATEST**: jai oublié de te donner le id price price_1SpH8aBykagrgoTUBAdOU10z" - **DONE (added to .env)**
-2.  "jai Du re génére une clé. sk_live_... - **DONE (added to .env)**
-3.  ça fonctionne ok, Maintenant je te donne les clés api pour stripes... - **IN PROGRESS (Stripe bug)**
-4.  je vois tjrs 10 - **RESOLVED (Deployment issue)**
-5.  oui sur mon site déployé - **RESOLVED (Deployment issue)**
-6.  je comprend tjrs pas cela affiche encore le. nombre... - **RESOLVED (Deployment issue)**
-7.  en mode preview je ne vois pas les 500 et 150 musicien... - **RESOLVED (Deployment issue)**
-8.  bien vérifier que chaque utilisateur paye a ses 60 jours... - **DONE (Verified)**
-9.  ...page “Paiement annulé”... - **DONE (Implemented)**
-10. ...le 61 jour Page “Fin d’essai”... - **DONE (Implemented)**
+1.  **bug**: L'utilisateur signale un crash (). **Statut : Résolu**
+2.  **déplace l'onglet candidature...**: L'utilisateur demande de déplacer l'onglet Candidatures. **Statut : En cours**
+3.  **tjrs le problème**: L'utilisateur signale que le bug de création de profil d'établissement persiste. **Statut : Résolu**
+4.  **pour les musiciens faire un onglet pour faire de recherche...**: L'utilisateur demande la fonctionnalité de recherche de Candidatures. **Statut : Implémenté (en cours de déplacement)**
+5.  **probleme qd je cree mon profil établissement**: L'utilisateur signale un bug lors de la création d'un profil d'établissement. **Statut : Résolu**
+6.  **change le prix de l'abonnément a 12,99 euros...**: L'utilisateur demande un changement de prix. **Statut : Terminé**
+7.  **qd je clique sur les conditions ici ça ne fonctionne pas**: L'utilisateur signale des liens légaux cassés. **Statut : Résolu**
+8.  **une fois que que l'on clique sur la cloche...**: L'utilisateur demande des améliorations pour la cloche de notification. **Statut : Résolu**
+9.  **ya tjrs marque 2 abonné?**: L'utilisateur signale un nombre d'abonnés incorrect après la perte de données. **Statut : Résolu (expliqué comme un problème de cache)**
+10. **j'ai perdu les abonné il ya uj bug**: L'utilisateur signale que tous les abonnés ont disparu. **Statut : Résolu (expliqué comme une suppression de la BDD)**
 
 **Project Health Check:**
--   **Broken**: La fonctionnalité clé de souscription à l'abonnement via Stripe est cassée.
+- **Broken**:
+    - La fonctionnalité Candidatures pour les musiciens est actuellement inutilisable car elle est en cours de déplacement.
+- **Mocked**: Aucun.
 
 **3rd Party Integrations**
--   **Stripe (Paiements)**: Actuellement en cours de migration de  vers la bibliothèque officielle  pour gérer les abonnements. Clés LIVE configurées.
--   ****: Utilisé pour l'autocomplétion des villes.
+- **Stripe** : Utilisé pour les abonnements. Les clés sont dans les variables d'environnement. Le prix est codé en dur à  dans  et .
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (mais pas pour la dernière fonctionnalité qui est cassée)
--   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**: None
--   **Known regressions**: La création de session Stripe pour les abonnements.
+- L'agent de test a été largement utilisé pour valider les corrections et les nouvelles fonctionnalités.
+- Les fichiers de test ont été nettoyés et déplacés vers le dossier .
 
 **Credentials to test flow:**
--   **Stripe LIVE Secret Key**: 
--   **Stripe LIVE Price ID**: 
--   **Stripe Webhook Secret**: 
--   **Stripe Test Card**: Utiliser les cartes de test fournies dans la documentation Stripe pour simuler des paiements.
+L'agent a utilisé les identifiants suivants pour ses tests. Ils devraient fonctionner, sauf si la base de données a de nouveau été vidée.
+- Établissement :  / 
+- Musicien :  / 
 
 **What agent forgot to execute**
--   L'intégration de la clé secrète du webhook Stripe est en attente de la résolution du bug de checkout.
--   Les anciens problèmes (bug des avis, vérification GPS, etc.) n'ont pas été abordés car la priorité a été donnée aux nouvelles demandes de l'utilisateur et au bug bloquant de Stripe.</analysis>
+- La dernière étape de la tâche en cours : l'insertion du code de la section Candidatures à son nouvel emplacement dans .
+- Les problèmes hérités de cache persistant (au-delà du cas spécifique traité) et des onglets superposés sur mobile n'ont pas été abordés.</analysis>

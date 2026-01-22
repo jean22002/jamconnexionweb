@@ -1161,9 +1161,9 @@ metadata:
 
   - task: "Venue Profile Creation Bug Fix - Critical POST vs PUT Issue"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/pages/VenueDashboard.jsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -1173,6 +1173,9 @@ metadata:
       - working: true
         agent: "testing"
         comment: "🎉 BUG FIX ENTIÈREMENT VALIDÉ - TESTS COMPLETS RÉUSSIS (5/5 - 100%)! RÉSULTATS DÉTAILLÉS: ✅ TEST 1 - Création nouveau profil (POST): Créé compte venue via API (test_venue_profile_fix_api@test.com), vérifié absence profil (404), utilisé POST /api/venues avec succès (HTTP 200), profil créé avec tous les champs (nom, adresse, coordonnées), ✅ TEST 2 - Mise à jour profil existant (PUT): Modifié profil existant via PUT /api/venues avec succès (HTTP 200), données mises à jour correctement, ✅ TEST 3 - Validation frontend: Connexion dashboard venue réussie, profil visible avec données correctes ('Le Bar Musical Test Profile Fix - UPDATED'), bouton 'Modifier' présent (profil existe), mode édition fonctionnel avec bouton 'Sauvegarder', ✅ TEST 4 - Nouveau profil complet: Créé second compte venue (test_venue_new_profile@test.com), vérifié absence profil (404), création via POST réussie (Nouveau Bar Musical, Lyon), ✅ TEST 5 - Flux complet: Cycle création → vérification → mise à jour → vérification fonctionnel. CORRECTION VALIDÉE: Le bug critique 'Venue profile not found' est RÉSOLU. Les nouveaux établissements peuvent maintenant créer leur profil via POST, et les établissements existants peuvent toujours mettre à jour via PUT. Système de création de profil établissement 100% opérationnel!"
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL AUTHENTICATION ISSUE BLOCKING VENUE PROFILE TESTING - Unable to complete comprehensive testing of venue profile creation bug fix due to persistent authentication failures. TESTING ATTEMPTS MADE: ✅ Code analysis confirms bug fix is correctly implemented in VenueDashboard.jsx (lines 428-441): if (!profile) uses POST /api/venues with 'Profil créé avec succès!' message, else uses PUT /api/venues with 'Profil sauvegardé!' message, ✅ Backend geocoding system working (logs show successful geo.gouv.fr API calls), ❌ AUTHENTICATION BLOCKING ISSUES: Multiple login attempts with test credentials failed (401 Unauthorized errors in backend logs), venue registration flow incomplete due to multi-step process complexity, unable to access venue dashboard to test profile creation form. ROOT CAUSE: Authentication system preventing access to venue dashboard where profile creation occurs. IMPACT: Cannot verify the critical POST vs PUT logic fix in real user scenario. RECOMMENDATION: Main agent should provide working venue test credentials or simplify authentication flow for testing. The code fix appears correct but requires functional authentication to validate end-to-end user experience."
 
 test_plan:
   current_focus:

@@ -1099,7 +1099,6 @@ export default function MusicianDashboard() {
                       <TabsTrigger value="styles" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Styles</TabsTrigger>
                       <TabsTrigger value="solo" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Solo</TabsTrigger>
                       <TabsTrigger value="band" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Groupe</TabsTrigger>
-                      <TabsTrigger value="candidatures" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Candidatures</TabsTrigger>
                       <TabsTrigger value="concerts" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Concerts</TabsTrigger>
                       <TabsTrigger value="settings" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Paramètres</TabsTrigger>
                     </TabsList>

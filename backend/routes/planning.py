@@ -557,6 +557,37 @@ async def reject_application(app_id: str, current_user: dict = Depends(get_curre
     return {"message": "Application rejected"}
 
 
+@router.delete("/applications/my/{app_id}")
+async def cancel_my_application(app_id: str, current_user: dict = Depends(get_current_user)):
+    """Cancel own application (musician only, pending status only)"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can cancel their applications")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    app = await db.applications.find_one({"id": app_id}, {"_id": 0})
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+    
+    # Verify the application belongs to this musician
+    if app["musician_id"] != musician["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized to cancel this application")
+    
+    # Only pending applications can be cancelled by musicians
+    if app.get("status") != "pending":
+        raise HTTPException(
+            status_code=400, 
+            detail="Seules les candidatures en attente peuvent être annulées"
+        )
+    
+    # Delete the application
+    await db.applications.delete_one({"id": app_id})
+    
+    return {"message": "Candidature annulée avec succès"}
+
+
 @router.delete("/applications/{app_id}")
 async def delete_application(app_id: str, current_user: dict = Depends(get_current_user)):
     """Delete an application (venue can cancel an accepted application)"""

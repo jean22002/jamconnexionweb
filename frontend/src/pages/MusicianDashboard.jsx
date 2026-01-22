@@ -812,6 +812,38 @@ export default function MusicianDashboard() {
     }
   };
 
+  const searchCandidatures = async () => {
+    setLoadingCandidatures(true);
+    try {
+      const params = new URLSearchParams();
+      if (candidatureFilters.dateFrom) params.append('date_from', candidatureFilters.dateFrom);
+      if (candidatureFilters.dateTo) params.append('date_to', candidatureFilters.dateTo);
+      if (candidatureFilters.region) params.append('region', candidatureFilters.region);
+      if (candidatureFilters.department) params.append('department', candidatureFilters.department);
+      if (candidatureFilters.musicStyle) params.append('music_style', candidatureFilters.musicStyle);
+      
+      const response = await axios.get(`${API}/planning/search?${params.toString()}`);
+      setCandidatures(response.data);
+    } catch (error) {
+      console.error("Error searching candidatures:", error);
+      toast.error("Erreur lors de la recherche");
+    } finally {
+      setLoadingCandidatures(false);
+    }
+  };
+
+  const applyToSlot = async (slotId) => {
+    try {
+      await axios.post(`${API}/planning/${slotId}/apply`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success("Candidature envoyée !");
+      searchCandidatures(); // Refresh list
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur lors de la candidature");
+    }
+  };
+
   const addConcert = () => {
     if (newConcert.date && newConcert.city) {
       setProfileForm({

@@ -275,6 +275,14 @@ export default function MusicianDashboard() {
   const [myApplications, setMyApplications] = useState([]);
   const [loadingMyApplications, setLoadingMyApplications] = useState(false);
   
+  // Change password states
+  const [passwordForm, setPasswordForm] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
+  
   // Geolocation states
   const [geoEnabled, setGeoEnabled] = useState(true);
   const [followUser, setFollowUser] = useState(true);

@@ -17,7 +17,7 @@ import jwt
 
 # Import models from models package
 from models import (
-    UserRegister, UserLogin, UserResponse, TokenResponse,
+    UserRegister, UserLogin, UserResponse, TokenResponse, ChangePasswordRequest,
     BandInfo, MusicianConcert, MusicianProfile, MusicianProfileResponse,
     FriendRequest, FriendRequestResponse, BandJoinRequest, BandJoinRequestResponse,
     VenueProfile, VenueProfileResponse, VenueSubscription, NearbySearchRequest,

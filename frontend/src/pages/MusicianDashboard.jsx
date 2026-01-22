@@ -1828,6 +1828,67 @@ export default function MusicianDashboard() {
 
                     {/* Settings Tab - Account Management */}
                     <TabsContent value="settings" className="space-y-4 mt-4">
+                      {/* Change Password Section */}
+                      <div className="space-y-4 p-4 border-2 border-primary/20 rounded-xl">
+                        <h4 className="font-medium text-primary flex items-center gap-2">
+                          <Settings2 className="w-5 h-5" />
+                          Sécurité
+                        </h4>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <Label>Ancien mot de passe</Label>
+                            <Input
+                              type="password"
+                              value={passwordForm.oldPassword}
+                              onChange={(e) => setPasswordForm({...passwordForm, oldPassword: e.target.value})}
+                              placeholder="Entrez votre ancien mot de passe"
+                              className="mt-1"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label>Nouveau mot de passe</Label>
+                            <Input
+                              type="password"
+                              value={passwordForm.newPassword}
+                              onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
+                              placeholder="Minimum 8 caractères"
+                              className="mt-1"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label>Confirmer le nouveau mot de passe</Label>
+                            <Input
+                              type="password"
+                              value={passwordForm.confirmPassword}
+                              onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
+                              placeholder="Confirmez le nouveau mot de passe"
+                              className="mt-1"
+                            />
+                          </div>
+                          
+                          <Button
+                            onClick={handleChangePassword}
+                            disabled={changingPassword}
+                            className="rounded-full"
+                          >
+                            {changingPassword ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Modification...
+                              </>
+                            ) : (
+                              <>
+                                <Check className="w-4 h-4 mr-2" />
+                                Changer le mot de passe
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+
                       <div className="space-y-4 p-4 border-2 border-red-500/20 rounded-xl">
                         <h4 className="font-medium text-red-400">Gestion du compte</h4>
                         

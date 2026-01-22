@@ -38,7 +38,7 @@ from .notification import NotificationResponse
 from .profitability import ProfitabilityData, ProfitabilityResponse
 
 __all__ = [
-    'UserRegister', 'UserLogin', 'UserResponse', 'TokenResponse',
+    'UserRegister', 'UserLogin', 'UserResponse', 'TokenResponse', 'ChangePasswordRequest',
     'BandInfo', 'MusicianConcert', 'MusicianProfile', 'MusicianProfileResponse',
     'FriendRequest', 'FriendRequestResponse', 'BandJoinRequest', 'BandJoinRequestResponse',
     'MelomaneCreate', 'MelomaneUpdate', 'MelomaneResponse',

@@ -271,6 +271,10 @@ export default function MusicianDashboard() {
     musicStyle: ''
   });
   
+  // My applications states
+  const [myApplications, setMyApplications] = useState([]);
+  const [loadingMyApplications, setLoadingMyApplications] = useState(false);
+  
   // Geolocation states
   const [geoEnabled, setGeoEnabled] = useState(true);
   const [followUser, setFollowUser] = useState(true);

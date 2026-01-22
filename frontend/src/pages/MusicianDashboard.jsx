@@ -843,8 +843,39 @@ export default function MusicianDashboard() {
       });
       toast.success("Candidature envoyée !");
       searchCandidatures(); // Refresh list
+      fetchMyApplications(); // Refresh my applications
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur lors de la candidature");
+    }
+  };
+
+  const fetchMyApplications = async () => {
+    setLoadingMyApplications(true);
+    try {
+      const response = await axios.get(`${API}/applications/my`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMyApplications(response.data);
+    } catch (error) {
+      console.error("Error fetching my applications:", error);
+      toast.error("Erreur lors du chargement de vos candidatures");
+    } finally {
+      setLoadingMyApplications(false);
+    }
+  };
+
+  const cancelApplication = async (appId) => {
+    if (!window.confirm("Voulez-vous vraiment annuler cette candidature ?")) {
+      return;
+    }
+    try {
+      await axios.delete(`${API}/applications/${appId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success("Candidature annulée");
+      fetchMyApplications();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur lors de l'annulation");
     }
   };
 

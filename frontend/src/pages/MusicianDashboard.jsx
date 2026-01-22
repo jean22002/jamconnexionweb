@@ -2434,6 +2434,7 @@ export default function MusicianDashboard() {
           <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 mb-6 gap-1 scrollbar-thin scrollbar-thumb-cyan-500/50 scrollbar-track-transparent">
             <TabsTrigger value="map" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Carte</TabsTrigger>
             <TabsTrigger value="candidatures" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Candidatures</TabsTrigger>
+            <TabsTrigger value="my-applications" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Mes Candidatures</TabsTrigger>
             <TabsTrigger value="participations" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Mes Participations ({participations.length})</TabsTrigger>
             <TabsTrigger value="musicians" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Musiciens</TabsTrigger>
             <TabsTrigger value="venues" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Établissements</TabsTrigger>

@@ -208,6 +208,33 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         trial_end=current_user.get("trial_end")
     )
 
+@api_router.post("/auth/change-password")
+async def change_password(data: ChangePasswordRequest, current_user: dict = Depends(get_current_user)):
+    """Change user password"""
+    # Verify old password
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if not verify_password(data.old_password, user["password"]):
+        raise HTTPException(status_code=400, detail="Ancien mot de passe incorrect")
+    
+    # Hash new password
+    new_password_hash = hash_password(data.new_password)
+    
+    # Update password
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {
+            "password": new_password_hash,
+            "password_changed_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # TODO: Send email notification (will be implemented after email integration)
+    
+    return {"message": "Mot de passe modifié avec succès"}
+
 @api_router.post("/account/suspend")
 async def suspend_account(current_user: dict = Depends(get_current_user)):
     """Suspend user account for up to 60 days"""

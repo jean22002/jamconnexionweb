@@ -231,7 +231,21 @@ async def change_password(data: ChangePasswordRequest, current_user: dict = Depe
         }}
     )
     
-    # TODO: Send email notification (will be implemented after email integration)
+    # Send email notification
+    try:
+        email_html = get_password_change_email_html(
+            user_name=current_user["name"],
+            user_email=current_user["email"]
+        )
+        await send_email(
+            to_email=current_user["email"],
+            subject="🔐 Confirmation de changement de mot de passe - Jam Connexion",
+            html_content=email_html
+        )
+        logger.info(f"Password change email sent to {current_user['email']}")
+    except Exception as e:
+        logger.error(f"Failed to send password change email: {str(e)}")
+        # Don't fail the request if email fails
     
     return {"message": "Mot de passe modifié avec succès"}
 

@@ -51,7 +51,7 @@ JWT_ALGORITHM = "HS256"
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
 STRIPE_PRICE_ID = os.environ.get('STRIPE_PRICE_ID', 'price_1SpH8aBykagrgoTUBAdOU10z')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
-SUBSCRIPTION_PRICE = 14.99
+SUBSCRIPTION_PRICE = 12.99
 
 stripe.api_key = STRIPE_API_KEY
 
@@ -3653,7 +3653,7 @@ async def reject_band_join_request(request_id: str, current_user: dict = Depends
 
 # ============= PAYMENT ROUTES =============
 
-SUBSCRIPTION_PRICE = 14.99
+SUBSCRIPTION_PRICE = 12.99
 
 @api_router.post("/payments/checkout")
 async def create_checkout(data: CheckoutRequest, request: Request, current_user: dict = Depends(get_current_user)):

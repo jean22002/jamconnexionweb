@@ -126,7 +126,7 @@ export default function Tarifs() {
               </div>
               <div>
                 <h2 className="font-heading font-bold text-3xl">Établissement</h2>
-                <p className="text-2xl font-bold text-primary">14,99€ <span className="text-base text-muted-foreground">/mois</span></p>
+                <p className="text-2xl font-bold text-primary">12,99€ <span className="text-base text-muted-foreground">/mois</span></p>
               </div>
             </div>
 

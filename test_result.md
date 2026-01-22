@@ -1128,8 +1128,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Melomane Profile Page Implementation"
-  stuck_tasks: []
+    - "MusicianDashboard - Candidatures Tab Implementation"
+  stuck_tasks: 
+    - "Authentication system - Invalid credentials blocking UI testing"
   test_all: false
   test_priority: "high_first"
 

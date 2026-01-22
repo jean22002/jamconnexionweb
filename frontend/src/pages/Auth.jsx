@@ -179,7 +179,7 @@ export default function Auth() {
                         <p className={`font-medium text-white`}>
                           Établissement
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">14,99€/mois</p>
+                        <p className="text-xs text-muted-foreground mt-1">12,99€/mois</p>
                       </button>
                       
                       <button

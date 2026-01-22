@@ -1608,7 +1608,7 @@ export default function VenueDashboard() {
                 <h3 className="font-heading font-semibold text-lg mb-1">
                   {user?.subscription_status === "trial" ? "Période d'essai" : "Abonnez-vous"}
                 </h3>
-                <p className="text-muted-foreground text-sm">14,99€/mois pour être visible</p>
+                <p className="text-muted-foreground text-sm">12,99€/mois pour être visible</p>
               </div>
               {user?.subscription_status !== "trial" && (
                 <Button onClick={handleSubscribe} className="bg-primary hover:bg-primary/90 rounded-full px-6 gap-2" data-testid="subscribe-btn">

@@ -47,7 +47,7 @@ export default function TrialExpired() {
 
           {/* Message */}
           <p className="text-xl text-muted-foreground mb-8">
-            Pour continuer sur Jam Connexion, choisis un abonnement mensuel à 14,99€/mois (sans engagement).
+            Pour continuer sur Jam Connexion, choisis un abonnement mensuel à 12,99€/mois (sans engagement).
           </p>
 
           {/* Features reminder */}
@@ -78,7 +78,7 @@ export default function TrialExpired() {
           {/* Pricing */}
           <div className="glassmorphism rounded-2xl p-6 mb-8 neon-border">
             <div className="flex items-baseline justify-center gap-2 mb-2">
-              <span className="font-heading font-bold text-5xl text-gradient">14,99€</span>
+              <span className="font-heading font-bold text-5xl text-gradient">12,99€</span>
               <span className="text-muted-foreground text-lg">/mois</span>
             </div>
             <p className="text-sm text-muted-foreground">

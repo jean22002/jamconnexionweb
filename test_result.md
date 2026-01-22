@@ -649,6 +649,42 @@ backend:
         agent: "testing"
         comment: "❌ CRITICAL BUG FOUND - CANDIDATURES TAB NOT DISPLAYING SEARCH INTERFACE. COMPREHENSIVE TESTING RESULTS: ✅ Backend API /api/planning/search working perfectly (21 planning slots available), ✅ Login successful with test_candidatures@musician.com, ✅ Candidatures tab exists and is clickable, ❌ MAJOR ISSUE: Clicking Candidatures tab shows map view instead of search interface, ❌ Tab switching logic not working correctly - content not changing when tab is clicked, ❌ Search form with filters (Date début/fin, Région, Département, Style musical) not visible, ❌ Cannot test 'Candidater' button functionality due to missing search interface. ROOT CAUSE: Frontend tab content switching mechanism broken - TabsContent value='candidatures' not displaying correctly. IMPACT: Users cannot search for or apply to planning slots. RECOMMENDATION: Fix tab switching logic in MusicianDashboard.jsx to properly display candidatures search interface when tab is clicked."
 
+  - task: "Mes Candidatures Tab - Application History Display"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/MusicianDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ MES CANDIDATURES TAB FUNCTIONAL - Tab accessible and displays correct empty state. TESTING RESULTS: ✅ Tab exists and is clickable, ✅ Shows proper empty state message 'Vous n'avez pas encore envoyé de candidature', ✅ Includes helpful instruction 'Consultez l'onglet Candidatures pour postuler', ✅ Backend endpoint /api/applications/my exists and ready for data. Tab structure and UI working correctly, ready to display applications once Candidatures search functionality is fixed."
+
+  - task: "Password Change Functionality - Security Settings"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/MusicianDashboard.jsx, /app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎉 PASSWORD CHANGE FUNCTIONALITY 100% WORKING - ALL VALIDATIONS AND FLOW TESTED SUCCESSFULLY! COMPREHENSIVE TEST RESULTS: ✅ Security section visible in Settings tab with Settings2 icon, ✅ Complete form with all required fields (Ancien mot de passe, Nouveau mot de passe, Confirmer le nouveau mot de passe), ✅ VALIDATION TESTS ALL PASSED: Empty fields validation ('Veuillez remplir tous les champs'), Wrong old password validation ('Ancien mot de passe incorrect'), Password mismatch validation ('Les nouveaux mots de passe ne correspondent pas'), Short password validation (minimum 8 characters), ✅ SUCCESSFUL PASSWORD CHANGE: Success message displayed 'Mot de passe modifié avec succès ! Un email de confirmation vous a été envoyé.', ✅ NEW PASSWORD LOGIN CONFIRMED: Can login with new password (NewPass123!), old password correctly rejected. Backend endpoint /api/auth/change-password fully functional. Email notification message displayed (email sending not yet implemented as noted in review request). Complete password change workflow operational."
+
+  - task: "Musician Application Cancellation Backend Fix"
+    implemented: false
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "❌ CRITICAL BACKEND BUG IDENTIFIED - Musicians cannot cancel their own applications. ISSUE ANALYSIS: ✅ Frontend has cancel functionality in 'Mes Candidatures' tab with proper UI, ❌ Backend DELETE /api/applications/{app_id} endpoint restricted to venues only (line 2583: 'Only venues can delete applications'), ❌ No separate endpoint for musicians to cancel their own pending applications, ❌ Frontend cancelApplication() function will fail with 403 Forbidden when musicians try to cancel. ROOT CAUSE: Missing musician-specific application cancellation endpoint. IMPACT: Musicians cannot cancel their pending applications as intended in the review request. RECOMMENDATION: Create new endpoint DELETE /api/applications/my/{app_id} for musicians to cancel their own pending applications, or modify existing endpoint to allow musicians to cancel their own applications."
+
   - task: "Venue Detail Page"
     implemented: true
     working: true

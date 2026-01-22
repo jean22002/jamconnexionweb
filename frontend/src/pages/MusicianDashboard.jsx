@@ -1691,6 +1691,130 @@ export default function MusicianDashboard() {
                       )}
                     </TabsContent>
 
+                    <TabsContent value="candidatures" className="space-y-4 mt-4">
+                      <div className="glassmorphism rounded-2xl p-6">
+                        <h3 className="font-heading font-semibold text-xl mb-4">🔍 Recherche de Candidatures</h3>
+                        
+                        {/* Filtres de recherche */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                          <div className="space-y-2">
+                            <Label>Date début</Label>
+                            <Input 
+                              type="date"
+                              value={candidatureFilters.dateFrom}
+                              onChange={(e) => setCandidatureFilters({...candidatureFilters, dateFrom: e.target.value})}
+                              className="bg-black/20 border-white/10"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Date fin</Label>
+                            <Input 
+                              type="date"
+                              value={candidatureFilters.dateTo}
+                              onChange={(e) => setCandidatureFilters({...candidatureFilters, dateTo: e.target.value})}
+                              className="bg-black/20 border-white/10"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Région</Label>
+                            <Input 
+                              value={candidatureFilters.region}
+                              onChange={(e) => setCandidatureFilters({...candidatureFilters, region: e.target.value})}
+                              placeholder="Ex: Île-de-France"
+                              className="bg-black/20 border-white/10"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Département</Label>
+                            <Input 
+                              value={candidatureFilters.department}
+                              onChange={(e) => setCandidatureFilters({...candidatureFilters, department: e.target.value})}
+                              placeholder="Ex: 75"
+                              className="bg-black/20 border-white/10"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Style musical</Label>
+                            <Input 
+                              value={candidatureFilters.musicStyle}
+                              onChange={(e) => setCandidatureFilters({...candidatureFilters, musicStyle: e.target.value})}
+                              placeholder="Ex: Rock"
+                              className="bg-black/20 border-white/10"
+                            />
+                          </div>
+                          <div className="flex items-end">
+                            <Button 
+                              onClick={searchCandidatures}
+                              disabled={loadingCandidatures}
+                              className="w-full bg-primary hover:bg-primary/90"
+                            >
+                              {loadingCandidatures ? (
+                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                              ) : (
+                                <Search className="w-4 h-4 mr-2" />
+                              )}
+                              Rechercher
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Résultats */}
+                        {loadingCandidatures ? (
+                          <div className="text-center py-8">
+                            <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
+                            <p className="text-muted-foreground mt-2">Recherche en cours...</p>
+                          </div>
+                        ) : candidatures.length === 0 ? (
+                          <div className="text-center py-8">
+                            <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                            <p className="text-muted-foreground">Aucune candidature trouvée. Lancez une recherche !</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <p className="text-sm text-muted-foreground">{candidatures.length} résultat{candidatures.length > 1 ? 's' : ''} trouvé{candidatures.length > 1 ? 's' : ''}</p>
+                            {candidatures.map((slot) => (
+                              <div key={slot.id} className="p-4 bg-black/20 rounded-xl border border-white/10 hover:border-primary/50 transition-colors">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <h4 className="font-semibold text-lg">{slot.venue_name || 'Établissement'}</h4>
+                                    <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                                      <span className="flex items-center gap-1">
+                                        <Calendar className="w-4 h-4" />
+                                        {new Date(slot.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <MapPin className="w-4 h-4" />
+                                        {slot.venue_city || 'Ville inconnue'}
+                                        {slot.venue_department && ` (${slot.venue_department})`}
+                                      </span>
+                                    </div>
+                                    {slot.title && <p className="mt-2 text-sm">{slot.title}</p>}
+                                    {slot.music_styles && slot.music_styles.length > 0 && (
+                                      <div className="flex flex-wrap gap-2 mt-2">
+                                        {slot.music_styles.map((style, i) => (
+                                          <span key={i} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">{style}</span>
+                                        ))}
+                                      </div>
+                                    )}
+                                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                                      <span>{slot.applications_count || 0} candidature{(slot.applications_count || 0) > 1 ? 's' : ''}</span>
+                                      <span>{slot.accepted_bands_count || 0} groupe{(slot.accepted_bands_count || 0) > 1 ? 's' : ''} accepté{(slot.accepted_bands_count || 0) > 1 ? 's' : ''}</span>
+                                    </div>
+                                  </div>
+                                  <Button 
+                                    onClick={() => applyToSlot(slot.id)}
+                                    className="bg-primary hover:bg-primary/90 rounded-full"
+                                  >
+                                    Postuler
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </TabsContent>
+
                     <TabsContent value="concerts" className="space-y-4 mt-4">
                       <div className="space-y-4 p-4 border border-white/10 rounded-xl">
                         <h4 className="font-medium">Ajouter un concert</h4>

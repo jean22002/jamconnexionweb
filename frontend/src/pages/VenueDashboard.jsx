@@ -392,11 +392,20 @@ export default function VenueDashboard() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Always use PUT since we're logged in as a venue (profile must exist)
-      await axios.put(`${API}/venues`, formData, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success("Profil sauvegardé!");
-      setEditing(false);
-      fetchProfile();
+      // Check if profile exists - if not, use POST (create), otherwise PUT (update)
+      if (!profile) {
+        // Create new profile
+        const response = await axios.post(`${API}/venues`, formData, { headers: { Authorization: `Bearer ${token}` } });
+        toast.success("Profil créé avec succès!");
+        setEditing(false);
+        fetchProfile();
+      } else {
+        // Update existing profile
+        await axios.put(`${API}/venues`, formData, { headers: { Authorization: `Bearer ${token}` } });
+        toast.success("Profil sauvegardé!");
+        setEditing(false);
+        fetchProfile();
+      }
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur");
     } finally {

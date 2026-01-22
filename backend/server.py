@@ -32,7 +32,7 @@ from models import (
 )
 
 # Import utility functions
-from utils import hash_password, verify_password, create_token, geocode_city, haversine_distance, save_upload_file
+from utils import hash_password, verify_password, create_token, geocode_city, haversine_distance, save_upload_file, send_email, get_password_change_email_html
 
 ROOT_DIR = Path(__file__).parent
 UPLOADS_DIR = ROOT_DIR / "uploads"

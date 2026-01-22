@@ -2724,6 +2724,214 @@ export default function MusicianDashboard() {
             </div>
           </TabsContent>
 
+          {/* Candidatures Tab */}
+          <TabsContent value="candidatures">
+            <div className="glassmorphism rounded-2xl p-6">
+              <h2 className="font-heading font-semibold text-2xl mb-6 flex items-center gap-2">
+                <Search className="w-6 h-6 text-primary" />
+                Recherche de Candidatures
+              </h2>
+
+              {/* Filters */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <div>
+                  <Label>Date de début</Label>
+                  <Input 
+                    type="date" 
+                    value={candidatureFilters.dateFrom}
+                    onChange={(e) => setCandidatureFilters({...candidatureFilters, dateFrom: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label>Date de fin</Label>
+                  <Input 
+                    type="date" 
+                    value={candidatureFilters.dateTo}
+                    onChange={(e) => setCandidatureFilters({...candidatureFilters, dateTo: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label>Région</Label>
+                  <Select 
+                    value={candidatureFilters.region}
+                    onValueChange={(value) => setCandidatureFilters({...candidatureFilters, region: value, department: ''})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Toutes les régions" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Toutes les régions</SelectItem>
+                      {REGIONS_FRANCE.map(region => (
+                        <SelectItem key={region} value={region}>{region}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Département</Label>
+                  <Select 
+                    value={candidatureFilters.department}
+                    onValueChange={(value) => setCandidatureFilters({...candidatureFilters, department: value})}
+                    disabled={!candidatureFilters.region}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Tous les départements" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Tous les départements</SelectItem>
+                      {candidatureFilters.region && DEPARTEMENTS_FRANCE
+                        .filter(d => d.region === candidatureFilters.region)
+                        .map(dept => (
+                          <SelectItem key={dept.code} value={dept.code}>
+                            {dept.code} - {dept.name}
+                          </SelectItem>
+                        ))
+                      }
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Style musical</Label>
+                  <Select 
+                    value={candidatureFilters.musicStyle}
+                    onValueChange={(value) => setCandidatureFilters({...candidatureFilters, musicStyle: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Tous les styles" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Tous les styles</SelectItem>
+                      {MUSIC_STYLES_LIST.map(style => (
+                        <SelectItem key={style} value={style}>{style}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mb-6">
+                <Button 
+                  onClick={searchCandidatures}
+                  disabled={loadingCandidatures}
+                  className="rounded-full"
+                >
+                  {loadingCandidatures ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Recherche...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-4 h-4 mr-2" />
+                      Rechercher
+                    </>
+                  )}
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setCandidatureFilters({
+                      dateFrom: '',
+                      dateTo: '',
+                      region: '',
+                      department: '',
+                      musicStyle: ''
+                    });
+                    setCandidatures([]);
+                  }}
+                  className="rounded-full"
+                >
+                  Réinitialiser
+                </Button>
+              </div>
+
+              {/* Results */}
+              {loadingCandidatures ? (
+                <div className="text-center py-12">
+                  <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-primary" />
+                  <p className="text-muted-foreground">Recherche en cours...</p>
+                </div>
+              ) : candidatures.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Aucune candidature trouvée</p>
+                  <p className="text-sm mt-2">Ajustez vos filtres et lancez une recherche</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">{candidatures.length} résultat(s) trouvé(s)</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {candidatures.map((slot) => (
+                      <div key={slot.id} className="card-venue p-5">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <h3 className="font-heading font-semibold text-lg">{slot.venue_name}</h3>
+                            <p className="text-sm text-muted-foreground flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />
+                              {slot.venue_city}
+                              {slot.venue_department && ` (${slot.venue_department})`}
+                            </p>
+                            {slot.venue_region && (
+                              <p className="text-xs text-muted-foreground">{slot.venue_region}</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2 mb-3">
+                          <div className="flex items-center gap-2 text-sm">
+                            <CalendarIcon className="w-4 h-4 text-primary" />
+                            <span>{slot.date}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Clock className="w-4 h-4 text-primary" />
+                            <span>{slot.start_time} - {slot.end_time}</span>
+                          </div>
+                        </div>
+
+                        {slot.music_styles && slot.music_styles.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {slot.music_styles.map((style, i) => (
+                              <span key={i} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">
+                                {style}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {slot.description && (
+                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{slot.description}</p>
+                        )}
+
+                        <div className="flex items-center justify-between pt-3 border-t border-white/10">
+                          <div className="text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Users className="w-3 h-3" />
+                              {slot.applications_count || 0} candidature(s)
+                            </span>
+                            {slot.accepted_bands_count > 0 && (
+                              <span className="flex items-center gap-1 text-green-400 mt-1">
+                                <Check className="w-3 h-3" />
+                                {slot.accepted_bands_count} acceptée(s)
+                              </span>
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => applyToSlot(slot.id)}
+                            className="rounded-full"
+                            disabled={!slot.is_open}
+                          >
+                            {slot.is_open ? 'Candidater' : 'Fermé'}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
           {/* Participations Tab - Copié du MelomaneDashboard */}
           <TabsContent value="participations">
             <div className="glassmorphism rounded-2xl p-6">

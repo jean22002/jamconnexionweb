@@ -141,6 +141,72 @@ async def list_planning_slots(venue_id: Optional[str] = None, is_open: bool = Tr
     return result
 
 
+@router.get("/planning/search", response_model=List[PlanningSlotResponse])
+async def search_planning_slots(
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    region: Optional[str] = None,
+    department: Optional[str] = None,
+    music_style: Optional[str] = None,
+    is_open: bool = True
+):
+    """Search planning slots with filters (for musicians)"""
+    query = {"is_open": is_open}
+    
+    # Date filters
+    if date_from or date_to:
+        date_query = {}
+        if date_from:
+            date_query["$gte"] = date_from
+        if date_to:
+            date_query["$lte"] = date_to
+        if date_query:
+            query["date"] = date_query
+    
+    # Get all matching slots
+    slots = await db.planning_slots.find(query, {"_id": 0}).sort("date", 1).to_list(500)
+    
+    # Filter by venue location (region/department) and music styles
+    result = []
+    for s in slots:
+        # Get venue info for location filtering
+        venue = await db.venues.find_one({"id": s["venue_id"]}, {"_id": 0})
+        if not venue:
+            continue
+        
+        # Filter by region
+        if region and venue.get("region") != region:
+            continue
+        
+        # Filter by department
+        if department and venue.get("department") != department:
+            continue
+        
+        # Filter by music style
+        if music_style and music_style not in s.get("music_styles", []):
+            continue
+        
+        # Add venue info to slot
+        apps_count = await db.applications.count_documents({"planning_slot_id": s["id"]})
+        accepted_count = await db.applications.count_documents({
+            "planning_slot_id": s["id"],
+            "status": "accepted"
+        })
+        
+        slot_with_venue = {
+            **s,
+            "venue_name": venue.get("name"),
+            "venue_city": venue.get("city"),
+            "venue_region": venue.get("region"),
+            "venue_department": venue.get("department"),
+            "applications_count": apps_count,
+            "accepted_bands_count": accepted_count
+        }
+        result.append(PlanningSlotResponse(**slot_with_venue))
+    
+    return result
+
+
 @router.get("/venues/{venue_id}/planning", response_model=List[PlanningSlotResponse])
 async def get_venue_planning(venue_id: str):
     """Get planning slots for a specific venue"""

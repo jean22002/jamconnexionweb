@@ -392,22 +392,56 @@ export default function VenueDashboard() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Validate required fields
+      if (!formData.name || !formData.address || !formData.city || !formData.postal_code) {
+        toast.error("Veuillez remplir tous les champs obligatoires (nom, adresse, ville, code postal)");
+        setSaving(false);
+        return;
+      }
+
+      // If latitude/longitude are missing or zero, geocode the address
+      let dataToSave = { ...formData };
+      if (!dataToSave.latitude || !dataToSave.longitude || dataToSave.latitude === 0 || dataToSave.longitude === 0) {
+        try {
+          const geocodeResponse = await axios.post(`${API}/geocode`, {
+            city: formData.city,
+            postal_code: formData.postal_code
+          });
+          
+          if (geocodeResponse.data) {
+            dataToSave = {
+              ...dataToSave,
+              latitude: geocodeResponse.data.latitude,
+              longitude: geocodeResponse.data.longitude,
+              department: geocodeResponse.data.department || dataToSave.department,
+              region: geocodeResponse.data.region || dataToSave.region
+            };
+          }
+        } catch (geocodeError) {
+          console.error("Geocoding error:", geocodeError);
+          toast.error("Erreur lors de la géolocalisation. Veuillez vérifier votre ville.");
+          setSaving(false);
+          return;
+        }
+      }
+
       // Check if profile exists - if not, use POST (create), otherwise PUT (update)
       if (!profile) {
         // Create new profile
-        const response = await axios.post(`${API}/venues`, formData, { headers: { Authorization: `Bearer ${token}` } });
+        const response = await axios.post(`${API}/venues`, dataToSave, { headers: { Authorization: `Bearer ${token}` } });
         toast.success("Profil créé avec succès!");
         setEditing(false);
         fetchProfile();
       } else {
         // Update existing profile
-        await axios.put(`${API}/venues`, formData, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.put(`${API}/venues`, dataToSave, { headers: { Authorization: `Bearer ${token}` } });
         toast.success("Profil sauvegardé!");
         setEditing(false);
         fetchProfile();
       }
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Erreur");
+      console.error("Save error:", error);
+      toast.error(error.response?.data?.detail || "Erreur lors de la sauvegarde");
     } finally {
       setSaving(false);
     }

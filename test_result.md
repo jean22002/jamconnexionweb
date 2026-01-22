@@ -627,9 +627,9 @@ backend:
 
   - task: "MusicianDashboard - Candidatures Tab Implementation"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/pages/MusicianDashboard.jsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -645,6 +645,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "🎯 DEPARTMENT DROPDOWN FIX VALIDATED - CRITICAL BUG RESOLVED! Comprehensive testing of the department dropdown fix as requested in French review. RESULTS COMPLETS (100% RÉUSSI): ✅ CONNEXION RÉUSSIE: Login with test_candidatures@musician.com successful, ✅ NAVIGATION CANDIDATURES: Candidatures tab accessible and functional, ✅ TEST CRITIQUE DÉPARTEMENT: Department dropdown opens WITHOUT requiring region selection first - MAJOR FIX CONFIRMED, ✅ LISTE COMPLÈTE: All 101 French departments displayed (from '01 - Ain' to '976 - Mayotte'), ✅ FORMAT CORRECT: Uses proper 'code - nom' format (e.g., '75 - Paris'), ✅ SÉLECTION INDÉPENDANTE: Can select department without selecting region - dependency removed successfully, ✅ FONCTIONNALITÉ MAINTENUE: After selection, dropdown remains functional and shows all departments, ✅ DONNÉES CORRECTES: Uses dept.nom correctly (not dept.name), ✅ SCREENSHOTS CAPTURED: Visual proof of open dropdown showing complete department list. CORRECTIONS VALIDÉES: ✓ Removed region → department dependency, ✓ Department dropdown always active, ✓ Shows all French departments including DOM-TOM, ✓ Fixed dept.nom usage. The critical bug mentioned in the review request is COMPLETELY RESOLVED. Users can now select departments independently without any region prerequisite."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL BUG FOUND - CANDIDATURES TAB NOT DISPLAYING SEARCH INTERFACE. COMPREHENSIVE TESTING RESULTS: ✅ Backend API /api/planning/search working perfectly (21 planning slots available), ✅ Login successful with test_candidatures@musician.com, ✅ Candidatures tab exists and is clickable, ❌ MAJOR ISSUE: Clicking Candidatures tab shows map view instead of search interface, ❌ Tab switching logic not working correctly - content not changing when tab is clicked, ❌ Search form with filters (Date début/fin, Région, Département, Style musical) not visible, ❌ Cannot test 'Candidater' button functionality due to missing search interface. ROOT CAUSE: Frontend tab content switching mechanism broken - TabsContent value='candidatures' not displaying correctly. IMPACT: Users cannot search for or apply to planning slots. RECOMMENDATION: Fix tab switching logic in MusicianDashboard.jsx to properly display candidatures search interface when tab is clicked."
 
   - task: "Venue Detail Page"
     implemented: true

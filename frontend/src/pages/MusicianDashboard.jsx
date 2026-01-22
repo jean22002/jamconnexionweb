@@ -2771,20 +2771,16 @@ export default function MusicianDashboard() {
                   <Select 
                     value={candidatureFilters.department || undefined}
                     onValueChange={(value) => setCandidatureFilters({...candidatureFilters, department: value})}
-                    disabled={!candidatureFilters.region}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Tous les départements" />
                     </SelectTrigger>
                     <SelectContent>
-                      {candidatureFilters.region && DEPARTEMENTS_FRANCE
-                        .filter(d => d.region === candidatureFilters.region)
-                        .map(dept => (
-                          <SelectItem key={dept.code} value={dept.code}>
-                            {dept.code} - {dept.name}
-                          </SelectItem>
-                        ))
-                      }
+                      {DEPARTEMENTS_FRANCE.map(dept => (
+                        <SelectItem key={dept.code} value={dept.code}>
+                          {dept.code} - {dept.nom}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

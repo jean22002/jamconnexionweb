@@ -260,6 +260,17 @@ export default function MusicianDashboard() {
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   
+  // Candidatures search states
+  const [candidatures, setCandidatures] = useState([]);
+  const [loadingCandidatures, setLoadingCandidatures] = useState(false);
+  const [candidatureFilters, setCandidatureFilters] = useState({
+    dateFrom: '',
+    dateTo: '',
+    region: '',
+    department: '',
+    musicStyle: ''
+  });
+  
   // Geolocation states
   const [geoEnabled, setGeoEnabled] = useState(true);
   const [followUser, setFollowUser] = useState(true);

@@ -883,7 +883,7 @@ export default function MusicianDashboard() {
       return;
     }
     try {
-      await axios.delete(`${API}/applications/${appId}`, {
+      await axios.delete(`${API}/applications/my/${appId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success("Candidature annulée");

@@ -1766,7 +1766,7 @@ export default function MusicianDashboard() {
                           </div>
                         ) : candidatures.length === 0 ? (
                           <div className="text-center py-8">
-                            <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                            <CalendarIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                             <p className="text-muted-foreground">Aucune candidature trouvée. Lancez une recherche !</p>
                           </div>
                         ) : (
@@ -1779,7 +1779,7 @@ export default function MusicianDashboard() {
                                     <h4 className="font-semibold text-lg">{slot.venue_name || 'Établissement'}</h4>
                                     <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                                       <span className="flex items-center gap-1">
-                                        <Calendar className="w-4 h-4" />
+                                        <CalendarIcon className="w-4 h-4" />
                                         {new Date(slot.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                                       </span>
                                       <span className="flex items-center gap-1">

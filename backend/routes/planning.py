@@ -284,6 +284,64 @@ async def delete_planning_slot(slot_id: str, current_user: dict = Depends(get_cu
 
 # ============= CONCERT APPLICATIONS =============
 
+@router.post("/planning/{slot_id}/apply")
+async def apply_to_slot(slot_id: str, current_user: dict = Depends(get_current_user)):
+    """Quick apply to a planning slot (auto-detects solo/band)"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can apply")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Verify slot exists and is open
+    slot = await db.planning_slots.find_one({"id": slot_id}, {"_id": 0})
+    if not slot:
+        raise HTTPException(status_code=404, detail="Planning slot not found")
+    if not slot.get("is_open", True):
+        raise HTTPException(status_code=400, detail="This slot is closed")
+    
+    # Check if already applied
+    existing = await db.applications.find_one({
+        "planning_slot_id": slot_id,
+        "musician_id": musician["id"]
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Vous avez déjà postulé à ce créneau")
+    
+    # Use musician's pseudo as band name (solo application)
+    band_name = musician.get("pseudo", current_user["name"])
+    
+    app_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    app_doc = {
+        "id": app_id,
+        "planning_slot_id": slot_id,
+        "musician_id": musician["id"],
+        "musician_name": musician.get("pseudo", current_user["name"]),
+        "band_name": band_name,
+        "message": f"Candidature de {band_name}",
+        "status": "pending",
+        "created_at": now
+    }
+    
+    await db.applications.insert_one(app_doc)
+    
+    # Notify venue owner
+    venue = await db.venues.find_one({"id": slot["venue_id"]}, {"_id": 0})
+    if venue:
+        await create_notification(
+            venue["user_id"], 
+            "application_received",
+            "Nouvelle candidature",
+            f"{band_name} a postulé pour le {slot['date']}",
+            f"/venue"
+        )
+    
+    return {"message": "Candidature envoyée avec succès", "application_id": app_id}
+
+
 @router.post("/applications", response_model=ConcertApplicationResponse)
 async def create_application(data: ConcertApplication, current_user: dict = Depends(get_current_user)):
     """Create an application to a planning slot (musician only)"""

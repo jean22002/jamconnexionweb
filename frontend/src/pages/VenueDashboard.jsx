@@ -1716,7 +1716,7 @@ export default function VenueDashboard() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 mb-6 gap-1 scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-transparent">
+          <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 mb-6 gap-1 scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-transparent min-h-[44px] items-center">
             <TabsTrigger value="profile" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Profil</TabsTrigger>
             <TabsTrigger value="jams" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Bœufs</TabsTrigger>
             <TabsTrigger value="concerts" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Concerts</TabsTrigger>

@@ -467,6 +467,11 @@ export default function VenueDashboard() {
         dataToSave.cover_image = normalizedUrl;
       }
 
+      console.log('📤 Sending to backend:', {
+        profile_image: dataToSave.profile_image,
+        cover_image: dataToSave.cover_image
+      });
+
       // Check if profile exists - if not, use POST (create), otherwise PUT (update)
       if (!profile) {
         // Create new profile

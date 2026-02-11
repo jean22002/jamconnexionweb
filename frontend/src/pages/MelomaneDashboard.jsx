@@ -93,7 +93,23 @@ export default function MelomaneDashboard() {
   const fetchVenues = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/venues`);
-      setVenues(response.data);
+      
+      // Reconstruire les URLs complètes pour les images des venues
+      const venuesWithFullUrls = response.data.map(venue => ({
+        ...venue,
+        profile_image: venue.profile_image 
+          ? (venue.profile_image.startsWith('http') 
+              ? venue.profile_image 
+              : `${API}${venue.profile_image}`)
+          : "",
+        cover_image: venue.cover_image
+          ? (venue.cover_image.startsWith('http')
+              ? venue.cover_image
+              : `${API}${venue.cover_image}`)
+          : ""
+      }));
+      
+      setVenues(venuesWithFullUrls);
       
       // Calculer les établissements à proximité si GPS activé
       if (geoPosition && response.data) {

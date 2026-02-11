@@ -1197,9 +1197,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "MusicianDashboard - Candidatures Tab Implementation"
-  stuck_tasks: 
-    - "Authentication system - Invalid credentials blocking UI testing"
+    - "Venue Profile Photo Upload Bug Fix"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 

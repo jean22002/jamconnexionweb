@@ -863,10 +863,37 @@ export default function MusicianDashboard() {
         profileData.cover_image = normalizedUrl;
       }
       
-      await axios[method](`${API}/musicians`, profileData, { headers: { Authorization: `Bearer ${token}` } });
+      const response = await axios[method](`${API}/musicians`, profileData, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Profil mis à jour!");
+      
+      // Update profile state with the response
+      setProfile(response.data);
+      
+      // Reconstruct image URLs from the saved data (backend returns paths)
+      const saved_profile_image = response.data.profile_image 
+        ? (response.data.profile_image.startsWith('http') 
+            ? response.data.profile_image 
+            : `${API}${response.data.profile_image.startsWith('/') ? response.data.profile_image : '/' + response.data.profile_image}`)
+        : "";
+      const saved_cover_image = response.data.cover_image
+        ? (response.data.cover_image.startsWith('http')
+            ? response.data.cover_image
+            : `${API}${response.data.cover_image.startsWith('/') ? response.data.cover_image : '/' + response.data.cover_image}`)
+        : "";
+      
+      // Update profileForm with complete URLs from backend response
+      setProfileForm(prev => ({
+        ...prev,
+        profile_image: saved_profile_image,
+        cover_image: saved_cover_image
+      }));
+      
+      console.log('✅ Profile updated. Images saved:', {
+        profile_image: saved_profile_image,
+        cover_image: saved_cover_image
+      });
+      
       setEditingProfile(false);
-      fetchProfile();
       fetchData(); // Recharger la liste des musiciens pour mettre à jour les filtres
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur");

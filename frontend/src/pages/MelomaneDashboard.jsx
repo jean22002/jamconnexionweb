@@ -293,8 +293,28 @@ export default function MelomaneDashboard() {
       
       console.log('Save response:', response.data);
       toast.success("Profil mis à jour!");
+      
+      // Update profile state with the response
+      setProfile(response.data);
+      
+      // Reconstruct image URL from the saved data (backend returns path)
+      const saved_profile_picture = response.data.profile_picture 
+        ? (response.data.profile_picture.startsWith('http') 
+            ? response.data.profile_picture 
+            : `${API}${response.data.profile_picture.startsWith('/') ? response.data.profile_picture : '/' + response.data.profile_picture}`)
+        : "";
+      
+      // Update profileForm with complete URL from backend response
+      setProfileForm(prev => ({
+        ...prev,
+        profile_picture: saved_profile_picture
+      }));
+      
+      console.log('✅ Profile updated. Image saved:', {
+        profile_picture: saved_profile_picture
+      });
+      
       setEditingProfile(false);
-      fetchProfile();
     } catch (error) {
       console.error('Save error:', error.response?.data || error.message);
       const errorMsg = error.response?.data?.detail || error.message || "Erreur lors de la sauvegarde";

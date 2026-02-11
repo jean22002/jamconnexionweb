@@ -425,12 +425,40 @@ export default function VenueDashboard() {
         }
       }
 
-      // Normalize image URLs (remove backend URL if present to keep only path)
-      if (dataToSave.profile_image && dataToSave.profile_image.includes(process.env.REACT_APP_BACKEND_URL)) {
-        dataToSave.profile_image = dataToSave.profile_image.replace(process.env.REACT_APP_BACKEND_URL, '');
+      // Normalize image URLs robustly (remove backend URL if present, keep only path)
+      // This handles multiple edge cases:
+      // - Full URLs: https://domain.com/api/uploads/... → /api/uploads/...
+      // - URLs without protocol: domain.com/api/uploads/... → /api/uploads/...
+      // - Paths with double /api/: /api/api/uploads/... → /api/uploads/...
+      // - Already normalized: /api/uploads/... → /api/uploads/... (unchanged)
+      if (dataToSave.profile_image) {
+        let normalizedUrl = dataToSave.profile_image;
+        // Remove full backend URL if present
+        if (normalizedUrl.includes(process.env.REACT_APP_BACKEND_URL)) {
+          normalizedUrl = normalizedUrl.replace(process.env.REACT_APP_BACKEND_URL, '');
+        }
+        // Remove any duplicate /api/ prefix (fix /api/api/uploads → /api/uploads)
+        normalizedUrl = normalizedUrl.replace(/\/api\/api\//, '/api/');
+        // Ensure it starts with /api/uploads
+        if (!normalizedUrl.startsWith('/api/uploads')) {
+          normalizedUrl = normalizedUrl.replace(/^\/?(uploads\/)/, '/api/uploads/');
+        }
+        dataToSave.profile_image = normalizedUrl;
       }
-      if (dataToSave.cover_image && dataToSave.cover_image.includes(process.env.REACT_APP_BACKEND_URL)) {
-        dataToSave.cover_image = dataToSave.cover_image.replace(process.env.REACT_APP_BACKEND_URL, '');
+      
+      if (dataToSave.cover_image) {
+        let normalizedUrl = dataToSave.cover_image;
+        // Remove full backend URL if present
+        if (normalizedUrl.includes(process.env.REACT_APP_BACKEND_URL)) {
+          normalizedUrl = normalizedUrl.replace(process.env.REACT_APP_BACKEND_URL, '');
+        }
+        // Remove any duplicate /api/ prefix (fix /api/api/uploads → /api/uploads)
+        normalizedUrl = normalizedUrl.replace(/\/api\/api\//, '/api/');
+        // Ensure it starts with /api/uploads
+        if (!normalizedUrl.startsWith('/api/uploads')) {
+          normalizedUrl = normalizedUrl.replace(/^\/?(uploads\/)/, '/api/uploads/');
+        }
+        dataToSave.cover_image = normalizedUrl;
       }
 
       // Check if profile exists - if not, use POST (create), otherwise PUT (update)

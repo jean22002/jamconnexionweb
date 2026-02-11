@@ -112,8 +112,8 @@ export default function MelomaneDashboard() {
       setVenues(venuesWithFullUrls);
       
       // Calculer les établissements à proximité si GPS activé
-      if (geoPosition && response.data) {
-        const nearby = response.data
+      if (geoPosition && venuesWithFullUrls) {
+        const nearby = venuesWithFullUrls
           .filter(v => v.latitude && v.longitude)
           .map(v => {
             const distance = calculateDistance(

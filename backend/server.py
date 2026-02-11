@@ -433,17 +433,17 @@ async def upload_melomane_photo(
     file: UploadFile = File(...),
     current_user: dict = Depends(get_current_user)
 ):
-    """Upload melomane profile photo"""
+    """Upload melomane profile photo
+    NOTE: This endpoint only uploads the file and returns the URL.
+    It does NOT update the database. The database will be updated
+    when the user clicks 'Save Profile'.
+    """
     if current_user["role"] != "melomane":
         raise HTTPException(status_code=403, detail="Only melomanes can upload melomane photos")
     
     url = await save_upload_file(file, "melomanes")
     
-    # Update melomane profile with new photo
-    await db.melomanes.update_one(
-        {"user_id": current_user["id"]},
-        {"$set": {"profile_picture": url}}
-    )
+    # DO NOT update the database here - let the user save the profile explicitly
     
     return {"url": url}
 

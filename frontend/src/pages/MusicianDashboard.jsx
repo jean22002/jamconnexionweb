@@ -505,17 +505,17 @@ export default function MusicianDashboard() {
         bandsArray = [profileData.band];
       }
       
-      // Construire les URLs complètes pour les images
+      // Construire les URLs complètes pour les images avec normalisation robuste
       const profile_image_url = profileData.profile_image 
         ? (profileData.profile_image.startsWith('http') 
             ? profileData.profile_image 
-            : `${API}${profileData.profile_image}`)
+            : `${API}${profileData.profile_image.startsWith('/') ? profileData.profile_image : '/' + profileData.profile_image}`)
         : "";
       
       const cover_image_url = profileData.cover_image
         ? (profileData.cover_image.startsWith('http')
             ? profileData.cover_image
-            : `${API}${profileData.cover_image}`)
+            : `${API}${profileData.cover_image.startsWith('/') ? profileData.cover_image : '/' + profileData.cover_image}`)
         : "";
       
       setProfileForm({

@@ -205,6 +205,8 @@ export function MusicianImageUpload({ value, onChange, token, photoType = "profi
       placeholder={photoType === "profile" ? "Photo de profil" : "Photo de couverture"}
       icon={photoType === "profile" ? User : Music}
       previewClassName={photoType === "profile" ? "w-24 h-24 rounded-full" : "w-full h-32 rounded-xl"}
+      aspectRatio={photoType === "profile" ? "1/1" : "16/9"}
+      cropShape={photoType === "profile" ? "round" : "rect"}
       disabled={disabled}
     />
   );
@@ -221,6 +223,8 @@ export function VenueImageUpload({ value, onChange, token, photoType = "profile"
       placeholder={photoType === "profile" ? "Photo de profil" : "Photo de couverture"}
       icon={photoType === "profile" ? User : ImageIcon}
       previewClassName={photoType === "profile" ? "w-24 h-24 rounded-xl" : "w-full h-32 rounded-xl"}
+      aspectRatio={photoType === "profile" ? "1/1" : "16/9"}
+      cropShape="rect"
       disabled={disabled}
     />
   );
@@ -237,6 +241,8 @@ export function MelomaneImageUpload({ value, onChange, token, disabled }) {
       placeholder="Photo de profil"
       icon={User}
       previewClassName="w-24 h-24 rounded-full"
+      aspectRatio="1/1"
+      cropShape="round"
       disabled={disabled}
     />
   );

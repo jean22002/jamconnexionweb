@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Button } from "../components/ui/button";
-import { Music, MapPin, Users, Mic2, Guitar, Radio, ArrowRight, Check, Music2 } from "lucide-react";
+import { Music, MapPin, Users, Mic2, Guitar, Radio, ArrowRight, Check, Music2, ChevronDown, ChevronUp } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -11,6 +11,7 @@ export default function Landing() {
   const { user } = useAuth();
   const [stats, setStats] = useState({ musicians: 0, venues: 0 });
   const [showStats, setShowStats] = useState(false);
+  const [openFAQ, setOpenFAQ] = useState(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -380,6 +381,81 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="py-24 md:py-32 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-transparent" />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="font-heading font-bold text-4xl md:text-5xl mb-4">
+              <span className="text-gradient">Questions Fréquentes</span>
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              Trouvez rapidement les réponses à vos questions
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              {
+                question: "L'inscription est-elle payante ?",
+                answer: "L'inscription est gratuite pour les musiciens. Pour les établissements, elle inclut une période d'essai de deux (2) mois, puis 12,99 € TTC par mois."
+              },
+              {
+                question: "Comment fonctionne la mise en relation ?",
+                answer: "Les établissements peuvent rechercher des musiciens par style, localisation et disponibilité. Ils peuvent ensuite les contacter directement via la messagerie interne de la plateforme."
+              },
+              {
+                question: "Jam Connexion garantit-il des concerts ?",
+                answer: "Non. Jam Connexion est une plateforme de mise en relation uniquement. Nous ne garantissons ni concerts, ni contrats, ni rémunération. Les accords se font directement entre musiciens et établissements."
+              },
+              {
+                question: "Puis-je résilier mon abonnement ?",
+                answer: "Oui. L'abonnement est sans engagement et peut être résilié à tout moment. La résiliation prend effet à la date anniversaire du mois suivant."
+              },
+              {
+                question: "Mes données sont-elles protégées ?",
+                answer: "Oui. Toutes les données personnelles sont traitées conformément au RGPD. Vous disposez de droits d'accès, de rectification, de suppression et d'opposition."
+              },
+              {
+                question: "Comment contacter le support ?",
+                answer: "Pour toute question ou assistance, vous pouvez nous contacter à : jamconnexion@gmail.com"
+              }
+            ].map((faq, index) => (
+              <div
+                key={index}
+                className="glassmorphism rounded-lg overflow-hidden border border-white/10 hover:border-primary/30 transition-all"
+              >
+                <button
+                  onClick={() => setOpenFAQ(openFAQ === index ? null : index)}
+                  className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
+                >
+                  <span className="font-semibold text-white">{faq.question}</span>
+                  {openFAQ === index ? (
+                    <ChevronUp className="w-5 h-5 text-primary flex-shrink-0" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                  )}
+                </button>
+                {openFAQ === index && (
+                  <div className="px-6 pb-4 text-muted-foreground">
+                    {faq.answer}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link to="/faq">
+              <Button variant="outline" className="group">
+                Voir toutes les questions
+                <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t border-white/10 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -398,6 +474,9 @@ export default function Landing() {
             <div className="flex items-center gap-6">
               <Link to="/pricing" className="text-muted-foreground hover:text-white text-sm transition-colors">
                 Tarifs
+              </Link>
+              <Link to="/faq" className="text-muted-foreground hover:text-white text-sm transition-colors">
+                FAQ
               </Link>
               <Link to="/auth" className="text-muted-foreground hover:text-white text-sm transition-colors">
                 Connexion

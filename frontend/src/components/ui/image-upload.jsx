@@ -62,6 +62,10 @@ export function ImageUpload({
   };
 
   const handleCropComplete = async (croppedBlob) => {
+    // Close cropper first
+    setShowCropper(false);
+    setSelectedImage(null);
+    
     // Convert blob to file
     const croppedFile = new File([croppedBlob], "cropped-image.jpg", {
       type: "image/jpeg",

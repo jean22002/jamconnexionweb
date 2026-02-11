@@ -32,19 +32,20 @@ async def upload_image(
 @router.post("/musician-photo")
 async def upload_musician_photo(
     file: UploadFile = File(...),
+    photo_type: str = "profile",
     current_user: dict = Depends(get_current_user)
 ):
-    """Upload musician profile photo"""
+    """Upload musician profile or cover photo
+    NOTE: This endpoint only uploads the file and returns the URL.
+    It does NOT update the database. The database will be updated
+    when the user clicks 'Save Profile'.
+    """
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can upload musician photos")
     
     url = await save_upload_file(file, "musicians")
     
-    # Update musician profile with new photo
-    await db.musicians.update_one(
-        {"user_id": current_user["id"]},
-        {"$set": {"profile_image": url}}
-    )
+    # DO NOT update the database here - let the user save the profile explicitly
     
     return {"url": url}
 
@@ -53,17 +54,17 @@ async def upload_band_photo(
     file: UploadFile = File(...),
     current_user: dict = Depends(get_current_user)
 ):
-    """Upload band photo"""
+    """Upload band photo
+    NOTE: This endpoint only uploads the file and returns the URL.
+    It does NOT update the database. The database will be updated
+    when the user saves their band information.
+    """
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can upload band photos")
     
     url = await save_upload_file(file, "bands")
     
-    # Update musician's band photo
-    await db.musicians.update_one(
-        {"user_id": current_user["id"]},
-        {"$set": {"band.photo": url}}
-    )
+    # DO NOT update the database here - let the user save explicitly
     
     return {"url": url}
 
@@ -73,17 +74,18 @@ async def upload_venue_photo(
     photo_type: str = "profile",
     current_user: dict = Depends(get_current_user)
 ):
-    """Upload venue profile or cover photo"""
+    """Upload venue profile or cover photo
+    NOTE: This endpoint only uploads the file and returns the URL.
+    It does NOT update the database. The database will be updated
+    when the user clicks 'Save Profile'.
+    """
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can upload venue photos")
     
     url = await save_upload_file(file, "venues")
     
-    # Update venue profile with new photo
-    field = "profile_image" if photo_type == "profile" else "cover_image"
-    await db.venues.update_one(
-        {"user_id": current_user["id"]},
-        {"$set": {field: url}}
-    )
+    # DO NOT update the database here - let the user save the profile explicitly
+    # This prevents race conditions where the upload overwrites data before
+    # the user has finished filling out the form
     
     return {"url": url}

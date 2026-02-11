@@ -85,6 +85,7 @@ export function ImageUpload({
         formData.append("folder", folder);
       }
 
+      console.log('Uploading to:', `${API}${uploadEndpoint}`);
       const response = await axios.post(`${API}${uploadEndpoint}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -92,10 +93,13 @@ export function ImageUpload({
         }
       });
 
+      console.log('Upload response:', response.data);
       const imageUrl = `${process.env.REACT_APP_BACKEND_URL}${response.data.url}`;
+      console.log('Final image URL:', imageUrl);
       onChange?.(imageUrl);
       onUpload?.(imageUrl);
     } catch (err) {
+      console.error('Upload error:', err);
       setError(err.response?.data?.detail || "Erreur lors de l'upload");
     } finally {
       setUploading(false);

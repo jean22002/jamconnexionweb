@@ -1190,10 +1190,11 @@ export default function MusicianDashboard() {
                     <TabsContent value="info" className="space-y-4 mt-4">
                       <div className="space-y-2">
                         <Label>Photo de profil</Label>
-                        <ProfileImageUpload
+                        <MusicianImageUpload
                           value={profileForm.profile_image}
                           onChange={(url) => setProfileForm({ ...profileForm, profile_image: url })}
                           token={token}
+                          photoType="profile"
                         />
                       </div>
 

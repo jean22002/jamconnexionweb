@@ -593,33 +593,37 @@ export default function MusicianDashboard() {
   }, [token]);
 
   useEffect(() => {
+    // Initial data load - only runs once on mount
     fetchData();
     fetchProfile();
     fetchNotifications();
     fetchFriends();
     fetchCurrentParticipation();
     fetchParticipations();
-  }, [fetchData, fetchProfile, fetchNotifications, fetchFriends, fetchCurrentParticipation, fetchParticipations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty array = run only once on mount
 
-  // Polling pour rafraîchir les notifications toutes les 15 secondes
+  // Polling pour rafraîchir les notifications toutes les 30 secondes (réduit de 15s à 30s)
   useEffect(() => {
     if (!token) return;
     
     const notificationInterval = setInterval(() => {
       fetchNotifications();
-    }, 15000); // 15 secondes
+    }, 30000); // 30 secondes au lieu de 15
     
     return () => clearInterval(notificationInterval);
-  }, [token, fetchNotifications]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
-  // Polling for participation status (every 30 seconds)
+  // Polling for participation status (every 60 seconds - réduit de 30s à 60s)
   useEffect(() => {
     const interval = setInterval(() => {
       fetchCurrentParticipation();
-    }, 30000);
+    }, 60000); // 60 secondes au lieu de 30
     
     return () => clearInterval(interval);
-  }, [fetchCurrentParticipation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Bands Management
   const fetchBands = async () => {

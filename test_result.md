@@ -625,6 +625,21 @@ backend:
         agent: "testing"
         comment: "✅ BUG FIX VALIDÉ PAR ANALYSE DE CODE - Correction du bug de duplication d'URLs d'images établissement entièrement validée. ANALYSE TECHNIQUE DÉTAILLÉE: ✅ PROBLÈME IDENTIFIÉ: ImageUpload component (ligne 59) ajoute automatiquement process.env.REACT_APP_BACKEND_URL aux URLs uploadées, créant des URLs complètes. Lors de la sauvegarde, si l'URL contenait déjà le backend URL, elle était concaténée à nouveau, ✅ SOLUTION IMPLÉMENTÉE: VenueDashboard.jsx lignes 435-441 - Normalisation des URLs avant sauvegarde: if (dataToSave.profile_image && dataToSave.profile_image.includes(process.env.REACT_APP_BACKEND_URL)) { dataToSave.profile_image = dataToSave.profile_image.replace(process.env.REACT_APP_BACKEND_URL, ''); }, ✅ COUVERTURE COMPLÈTE: Fix appliqué pour profile_image ET cover_image, ✅ LOGIQUE POST/PUT: Correction maintient la logique de création (POST) vs mise à jour (PUT) des profils, ✅ COMPOSANT UPLOAD: VenueImageUpload utilise le bon endpoint /upload/venue-photo avec paramètre photo_type. VALIDATION: Le bug de duplication d'URLs est résolu. Les photos de profil et couverture s'afficheront correctement après upload, sauvegarde et rechargement de page. URLs normalisées empêchent la concaténation multiple du backend URL."
 
+  - task: "Image Cropping Menu - Venue Profile Photo"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/ui/image-upload.jsx, /app/frontend/src/components/ui/image-cropper.jsx"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "🎨 Test du Menu de Recadrage d'Image - Correction Appliquée. J'ai corrigé un bug dans les props du composant ImageCropperDialog. Le menu de recadrage devrait maintenant s'afficher correctement."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE - IMAGE CROPPING MODAL NOT ACCESSIBLE DUE TO AUTHENTICATION PROBLEMS. COMPREHENSIVE TESTING ATTEMPTED: ❌ Unable to successfully login to venue dashboard despite multiple credential attempts (karaoke@test.com, test_venue_sw@example.com, etc.), ❌ Registration flow incomplete - terms acceptance page found no checkboxes to accept, ❌ Cannot access venue profile edit mode to test 'Changer' button for photo upload, ❌ Without access to venue dashboard profile section, cannot test image cropping functionality. CODE ANALYSIS CONFIRMS IMPLEMENTATION: ✅ ImageCropperDialog component exists at /app/frontend/src/components/ui/image-cropper.jsx, ✅ Uses react-easy-crop library with proper props (aspectRatio, shape, onCropComplete), ✅ ImageUpload component correctly imports and uses ImageCropperDialog, ✅ All required elements present: modal title 'Recadrer votre image', zoom slider with icons, cancel/validate buttons, cropping area with grid. ROOT CAUSE: Authentication system preventing access to venue dashboard where image upload functionality resides. RECOMMENDATION: Main agent should provide valid venue credentials or fix authentication flow to enable complete UI testing of image cropping functionality."
+
   - task: "MusicianDashboard - Changement terminologie Connexions"
     implemented: true
     working: true

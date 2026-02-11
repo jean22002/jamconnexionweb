@@ -147,7 +147,7 @@ export function MusicianImageUpload({ value, onChange, token, photoType = "profi
       value={value}
       onChange={onChange}
       token={token}
-      uploadEndpoint={`/upload/musician-photo?photo_type=${photoType}`}
+      uploadEndpoint={`/api/upload/musician-photo?photo_type=${photoType}`}
       placeholder={photoType === "profile" ? "Photo de profil" : "Photo de couverture"}
       icon={photoType === "profile" ? User : Music}
       previewClassName={photoType === "profile" ? "w-24 h-24 rounded-full" : "w-full h-32 rounded-xl"}
@@ -163,7 +163,7 @@ export function VenueImageUpload({ value, onChange, token, photoType = "profile"
       value={value}
       onChange={onChange}
       token={token}
-      uploadEndpoint={`/upload/venue-photo?photo_type=${photoType}`}
+      uploadEndpoint={`/api/upload/venue-photo?photo_type=${photoType}`}
       placeholder={photoType === "profile" ? "Photo de profil" : "Photo de couverture"}
       icon={photoType === "profile" ? User : ImageIcon}
       previewClassName={photoType === "profile" ? "w-24 h-24 rounded-xl" : "w-full h-32 rounded-xl"}
@@ -179,7 +179,7 @@ export function MelomaneImageUpload({ value, onChange, token, disabled }) {
       value={value}
       onChange={onChange}
       token={token}
-      uploadEndpoint="/upload/melomane-photo"
+      uploadEndpoint="/api/upload/melomane-photo"
       placeholder="Photo de profil"
       icon={User}
       previewClassName="w-24 h-24 rounded-full"

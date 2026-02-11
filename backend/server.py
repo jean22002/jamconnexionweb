@@ -861,10 +861,15 @@ async def create_venue_profile(data: VenueProfile, current_user: dict = Depends(
     venue_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
     
+    # Normalize image URLs before saving
+    venue_data = data.model_dump()
+    venue_data['profile_image'] = normalize_image_url(venue_data.get('profile_image'))
+    venue_data['cover_image'] = normalize_image_url(venue_data.get('cover_image'))
+    
     venue_doc = {
         "id": venue_id,
         "user_id": current_user["id"],
-        **data.model_dump(),
+        **venue_data,
         "created_at": now
     }
     
@@ -885,9 +890,14 @@ async def update_venue_profile(data: VenueProfile, current_user: dict = Depends(
     if not venue:
         raise HTTPException(status_code=404, detail="Venue profile not found")
     
+    # Normalize image URLs before saving
+    venue_data = data.model_dump()
+    venue_data['profile_image'] = normalize_image_url(venue_data.get('profile_image'))
+    venue_data['cover_image'] = normalize_image_url(venue_data.get('cover_image'))
+    
     await db.venues.update_one(
         {"user_id": current_user["id"]},
-        {"$set": data.model_dump()}
+        {"$set": venue_data}
     )
     
     updated = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})

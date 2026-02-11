@@ -177,22 +177,21 @@ export function ImageUpload({
       )}
 
       {/* Image Cropper Dialog */}
-      {showCropper && selectedImage && (
-        <ImageCropperDialog
-          image={selectedImage}
-          aspectRatio={cropAspectRatio}
-          shape={cropShape}
-          onCropComplete={handleCropComplete}
-          onCancel={() => {
-            setShowCropper(false);
-            setSelectedImage(null);
-            // Reset file input
-            if (fileInputRef.current) {
-              fileInputRef.current.value = "";
-            }
-          }}
-        />
-      )}
+      <ImageCropperDialog
+        open={showCropper}
+        onClose={() => {
+          setShowCropper(false);
+          setSelectedImage(null);
+          // Reset file input
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+        }}
+        imageSrc={selectedImage}
+        onCropComplete={handleCropComplete}
+        aspectRatio={cropAspectRatio}
+        shape={cropShape}
+      />
     </div>
   );
 }

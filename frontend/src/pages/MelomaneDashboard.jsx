@@ -139,6 +139,14 @@ export default function MelomaneDashboard() {
         headers: { Authorization: `Bearer ${token}` } 
       });
       setProfile(response.data);
+      
+      // Construire l'URL complète pour l'image de profil
+      const profile_picture_url = response.data.profile_picture 
+        ? (response.data.profile_picture.startsWith('http') 
+            ? response.data.profile_picture 
+            : `${API}${response.data.profile_picture}`)
+        : "";
+      
       setProfileForm({
         pseudo: response.data.pseudo || "",
         bio: response.data.bio || "",
@@ -146,7 +154,7 @@ export default function MelomaneDashboard() {
         region: response.data.region || "",
         postal_code: response.data.postal_code || "",
         favorite_styles: response.data.favorite_styles || [],
-        profile_picture: response.data.profile_picture || "",
+        profile_picture: profile_picture_url,
         notifications_enabled: response.data.notifications_enabled ?? true,
         notification_radius_km: response.data.notification_radius_km || 50
       });

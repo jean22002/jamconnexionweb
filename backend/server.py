@@ -393,18 +393,14 @@ async def upload_venue_photo(
     photo_type: str = "profile",
     current_user: dict = Depends(get_current_user)
 ):
-    """Upload venue profile or cover photo"""
+    """Upload venue profile or cover photo (returns URL without saving to profile)"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can upload venue photos")
     
     url = await save_upload_file(file, "venues")
     
-    # Update venue profile with new photo
-    field = "profile_image" if photo_type == "profile" else "cover_image"
-    await db.venues.update_one(
-        {"user_id": current_user["id"]},
-        {"$set": {field: url}}
-    )
+    # NOTE: We DON'T update the database here - user must click "Save" to persist
+    # This prevents issues with URL handling during edit mode
     
     return {"url": url}
 

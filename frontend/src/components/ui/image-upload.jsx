@@ -57,6 +57,11 @@ export function ImageUpload({
 
       // Construct full image URL
       const imageUrl = `${API}${response.data.url}`;
+      console.log('📸 Image upload successful:', {
+        backendResponse: response.data.url,
+        constructedUrl: imageUrl,
+        API: API
+      });
       onChange?.(imageUrl);
     } catch (err) {
       setError(err.response?.data?.detail || "Erreur lors de l'upload");

@@ -61,6 +61,54 @@ export default function VenueDetail() {
   const [showCalendarView, setShowCalendarView] = useState(false);
   const [selectedSlotForPreview, setSelectedSlotForPreview] = useState(null);
 
+  // Helper function to add event to calendar
+  const addToCalendar = (eventData) => {
+    const { id: eventId, title, date, start_time, end_time, type, location } = eventData;
+    
+    const eventTitle = title || 
+                       (type === 'jam' ? 'Bœuf musical' :
+                        type === 'concert' ? 'Concert' :
+                        type === 'karaoke' ? 'Karaoké' :
+                        type === 'spectacle' ? 'Spectacle' : 'Événement');
+    
+    const startDate = new Date(`${date}T${start_time || '20:00'}`);
+    const endDate = new Date(`${date}T${end_time || start_time || '22:00'}`);
+    
+    // Format dates for ICS
+    const formatDate = (date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+    
+    // Create ICS file content
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Jam Connexion//FR',
+      'BEGIN:VEVENT',
+      `UID:${eventId}@jamconnexion.com`,
+      `DTSTAMP:${formatDate(new Date())}`,
+      `DTSTART:${formatDate(startDate)}`,
+      `DTEND:${formatDate(endDate)}`,
+      `SUMMARY:${eventTitle}`,
+      `LOCATION:${location || (venue ? `${venue.name}, ${venue.city || ''}` : '')}`,
+      `DESCRIPTION:${eventTitle} - ${venue?.name || 'Jam Connexion'}`,
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+    
+    // Create and download ICS file
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `event-${eventId}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+    
+    toast.success('Événement téléchargé ! Ouvrez le fichier pour l\'ajouter à votre calendrier.');
+  };
+
   const fetchVenue = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/venues/${id}`);

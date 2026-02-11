@@ -87,6 +87,15 @@ export function ImageUpload({
             src={value}
             alt="Preview"
             className={`${previewClassName} object-cover border-2 border-white/10 group-hover:border-primary/50 transition-colors rounded-lg`}
+            onError={(e) => {
+              console.error('❌ Image failed to load:', {
+                src: value,
+                error: e
+              });
+            }}
+            onLoad={() => {
+              console.log('✅ Image loaded successfully:', value);
+            }}
           />
           <button
             onClick={handleRemove}

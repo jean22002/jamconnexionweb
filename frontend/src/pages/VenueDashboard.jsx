@@ -282,7 +282,6 @@ export default function VenueDashboard() {
           opening_hours: response.data.opening_hours || "",
           allow_messages_from: response.data.allow_messages_from || "everyone"
         });
-      }
     } catch (error) {
       if (error.response?.status === 404) setEditing(true);
     } finally {

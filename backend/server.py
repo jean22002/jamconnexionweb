@@ -14,6 +14,7 @@ from datetime import datetime, timezone, timedelta
 import stripe
 import math
 import jwt
+import re
 
 # Import models from models package
 from models import (
@@ -47,6 +48,28 @@ db = client[os.environ['DB_NAME']]
 
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default_secret')
 JWT_ALGORITHM = "HS256"
+
+# Helper function to normalize image URLs
+def normalize_image_url(url: Optional[str]) -> Optional[str]:
+    """
+    Normalize image URLs to ensure consistency in storage.
+    Converts full URLs to relative paths starting with /api/uploads/
+    Handles edge cases like double /api/ prefixes.
+    """
+    if not url or not url.strip():
+        return None
+    
+    # Remove any http(s):// protocol and domain
+    normalized = re.sub(r'https?://[^/]+', '', url)
+    
+    # Fix double /api/ prefix (e.g., /api/api/uploads → /api/uploads)
+    normalized = re.sub(r'/api/api/', '/api/', normalized)
+    
+    # Ensure it starts with /api/uploads if it's an upload path
+    if 'uploads' in normalized and not normalized.startswith('/api/uploads'):
+        normalized = re.sub(r'^/?(uploads/)', r'/api/uploads/', normalized)
+    
+    return normalized if normalized else None
 
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
 STRIPE_PRICE_ID = os.environ.get('STRIPE_PRICE_ID', 'price_1SpH8aBykagrgoTUBAdOU10z')

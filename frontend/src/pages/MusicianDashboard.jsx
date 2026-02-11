@@ -2035,10 +2035,11 @@ export default function MusicianDashboard() {
                     {/* Photo de couverture */}
                     <div className="space-y-2">
                       <Label>Photo de couverture du groupe</Label>
-                      <BandImageUpload
+                      <MusicianImageUpload
                         value={currentBand.photo || ""}
                         onChange={(url) => setCurrentBand({ ...currentBand, photo: url })}
                         token={token}
+                        photoType="cover"
                       />
                     </div>
 

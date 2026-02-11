@@ -387,6 +387,15 @@ export default function VenueDashboard() {
 
   const handleSave = async () => {
     setSaving(true);
+    
+    // 🔍 DEBUG: Log l'état complet de formData au moment de la sauvegarde
+    console.log('🚀 === DÉBUT HANDLESA VE ===');
+    console.log('📊 État de formData au moment de handleSave:', {
+      profile_image: formData.profile_image,
+      cover_image: formData.cover_image,
+      name: formData.name
+    });
+    
     try {
       // Validate required fields
       if (!formData.name || !formData.address || !formData.city || !formData.postal_code) {
@@ -1822,8 +1831,20 @@ export default function VenueDashboard() {
                     <VenueImageUpload
                       value={formData.profile_image}
                       onChange={(url) => {
-                        console.log('📸 Profile image updated:', url);
-                        setFormData(prev => ({ ...prev, profile_image: url }));
+                        console.log('🎯 === VENUE DASHBOARD ONCHANGE ===');
+                        console.log('📸 Profile image URL received:', url);
+                        console.log('📊 Current formData BEFORE update:', {
+                          profile_image: formData.profile_image,
+                          name: formData.name
+                        });
+                        setFormData(prev => {
+                          const updated = { ...prev, profile_image: url };
+                          console.log('✅ New formData AFTER update:', {
+                            profile_image: updated.profile_image,
+                            name: updated.name
+                          });
+                          return updated;
+                        });
                       }}
                       token={token}
                       photoType="profile"
@@ -1835,8 +1856,20 @@ export default function VenueDashboard() {
                     <VenueImageUpload
                       value={formData.cover_image}
                       onChange={(url) => {
-                        console.log('📸 Cover image updated:', url);
-                        setFormData(prev => ({ ...prev, cover_image: url }));
+                        console.log('🎯 === VENUE DASHBOARD ONCHANGE ===');
+                        console.log('📸 Cover image URL received:', url);
+                        console.log('📊 Current formData BEFORE update:', {
+                          cover_image: formData.cover_image,
+                          name: formData.name
+                        });
+                        setFormData(prev => {
+                          const updated = { ...prev, cover_image: url };
+                          console.log('✅ New formData AFTER update:', {
+                            cover_image: updated.cover_image,
+                            name: updated.name
+                          });
+                          return updated;
+                        });
                       }}
                       token={token}
                       photoType="cover"

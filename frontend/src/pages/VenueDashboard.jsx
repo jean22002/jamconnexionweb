@@ -349,23 +349,23 @@ export default function VenueDashboard() {
   }, [token]);
 
   useEffect(() => {
+    // Initial data load - only runs once on mount
     fetchProfile();
     fetchMusicians();
     fetchEvents();
     fetchNotifications();
-    fetchSubscribers(); // Fetch subscribers on initial load
-  }, [fetchProfile, fetchMusicians, fetchEvents, fetchNotifications]);
+    fetchSubscribers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty array = run only once on mount
 
-  // Polling pour rafraîchir les notifications toutes les 15 secondes
+  // Polling pour rafraîchir les notifications toutes les 30 secondes (réduit de 15s à 30s)
   useEffect(() => {
-    if (!token) return;
-    
-    const notificationInterval = setInterval(() => {
+    const interval = setInterval(() => {
       fetchNotifications();
-    }, 15000); // 15 secondes
-    
-    return () => clearInterval(notificationInterval);
-  }, [token, fetchNotifications]);
+    }, 30000); // 30 seconds instead of 15
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (profile) fetchEvents();

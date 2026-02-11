@@ -241,17 +241,17 @@ export default function VenueDashboard() {
       // Ne mettre à jour formData QUE si on n'est PAS en mode édition
       // Sinon on écrase les modifications de l'utilisateur
       if (!editing) {
-        // Construire les URLs complètes pour les images
+        // Construire les URLs complètes pour les images avec normalisation robuste
         const profile_image_url = response.data.profile_image 
           ? (response.data.profile_image.startsWith('http') 
               ? response.data.profile_image 
-              : `${API}${response.data.profile_image}`)
+              : `${API}${response.data.profile_image.startsWith('/') ? response.data.profile_image : '/' + response.data.profile_image}`)
           : "";
         
         const cover_image_url = response.data.cover_image
           ? (response.data.cover_image.startsWith('http')
               ? response.data.cover_image
-              : `${API}${response.data.cover_image}`)
+              : `${API}${response.data.cover_image.startsWith('/') ? response.data.cover_image : '/' + response.data.cover_image}`)
           : "";
         
         setFormData({

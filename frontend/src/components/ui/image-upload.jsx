@@ -74,12 +74,15 @@ export function ImageUpload({
 
       // Construct full image URL
       const imageUrl = `${API}${response.data.url}`;
+      console.log('🎉🎉🎉 IMAGE UPLOADED SUCCESSFULLY 🎉🎉🎉');
       console.log('📸 Image upload successful:', {
         backendResponse: response.data.url,
         constructedUrl: imageUrl,
         API: API
       });
+      console.log('🔥 Calling onChange with:', imageUrl);
       onChange?.(imageUrl);
+      console.log('✅ onChange called');
     } catch (err) {
       setError(err.response?.data?.detail || "Erreur lors de l'upload");
     } finally {

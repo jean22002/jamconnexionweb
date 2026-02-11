@@ -1,91 +1,53 @@
 import { useState, useRef } from "react";
-import { Button } from "./button";
-import { Upload, X, Loader2, User, Music, Image } from "lucide-react";
 import axios from "axios";
-import { ImageCropperDialog } from "./image-cropper";
+import { Upload, X, Loader2, User, Music, Image as ImageIcon } from "lucide-react";
+import { Button } from "./button";
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = process.env.REACT_APP_BACKEND_URL;
 
-export function ImageUpload({ 
-  value, 
-  onChange, 
-  onUpload,
+/**
+ * Simple Image Upload Component
+ * Handles file upload with validation and preview
+ */
+export function ImageUpload({
+  value,
+  onChange,
   token,
-  uploadEndpoint = "/upload/image",
-  folder = "profiles",
-  placeholder = "Photo",
-  icon: Icon = User,
-  className = "",
-  previewClassName = "w-24 h-24 rounded-full",
-  disabled = false,
-  enableCrop = true, // Enable cropping by default
-  cropAspectRatio = 1, // 1 for square, 16/9 for banner
-  cropShape = "rect" // "rect" or "round"
+  uploadEndpoint,
+  placeholder = "Sélectionner une image",
+  icon: Icon = Upload,
+  previewClassName = "w-full h-32",
+  disabled = false
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
-  const [showCropper, setShowCropper] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleFileSelect = (e) => {
+  const handleFileSelect = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     // Validate file type
-    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
       setError("Format non supporté. Utilisez JPG, PNG, GIF ou WebP.");
       return;
     }
 
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Validate file size (5MB max)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
       setError("Fichier trop volumineux. Maximum 5MB.");
       return;
     }
 
     setError(null);
-
-    // If cropping is enabled, show cropper
-    if (enableCrop) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setSelectedImage(reader.result);
-        setShowCropper(true);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      // Upload directly without cropping
-      uploadFile(file);
-    }
-  };
-
-  const handleCropComplete = async (croppedBlob) => {
-    // Close cropper first
-    setShowCropper(false);
-    setSelectedImage(null);
-    
-    // Convert blob to file
-    const croppedFile = new File([croppedBlob], "cropped-image.jpg", {
-      type: "image/jpeg",
-    });
-    
-    await uploadFile(croppedFile);
-  };
-
-  const uploadFile = async (file) => {
     setUploading(true);
-    setError(null);
 
     try {
       const formData = new FormData();
       formData.append("file", file);
-      if (folder) {
-        formData.append("folder", folder);
-      }
 
-      console.log('Uploading to:', `${API}${uploadEndpoint}`);
       const response = await axios.post(`${API}${uploadEndpoint}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -93,13 +55,10 @@ export function ImageUpload({
         }
       });
 
-      console.log('Upload response:', response.data);
-      const imageUrl = `${process.env.REACT_APP_BACKEND_URL}${response.data.url}`;
-      console.log('Final image URL:', imageUrl);
+      // Construct full image URL
+      const imageUrl = `${API}${response.data.url}`;
       onChange?.(imageUrl);
-      onUpload?.(imageUrl);
     } catch (err) {
-      console.error('Upload error:', err);
       setError(err.response?.data?.detail || "Erreur lors de l'upload");
     } finally {
       setUploading(false);
@@ -116,124 +75,88 @@ export function ImageUpload({
   };
 
   return (
-    <div className={`space-y-2 ${className}`}>
-      <div className="flex items-center gap-4">
-        {/* Preview */}
-        <div className={`relative ${previewClassName} overflow-hidden bg-muted/50 flex items-center justify-center border border-white/10`}>
-          {value ? (
-            <>
-              <img src={value} alt="Preview" className="w-full h-full object-cover" />
-              {!disabled && (
-                <button
-                  onClick={handleRemove}
-                  className="absolute top-1 right-1 w-6 h-6 bg-destructive rounded-full flex items-center justify-center hover:bg-destructive/80 transition-colors"
-                >
-                  <X className="w-4 h-4 text-white" />
-                </button>
-              )}
-            </>
-          ) : (
-            <Icon className="w-8 h-8 text-muted-foreground" />
-          )}
-          
-          {uploading && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <Loader2 className="w-6 h-6 text-white animate-spin" />
-            </div>
-          )}
+    <div className="space-y-2">
+      {value && (
+        <div className="relative group">
+          <img
+            src={value}
+            alt="Preview"
+            className={`${previewClassName} object-cover border-2 border-white/10 group-hover:border-primary/50 transition-colors rounded-lg`}
+          />
+          <button
+            onClick={handleRemove}
+            disabled={disabled}
+            className="absolute top-2 right-2 p-1 bg-red-500 hover:bg-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0"
+            type="button"
+          >
+            <X className="w-4 h-4 text-white" />
+          </button>
         </div>
-
-        {/* Upload Button */}
-        {!disabled && (
-          <div className="flex-1">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/gif,image/webp"
-              onChange={handleFileSelect}
-              className="hidden"
-              disabled={uploading}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="w-full border-white/20 gap-2"
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Upload...
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4" />
-                  {value ? "Changer" : placeholder}
-                </>
-              )}
-            </Button>
-            <p className="text-xs text-muted-foreground mt-1">
-              JPG, PNG, GIF ou WebP. Max 5MB.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
       )}
 
-      {/* Image Cropper Dialog */}
-      <ImageCropperDialog
-        open={showCropper}
-        onClose={() => {
-          setShowCropper(false);
-          setSelectedImage(null);
-          // Reset file input
-          if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-          }
-        }}
-        imageSrc={selectedImage}
-        onCropComplete={handleCropComplete}
-        aspectRatio={cropAspectRatio}
-        shape={cropShape}
+      <div className="flex flex-col gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading || disabled}
+          className="w-full rounded-full border-dashed"
+        >
+          {uploading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Upload en cours...
+            </>
+          ) : (
+            <>
+              <Icon className="w-4 h-4 mr-2" />
+              {value ? "Changer" : placeholder}
+            </>
+          )}
+        </Button>
+
+        {error && (
+          <p className="text-sm text-red-500">{error}</p>
+        )}
+
+        <p className="text-xs text-muted-foreground">
+          JPG, PNG, GIF ou WebP. Max 5MB.
+        </p>
+      </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+        onChange={handleFileSelect}
+        className="hidden"
+        disabled={disabled}
       />
     </div>
   );
 }
 
-export function ProfileImageUpload({ value, onChange, token, disabled }) {
+/**
+ * Specialized components for different contexts
+ */
+
+// Musician Profile Image Upload
+export function MusicianImageUpload({ value, onChange, token, photoType = "profile", disabled }) {
   return (
     <ImageUpload
       value={value}
       onChange={onChange}
       token={token}
-      uploadEndpoint="/upload/musician-photo"
-      placeholder="Photo de profil"
-      icon={User}
-      previewClassName="w-24 h-24 rounded-full"
+      uploadEndpoint={`/upload/musician-photo?photo_type=${photoType}`}
+      placeholder={photoType === "profile" ? "Photo de profil" : "Photo de couverture"}
+      icon={photoType === "profile" ? User : Music}
+      previewClassName={photoType === "profile" ? "w-24 h-24 rounded-full" : "w-full h-32 rounded-xl"}
       disabled={disabled}
     />
   );
 }
 
-export function BandImageUpload({ value, onChange, token, disabled }) {
-  return (
-    <ImageUpload
-      value={value}
-      onChange={onChange}
-      token={token}
-      uploadEndpoint="/upload/band-photo"
-      placeholder="Photo du groupe"
-      icon={Music}
-      previewClassName="w-24 h-24 rounded-xl"
-      disabled={disabled}
-    />
-  );
-}
-
+// Venue Profile Image Upload
 export function VenueImageUpload({ value, onChange, token, photoType = "profile", disabled }) {
   return (
     <ImageUpload
@@ -242,16 +165,14 @@ export function VenueImageUpload({ value, onChange, token, photoType = "profile"
       token={token}
       uploadEndpoint={`/upload/venue-photo?photo_type=${photoType}`}
       placeholder={photoType === "profile" ? "Photo de profil" : "Photo de couverture"}
-      icon={photoType === "profile" ? User : Image}
+      icon={photoType === "profile" ? User : ImageIcon}
       previewClassName={photoType === "profile" ? "w-24 h-24 rounded-xl" : "w-full h-32 rounded-xl"}
       disabled={disabled}
-      enableCrop={true}
-      cropAspectRatio={photoType === "profile" ? 1 : 16/9}
-      cropShape="rect"
     />
   );
 }
 
+// Melomane Profile Image Upload
 export function MelomaneImageUpload({ value, onChange, token, disabled }) {
   return (
     <ImageUpload

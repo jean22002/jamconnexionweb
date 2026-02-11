@@ -1827,7 +1827,7 @@ export default function VenueDashboard() {
                       value={formData.profile_image}
                       onChange={(url) => {
                         console.log('📸 Profile image updated:', url);
-                        setFormData({ ...formData, profile_image: url });
+                        setFormData(prev => ({ ...prev, profile_image: url }));
                       }}
                       token={token}
                       photoType="profile"
@@ -1840,7 +1840,7 @@ export default function VenueDashboard() {
                       value={formData.cover_image}
                       onChange={(url) => {
                         console.log('📸 Cover image updated:', url);
-                        setFormData({ ...formData, cover_image: url });
+                        setFormData(prev => ({ ...prev, cover_image: url }));
                       }}
                       token={token}
                       photoType="cover"

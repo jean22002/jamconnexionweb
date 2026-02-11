@@ -17,7 +17,10 @@ export function ImageUpload({
   icon: Icon = User,
   className = "",
   previewClassName = "w-24 h-24 rounded-full",
-  disabled = false
+  disabled = false,
+  enableCrop = true, // Enable cropping by default
+  cropAspectRatio = 1, // 1 for square, 16/9 for banner
+  cropShape = "rect" // "rect" or "round"
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);

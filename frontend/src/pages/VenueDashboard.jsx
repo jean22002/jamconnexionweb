@@ -251,6 +251,16 @@ export default function VenueDashboard() {
               : `${API}${response.data.cover_image.startsWith('/') ? response.data.cover_image : '/' + response.data.cover_image}`)
           : "";
         
+        console.log('🔄 === FETCH PROFILE - Setting formData ===');
+        console.log('📥 Raw images from API:', {
+          profile_image_raw: response.data.profile_image,
+          cover_image_raw: response.data.cover_image
+        });
+        console.log('🔗 Constructed URLs:', {
+          profile_image_url,
+          cover_image_url
+        });
+        
         setFormData({
           name: response.data.name || "",
           description: response.data.description || "",
@@ -281,6 +291,11 @@ export default function VenueDashboard() {
           music_styles: response.data.music_styles || [],
           opening_hours: response.data.opening_hours || "",
           allow_messages_from: response.data.allow_messages_from || "everyone"
+        });
+        
+        console.log('✅ FormData set with images:', {
+          profile_image_url,
+          cover_image_url
         });
     } catch (error) {
       if (error.response?.status === 404) setEditing(true);

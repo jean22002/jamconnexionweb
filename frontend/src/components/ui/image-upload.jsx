@@ -61,6 +61,47 @@ export function ImageUpload({
     }
   };
 
+  const handleCropComplete = async (croppedBlob) => {
+    // Convert blob to file
+    const croppedFile = new File([croppedBlob], "cropped-image.jpg", {
+      type: "image/jpeg",
+    });
+    
+    await uploadFile(croppedFile);
+  };
+
+  const uploadFile = async (file) => {
+    setUploading(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      if (folder) {
+        formData.append("folder", folder);
+      }
+
+      const response = await axios.post(`${API}${uploadEndpoint}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data"
+        }
+      });
+
+      const imageUrl = `${process.env.REACT_APP_BACKEND_URL}${response.data.url}`;
+      onChange?.(imageUrl);
+      onUpload?.(imageUrl);
+    } catch (err) {
+      setError(err.response?.data?.detail || "Erreur lors de l'upload");
+    } finally {
+      setUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   const handleRemove = () => {
     onChange?.("");
     setError(null);

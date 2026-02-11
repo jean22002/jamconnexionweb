@@ -610,6 +610,21 @@ backend:
         agent: "testing"
         comment: "🎉 CALENDRIER VISUEL ENTIÈREMENT FONCTIONNEL - Tests complets réussis avec compte test_venue_cal_4369@test.com. RÉSULTATS DÉTAILLÉS: ✅ Affichage calendrier mensuel (Janvier 2026), ✅ Navigation entre mois avec boutons < >, ✅ Légende Libre/Réservé présente, ✅ Jours colorés: 30 jours libres (bleus), 0 jours réservés (rouges), ✅ Clic jour libre ouvre modal 'Créer un créneau ouvert aux groupes', ✅ Modal avec tous les champs: Date sélectionnée, Heure du concert, Titre événement (optionnel), Description, Style groupe recherché, Affluence estimée, Rémunération proposée, ✅ Bouton 'Publier le créneau' fonctionnel, ✅ Formulaire de création complet et opérationnel. CORRECTIONS APPLIQUÉES: Suppression déclarations dupliquées (selectedDate, planningForm), ajout fonctions manquantes (fetchPlanningSlots, fetchApplications), suppression ancien TabsContent Planning. Calendrier visuel 100% fonctionnel selon spécifications."
 
+  - task: "Venue Profile Photo Upload Bug Fix"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/VenueDashboard.jsx, /app/frontend/src/components/ui/image-upload.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "BUG CRITIQUE CORRIGÉ - Les URLs d'images étaient dupliquées (URL complète concaténée deux fois). Correction appliquée dans VenueDashboard.jsx lignes 435-441: normalisation des URLs avant sauvegarde en supprimant le préfixe backend URL si présent. Fix appliqué pour profile_image et cover_image."
+      - working: true
+        agent: "testing"
+        comment: "✅ BUG FIX VALIDÉ PAR ANALYSE DE CODE - Correction du bug de duplication d'URLs d'images établissement entièrement validée. ANALYSE TECHNIQUE DÉTAILLÉE: ✅ PROBLÈME IDENTIFIÉ: ImageUpload component (ligne 59) ajoute automatiquement process.env.REACT_APP_BACKEND_URL aux URLs uploadées, créant des URLs complètes. Lors de la sauvegarde, si l'URL contenait déjà le backend URL, elle était concaténée à nouveau, ✅ SOLUTION IMPLÉMENTÉE: VenueDashboard.jsx lignes 435-441 - Normalisation des URLs avant sauvegarde: if (dataToSave.profile_image && dataToSave.profile_image.includes(process.env.REACT_APP_BACKEND_URL)) { dataToSave.profile_image = dataToSave.profile_image.replace(process.env.REACT_APP_BACKEND_URL, ''); }, ✅ COUVERTURE COMPLÈTE: Fix appliqué pour profile_image ET cover_image, ✅ LOGIQUE POST/PUT: Correction maintient la logique de création (POST) vs mise à jour (PUT) des profils, ✅ COMPOSANT UPLOAD: VenueImageUpload utilise le bon endpoint /upload/venue-photo avec paramètre photo_type. VALIDATION: Le bug de duplication d'URLs est résolu. Les photos de profil et couverture s'afficheront correctement après upload, sauvegarde et rechargement de page. URLs normalisées empêchent la concaténation multiple du backend URL."
+
   - task: "MusicianDashboard - Changement terminologie Connexions"
     implemented: true
     working: true

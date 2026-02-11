@@ -727,6 +727,9 @@ backend:
       - working: "NA"
         agent: "main"
         comment: "Nouvelle fonctionnalité de recadrage d'images implémentée. Code prêt à être testé fonctionnellement. Tous les types d'utilisateurs (établissement, musicien, mélomane) peuvent recadrer leurs photos de profil et de couverture. Composant ImageCropper avec contrôles zoom/rotation. Integration complète dans image-upload.jsx."
+      - working: "NA"
+        agent: "testing"
+        comment: "Starting UI testing of the image cropping functionality per the review request. Will test with all user types: établissement (karaoke@test.com), musicien (testmusician@test.com), and mélomane (testmelomane@test.com). Testing all scenarios: profile/cover photos, rectangular/round crop shapes, zoom/rotation functionality, error handling and validation."
 
   - task: "MusicianDashboard - Changement terminologie Connexions"
     implemented: true

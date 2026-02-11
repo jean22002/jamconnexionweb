@@ -2083,7 +2083,10 @@ export default function MusicianDashboard() {
                       <Label>Photo de couverture du groupe</Label>
                       <MusicianImageUpload
                         value={currentBand.photo || ""}
-                        onChange={(url) => setCurrentBand({ ...currentBand, photo: url })}
+                        onChange={(url) => {
+                          console.log('📸 Band cover image updated:', url);
+                          setCurrentBand(prev => ({ ...prev, photo: url }));
+                        }}
                         token={token}
                         photoType="cover"
                       />

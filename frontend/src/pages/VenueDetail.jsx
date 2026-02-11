@@ -112,7 +112,23 @@ export default function VenueDetail() {
   const fetchVenue = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/venues/${id}`);
-      setVenue(response.data);
+      
+      // Reconstruire les URLs complètes pour les images
+      const venueData = {
+        ...response.data,
+        profile_image: response.data.profile_image
+          ? (response.data.profile_image.startsWith('http')
+              ? response.data.profile_image
+              : `${API}${response.data.profile_image}`)
+          : "",
+        cover_image: response.data.cover_image
+          ? (response.data.cover_image.startsWith('http')
+              ? response.data.cover_image
+              : `${API}${response.data.cover_image}`)
+          : ""
+      };
+      
+      setVenue(venueData);
     } catch (error) {
       console.error("Error fetching venue:", error);
       setVenue(null); // Explicitly set to null on error

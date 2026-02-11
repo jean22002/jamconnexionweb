@@ -71,15 +71,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files for uploads
-app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
-
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Create main API router
 api_router = APIRouter(prefix="/api")
+
+# Mount static files for uploads under /api prefix
+# This ensures /api/uploads/* works correctly with frontend URL construction
+app.mount("/api/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 # Import and include refactored routers
 from routes import (

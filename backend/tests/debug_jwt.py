@@ -8,7 +8,7 @@ import os
 import requests
 
 def debug_jwt_token():
-    base_url = "https://image-crop-test.preview.emergentagent.com/api"
+    base_url = "https://profile-photo-upload-1.preview.emergentagent.com/api"
     
     # Get a fresh token
     register_data = {

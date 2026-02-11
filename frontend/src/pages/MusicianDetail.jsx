@@ -22,7 +22,23 @@ export default function MusicianDetail() {
   const fetchMusician = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/musicians/${id}`);
-      setMusician(response.data);
+      
+      // Reconstruire les URLs complètes pour les images
+      const musicianData = {
+        ...response.data,
+        profile_image: response.data.profile_image
+          ? (response.data.profile_image.startsWith('http')
+              ? response.data.profile_image
+              : `${API}${response.data.profile_image}`)
+          : "",
+        cover_image: response.data.cover_image
+          ? (response.data.cover_image.startsWith('http')
+              ? response.data.cover_image
+              : `${API}${response.data.cover_image}`)
+          : ""
+      };
+      
+      setMusician(musicianData);
       
       // Check if this musician has an active participation
       // We need to fetch from user-specific endpoint if viewing own profile

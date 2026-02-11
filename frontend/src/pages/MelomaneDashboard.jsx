@@ -266,12 +266,28 @@ export default function MelomaneDashboard() {
       const method = profile ? "put" : "post";
       const endpoint = profile ? `${API}/melomanes/me` : `${API}/melomanes/`;
       
+      // Préparer les données avec normalisation d'URL
+      const profileData = { ...profileForm };
+      
+      // Normalize profile_picture URL
+      if (profileData.profile_picture) {
+        let normalizedUrl = profileData.profile_picture;
+        if (normalizedUrl.includes(process.env.REACT_APP_BACKEND_URL)) {
+          normalizedUrl = normalizedUrl.replace(process.env.REACT_APP_BACKEND_URL, '');
+        }
+        normalizedUrl = normalizedUrl.replace(/\/api\/api\//, '/api/');
+        if (!normalizedUrl.startsWith('/api/uploads')) {
+          normalizedUrl = normalizedUrl.replace(/^\/?(uploads\/)/, '/api/uploads/');
+        }
+        profileData.profile_picture = normalizedUrl;
+      }
+      
       // Log pour debug
       console.log('Saving profile with method:', method);
-      console.log('Profile data:', profileForm);
+      console.log('Profile data:', profileData);
       console.log('Endpoint:', endpoint);
       
-      const response = await axios[method](endpoint, profileForm, { 
+      const response = await axios[method](endpoint, profileData, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       

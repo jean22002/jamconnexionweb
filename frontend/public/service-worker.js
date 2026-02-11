@@ -2,7 +2,7 @@
 // Service Worker pour les notifications push et fonctionnement en arrière-plan
 // Compatible avec les futures applications smartphone
 
-const CACHE_NAME = 'jam-connexion-v1';
+const CACHE_NAME = 'jam-connexion-v2'; // Incremented version to force cache update
 const urlsToCache = [
   '/',
   '/static/css/main.css',

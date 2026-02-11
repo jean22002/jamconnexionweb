@@ -24,5 +24,5 @@ async def save_upload_file(file: UploadFile, folder: str = "") -> str:
         await out_file.write(content)
     
     if folder:
-        return f"/uploads/{folder}/{unique_filename}"
-    return f"/uploads/{unique_filename}"
+        return f"/api/uploads/{folder}/{unique_filename}"
+    return f"/api/uploads/{unique_filename}"

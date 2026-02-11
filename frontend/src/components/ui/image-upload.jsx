@@ -175,6 +175,24 @@ export function ImageUpload({
       {error && (
         <p className="text-sm text-destructive">{error}</p>
       )}
+
+      {/* Image Cropper Dialog */}
+      {showCropper && selectedImage && (
+        <ImageCropperDialog
+          image={selectedImage}
+          aspectRatio={cropAspectRatio}
+          shape={cropShape}
+          onCropComplete={handleCropComplete}
+          onCancel={() => {
+            setShowCropper(false);
+            setSelectedImage(null);
+            // Reset file input
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

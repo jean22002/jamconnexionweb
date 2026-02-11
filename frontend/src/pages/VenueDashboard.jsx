@@ -367,34 +367,14 @@ export default function VenueDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (profile) fetchEvents();
-  }, [profile, fetchEvents]);
-
-  // Auto-refresh events every 10 seconds to update participant counts in real-time
+  // Polling pour rafraîchir les événements toutes les 60 secondes (réduit de 10s à 60s)
   useEffect(() => {
     const interval = setInterval(() => {
-      if (profile && !editing) {
-        fetchEvents(); // Refresh events to get updated participant counts
-        fetchProfile(); // Refresh profile to update subscribers count
-        if (activeTab === "jacks") {
-          // Appeler directement l'API au lieu d'utiliser la fonction qui n'existe pas encore
-          const token = localStorage.getItem("token");
-          if (token && profile?.id) {
-            axios.get(`${API}/venues/me/subscribers`, {
-              headers: { Authorization: `Bearer ${token}` }
-            }).then(response => {
-              setSubscribers(response.data || []);
-            }).catch(err => {
-              console.error("Error fetching subscribers:", err);
-            });
-          }
-        }
-      }
-    }, 10000); // 10 secondes pour un rafraîchissement plus rapide
-
+      fetchEvents();
+    }, 60000); // 60 seconds instead of 10
     return () => clearInterval(interval);
-  }, [profile, editing, fetchEvents, fetchProfile, activeTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSave = async () => {
     setSaving(true);

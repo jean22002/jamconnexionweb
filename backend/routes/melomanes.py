@@ -39,6 +39,10 @@ async def create_melomane_profile(
         lat, lon = await geocode_city(data.city)
         latitude, longitude = lat, lon
     
+    # Normalize profile_picture URL
+    from server import normalize_image_url
+    profile_picture_url = normalize_image_url(data.profile_picture) if data.profile_picture else None
+    
     melomane_doc = {
         "id": str(uuid.uuid4()),
         "user_id": user_id,
@@ -52,7 +56,7 @@ async def create_melomane_profile(
         "longitude": longitude,
         "favorite_styles": data.favorite_styles or [],
         "favorite_venues": [],
-        "profile_picture": data.profile_picture,
+        "profile_picture": profile_picture_url,
         "cover_photo": None,
         "facebook": None,
         "instagram": None,

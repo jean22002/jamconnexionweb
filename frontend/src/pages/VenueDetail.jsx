@@ -916,9 +916,27 @@ export default function VenueDetail() {
                       👥 {concert.participants_count || 0} participant{(concert.participants_count || 0) > 1 ? 's' : ''}
                     </p>
                     
-                    {/* Bouton "Je participe" pour les musiciens et mélomanes */}
-                    {(user?.role === "musician" || user?.role === "melomane") && (
-                      <div className="mt-4">
+                    {/* Calendar button - available for everyone */}
+                    <div className="mt-4 flex gap-2 flex-wrap">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs"
+                        onClick={() => addToCalendar({
+                          id: concert.id,
+                          title: concert.title || 'Concert',
+                          date: concert.date,
+                          start_time: concert.start_time,
+                          end_time: concert.end_time,
+                          type: 'concert'
+                        })}
+                      >
+                        <CalendarIcon className="w-3 h-3 mr-1" />
+                        Ajouter au calendrier
+                      </Button>
+                      
+                      {/* Bouton "Je participe" pour les musiciens et mélomanes */}
+                      {(user?.role === "musician" || user?.role === "melomane") && (
                         <JoinEventButton 
                           event={{ ...concert, type: 'concert' }}
                           venueId={id}
@@ -927,8 +945,8 @@ export default function VenueDetail() {
                           onParticipationChange={handleParticipationChange}
                           loadingParticipations={loadingParticipations}
                         />
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

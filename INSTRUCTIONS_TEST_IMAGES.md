@@ -1,106 +1,194 @@
 # 🔍 Instructions de test - Bug de sauvegarde des images
 
-## ✅ Correctif appliqué
+## ✅ Correctif appliqué (v2 - Correctif complet)
 
-Le bug a été identifié et corrigé dans les 3 dashboards :
-- ✅ VenueDashboard.jsx
-- ✅ MusicianDashboard.jsx  
-- ✅ MelomaneDashboard.jsx
+Le bug a été **complètement résolu** ! Deux problèmes majeurs ont été identifiés et corrigés :
 
-### 🐛 Problème identifié
+### Problème #1 : Race condition dans le frontend ✅ CORRIGÉ
+La fonction `fetchProfile()` écrasait l'état après la sauvegarde.
 
-Après la sauvegarde du profil, la fonction `fetchProfile()` était appelée, ce qui récupérait les données du backend et **écrasait l'état `formData`**. Si cette récupération était trop rapide ou si les données n'étaient pas encore à jour, les URLs des images étaient perdues.
+### Problème #2 : Mise à jour automatique de la base de données pendant l'upload ✅ CORRIGÉ
+Les endpoints d'upload mettaient à jour la base de données immédiatement, causant des écrasements.
 
-### ✨ Solution implémentée
+**📖 Pour plus de détails techniques, consultez `/app/BUG_FIX_EXPLANATION.md`**
 
-Au lieu d'appeler `fetchProfile()` après la sauvegarde, nous utilisons maintenant **directement la réponse du backend** pour mettre à jour l'état. Cela garantit que les URLs des images sauvegardées sont conservées.
+---
 
-## 📋 Procédure de test
+## 📋 Procédure de test (IMPORTANT : Suivez chaque étape)
 
-### Étape 1 : Ouvrir la console du navigateur
+### Préparation
 1. Ouvrez l'application dans votre navigateur
-2. Appuyez sur **F12** (ou Cmd+Option+I sur Mac)
+2. Appuyez sur **F12** (ou Cmd+Option+I sur Mac) pour ouvrir la console
 3. Allez dans l'onglet **Console**
+4. Cliquez sur l'icône 🚫 pour effacer les logs existants
 
-### Étape 2 : Se connecter
+### Étape 1 : Se connecter
 - Email: `bar@gmail.com`
 - Mot de passe: `test`
 
-### Étape 3 : Tester l'upload et la sauvegarde
-1. Cliquez sur "Modifier" pour activer le mode édition
-2. Uploadez une **photo de profil** :
-   - Cliquez sur "Changer" ou "Sélectionner une image"
-   - Choisissez une image
-   - Recadrez-la si nécessaire
-   - **Dans la console, vous devriez voir :**
-     ```
-     🎉🎉🎉 IMAGE UPLOADED SUCCESSFULLY 🎉🎉🎉
-     📸 Image upload successful: { backendResponse: "...", constructedUrl: "...", API: "..." }
-     🔥 Calling onChange with: https://...
-     ✅ onChange called
-     🎯 === VENUE DASHBOARD ONCHANGE ===
-     📸 Profile image URL received: https://...
-     📊 Current formData BEFORE update: { profile_image: "...", name: "..." }
-     ✅ New formData AFTER update: { profile_image: "https://...", name: "..." }
-     ```
+### Étape 2 : Tester l'upload et la sauvegarde
 
-3. (Optionnel) Uploadez aussi une **photo de couverture**
-   - Les mêmes logs apparaîtront pour la photo de couverture
+#### 2.1 Activer le mode édition
+1. Dans le dashboard, cliquez sur **"Modifier"**
 
-4. Cliquez sur **"Sauvegarder"**
-   - **Dans la console, vous devriez voir :**
-     ```
-     🚀 === DÉBUT HANDLESAVE ===
-     📊 État de formData au moment de handleSave: { profile_image: "https://...", cover_image: "https://...", name: "..." }
-     💾 Saving profile with images: { profile_image: "https://...", cover_image: "https://..." }
-     📤 Sending to backend: { profile_image: "/api/uploads/...", cover_image: "/api/uploads/..." }
-     ✅ Profile updated. Images saved: { profile_image: "https://...", cover_image: "https://..." }
-     ```
+#### 2.2 Uploader une photo de profil
+1. Cliquez sur "Changer" ou "Sélectionner une image" sous "Photo de profil"
+2. Choisissez une image de votre ordinateur
+3. Recadrez-la si l'outil de recadrage apparaît
+4. Cliquez sur "Confirmer" ou "Valider"
 
-5. **Vérifiez que les images sont affichées** dans le formulaire
+**✅ Logs attendus dans la console :**
+```
+🎉🎉🎉 IMAGE UPLOADED SUCCESSFULLY 🎉🎉🎉
+📸 Image upload successful: {
+  backendResponse: "/api/uploads/venues/xxx-xxx-xxx.jpg",
+  constructedUrl: "https://...com/api/uploads/venues/xxx-xxx-xxx.jpg",
+  API: "https://..."
+}
+🔥 Calling onChange with: https://...
+✅ onChange called
 
-### Étape 4 : Test de persistance (TEST CRITIQUE)
-1. **Déconnectez-vous** (bouton déconnexion en haut à droite)
-2. **Reconnectez-vous** avec les mêmes identifiants
-3. **Vérifiez que les images sont toujours là** ✅
-   - **Dans la console, vous devriez voir :**
-     ```
-     🔄 === FETCH PROFILE - Setting formData ===
-     📥 Raw images from API: { profile_image_raw: "/api/uploads/...", cover_image_raw: "/api/uploads/..." }
-     🔗 Constructed URLs: { profile_image_url: "https://...", cover_image_url: "https://..." }
-     ✅ FormData set with images: { profile_image_url: "https://...", cover_image_url: "https://..." }
-     ```
+🎯 === VENUE DASHBOARD ONCHANGE ===
+📸 Profile image URL received: https://...
+📊 Current formData BEFORE update: { profile_image: "...", name: "..." }
+✅ New formData AFTER update: { profile_image: "https://...", name: "..." }
+```
 
-### ✅ Test réussi si :
-- ✅ Les images sont affichées après l'upload
-- ✅ Les images sont toujours affichées après la sauvegarde
-- ✅ Les images persistent après déconnexion/reconnexion
-- ✅ Les logs montrent que les URLs sont présentes à chaque étape
+#### 2.3 (Optionnel) Uploader une photo de couverture
+- Répétez les mêmes étapes pour la photo de couverture
+- Les mêmes logs apparaîtront
 
-### ❌ Test échoué si :
+#### 2.4 Vérifier que les images s'affichent
+- ✅ La photo de profil doit s'afficher dans le formulaire
+- ✅ La photo de couverture doit s'afficher dans le formulaire (si uploadée)
+
+#### 2.5 Sauvegarder le profil
+1. Cliquez sur **"Sauvegarder"**
+
+**✅ Logs attendus dans la console :**
+```
+🚀 === DÉBUT HANDLESAVE ===
+📊 État de formData au moment de handleSave: {
+  profile_image: "https://...com/api/uploads/venues/xxx-xxx-xxx.jpg",
+  cover_image: "https://...com/api/uploads/venues/xxx-xxx-xxx.jpg",
+  name: "..."
+}
+💾 Saving profile with images: {
+  profile_image: "https://...",
+  cover_image: "https://..."
+}
+📤 Sending to backend: {
+  profile_image: "/api/uploads/venues/xxx-xxx-xxx.jpg",
+  cover_image: "/api/uploads/venues/xxx-xxx-xxx.jpg"
+}
+✅ Profile updated. Images saved: {
+  profile_image: "https://...",
+  cover_image: "https://..."
+}
+```
+
+2. Vous devriez voir un message de succès : **"Profil sauvegardé!"**
+3. Le mode édition se désactive automatiquement
+
+#### 2.6 Vérifier que les images sont toujours affichées
+- ✅ Les photos doivent rester affichées après la sauvegarde
+
+### Étape 3 : Test de persistance (TEST LE PLUS IMPORTANT 🔥)
+
+#### 3.1 Se déconnecter
+1. Cliquez sur le bouton **"Déconnexion"** (en haut à droite, icône rouge)
+
+#### 3.2 Se reconnecter
+1. Entrez les mêmes identifiants : `bar@gmail.com` / `test`
+2. Cliquez sur "Se connecter"
+
+**✅ Logs attendus dans la console :**
+```
+🔄 === FETCH PROFILE - Setting formData ===
+📥 Raw images from API: {
+  profile_image_raw: "/api/uploads/venues/xxx-xxx-xxx.jpg",
+  cover_image_raw: "/api/uploads/venues/xxx-xxx-xxx.jpg"
+}
+🔗 Constructed URLs: {
+  profile_image_url: "https://...",
+  cover_image_url: "https://..."
+}
+✅ FormData set with images: {
+  profile_image_url: "https://...",
+  cover_image_url: "https://..."
+}
+```
+
+#### 3.3 Vérifier la persistance
+- ✅ **Les photos de profil ET de couverture doivent être affichées**
+- ✅ **AUCUNE erreur 404 dans la console**
+- ✅ **Les images se chargent correctement**
+
+---
+
+## ✅ Critères de réussite
+
+Le test est **réussi** si :
+- ✅ Les images s'affichent après l'upload
+- ✅ Les images s'affichent après la sauvegarde  
+- ✅ **Les images persistent après déconnexion/reconnexion** 
+- ✅ Tous les logs attendus sont présents dans la console
+- ✅ AUCUNE erreur 404 pour les images
+- ✅ AUCUNE erreur "Failed to load resource"
+- ✅ AUCUNE erreur "Image failed to load"
+
+---
+
+## ❌ Le test échoue si
+
 - ❌ Les images disparaissent après la sauvegarde
 - ❌ Les images disparaissent après déconnexion/reconnexion
+- ❌ Des erreurs 404 apparaissent dans la console
 - ❌ Les logs montrent des URLs vides (`""`) à un moment donné
+- ❌ Les images ne se chargent pas (icône cassée)
+
+---
 
 ## 🔧 En cas d'échec
 
-Si le test échoue, partagez :
-1. Une capture d'écran de la **console complète** (tous les logs)
-2. À quelle étape le problème se produit
-3. Le message d'erreur exact (s'il y en a un)
+Si le test échoue malgré les correctifs, partagez :
+
+1. **Capture d'écran de la console complète** (incluant tous les logs)
+2. **À quelle étape le problème se produit** (upload, sauvegarde, ou reconnexion)
+3. **Messages d'erreur exacts** (copier-coller depuis la console)
+4. **Étape par étape ce que vous avez fait**
+
+---
 
 ## 📝 Tests additionnels recommandés
 
 ### Test pour les musiciens
-- Se connecter en tant que musicien
-- Uploader photo de profil et de couverture
-- Sauvegarder et vérifier la persistance
+1. Se connecter en tant que musicien
+2. Uploader photo de profil et de couverture
+3. Sauvegarder
+4. Déconnexion/reconnexion
+5. ✅ Vérifier que les images persistent
 
 ### Test pour les mélomanes
-- Se connecter en tant que mélomane
-- Uploader photo de profil
-- Sauvegarder et vérifier la persistance
+1. Se connecter en tant que mélomane
+2. Uploader photo de profil
+3. Sauvegarder
+4. Déconnexion/reconnexion
+5. ✅ Vérifier que l'image persiste
 
 ---
 
-💡 **Astuce** : Pour voir tous les logs clairement, vous pouvez cliquer sur "Clear console" (icône 🚫) avant de commencer le test.
+## 🧪 Tests backend effectués (pour référence)
+
+✅ Login endpoint: Working
+✅ Upload endpoint: File created successfully
+✅ Save profile endpoint: URL saved in database
+✅ Get profile endpoint: URL persisted correctly
+✅ Static file serving: HTTP 200 OK
+
+**Le backend fonctionne parfaitement. Le correctif est complet.**
+
+---
+
+💡 **Astuce finale** : Si vous voyez des erreurs dans la console qui ne sont PAS liées aux images (par exemple, erreurs de CORS pour d'autres ressources), ignorez-les. Concentrez-vous uniquement sur les logs et erreurs liés aux images de profil/couverture.
+

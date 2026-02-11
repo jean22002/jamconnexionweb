@@ -1235,7 +1235,10 @@ export default function MusicianDashboard() {
                         <Label>Photo de profil</Label>
                         <MusicianImageUpload
                           value={profileForm.profile_image}
-                          onChange={(url) => setProfileForm({ ...profileForm, profile_image: url })}
+                          onChange={(url) => {
+                            console.log('📸 Musician profile image updated:', url);
+                            setProfileForm(prev => ({ ...prev, profile_image: url }));
+                          }}
                           token={token}
                           photoType="profile"
                         />

@@ -900,7 +900,14 @@ async def update_venue_profile(data: VenueProfile, current_user: dict = Depends(
     
     # Normalize image URLs before saving
     venue_data = data.model_dump()
-    logging.info(f"🔍 DEBUG PUT - Before normalization: profile_image={venue_data.get('profile_image')}, cover_image={venue_data.get('cover_image')}")
+    logging.info(f"🔍 DEBUG PUT - Received data: profile_image={venue_data.get('profile_image')}, cover_image={venue_data.get('cover_image')}")
+    
+    # Convert empty strings to None (Pydantic might keep empty strings)
+    if venue_data.get('profile_image') == "":
+        venue_data['profile_image'] = None
+    if venue_data.get('cover_image') == "":
+        venue_data['cover_image'] = None
+    
     venue_data['profile_image'] = normalize_image_url(venue_data.get('profile_image'))
     venue_data['cover_image'] = normalize_image_url(venue_data.get('cover_image'))
     logging.info(f"✅ DEBUG PUT - After normalization: profile_image={venue_data.get('profile_image')}, cover_image={venue_data.get('cover_image')}")

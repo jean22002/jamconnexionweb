@@ -12,7 +12,7 @@ import os
 from datetime import datetime, timedelta
 
 class NotificationSystemTester:
-    def __init__(self, base_url="https://photo-upload-fix-15.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://image-crop-test.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0

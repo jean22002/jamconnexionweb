@@ -399,6 +399,12 @@ export default function VenueDashboard() {
         return;
       }
 
+      // Log pour debug
+      console.log('💾 Saving profile with images:', {
+        profile_image: formData.profile_image,
+        cover_image: formData.cover_image
+      });
+
       // If latitude/longitude are missing or zero, geocode the address
       let dataToSave = { ...formData };
       if (!dataToSave.latitude || !dataToSave.longitude || dataToSave.latitude === 0 || dataToSave.longitude === 0) {

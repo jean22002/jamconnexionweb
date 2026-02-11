@@ -28,7 +28,7 @@ export function ImageUpload({
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleFileSelect = async (e) => {
+  const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -46,33 +46,18 @@ export function ImageUpload({
     }
 
     setError(null);
-    setUploading(true);
 
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      if (folder) {
-        formData.append("folder", folder);
-      }
-
-      const response = await axios.post(`${API}${uploadEndpoint}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data"
-        }
-      });
-
-      const imageUrl = `${process.env.REACT_APP_BACKEND_URL}${response.data.url}`;
-      onChange?.(imageUrl);
-      onUpload?.(imageUrl);
-    } catch (err) {
-      setError(err.response?.data?.detail || "Erreur lors de l'upload");
-    } finally {
-      setUploading(false);
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+    // If cropping is enabled, show cropper
+    if (enableCrop) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setSelectedImage(reader.result);
+        setShowCropper(true);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // Upload directly without cropping
+      uploadFile(file);
     }
   };
 

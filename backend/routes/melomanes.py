@@ -96,6 +96,11 @@ async def update_melomane_profile(
     
     update_data = {k: v for k, v in data.dict().items() if v is not None}
     
+    # Normalize profile_picture URL if provided
+    if "profile_picture" in update_data and update_data["profile_picture"]:
+        from server import normalize_image_url
+        update_data["profile_picture"] = normalize_image_url(update_data["profile_picture"])
+    
     # Geocode city if changed
     if "city" in update_data and update_data["city"]:
         from utils import geocode_city

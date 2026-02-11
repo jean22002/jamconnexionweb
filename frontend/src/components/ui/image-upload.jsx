@@ -2,12 +2,13 @@ import { useState, useRef } from "react";
 import axios from "axios";
 import { Upload, X, Loader2, User, Music, Image as ImageIcon } from "lucide-react";
 import { Button } from "./button";
+import ImageCropper from "./image-cropper";
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
 /**
- * Simple Image Upload Component
- * Handles file upload with validation and preview
+ * Image Upload Component with Crop Functionality
+ * Handles file upload with validation, cropping, and preview
  */
 export function ImageUpload({
   value,
@@ -17,10 +18,14 @@ export function ImageUpload({
   placeholder = "Sélectionner une image",
   icon: Icon = Upload,
   previewClassName = "w-full h-32",
-  disabled = false
+  disabled = false,
+  aspectRatio = "1/1", // "1/1" for profile (square), "16/9" for cover
+  cropShape = "rect" // "rect" or "round"
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
+  const [showCropper, setShowCropper] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleFileSelect = async (e) => {
@@ -34,19 +39,31 @@ export function ImageUpload({
       return;
     }
 
-    // Validate file size (5MB max)
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    // Validate file size (10MB max for cropping)
+    const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      setError("Fichier trop volumineux. Maximum 5MB.");
+      setError("Fichier trop volumineux. Maximum 10MB.");
       return;
     }
 
     setError(null);
+    
+    // Create preview URL and show cropper
+    const reader = new FileReader();
+    reader.onload = () => {
+      setSelectedImage(reader.result);
+      setShowCropper(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropComplete = async (croppedBlob) => {
+    setShowCropper(false);
     setUploading(true);
 
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", croppedBlob, "cropped-image.jpg");
 
       const response = await axios.post(`${API}${uploadEndpoint}`, formData, {
         headers: {

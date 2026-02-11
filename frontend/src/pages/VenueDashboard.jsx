@@ -432,6 +432,14 @@ export default function VenueDashboard() {
         }
       }
 
+      // Normalize image URLs (remove backend URL if present to keep only path)
+      if (dataToSave.profile_image && dataToSave.profile_image.includes(process.env.REACT_APP_BACKEND_URL)) {
+        dataToSave.profile_image = dataToSave.profile_image.replace(process.env.REACT_APP_BACKEND_URL, '');
+      }
+      if (dataToSave.cover_image && dataToSave.cover_image.includes(process.env.REACT_APP_BACKEND_URL)) {
+        dataToSave.cover_image = dataToSave.cover_image.replace(process.env.REACT_APP_BACKEND_URL, '');
+      }
+
       // Check if profile exists - if not, use POST (create), otherwise PUT (update)
       if (!profile) {
         // Create new profile

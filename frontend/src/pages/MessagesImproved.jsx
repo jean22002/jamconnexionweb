@@ -218,11 +218,28 @@ export default function MessagesImproved() {
 
       const musicians = musiciansRes.data
         .filter(m => m.user_id !== user.id && m.pseudo.toLowerCase().includes(query.toLowerCase()))
-        .map(m => ({ ...m, type: 'musician', name: m.pseudo }));
+        .map(m => ({ 
+          ...m, 
+          type: 'musician', 
+          name: m.pseudo,
+          profile_image: m.profile_image
+            ? (m.profile_image.startsWith('http')
+                ? m.profile_image
+                : `${API}${m.profile_image}`)
+            : ""
+        }));
 
       const venues = venuesRes.data
         .filter(v => v.user_id !== user.id && v.name.toLowerCase().includes(query.toLowerCase()))
-        .map(v => ({ ...v, type: 'venue' }));
+        .map(v => ({ 
+          ...v, 
+          type: 'venue',
+          profile_image: v.profile_image
+            ? (v.profile_image.startsWith('http')
+                ? v.profile_image
+                : `${API}${v.profile_image}`)
+            : ""
+        }));
 
       setSearchResults([...musicians, ...venues]);
     } catch (error) {

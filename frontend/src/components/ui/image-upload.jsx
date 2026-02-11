@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Button } from "./button";
 import { Upload, X, Loader2, User, Music, Image } from "lucide-react";
 import axios from "axios";
+import { ImageCropperDialog } from "./image-cropper";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 

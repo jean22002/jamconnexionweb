@@ -846,8 +846,27 @@ export default function VenueDetail() {
                         <p className="text-sm text-muted-foreground"><strong>Règlement:</strong> {jam.rules}</p>
                       </div>
                     )}
-                    {(user?.role === "musician" || user?.role === "melomane") && (
-                      <div className="mt-4">
+                    
+                    {/* Calendar button - available for everyone */}
+                    <div className="mt-4 flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs"
+                        onClick={() => addToCalendar({
+                          id: jam.id,
+                          title: 'Bœuf musical',
+                          date: jam.date,
+                          start_time: jam.start_time,
+                          end_time: jam.end_time,
+                          type: 'jam'
+                        })}
+                      >
+                        <CalendarIcon className="w-3 h-3 mr-1" />
+                        Ajouter au calendrier
+                      </Button>
+                      
+                      {(user?.role === "musician" || user?.role === "melomane") && (
                         <JoinEventButton 
                           event={{ ...jam, type: 'jam' }}
                           venueId={id}
@@ -856,8 +875,8 @@ export default function VenueDetail() {
                           onParticipationChange={handleParticipationChange}
                           loadingParticipations={loadingParticipations}
                         />
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

@@ -518,10 +518,15 @@ async def create_musician_profile(data: MusicianProfile, current_user: dict = De
         concert_dict["id"] = str(uuid.uuid4())
         concerts_with_ids.append(concert_dict)
     
+    # Normalize image URLs before saving
+    musician_data = data.model_dump()
+    musician_data['profile_image'] = normalize_image_url(musician_data.get('profile_image'))
+    musician_data['cover_image'] = normalize_image_url(musician_data.get('cover_image'))
+    
     musician_doc = {
         "id": musician_id,
         "user_id": current_user["id"],
-        **data.model_dump(),
+        **musician_data,
         "concerts": concerts_with_ids,
         "created_at": now
     }
@@ -552,7 +557,10 @@ async def update_musician_profile(data: MusicianProfile, current_user: dict = De
             concert_dict["id"] = str(uuid.uuid4())
         concerts_with_ids.append(concert_dict)
     
+    # Normalize image URLs before saving
     update_data = data.model_dump()
+    update_data['profile_image'] = normalize_image_url(update_data.get('profile_image'))
+    update_data['cover_image'] = normalize_image_url(update_data.get('cover_image'))
     update_data["concerts"] = concerts_with_ids
     
     await db.musicians.update_one(

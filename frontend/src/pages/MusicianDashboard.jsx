@@ -15,6 +15,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { TimeSelect } from "../components/ui/time-select";
 import { MusicianImageUpload } from "../components/ui/image-upload";
+// NEW: Import refactored utilities
+import { buildImageUrl } from "../utils/urlBuilder";
 import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
 import { 
   Music, MapPin, LogOut, Search, Guitar, Users,

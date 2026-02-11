@@ -185,7 +185,8 @@ export function ImageUpload({
         className="hidden"
         disabled={disabled}
       />
-    </div>
+      </div>
+    </>
   );
 }
 

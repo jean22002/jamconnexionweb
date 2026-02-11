@@ -24,6 +24,8 @@ export function ImageUpload({
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
+  const [showCropper, setShowCropper] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleFileSelect = async (e) => {

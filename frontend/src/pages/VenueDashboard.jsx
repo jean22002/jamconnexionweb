@@ -238,11 +238,8 @@ export default function VenueDashboard() {
         return;
       }
       
-      // Ne mettre à jour formData QUE si on n'est PAS en mode édition
-      // Sinon on écrase les modifications de l'utilisateur
-      if (!editing) {
-        // Construire les URLs complètes pour les images avec normalisation robuste
-        const profile_image_url = response.data.profile_image 
+      // Construire les URLs complètes pour les images avec normalisation robuste
+      const profile_image_url = response.data.profile_image 
           ? (response.data.profile_image.startsWith('http') 
               ? response.data.profile_image 
               : `${API}${response.data.profile_image.startsWith('/') ? response.data.profile_image : '/' + response.data.profile_image}`)

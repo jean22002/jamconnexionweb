@@ -38,6 +38,26 @@ export const useNotifications = (token, user) => {
         serviceWorkerRef.current = registration;
         console.log('[App] Service Worker enregistré avec succès');
         
+        // Vérifier les mises à jour du service worker
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          console.log('[App] Nouvelle version du Service Worker détectée');
+          
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // Nouvelle version disponible - forcer l'activation
+              console.log('[App] Nouvelle version prête - activation en cours');
+              newWorker.postMessage({ type: 'SKIP_WAITING' });
+              
+              // Recharger la page après activation pour utiliser la nouvelle version
+              navigator.serviceWorker.addEventListener('controllerchange', () => {
+                console.log('[App] Service Worker mis à jour - rechargement...');
+                window.location.reload();
+              });
+            }
+          });
+        });
+        
         // Enregistrer le background sync si disponible
         if ('sync' in registration) {
           console.log('[App] Background Sync disponible');

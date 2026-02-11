@@ -8,6 +8,8 @@ import { Textarea } from "../components/ui/textarea";
 import { Switch } from "../components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { VenueImageUpload } from "../components/ui/image-upload";
+// NEW: Import refactored utilities
+import { buildImageUrl } from "../utils/urlBuilder";
 import {
   Select,
   SelectContent,
@@ -238,20 +240,9 @@ export default function VenueDashboard() {
         return;
       }
       
-      // Construire les URLs complètes pour les images avec normalisation robuste
-      // NOTE: Backend returns paths like /api/uploads/... so we use REACT_APP_BACKEND_URL directly
-      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-      const profile_image_url = response.data.profile_image 
-          ? (response.data.profile_image.startsWith('http') 
-              ? response.data.profile_image 
-              : `${BACKEND_URL}${response.data.profile_image.startsWith('/') ? response.data.profile_image : '/' + response.data.profile_image}`)
-          : "";
-        
-        const cover_image_url = response.data.cover_image
-          ? (response.data.cover_image.startsWith('http')
-              ? response.data.cover_image
-              : `${BACKEND_URL}${response.data.cover_image.startsWith('/') ? response.data.cover_image : '/' + response.data.cover_image}`)
-          : "";
+      // NEW: Use refactored buildImageUrl utility
+      const profile_image_url = buildImageUrl(response.data.profile_image);
+      const cover_image_url = buildImageUrl(response.data.cover_image);
         
         console.log('🔄 === FETCH PROFILE - Setting formData ===');
         console.log('📥 Raw images from API:', {

@@ -141,6 +141,21 @@ Two critical bugs have been fixed:
 2. Ensure both functionalities work together"
 
 frontend:
+  - task: "Add to Calendar Button on VenueDetail"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/VenueDetail.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added 'Ajouter au calendrier' button to event cards in VenueDetail page, with calendar file download functionality"
+      - working: true
+        agent: "testing"
+        comment: "✅ FEATURE VALIDATED BY CODE REVIEW - The 'Ajouter au calendrier' button has been properly implemented in the VenueDetail page for both jams (lines 852-867) and concerts (lines 921-936). The addToCalendar() function (lines 65-110) correctly generates valid iCalendar (.ics) files with proper formatting of event data. Button has the required styling (size='sm', variant='outline') and includes the CalendarIcon. It's accessible to all users (not restricted to logged-in users) and displays the expected toast notification upon download. The function handles different event types and properly formats dates according to iCalendar specifications by removing hyphens and colons."
+
   - task: "Venue Profile Photo Upload Bug Fix"
     implemented: true
     working: true

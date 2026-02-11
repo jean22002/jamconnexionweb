@@ -102,7 +102,42 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "🖼️ **Bug Photo de Profil Établissement - Test de la Correction** - J'ai identifié et corrigé le problème : les URLs d'images étaient dupliquées (l'URL complète était concaténée deux fois). Maintenant, les URLs sont normalisées avant la sauvegarde. TESTS REQUIS: 1) Inscription et Création de Profil - S'inscrire comme établissement avec un nouvel email, Remplir les champs obligatoires : nom, adresse, ville, code postal. 2) Upload de Photo de Profil - Activer le mode édition, Cliquer sur 'Changer' pour la photo de profil, Sélectionner une image (JPG, PNG, max 5MB), Vérifier immédiatement : La photo devrait s'afficher dans le preview (pas d'icône '?'). 3) Sauvegarde du Profil - Cliquer sur 'Sauvegarder', Attendre la confirmation 'Profil sauvegardé!', VÉRIFICATION CRITIQUE : La photo devrait toujours être visible (ne pas disparaître). 4) Rechargement de la Page - Rafraîchir la page (F5 ou Cmd+R), Se reconnecter si nécessaire, VÉRIFICATION FINALE : La photo de profil devrait toujours s'afficher correctement. 5) Tests Supplémentaires - Changer la photo pour une autre image → Doit fonctionner, Upload de la photo de couverture → Doit aussi fonctionner, Quitter le mode édition et revenir → La photo doit rester. Résultats attendus: ✅ Preview immédiat après upload, ✅ Photo reste visible après sauvegarde, ✅ Photo persiste après rechargement de page, ✅ Pas d'icône '?' ou d'erreur d'affichage."
+user_problem_statement: "Test critical bug fixes for Jam Connexion on https://jamconnexion.com
+
+**Context**: 
+Two critical bugs have been fixed:
+1. **Photo upload bug** (P0): Fixed incorrect API endpoint URL (was missing `/api` prefix)
+2. **Venue profile save bug** (P1): Fixed Pydantic model to accept latitude/longitude as optional with default values
+
+**Test Scenarios**:
+
+### Scenario 1: Venue Profile Creation & Save (P1 Bug Fix)
+1. Register a new venue account or login as venue
+2. Navigate to profile/dashboard
+3. Fill in ALL required fields manually (without using city autocomplete):
+   - Name: \"Test Bar\"
+   - Description: \"Un bar de test\"
+   - Address: \"123 rue Test\"
+   - City: \"Paris\" (type manually, don't use autocomplete)
+   - Postal Code: \"75001\"
+   - Phone: \"0123456789\"
+4. Click \"Enregistrer\" or \"Sauvegarder\" button
+5. **Expected**: Profile should save successfully WITHOUT showing \"veuillez compléter votre profil\" error
+6. **Expected**: No console errors related to latitude/longitude validation
+7. Refresh the page and verify the data persists
+
+### Scenario 2: Photo Upload Test (P0 Bug Fix)  
+1. While still in venue profile edit mode
+2. Try to upload a profile photo (any small image)
+3. **Expected**: Upload should complete without 404 error
+4. **Expected**: Photo preview should appear
+5. **Expected**: Console should show API call to `/api/upload/venue-photo` (NOT `/upload/venue-photo`)
+6. Save the profile with the photo
+7. Verify photo is displayed after page refresh
+
+### Scenario 3: Combined Test
+1. Create a new venue profile with all fields + photo upload
+2. Ensure both functionalities work together"
 
 backend:
   - task: "Stripe Payment System - Backend Integration"

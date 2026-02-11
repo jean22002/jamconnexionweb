@@ -283,7 +283,7 @@ class StripePaymentTester:
         print("=" * 80)
         print("CONFIGURATION STRIPE LIVE:")
         print("- STRIPE_API_KEY: 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")
-        print("- STRIPE_PRICE_ID: price_1SpH8aBykagrgoTUBAdOU10z (14,99€/mois)")
+        print("- STRIPE_PRICE_ID: price_1SpH8aBykagrgoTUBAdOU10z (12,99€/mois)")
         print("- STRIPE_WEBHOOK_SECRET: whsec_ipa4aCdZBHq5ZbQNmvioWp3GYnxf9uJ1")
         print("=" * 80)
         

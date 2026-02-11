@@ -8782,7 +8782,7 @@ class JamConnexionAPITester:
         # 🎯 STRIPE PAYMENT SYSTEM TESTS (PRIORITY ABSOLUTE) 🎯
         print("\n" + "="*70)
         print("🎯 TESTING STRIPE PAYMENT SYSTEM - PRIORITY ABSOLUTE")
-        print("Testing Stripe integration for venue subscriptions (14.99€/month)")
+        print("Testing Stripe integration for venue subscriptions (12,99€/month)")
         print("="*70)
         
         self.run_stripe_payment_tests()

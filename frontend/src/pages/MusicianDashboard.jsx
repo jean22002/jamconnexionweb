@@ -838,6 +838,31 @@ export default function MusicianDashboard() {
         solo_profile: soloProfile
       };
       
+      // Normalize image URLs robustly (same logic as VenueDashboard)
+      if (profileData.profile_image) {
+        let normalizedUrl = profileData.profile_image;
+        if (normalizedUrl.includes(process.env.REACT_APP_BACKEND_URL)) {
+          normalizedUrl = normalizedUrl.replace(process.env.REACT_APP_BACKEND_URL, '');
+        }
+        normalizedUrl = normalizedUrl.replace(/\/api\/api\//, '/api/');
+        if (!normalizedUrl.startsWith('/api/uploads')) {
+          normalizedUrl = normalizedUrl.replace(/^\/?(uploads\/)/, '/api/uploads/');
+        }
+        profileData.profile_image = normalizedUrl;
+      }
+      
+      if (profileData.cover_image) {
+        let normalizedUrl = profileData.cover_image;
+        if (normalizedUrl.includes(process.env.REACT_APP_BACKEND_URL)) {
+          normalizedUrl = normalizedUrl.replace(process.env.REACT_APP_BACKEND_URL, '');
+        }
+        normalizedUrl = normalizedUrl.replace(/\/api\/api\//, '/api/');
+        if (!normalizedUrl.startsWith('/api/uploads')) {
+          normalizedUrl = normalizedUrl.replace(/^\/?(uploads\/)/, '/api/uploads/');
+        }
+        profileData.cover_image = normalizedUrl;
+      }
+      
       await axios[method](`${API}/musicians`, profileData, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Profil mis à jour!");
       setEditingProfile(false);

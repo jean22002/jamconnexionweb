@@ -1651,7 +1651,7 @@ export default function VenueDashboard() {
         </div>
 
         {/* Profile Completion Alert */}
-        {profile && !isProfileComplete() && (
+        {!isProfileComplete() && (
           <div className="glassmorphism border-2 border-yellow-500/50 rounded-2xl p-4 mb-6">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0">

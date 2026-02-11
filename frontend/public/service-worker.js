@@ -130,24 +130,54 @@ self.addEventListener('fetch', (event) => {
   // Skip pour les requêtes API (toujours en ligne)
   if (event.request.url.includes('/api/')) return;
   
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Clone la réponse avant de la mettre en cache
-        const responseToCache = response.clone();
-        
-        caches.open(CACHE_NAME)
-          .then((cache) => {
-            cache.put(event.request, responseToCache);
+  // Pour les fichiers HTML, JS, CSS : toujours essayer le réseau d'abord
+  const isNavigationRequest = event.request.mode === 'navigate' || 
+                               event.request.destination === 'document' ||
+                               event.request.url.endsWith('.html') ||
+                               event.request.url.endsWith('.js') ||
+                               event.request.url.endsWith('.css');
+  
+  if (isNavigationRequest) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Clone la réponse avant de la mettre en cache
+          const responseToCache = response.clone();
+          
+          caches.open(CACHE_NAME)
+            .then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          
+          return response;
+        })
+        .catch(() => {
+          // Si le réseau échoue, utiliser le cache (offline fallback)
+          return caches.match(event.request);
+        })
+    );
+  } else {
+    // Pour les autres ressources (images, fonts, etc.) : Cache First
+    event.respondWith(
+      caches.match(event.request)
+        .then((response) => {
+          if (response) {
+            return response;
+          }
+          
+          return fetch(event.request).then((response) => {
+            const responseToCache = response.clone();
+            
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+            
+            return response;
           });
-        
-        return response;
-      })
-      .catch(() => {
-        // Si le réseau échoue, utiliser le cache
-        return caches.match(event.request);
-      })
-  );
+        })
+    );
+  }
 });
 
 // Fonctions de synchronisation

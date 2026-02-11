@@ -160,7 +160,7 @@ export default function MelomaneDashboard() {
       const profile_picture_url = response.data.profile_picture 
         ? (response.data.profile_picture.startsWith('http') 
             ? response.data.profile_picture 
-            : `${API}${response.data.profile_picture}`)
+            : `${API}${response.data.profile_picture.startsWith('/') ? response.data.profile_picture : '/' + response.data.profile_picture}`)
         : "";
       
       setProfileForm({

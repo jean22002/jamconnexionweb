@@ -11,8 +11,8 @@ class VenueProfile(BaseModel):
     department: Optional[str] = None
     region: Optional[str] = None
     postal_code: str
-    latitude: float
-    longitude: float
+    latitude: Optional[float] = 0.0
+    longitude: Optional[float] = 0.0
     phone: Optional[str] = None
     website: Optional[str] = None
     facebook: Optional[str] = None
@@ -46,8 +46,8 @@ class VenueProfileResponse(BaseModel):
     department: Optional[str] = None
     region: Optional[str] = None
     postal_code: str
-    latitude: float
-    longitude: float
+    latitude: Optional[float] = 0.0
+    longitude: Optional[float] = 0.0
     phone: Optional[str] = None
     website: Optional[str] = None
     facebook: Optional[str] = None

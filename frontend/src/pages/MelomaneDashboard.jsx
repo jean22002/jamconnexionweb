@@ -434,7 +434,10 @@ export default function MelomaneDashboard() {
                       <Label>Photo de profil</Label>
                       <MelomaneImageUpload
                         value={profileForm.profile_picture}
-                        onChange={(url) => setProfileForm({ ...profileForm, profile_picture: url })}
+                        onChange={(url) => {
+                          console.log('📸 Melomane profile picture updated:', url);
+                          setProfileForm(prev => ({ ...prev, profile_picture: url }));
+                        }}
                         token={token}
                       />
                     </div>

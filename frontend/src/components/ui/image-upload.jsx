@@ -245,6 +245,9 @@ export function VenueImageUpload({ value, onChange, token, photoType = "profile"
       icon={photoType === "profile" ? User : Image}
       previewClassName={photoType === "profile" ? "w-24 h-24 rounded-xl" : "w-full h-32 rounded-xl"}
       disabled={disabled}
+      enableCrop={true}
+      cropAspectRatio={photoType === "profile" ? 1 : 16/9}
+      cropShape="rect"
     />
   );
 }

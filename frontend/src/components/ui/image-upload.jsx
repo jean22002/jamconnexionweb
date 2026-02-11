@@ -91,13 +91,35 @@ export function ImageUpload({
     }
   };
 
+  const handleCropCancel = () => {
+    setShowCropper(false);
+    setSelectedImage(null);
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleRemove = () => {
     onChange?.("");
     setError(null);
   };
 
   return (
-    <div className="space-y-2">
+    <>
+      {/* Image Cropper Dialog */}
+      {showCropper && selectedImage && (
+        <ImageCropper
+          imageSrc={selectedImage}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+          aspectRatio={aspectRatio}
+          cropShape={cropShape}
+          open={showCropper}
+        />
+      )}
+
+      <div className="space-y-2">
       {value && (
         <div className="relative group">
           <img

@@ -870,15 +870,17 @@ export default function MusicianDashboard() {
       setProfile(response.data);
       
       // Reconstruct image URLs from the saved data (backend returns paths)
+      // NOTE: Backend returns paths like /api/uploads/... so we use REACT_APP_BACKEND_URL directly
+      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
       const saved_profile_image = response.data.profile_image 
         ? (response.data.profile_image.startsWith('http') 
             ? response.data.profile_image 
-            : `${API}${response.data.profile_image.startsWith('/') ? response.data.profile_image : '/' + response.data.profile_image}`)
+            : `${BACKEND_URL}${response.data.profile_image.startsWith('/') ? response.data.profile_image : '/' + response.data.profile_image}`)
         : "";
       const saved_cover_image = response.data.cover_image
         ? (response.data.cover_image.startsWith('http')
             ? response.data.cover_image
-            : `${API}${response.data.cover_image.startsWith('/') ? response.data.cover_image : '/' + response.data.cover_image}`)
+            : `${BACKEND_URL}${response.data.cover_image.startsWith('/') ? response.data.cover_image : '/' + response.data.cover_image}`)
         : "";
       
       // Update profileForm with complete URLs from backend response

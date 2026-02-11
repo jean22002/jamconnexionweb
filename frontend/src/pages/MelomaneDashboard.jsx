@@ -157,10 +157,12 @@ export default function MelomaneDashboard() {
       setProfile(response.data);
       
       // Construire l'URL complète pour l'image de profil
+      // NOTE: Backend returns paths like /api/uploads/... so we use REACT_APP_BACKEND_URL directly
+      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
       const profile_picture_url = response.data.profile_picture 
         ? (response.data.profile_picture.startsWith('http') 
             ? response.data.profile_picture 
-            : `${API}${response.data.profile_picture.startsWith('/') ? response.data.profile_picture : '/' + response.data.profile_picture}`)
+            : `${BACKEND_URL}${response.data.profile_picture.startsWith('/') ? response.data.profile_picture : '/' + response.data.profile_picture}`)
         : "";
       
       setProfileForm({
@@ -298,10 +300,12 @@ export default function MelomaneDashboard() {
       setProfile(response.data);
       
       // Reconstruct image URL from the saved data (backend returns path)
+      // NOTE: Backend returns paths like /api/uploads/... so we use REACT_APP_BACKEND_URL directly
+      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
       const saved_profile_picture = response.data.profile_picture 
         ? (response.data.profile_picture.startsWith('http') 
             ? response.data.profile_picture 
-            : `${API}${response.data.profile_picture.startsWith('/') ? response.data.profile_picture : '/' + response.data.profile_picture}`)
+            : `${BACKEND_URL}${response.data.profile_picture.startsWith('/') ? response.data.profile_picture : '/' + response.data.profile_picture}`)
         : "";
       
       // Update profileForm with complete URL from backend response

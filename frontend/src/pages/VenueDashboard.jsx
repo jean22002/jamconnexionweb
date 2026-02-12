@@ -4838,7 +4838,7 @@ export default function VenueDashboard() {
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {gallery.map((photo, index) => (
                       <div key={index} className="relative group">
-                        <img 
+                        <LazyImage 
                           src={photo} 
                           alt={`Photo ${index + 1}`} 
                           className="w-full h-48 object-cover rounded-lg"

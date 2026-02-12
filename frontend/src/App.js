@@ -88,24 +88,25 @@ function App() {
             className: "glassmorphism text-foreground",
           }}
         />
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-          <Route path="/tarifs" element={<Tarifs />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/venue/:id" element={<VenueDetail />} />
-          <Route path="/musician/:id" element={<MusicianDetail />} />
-          <Route path="/melomane/:id" element={<MelomaneDetail />} />
-          <Route path="/cgu" element={<CGU />} />
-          <Route path="/cgv" element={<CGV />} />
-          <Route 
-            path="/musician" 
-            element={
-              <ProtectedRoute allowedRole="musician">
-                <MusicianDashboard />
-              </ProtectedRoute>
-            } 
-          />
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+            <Route path="/tarifs" element={<Tarifs />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/venue/:id" element={<VenueDetail />} />
+            <Route path="/musician/:id" element={<MusicianDetail />} />
+            <Route path="/melomane/:id" element={<MelomaneDetail />} />
+            <Route path="/cgu" element={<CGU />} />
+            <Route path="/cgv" element={<CGV />} />
+            <Route 
+              path="/musician" 
+              element={
+                <ProtectedRoute allowedRole="musician">
+                  <MusicianDashboard />
+                </ProtectedRoute>
+              } 
+            />
           <Route 
             path="/venue" 
             element={

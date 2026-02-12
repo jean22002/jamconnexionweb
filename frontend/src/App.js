@@ -154,6 +154,7 @@ function App() {
           <Route path="/musician-register" element={<MusicianRegister />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </AuthProvider>
   );

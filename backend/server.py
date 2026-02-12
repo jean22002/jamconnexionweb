@@ -3232,6 +3232,47 @@ async def send_message(data: MessageCreate, current_user: dict = Depends(get_cur
         sender_profile = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
     elif current_user["role"] == "venue":
         sender_profile = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    elif current_user["role"] == "melomane":
+        sender_profile = await db.melomanes.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    
+    # ============= RESTRICTIONS DE MESSAGERIE =============
+    
+    # RÈGLE 1 : Musicien → Musicien = Doivent être amis
+    if current_user["role"] == "musician" and recipient["role"] == "musician":
+        # Vérifier si amis
+        friendship = await db.friends.find_one({
+            "$or": [
+                {"user1_id": current_user["id"], "user2_id": recipient["id"], "status": "accepted"},
+                {"user1_id": recipient["id"], "user2_id": current_user["id"], "status": "accepted"}
+            ]
+        }, {"_id": 0})
+        
+        if not friendship:
+            raise HTTPException(
+                status_code=403,
+                detail="Vous devez être ami avec ce musicien pour lui envoyer un message. Envoyez-lui d'abord une demande d'ami !"
+            )
+    
+    # RÈGLE 2 : Mélomane → Musicien = Doivent être amis
+    if current_user["role"] == "melomane" and recipient["role"] == "musician":
+        # Vérifier si amis (les mélomanes peuvent aussi avoir des amis musiciens)
+        friendship = await db.friends.find_one({
+            "$or": [
+                {"user1_id": current_user["id"], "user2_id": recipient["id"], "status": "accepted"},
+                {"user1_id": recipient["id"], "user2_id": current_user["id"], "status": "accepted"}
+            ]
+        }, {"_id": 0})
+        
+        if not friendship:
+            raise HTTPException(
+                status_code=403,
+                detail="Vous devez être ami avec ce musicien pour lui envoyer un message. Envoyez-lui d'abord une demande d'ami !"
+            )
+    
+    # RÈGLE 3 : Mélomane → Établissement = Toujours autorisé (pour questions)
+    # RÈGLE 4 : Établissement → Musicien = Toujours autorisé (pour bookings)
+    # RÈGLE 5 : Musicien → Établissement = Toujours autorisé (pour candidatures)
+    # Ces cas passent sans vérification
     
     # NOUVELLE LOGIQUE : Vérifier les restrictions de messagerie si le destinataire est un établissement
     if recipient["role"] == "venue" and current_user["role"] == "musician":

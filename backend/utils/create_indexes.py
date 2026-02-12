@@ -187,14 +187,17 @@ async def create_all_indexes():
         print("✅ Bands indexes créés")
         
         # ========== VENUE_SUBSCRIPTIONS (Abonnements aux établissements) ==========
-        await db.venue_subscriptions.create_index(
-            [("user_id", 1), ("venue_id", 1)],
-            unique=True,
-            name="idx_venue_subs_user_venue"
-        )
-        await db.venue_subscriptions.create_index("venue_id", name="idx_venue_subs_venue")
-        
-        print("✅ Venue subscriptions indexes créés")
+        try:
+            await db.venue_subscriptions.create_index(
+                [("user_id", 1), ("venue_id", 1)],
+                unique=True,
+                name="idx_venue_subs_user_venue"
+            )
+            await db.venue_subscriptions.create_index("venue_id", name="idx_venue_subs_venue")
+            print("✅ Venue subscriptions indexes créés")
+        except Exception as e:
+            print(f"⚠️  Venue subscriptions indexes: {str(e)[:100]}")
+            # Continue anyway
         
         # ========== MELOMANES ==========
         await db.melomanes.create_index("user_id", unique=True, name="idx_melomanes_user_id")

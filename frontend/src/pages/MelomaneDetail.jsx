@@ -81,7 +81,7 @@ export default function MelomaneDetail() {
         <div className="glassmorphism rounded-3xl p-8 mb-8">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             {melomane.profile_picture ? (
-              <img 
+              <LazyImage 
                 src={melomane.profile_picture} 
                 alt={melomane.pseudo} 
                 className="w-32 h-32 rounded-full object-cover neon-border" 

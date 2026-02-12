@@ -1,157 +1,354 @@
-<analysis>Analyse de la session de travail
-===============================
+<analysis>**original_problem_statement:**
+L'utilisateur a initialement signalé un bug critique où les photos de profil et de couverture disparaissaient après la déconnexion et la reconnexion. Après la résolution de ce bug, les demandes suivantes ont été ajoutées et traitées :
+1.  Refactoriser les composants du tableau de bord (, , ) pour réduire la duplication de code et améliorer la maintenabilité.
+2.  Changer/vérifier le prix de l'abonnement à 12,99 € sur l'ensemble de l'application.
+3.  Ajouter une section FAQ sur la page d'accueil ().
+4.  Ajouter un onglet manquant pour les Mélomanes dans la page FAQ.
 
-original_problem_statement:
----------------------------
-À l'origine, le projet présentait plusieurs problèmes et demandes de fonctionnalités :
-1.  **P0 - Bug de l'upload de photo** : Les photos de profil/couverture ne se téléchargeaient pas ou ne s'affichaient pas correctement. Ce problème était récurrent et a nécessité plusieurs tentatives de correction.
-2.  **P1 - Bug de sauvegarde du profil établissement** : Impossible de sauvegarder un profil d'établissement si l'adresse n'était pas sélectionnée via l'autocomplétion.
-3.  **P1 - Implémenter le bouton Ajouter au calendrier** : Manquant sur certaines pages.
-4.  **P2 - Problèmes d'affichage mobile** : Des onglets se superposaient sur les écrans mobiles.
-5.  **P2 - Problème de cache persistant** : Les utilisateurs recevaient des versions obsolètes de l'application à cause d'un service worker trop agressif.
-6.  **P3 - Refactoring des composants majeurs** : Les fichiers  et  étaient trop volumineux (>4000 lignes) et difficiles à maintenir.
-7.  **Nouvelle fonctionnalité** : Ajouter une fonction de recadrage pour les photos de profil et de couverture pour tous les types d'utilisateurs (établissement, musicien, mélomane).
-8.  **Requête explicite de l'utilisateur** : tu peux faire le refactoring.
+PRODUCT REQUIREMENTS:
+1.  Les images de profil et de couverture doivent persister après la sauvegarde et la reconnexion.
+2.  Le code des dashboards doit être modulaire et réutilisable grâce à des hooks et composants partagés.
+3.  Le prix de l'abonnement affiché doit être de 12,99 €.
+4.  La page d'accueil doit inclure une section FAQ.
+5.  La page FAQ doit contenir des onglets pour les Établissements, les Musiciens et les Mélomanes.
 
-**User's preferred language**:
-Français. Le prochain agent DOIT répondre en français uniquement.
+**User's preferred language**: Français
 
 **what currently exists?**
------------------------
-Une application web construite avec un frontend React (Vite, TailwindCSS) et un backend FastAPI (Python). Elle comprend des tableaux de bord pour trois types d'utilisateurs (Établissements, Musiciens, Mélomanes). Les bugs critiques concernant l'upload/affichage des images, la sauvegarde des profils et le cache ont été résolus. Une nouvelle fonctionnalité de recadrage d'images a été ajoutée au code mais n'a pas encore été testée fonctionnellement. Un plan de refactoring a été documenté et une preuve de concept a été réalisée.
+L'application est fonctionnelle. Le bug critique de persistance des images a été résolu. La cause principale était un double préfixe  dans les URL des images, qui a été corrigé sur tous les tableaux de bord.
+Une phase de refactoring majeure a été achevée :
+-   La logique de gestion de profil a été extraite dans un hook personnalisé .
+-   Les appels API ont été centralisés dans un utilitaire .
+-   La logique d'upload d'images a été isolée dans .
+-   Des composants réutilisables comme  et  ont été créés.
+Le prix de l'abonnement a été vérifié et uniformisé à 12,99 €.
+Une section FAQ a été ajoutée à la page d'accueil.
 
 **Last working item**:
----------------------
--   **Last item agent was working**: Implémentation de la fonctionnalité de recadrage d'image pour les photos de profil et de couverture. L'agent a installé la dépendance , créé un composant , et l'a intégré dans le flux d'upload d'image existant (). Le code a été adapté pour gérer différentes formes de recadrage (cercle pour les profils, rectangle pour les couvertures).
--   **Status**: IN PROGRESS
--   **Agent Testing Done**: N (Seulement un  et une capture d'écran pour vérifier que le site se charge ont été effectués. Aucune vérification fonctionnelle du recadreur.)
--   **Which testing method agent to use?**: Frontend testing agent. L'agent doit vérifier que le modal de recadrage s'ouvre, que le recadrage fonctionne, et que l'image recadrée est correctement téléversée pour les photos de profil et de couverture sur les différents types de comptes.
--   **User Testing Done**: N
+-   **Last item agent was working:** L'agent était en train d'ajouter un onglet Mélomanes manquant à la page FAQ (), suite à une demande de l'utilisateur.
+-   **Status:** IN PROGRESS
+-   **Agent Testing Done:** N
+-   **Which testing method agent to use?** screenshot tool. Il faut prendre une capture d'écran de la page  pour vérifier que le nouvel onglet Mélomanes s'affiche correctement et que son contenu est visible lorsque l'on clique dessus.
+-   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--------------------------------------
-Il n'y a pas de problèmes (bugs) en suspens. Le dernier travail était une nouvelle fonctionnalité.
+-   Issue 1: (P1) Erreur 520 sur l'endpoint des mélomanes.
+
+**Issues Detail:**
+-   **Issue 1: Erreur 520 sur l'endpoint des mélomanes**
+    -   **Attempted fixes:** L'agent a tenté de faire un appel  à  mais a reçu une erreur 520, probablement due à un problème de validation du modèle Pydantic ou une configuration manquante sur le backend. L'agent n'a pas poursuivi le débogage de ce point.
+    -   **Next debug checklist:**
+        1.  Vérifier les logs backend (==> /var/log/supervisor/backend.err.log <==
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/backend/routes/melomanes.py", line 118, in update_melomane_profile
+    return MelomaneResponse(**updated_melomane)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 3 validation errors for MelomaneResponse
+favorite_venues
+  Field required [type=missing, input_value={'id': '317197d4-e078-4f1...gion': 'Île-de-France'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+events_attended
+  Field required [type=missing, input_value={'id': '317197d4-e078-4f1...gion': 'Île-de-France'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+favorite_count
+  Field required [type=missing, input_value={'id': '317197d4-e078-4f1...gion': 'Île-de-France'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/root/.venv/lib/python3.11/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
+    await route.handle(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
+    await self.app(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
+    response = await func(request)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/backend/routes/melomanes.py", line 83, in get_my_melomane_profile
+    return MelomaneResponse(**melomane)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 3 validation errors for MelomaneResponse
+favorite_venues
+  Field required [type=missing, input_value={'id': '317197d4-e078-4f1...gion': 'Île-de-France'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+events_attended
+  Field required [type=missing, input_value={'id': '317197d4-e078-4f1...gion': 'Île-de-France'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+favorite_count
+  Field required [type=missing, input_value={'id': '317197d4-e078-4f1...gion': 'Île-de-France'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+WARNING:  WatchFiles detected changes in 'tests/backend_test.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2556]
+WARNING:  WatchFiles detected changes in 'tests/stripe_payment_test.py'. Reloading...
+INFO:     Started server process [5696]
+INFO:     Waiting for application startup.
+2026-02-11 21:57:22,657 - server - INFO - Connected to MongoDB
+INFO:     Application startup complete.
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [42] using WatchFiles
+INFO:     Started server process [87]
+INFO:     Waiting for application startup.
+2026-02-12 08:32:44,848 - server - INFO - Connected to MongoDB
+INFO:     Application startup complete.
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [48] using WatchFiles
+
+==> /var/log/supervisor/backend.out.log <==
+INFO:     10.64.128.9:39728 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.131.73:43548 - "PUT /api/melomanes/me HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.130.135:41736 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.133.81:51806 - "GET /api/melomanes/me HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.130.135:41736 - "POST /api/upload/melomane-photo HTTP/1.1" 200 OK
+INFO:     10.64.133.81:51808 - "PUT /api/melomanes/me HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.130.135:41736 - "GET /api/melomanes/me HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.130.137:38916 - "GET /api/uploads/melomanes/74d073e6-caf5-4bc3-9c94-38fcb05db3ca.jpg HTTP/1.1" 200 OK
+INFO:     10.64.128.23:37934 - "GET /api/notifications HTTP/1.1" 200 OK
+INFO:     10.64.128.22:46442 - "GET /api/notifications/unread-count HTTP/1.1" 200 OK
+INFO:     10.64.128.23:52090 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.128.18:37436 - "GET /api/musicians/me HTTP/1.1" 200 OK
+INFO:     10.64.128.23:52090 - "GET /api/friends/requests HTTP/1.1" 200 OK
+INFO:     10.64.128.19:42532 - "GET /api/notifications HTTP/1.1" 200 OK
+INFO:     10.64.128.18:37448 - "GET /api/friends HTTP/1.1" 200 OK
+INFO:     10.64.128.18:37460 - "GET /api/notifications/unread-count HTTP/1.1" 200 OK
+INFO:     10.64.128.22:51740 - "GET /api/friends/sent HTTP/1.1" 200 OK
+INFO:     10.64.128.19:42564 - "GET /api/my-subscriptions HTTP/1.1" 200 OK
+INFO:     10.64.128.22:51754 - "GET /api/musicians/me/current-participation HTTP/1.1" 200 OK
+INFO:     10.64.128.19:42548 - "GET /api/musicians/me/participations HTTP/1.1" 200 OK
+INFO:     10.64.128.18:37430 - "GET /api/venues HTTP/1.1" 200 OK
+INFO:     10.64.128.23:52090 - "GET /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.128.19:42564 - "GET /api/uploads/venues/fca71570-afcf-48a1-bdc6-3a4a0806f8fd.jpg HTTP/1.1" 200 OK
+INFO:     10.64.128.9:38080 - "GET /api/uploads/venues/8bb46e1e-3393-4fd1-8340-c8c1a492e768.png HTTP/1.1" 200 OK
+INFO:     10.64.128.9:36166 - "POST /api/upload/musician-photo?photo_type=profile HTTP/1.1" 200 OK
+INFO:     10.64.128.19:54408 - "GET /api/uploads/musicians/b9b07259-96b4-4710-8232-1a3e11eca702.jpg HTTP/1.1" 200 OK
+INFO:     10.64.128.23:55406 - "PUT /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.128.22:39778 - "GET /api/venues HTTP/1.1" 200 OK
+INFO:     10.64.128.18:59160 - "GET /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.128.9:48080 - "GET /api/notifications HTTP/1.1" 200 OK
+INFO:     10.64.128.19:53278 - "GET /api/notifications/unread-count HTTP/1.1" 200 OK
+INFO:     10.64.128.22:47056 - "GET /api/musicians/me/current-participation HTTP/1.1" 200 OK
+INFO:     10.64.128.23:58138 - "GET /api/notifications HTTP/1.1" 200 OK
+INFO:     10.64.128.19:51632 - "GET /api/notifications/unread-count HTTP/1.1" 200 OK
+INFO:     10.64.128.23:49146 - "GET /api/notifications HTTP/1.1" 200 OK
+INFO:     10.64.128.9:54484 - "GET /api/notifications/unread-count HTTP/1.1" 200 OK
+INFO:     10.64.128.18:58394 - "GET /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.128.9:50292 - "GET /api/venues HTTP/1.1" 200 OK
+INFO:     10.64.128.18:33334 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.131.72:58786 - "POST /api/upload/venue-photo?photo_type=profile HTTP/1.1" 200 OK
+INFO:     10.64.130.130:53554 - "PUT /api/venues HTTP/1.1" 200 OK
+INFO:     10.64.128.19:43066 - "GET /api/venues/me HTTP/1.1" 200 OK
+INFO:     10.64.130.137:55862 - "GET /api/uploads/venues/06a82d15-a352-4b9f-b57a-19ae233efa07.jpg HTTP/1.1" 200 OK
+INFO:     10.64.130.134:50540 - "GET /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.133.81:45484 - "GET /api/venues HTTP/1.1" 200 OK
+INFO:     10.64.130.130:59676 - "GET /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.130.130:59676 - "GET /api/venues HTTP/1.1" 200 OK
+INFO:     10.64.130.130:54696 - "GET /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.133.81:54556 - "GET /api/venues HTTP/1.1" 200 OK
+INFO:     10.64.130.134:37748 - "GET /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.130.134:37748 - "GET /api/venues HTTP/1.1" 200 OK
+INFO:     10.64.130.136:34700 - "GET /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.133.81:40180 - "GET /api/venues HTTP/1.1" 200 OK
+INFO:     10.64.133.81:37254 - "GET /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.133.81:37254 - "GET /api/venues HTTP/1.1" 200 OK
+INFO:     10.64.133.81:53010 - "GET /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.130.137:47484 - "GET /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.133.81:53010 - "GET /api/venues HTTP/1.1" 200 OK
+INFO:     10.64.130.130:42512 - "GET /api/venues HTTP/1.1" 200 OK
+INFO:     10.64.128.18:57258 - "GET /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.128.19:34018 - "GET /api/venues HTTP/1.1" 200 OK
+INFO:     10.64.133.8:43896 - "GET /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.128.18:59516 - "GET /api/venues HTTP/1.1" 200 OK
+INFO:     10.64.128.18:36056 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.128.19:44126 - "GET /api/venues/me HTTP/1.1" 200 OK
+INFO:     10.64.128.22:54842 - "GET /api/venues/me/subscribers HTTP/1.1" 200 OK
+INFO:     10.64.128.9:50062 - "GET /api/notifications/unread-count HTTP/1.1" 200 OK
+INFO:     10.64.133.8:56062 - "GET /api/notifications HTTP/1.1" 200 OK
+INFO:     10.64.128.18:36056 - "GET /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.128.18:36056 - "GET /api/uploads/venues/06a82d15-a352-4b9f-b57a-19ae233efa07.jpg HTTP/1.1" 200 OK
+INFO:     10.64.128.23:33976 - "GET /api/venues/me/reviews HTTP/1.1" 404 Not Found
+INFO:     10.64.133.8:56062 - "GET /api/venues/6dcc7335-8eac-43b4-8317-2653c8ed83d8/average-rating HTTP/1.1" 200 OK
+INFO:     10.64.128.18:40162 - "POST /api/upload/venue-photo?photo_type=profile HTTP/1.1" 200 OK
+INFO:     10.64.128.22:37518 - "GET /api/uploads/venues/05551f11-5119-49ce-b5c3-b6fa5162fa6e.jpg HTTP/1.1" 200 OK
+INFO:     10.64.133.8:45598 - "PUT /api/venues HTTP/1.1" 200 OK
+INFO:     10.64.128.18:40162 - "GET /api/venues/me/reviews HTTP/1.1" 404 Not Found
+INFO:     10.64.128.19:35910 - "GET /api/venues/6dcc7335-8eac-43b4-8317-2653c8ed83d8/average-rating HTTP/1.1" 200 OK
+INFO:     10.64.128.18:48596 - "GET /api/notifications HTTP/1.1" 200 OK
+INFO:     10.64.128.9:33958 - "GET /api/notifications/unread-count HTTP/1.1" 200 OK
+INFO:     10.64.133.8:57700 - "GET /api/notifications/unread-count HTTP/1.1" 200 OK
+INFO:     10.64.128.22:47878 - "GET /api/notifications HTTP/1.1" 200 OK
+INFO:     10.64.133.8:37940 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     10.64.128.9:38172 - "GET /api/venues/me HTTP/1.1" 200 OK
+INFO:     10.64.128.19:36206 - "GET /api/notifications/unread-count HTTP/1.1" 200 OK
+INFO:     10.64.128.18:36076 - "GET /api/notifications HTTP/1.1" 200 OK
+INFO:     10.64.128.9:38178 - "GET /api/venues/me/subscribers HTTP/1.1" 200 OK
+INFO:     10.64.128.22:44014 - "GET /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.128.19:36206 - "GET /api/venues/me/reviews HTTP/1.1" 404 Not Found
+INFO:     10.64.128.23:44164 - "GET /api/venues/6dcc7335-8eac-43b4-8317-2653c8ed83d8/average-rating HTTP/1.1" 200 OK
+INFO:     10.64.133.8:60596 - "GET /api/notifications/unread-count HTTP/1.1" 200 OK
+INFO:     10.64.128.19:60880 - "GET /api/notifications HTTP/1.1" 200 OK
+INFO:     10.64.128.19:60894 - "GET /api/venues/me HTTP/1.1" 200 OK
+INFO:     10.64.128.18:48344 - "GET /api/notifications/unread-count HTTP/1.1" 200 OK
+INFO:     10.64.128.9:44134 - "GET /api/notifications HTTP/1.1" 200 OK
+INFO:     10.64.128.22:35082 - "GET /api/venues/me/subscribers HTTP/1.1" 200 OK
+INFO:     10.64.128.19:60880 - "GET /api/musicians HTTP/1.1" 200 OK
+INFO:     10.64.128.22:35082 - "GET /api/venues/me/reviews HTTP/1.1" 404 Not Found
+INFO:     10.64.128.23:49686 - "GET /api/venues/6dcc7335-8eac-43b4-8317-2653c8ed83d8/average-rating HTTP/1.1" 200 OK
+INFO:     10.64.128.22:44710 - "GET /api/notifications/unread-count HTTP/1.1" 200 OK
+INFO:     10.64.128.19:52658 - "GET /api/notifications HTTP/1.1" 200 OK) immédiatement après avoir reproduit l'erreur avec .
+        2.  Inspecter le modèle Pydantic pour  et l'endpoint  dans  pour s'assurer que tous les champs requis sont bien gérés et que le payload envoyé est correct.
+        3.  Exécuter un test  complet avec un payload valide pour l'endpoint .
+    -   **Why fix this issue and what will be achieved with the fix?** Bien que le bug principal soit résolu, cet endpoint défectueux empêche les utilisateurs Mélomanes de mettre à jour leur profil. Sa correction assurera la complétude fonctionnelle pour tous les types d'utilisateurs.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** Backend
+    -   **Blocked on other issue:** None.
 
 **In progress Task List**:
---------------------------
--   **Task 1: Finaliser et tester la fonctionnalité de recadrage d'image (P0)**
-    -   **Where to resume**: Le code est déjà écrit dans  et . La prochaine étape est de lancer des tests fonctionnels pour valider l'expérience utilisateur de bout en bout.
-    -   **What will be achieved with this?**: Les utilisateurs pourront cadrer leurs images avant de les téléverser, améliorant ainsi la qualité et l'apparence des profils.
-    -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Frontend.
-    -   **Blocked on something**: Non.
+-   Task 1: (P0) Finaliser l'ajout de l'onglet Mélomanes à la page FAQ.
+
+**Task Detail:**
+-   **Task 1: Finaliser l'ajout de l'onglet Mélomanes à la page FAQ**
+    -   **Where to resume:** Le fichier  a été modifié pour inclure le  et le  pour Mélomanes. Il faut vérifier que le code ajouté est correct et complet.
+    -   **What will be achieved with this?** La page FAQ sera complète et fournira des informations pour les trois types d'utilisateurs, comme demandé par l'utilisateur.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** Frontend
+    -   **Blocked on something:** None.
 
 **Upcoming and Future Tasks**
------------------------------
--   **Upcoming Task: (P1) Effectuer le refactoring des Dashboards.**
-    -   **Description**: L'utilisateur a explicitement demandé de procéder au refactoring (tu peux faire le refactoring). Un plan a déjà été établi dans . La tâche consiste à décomposer les composants monolithiques  et  en extrayant chaque onglet dans son propre fichier de composant.
-    -   **Files to refactor**:  et .
-    -   **Plan**: Suivre le guide dans  pour créer des sous-composants dans  et .
+-   Aucune tâche future n'est explicitement définie. Après la finalisation de la tâche en cours, il faudra demander à l'utilisateur les prochaines étapes.
 
 **Completed work in this session**
-----------------------------------
--   **Bug Fix: Affichage des images (Profil & Couverture)**: Résolution d'un problème majeur et récurrent. La solution finale a consisté à déplacer le montage du répertoire statique  sous le préfixe  dans  et à mettre à jour  pour retourner des URL avec ce préfixe. Les composants frontend ont également été mis à jour pour reconstruire les URL complètes des images.
--   **Bug Fix: Sauvegarde du profil établissement**: Rendu les champs  et  optionnels dans le modèle Pydantic (), ce qui permet de sauvegarder les profils même sans géocodage immédiat.
--   **Feature: Bouton Ajouter au calendrier**: La fonctionnalité a été ajoutée aux pages de détail des établissements () en utilisant un helper réutilisable ().
--   **Bug Fix: Cache persistant**: Le  a été mis à jour avec un système de versioning pour forcer les mises à jour et éviter de servir du contenu obsolète.
--   **Bug Fix: Affichage des onglets sur mobile**: Des classes responsives ont été ajoutées pour empêcher la superposition des onglets sur les petits écrans dans les dashboards.
--   **Refactoring (Preuve de concept)**: Création d'un plan de refactoring, et extraction d'un premier composant () pour valider l'approche.
+-   **Bug critique des images non persistantes (RESOLVED):** La cause racine (double préfixe ) a été identifiée grâce au  et corrigée dans les fichiers , , et .
+-   **Refactoring des Dashboards (DONE):**
+    -   Création du hook  dans .
+    -   Création des utilitaires  et  dans .
+    -   Création de composants réutilisables dans .
+    -   Mise à jour des dashboards pour utiliser ces nouvelles abstractions, réduisant considérablement la taille des fichiers.
+-   **Mise à jour du prix (DONE):** Le prix de l'abonnement a été vérifié et fixé à 12,99 € dans toute l'application.
+-   **Ajout de la section FAQ (DONE):** Une section FAQ a été ajoutée à la page d'accueil ().
 
 **Earlier issues found/mentioned but not fixed**
-------------------------------------------------
-Tous les problèmes signalés au cours de cette session ont été traités.
+-   **Issue 1: Échec de la redirection après la connexion.**
+    -   **Note:** Cet ancien problème, mentionné dans le handoff initial, a été implicitement résolu en corrigeant le bug du double préfixe . Il n'est plus pertinent.
 
 **Known issue recurrence from previous fork**
---------------------------------------------
--   **Issue recurrence in previous fork**: Le bug de l'upload/affichage des photos était un problème connu au début de la session et a persisté malgré plusieurs tentatives de correction.
--   **Recurrence count**: Au moins 3 fois pendant cette session.
--   **Status**: RESOLVED. La cause première (routage des fichiers statiques dans le backend) a été identifiée et corrigée.
+-   **Issue recurrence in previous fork:** Les photos de profil/couverture ne sont pas sauvegardées.
+-   **Recurrence count:** Élevé (l'utilisateur a signalé le problème à plusieurs reprises).
+-   **Status:** RESOLVED. La cause racine a été trouvée et corrigée.
 
 **Code Architecture**
----------------------
 
 
 **Key Technical Concepts**
-------------------------
--   **Frontend**: React, Vite, TailwindCSS, shadcn/ui.
--   **Backend**: Python, FastAPI, Pydantic.
--   **Architecture**: Application web pilotée par API avec des composants frontend monolithiques (en cours de refactoring). Utilise un Service Worker pour les fonctionnalités PWA.
--   **Nouvelle librairie**:  pour le recadrage d'images.
+-   **Frontend:** React, Hooks (, , ), Custom Hooks, Axios, Shadcn UI.
+-   **Backend:** FastAPI, Pydantic, MongoDB.
+-   **Architecture:** SPA avec un backend RESTful. Le code frontend a été refactorisé pour être plus modulaire et DRY.
 
 **key DB schema**
------------------
--   **VenueProfile**: , , , , , , , . Les coordonnées sont maintenant optionnelles.
-
-**changes in tech stack**
--------------------------
--   Ajout de la dépendance  au projet frontend.
+-   **venues:** 
+-   **musicians:** 
+-   **melomanes:** 
 
 **All files of reference**
---------------------------
--   : Fichier principal du backend, modifié pour corriger le service des fichiers statiques.
--   : Modifié pour retourner des URL d'images préfixées par .
--   : Composant central d'upload, modifié pour intégrer le recadrage.
--   : Nouveau composant réutilisable pour le recadrage.
--   : Composant principal à refactorer.
--   : Second composant principal à refactorer.
--   : Modifié pour améliorer la stratégie de mise en cache.
--   : Guide pour la tâche de refactoring à venir.
-
-**Areas that need refactoring**:
---------------------------------
--    (>5600 lignes)
--    (>4000 lignes)
--   L'utilisateur a explicitement donné son accord pour commencer cette tâche.
-
-**key api endpoints**
----------------------
--   
--   
--    (Nouveau chemin pour servir les images)
--   
+-   **/app/frontend/src/pages/Faq.jsx**: Fichier en cours de modification pour la tâche actuelle.
+-   **/app/frontend/src/hooks/useProfile.js**: Hook personnalisé centralisant la logique du profil.
+-   **/app/frontend/src/utils/api.js**: Utilitaire pour les appels API.
+-   **/app/frontend/src/pages/dashboard/{Venue,Musician,Melomane}Dashboard.jsx**: Fichiers refactorisés.
+-   **/app/backend/app/routes/melomanes.py**: Contient l'endpoint qui cause une erreur 520.
 
 **Critical Info for New Agent**
--------------------------------
--   **Problème d'URL d'image** : La correction la plus importante de la session a été de s'assurer que toutes les images sont servies via . Le backend a été ajusté dans  et . Le frontend doit systématiquement reconstruire l'URL complète (avec le nom de domaine) pour afficher les images, car la base de données ne stocke que le chemin relatif (ex: ).
--   **Refactoring Approuvé** : L'utilisateur a donné son feu vert pour le refactoring des dashboards. Le plan est prêt dans .
+-   La tâche la plus prioritaire est de terminer l'ajout de l'onglet Mélomanes à la page FAQ, comme demandé par l'utilisateur. C'est une petite modification visuelle.
+-   Le bug majeur des images est résolu. La solution consistait à corriger un double préfixe  dans les URL d'images.
+-   Le refactoring des dashboards est terminé. Pour toute nouvelle modification sur les profils, il faut utiliser le hook  et les composants partagés.
+-   L'agent précédent a appelé  de manière incorrecte comme dernière action. Ignorez cette étape et concentrez-vous sur la finalisation de la tâche en cours.
 
 **documents and test reports created in this job**
---------------------------------------------------
 -   
 -   
 
 **Last 10 User Messages and any pending HUMAN messages**
---------------------------------------------------------
-1.  ****: L'utilisateur signale que le bug d'affichage de l'image persiste. (Traité et résolu).
-2.  ****: L'utilisateur confirme que la photo de profil fonctionne et demande la même correction pour la photo de couverture. (Traité et résolu).
-3.  ****: Demande de nouvelle fonctionnalité de recadrage d'image. (En cours).
-4.  ****: L'utilisateur demande de lancer le refactoring. (En attente).
-5.  ****: L'utilisateur signale à nouveau que l'image n'apparaît pas. (Traité et résolu).
-6.  ****: L'utilisateur clarifie la nature du bug de l'image. (Traité et résolu).
-7.  ****: L'utilisateur signale le problème d'image. (Traité et résolu).
-8.  ****, ****, ****: Messages de confirmation de l'utilisateur. (N/A).
+1.  : User a confirmé de continuer l'ajout de l'onglet Mélomane.
+2.  : User a signalé l'onglet manquant sur la page FAQ.
+3.  : User a demandé d'ajouter la section FAQ sur la page d'accueil.
+4.  : User a demandé de modifier le prix.
+5.  : User a confirmé que le bug principal était résolu et a demandé de commencer le refactoring.
+6.  : User a demandé de vérifier le correctif pour tous les types de profils.
+7.  : User a signalé que le bug persistait après la deuxième tentative de correction.
+8.  : User a signalé que le bug persistait après la première tentative de correction.
+9.  : User a accepté de continuer avec la phase 2 du refactoring.
+10. : User a choisi l'option de refactoring la plus complète.
 
 **Project Health Check:**
--------------------------
--   **Broken**: Aucune fonctionnalité n'est actuellement cassée. Les bugs critiques ont été résolus.
--   **Mocked**: Aucun.
+-   **Broken:** L'endpoint de mise à jour du profil Mélomane () retourne une erreur 520.
+-   **Mocked:** N/A
 
 **3rd Party Integrations**
---------------------------
--   : Utilisé pour la nouvelle fonctionnalité de recadrage d'image.
+-   : Utilisé pour la fonctionnalité de recadrage d'image.
 
 **Testing status**
-------------------
--   **Testing agent used after significant changes**: YES
--   **Troubleshoot agent used after agent stuck in loop**: YES
--   **Test files created**: []
--   **Known regressions**: []
+-   **Testing agent used after significant changes:** NO
+-   **Troubleshoot agent used after agent stuck in loop:** YES (a été décisif pour trouver la cause racine du bug des images).
+-   **Test files created:** None.
+-   **Known regressions:** None.
 
 **Credentials to test flow:**
------------------------------
-Aucune information d'identification n'a été fournie dans l'historique.
+-   **Role:** Établissement (Venue)
+-   **Email:** 
+-   **Password:** 
+-   **Role:** Musicien (Musician)
+-   **Email:** 
+-   **Password:** 
+-   **Role:** Mélomane (Melomane)
+-   **Email:** 
+-   **Password:** 
 
 **What agent forgot to execute**
---------------------------------
--   L'agent a implémenté le code pour la fonctionnalité de recadrage mais a omis de la tester fonctionnellement. Seul un  a été exécuté.
--   L'agent n'a pas poursuivi le refactoring demandé par l'utilisateur au-delà d'une preuve de concept, bien que l'utilisateur ait donné son accord (tu peux faire le refactoring). Cette tâche majeure reste à faire.</analysis>
+-   L'agent n'a pas terminé et testé l'ajout de l'onglet Mélomanes sur la page FAQ avant de finir.
+-   L'agent a appelé  sans raison apparente à la toute fin, au lieu de finaliser la tâche avec l'outil  ou de demander à l'utilisateur de tester.
+-   Le débogage de l'erreur 520 sur l'endpoint des mélomanes a été abandonné.</analysis>

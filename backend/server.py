@@ -3930,21 +3930,6 @@ async def root():
 async def health():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
-# Include router
-app.include_router(api_router)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
-
 # Geocoding endpoint
 @api_router.post("/geocode")
 async def geocode_address(data: dict):
@@ -3973,13 +3958,15 @@ async def geocode_address(data: dict):
         logger.error(f"Geocoding error: {str(e)}")
         raise HTTPException(status_code=500, detail="Error during geocoding")
 
-# Include API router in app
+# ============= APP CONFIGURATION =============
+
+# Include main API router
 app.include_router(api_router)
 
-# Health check endpoint
+# Root endpoint
 @app.get("/")
 def read_root():
-    return {"message": "Jam Connexion API v2.0 - Refactored", "status": "healthy"}
+    return {"message": "Jam Connexion API v2.0", "status": "healthy"}
 
 # Startup event
 @app.on_event("startup")
@@ -3990,3 +3977,5 @@ async def startup_db_client():
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+    logger.info("Disconnected from MongoDB")
+

@@ -4640,7 +4640,11 @@ export default function VenueDashboard() {
                             </DialogHeader>
                             <div className="space-y-4 mt-4">
                               {band.photo && (
-                                <img src={band.photo} alt={band.name} className="w-full h-60 object-cover rounded-lg" />
+                                <LazyImage 
+                                  src={band.photo} 
+                                  alt={band.name} 
+                                  className="w-full h-60 object-cover rounded-lg" 
+                                />
                               )}
                               
                               <div className="flex items-center gap-2 text-muted-foreground">

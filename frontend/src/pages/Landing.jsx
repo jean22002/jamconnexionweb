@@ -4,6 +4,7 @@ import axios from "axios";
 import { Button } from "../components/ui/button";
 import { Music, MapPin, Users, Mic2, Guitar, Radio, ArrowRight, Check, Music2, ChevronDown, ChevronUp, User, Edit } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import SkeletonLoader, { StatsSkeleton } from "../components/SkeletonLoader";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 

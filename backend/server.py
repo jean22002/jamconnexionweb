@@ -4036,6 +4036,19 @@ async def get_stats_counts():
     
     return await _fetch_stats()
 
+@api_router.get("/cache/stats")
+async def get_cache_statistics(current_user: dict = Depends(get_current_user)):
+    """Get cache statistics (admin/debug endpoint)"""
+    from utils.cache import get_cache_stats
+    return get_cache_stats()
+
+@api_router.post("/cache/invalidate")
+async def invalidate_cache_endpoint(current_user: dict = Depends(get_current_user)):
+    """Invalidate all caches (admin endpoint)"""
+    from utils.cache import invalidate_cache
+    invalidate_cache()
+    return {"message": "Cache invalidated successfully"}
+
 # Geocoding endpoint
 @api_router.post("/geocode")
 async def geocode_address(data: dict):

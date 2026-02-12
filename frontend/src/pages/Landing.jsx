@@ -191,7 +191,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* How It Works Section - 3 Steps */}
       <section className="py-24 md:py-32 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -199,39 +199,74 @@ export default function Landing() {
               Comment ça <span className="text-gradient">marche</span>
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Une plateforme simple pour connecter musiciens et établissements
+              Commencez en 3 étapes simples - rejoignez des centaines de musiciens et d'établissements
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            {/* Connecting lines for desktop */}
+            <div className="hidden md:block absolute top-24 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+            
             {[
               {
-                icon: <MapPin className="w-8 h-8" />,
-                title: "Géolocalisation",
-                description: "Trouvez les cafés-concerts et jam sessions près de chez vous en temps réel."
+                step: "1",
+                icon: <User className="w-10 h-10" />,
+                title: "Inscrivez-vous",
+                description: "Créez votre compte en 2 minutes. Choisissez votre rôle : musicien, établissement ou mélomane.",
+                highlight: "Gratuit pour les musiciens"
               },
               {
-                icon: <Users className="w-8 h-8" />,
-                title: "Profils Détaillés",
-                description: "Découvrez le matériel disponible, les styles musicaux et les jours de jam."
+                step: "2",
+                icon: <Edit className="w-10 h-10" />,
+                title: "Complétez votre profil",
+                description: "Ajoutez vos photos, styles musicaux, disponibilités et toutes les infos pour vous démarquer.",
+                highlight: "Profil en 5 minutes"
               },
               {
-                icon: <Music className="w-8 h-8" />,
-                title: "Connexion Directe",
-                description: "Contactez directement les établissements via leurs réseaux sociaux."
+                step: "3",
+                icon: <Music className="w-10 h-10" />,
+                title: "Connectez-vous",
+                description: "Trouvez des opportunités près de chez vous, échangez avec la communauté et organisez vos concerts.",
+                highlight: "Résultats immédiats"
               }
-            ].map((feature, index) => (
+            ].map((item, index) => (
               <div 
                 key={index}
-                className="p-8 rounded-3xl bg-gradient-to-b from-white/5 to-transparent border border-white/10 backdrop-blur-sm hover:border-primary/30 transition-colors group"
+                className="relative p-8 rounded-3xl bg-gradient-to-b from-white/5 to-transparent border border-white/10 backdrop-blur-sm hover:border-primary/30 transition-all group hover:scale-105"
               >
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
-                  {feature.icon}
+                {/* Step number badge */}
+                <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 rounded-full bg-primary flex items-center justify-center font-heading font-bold text-2xl shadow-[0_0_20px_rgba(217,70,239,0.6)] z-10">
+                  {item.step}
                 </div>
-                <h3 className="font-heading font-semibold text-xl mb-3">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+                
+                <div className="pt-8 text-center">
+                  <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform mx-auto">
+                    {item.icon}
+                  </div>
+                  <h3 className="font-heading font-semibold text-2xl mb-3">{item.title}</h3>
+                  <p className="text-muted-foreground mb-4 leading-relaxed">{item.description}</p>
+                  <span className="inline-block px-4 py-2 rounded-full bg-secondary/20 text-secondary text-sm font-semibold">
+                    ✨ {item.highlight}
+                  </span>
+                </div>
               </div>
             ))}
+          </div>
+          
+          {/* CTA après les étapes */}
+          <div className="text-center mt-16">
+            <Link to="/auth">
+              <Button 
+                size="lg"
+                className="bg-primary hover:bg-primary/90 rounded-full px-12 py-7 font-heading font-semibold text-lg hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] hover:-translate-y-1 transition-all"
+              >
+                Commencer maintenant
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+            <p className="text-muted-foreground text-sm mt-4">
+              Aucune carte bancaire requise • Gratuit pour les musiciens
+            </p>
           </div>
         </div>
       </section>

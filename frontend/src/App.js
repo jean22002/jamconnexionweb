@@ -1,27 +1,42 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import "./App.css";
+
+// Pages critiques (chargées immédiatement)
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
-import MusicianDashboard from "./pages/MusicianDashboard";
-import VenueDashboard from "./pages/VenueDashboard";
-import MelomaneDashboard from "./pages/MelomaneDashboard";
-import VenueDetail from "./pages/VenueDetail";
-import MusicianDetail from "./pages/MusicianDetail";
-import MelomaneDetail from "./pages/MelomaneDetail";
-import Messages from "./pages/Messages";
-import MessagesImproved from "./pages/MessagesImproved";
-import FAQ from "./pages/FAQ";
-import VenueRegister from "./pages/VenueRegister";
-import MusicianRegister from "./pages/MusicianRegister";
-import Pricing from "./pages/Pricing";
-import Tarifs from "./pages/Tarifs";
-import PaymentSuccess from "./pages/PaymentSuccess";
-import PaymentCancel from "./pages/PaymentCancel";
-import TrialExpired from "./pages/TrialExpired";
-import CGU from "./pages/CGU";
-import CGV from "./pages/CGV";
-import "./App.css";
+
+// Pages non-critiques (chargées à la demande)
+const MusicianDashboard = lazy(() => import("./pages/MusicianDashboard"));
+const VenueDashboard = lazy(() => import("./pages/VenueDashboard"));
+const MelomaneDashboard = lazy(() => import("./pages/MelomaneDashboard"));
+const VenueDetail = lazy(() => import("./pages/VenueDetail"));
+const MusicianDetail = lazy(() => import("./pages/MusicianDetail"));
+const MelomaneDetail = lazy(() => import("./pages/MelomaneDetail"));
+const Messages = lazy(() => import("./pages/Messages"));
+const MessagesImproved = lazy(() => import("./pages/MessagesImproved"));
+const FAQ = lazy(() => import("./pages/FAQ"));
+const VenueRegister = lazy(() => import("./pages/VenueRegister"));
+const MusicianRegister = lazy(() => import("./pages/MusicianRegister"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Tarifs = lazy(() => import("./pages/Tarifs"));
+const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+const PaymentCancel = lazy(() => import("./pages/PaymentCancel"));
+const TrialExpired = lazy(() => import("./pages/TrialExpired"));
+const CGU = lazy(() => import("./pages/CGU"));
+const CGV = lazy(() => import("./pages/CGV"));
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="text-center">
+      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p className="text-muted-foreground animate-pulse">Chargement...</p>
+    </div>
+  </div>
+);
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { user, loading } = useAuth();

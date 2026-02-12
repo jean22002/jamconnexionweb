@@ -3930,6 +3930,29 @@ async def root():
 async def health():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
+# Stats endpoint optimisé pour la landing page
+@api_router.get("/stats/counts")
+async def get_stats_counts():
+    """
+    Endpoint optimisé qui retourne uniquement les compteurs
+    Au lieu de charger toutes les données
+    """
+    try:
+        # Utiliser count_documents au lieu de charger tous les documents
+        musicians_count = await db.musicians.count_documents({})
+        venues_count = await db.venues.count_documents({})
+        
+        return {
+            "musicians": musicians_count,
+            "venues": venues_count
+        }
+    except Exception as e:
+        logger.error(f"Error fetching stats: {e}")
+        return {
+            "musicians": 0,
+            "venues": 0
+        }
+
 # Geocoding endpoint
 @api_router.post("/geocode")
 async def geocode_address(data: dict):

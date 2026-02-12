@@ -8,7 +8,7 @@ import asyncio
 
 # Configuration MongoDB
 MONGO_URL = os.environ.get('MONGO_URL')
-DB_NAME = os.environ.get('DB_NAME')
+DB_NAME = os.environ.get('DB_NAME', 'test_database').strip('"')  # Remove quotes if present
 
 
 async def create_all_indexes():

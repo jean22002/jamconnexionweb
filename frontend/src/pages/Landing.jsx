@@ -81,7 +81,7 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-20 sm:pt-32 pb-16 sm:pb-24 overflow-hidden min-h-screen flex items-center">
+      <section className="relative pt-20 sm:pt-32 pb-16 sm:pb-24 overflow-hidden min-h-[80vh] sm:min-h-screen flex items-center">
         <div 
           className="absolute inset-0 z-0"
           style={{

@@ -1237,7 +1237,7 @@ export default function VenueDetail() {
                     <div className="p-4 bg-black/20 border border-white/10 rounded-xl space-y-3">
                       <div className="flex items-start gap-4">
                         {applicationForm.band_photo ? (
-                          <img 
+                          <LazyImage 
                             src={applicationForm.band_photo} 
                             alt={applicationForm.band_name}
                             className="w-20 h-20 rounded-lg object-cover"
@@ -1343,7 +1343,7 @@ export default function VenueDetail() {
                     <div key={index} className="card-venue p-5 hover:border-primary/30 transition-all">
                       <div className="flex flex-col items-center text-center">
                         {band.photo ? (
-                          <img 
+                          <LazyImage 
                             src={band.photo} 
                             alt={band.band_name} 
                             className="w-24 h-24 rounded-full object-cover mb-4"
@@ -1489,7 +1489,11 @@ export default function VenueDetail() {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3">
                           {review.musician_image ? (
-                            <img src={review.musician_image} alt="" className="w-10 h-10 rounded-full object-cover" />
+                            <LazyImage 
+                              src={review.musician_image} 
+                              alt={review.musician_name} 
+                              className="w-10 h-10 rounded-full object-cover" 
+                            />
                           ) : (
                             <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                               <User className="w-5 h-5 text-primary" />
@@ -1561,7 +1565,7 @@ export default function VenueDetail() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {venue.gallery.map((photo, index) => (
                     <div key={index} className="group cursor-pointer">
-                      <img 
+                      <LazyImage 
                         src={photo} 
                         alt={`${venue.name} - Photo ${index + 1}`}
                         className="w-full h-64 object-cover rounded-xl transition-transform group-hover:scale-105"

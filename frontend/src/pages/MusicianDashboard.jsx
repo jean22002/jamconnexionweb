@@ -73,7 +73,11 @@ function MusicianCard({ musician, onSendFriendRequest, onCancelRequest, sentRequ
     <div className="card-venue p-5">
       <div className="flex items-start gap-4">
         {musician.profile_image ? (
-          <img src={musician.profile_image} alt="" className="w-16 h-16 rounded-full object-cover" />
+          <LazyImage 
+            src={musician.profile_image} 
+            alt={musician.pseudo || "Musicien"} 
+            className="w-16 h-16 rounded-full object-cover" 
+          />
         ) : (
           <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
             <User className="w-8 h-8 text-primary" />
@@ -141,7 +145,11 @@ function VenueCard({ venue, onSubscribe, onUnsubscribe, subscriptions }) {
     <div className="card-venue p-5">
       <Link to={`/venue/${venue.id}`}>
         {venue.profile_image && (
-          <img src={venue.profile_image} alt="" className="w-full h-32 object-cover rounded-lg mb-3 hover:opacity-90 transition" />
+          <LazyImage 
+            src={venue.profile_image} 
+            alt={venue.name} 
+            className="w-full h-32 object-cover rounded-lg mb-3 hover:opacity-90 transition" 
+          />
         )}
         <h3 className="font-heading font-semibold hover:text-primary transition">{venue.name}</h3>
         <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
@@ -1230,7 +1238,11 @@ export default function MusicianDashboard() {
                 <DialogTrigger asChild>
                   <Button variant="ghost" className="gap-2" data-testid="profile-btn">
                     {profile?.profile_image ? (
-                      <img src={profile.profile_image} alt="" className="w-8 h-8 rounded-full object-cover" />
+                      <LazyImage 
+                        src={profile.profile_image} 
+                        alt={profile.pseudo} 
+                        className="w-8 h-8 rounded-full object-cover" 
+                      />
                     ) : (
                       <User className="w-5 h-5" />
                     )}

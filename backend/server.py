@@ -3930,6 +3930,40 @@ async def root():
 async def health():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
+# Image optimization endpoint (admin only)
+@api_router.post("/admin/optimize-images")
+async def optimize_all_images(current_user: dict = Depends(get_current_user)):
+    """
+    Optimise toutes les images du dossier uploads
+    Endpoint admin uniquement
+    """
+    from utils.image_optimizer import batch_optimize_directory
+    
+    # TODO: Ajouter vérification admin
+    # if current_user.get("role") != "admin":
+    #     raise HTTPException(status_code=403, detail="Admin access required")
+    
+    try:
+        uploads_dir = "/app/backend/uploads"
+        results = batch_optimize_directory(uploads_dir, recursive=True)
+        
+        total_optimized = len(results)
+        total_saved = sum(
+            r['result']['webp'].get('compression', 0) 
+            for r in results 
+            if r['result']['webp'].get('success')
+        )
+        
+        return {
+            "success": True,
+            "images_optimized": total_optimized,
+            "average_compression": round(total_saved / total_optimized if total_optimized > 0 else 0, 2),
+            "details": results[:10]  # Premiers 10 résultats
+        }
+    except Exception as e:
+        logger.error(f"Error optimizing images: {e}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
 # Stats endpoint optimisé pour la landing page
 @api_router.get("/stats/counts")
 async def get_stats_counts():

@@ -4012,22 +4012,29 @@ async def get_stats_counts():
     """
     Endpoint optimisé qui retourne uniquement les compteurs
     Au lieu de charger toutes les données
+    Avec cache de 10 minutes pour réduire la charge DB
     """
-    try:
-        # Utiliser count_documents au lieu de charger tous les documents
-        musicians_count = await db.musicians.count_documents({})
-        venues_count = await db.venues.count_documents({})
-        
-        return {
-            "musicians": musicians_count,
-            "venues": venues_count
-        }
-    except Exception as e:
-        logger.error(f"Error fetching stats: {e}")
-        return {
-            "musicians": 0,
-            "venues": 0
-        }
+    from utils.cache import cache_stats
+    
+    @cache_stats(ttl=600)  # Cache for 10 minutes
+    async def _fetch_stats():
+        try:
+            # Utiliser count_documents au lieu de charger tous les documents
+            musicians_count = await db.musicians.count_documents({})
+            venues_count = await db.venues.count_documents({})
+            
+            return {
+                "musicians": musicians_count,
+                "venues": venues_count
+            }
+        except Exception as e:
+            logger.error(f"Error fetching stats: {e}")
+            return {
+                "musicians": 0,
+                "venues": 0
+            }
+    
+    return await _fetch_stats()
 
 # Geocoding endpoint
 @api_router.post("/geocode")

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
+import LazyImage from "../components/LazyImage";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -117,7 +118,11 @@ export default function MusicianDetail() {
         <div className="glassmorphism rounded-3xl p-8 mb-8">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             {musician.profile_image ? (
-              <img src={musician.profile_image} alt="" className="w-32 h-32 rounded-full object-cover neon-border" />
+              <LazyImage 
+                src={musician.profile_image} 
+                alt={musician.pseudo || "Musicien"} 
+                className="w-32 h-32 rounded-full object-cover neon-border" 
+              />
             ) : (
               <div className="w-32 h-32 rounded-full bg-primary/20 flex items-center justify-center neon-border">
                 <User className="w-16 h-16 text-primary" />
@@ -203,7 +208,11 @@ export default function MusicianDetail() {
                 <h2 className="font-heading font-semibold text-lg mb-4">Mon Groupe</h2>
                 <div className="flex items-center gap-4">
                   {musician.band.photo ? (
-                    <img src={musician.band.photo} alt="" className="w-20 h-20 rounded-xl object-cover" />
+                    <LazyImage 
+                      src={musician.band.photo} 
+                      alt={musician.band.name} 
+                      className="w-20 h-20 rounded-xl object-cover" 
+                    />
                   ) : (
                     <div className="w-20 h-20 rounded-xl bg-primary/20 flex items-center justify-center">
                       <Music className="w-10 h-10 text-primary" />

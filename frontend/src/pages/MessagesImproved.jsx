@@ -366,7 +366,9 @@ export default function MessagesImproved() {
       <main className="h-[calc(100vh-4rem)]">
         <div className="h-full max-w-7xl mx-auto flex">
           {/* Conversations List */}
-          <div className="w-full md:w-96 border-r border-white/10 flex flex-col bg-background/50">
+          <div className={`w-full md:w-96 border-r border-white/10 flex flex-col bg-background/50 ${
+            selectedConversation ? 'hidden md:flex' : 'flex'
+          }`}>
             {/* Search */}
             <div className="p-4 border-b border-white/10">
               <div className="relative">

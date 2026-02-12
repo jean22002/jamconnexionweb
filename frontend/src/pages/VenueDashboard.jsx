@@ -3917,7 +3917,11 @@ export default function VenueDashboard() {
                         <div className="flex items-start gap-4">
                           {/* Photo du groupe ou profil */}
                           {app.band_photo ? (
-                            <img src={app.band_photo} alt={app.band_name} className="w-16 h-16 rounded-full object-cover" />
+                            <LazyImage 
+                              src={app.band_photo} 
+                              alt={app.band_name} 
+                              className="w-16 h-16 rounded-full object-cover" 
+                            />
                           ) : (
                             <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
                               <Music className="w-8 h-8 text-primary" />

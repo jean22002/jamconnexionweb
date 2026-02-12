@@ -440,11 +440,23 @@ export default function MessagesImproved() {
           </div>
 
           {/* Chat Area */}
-          <div className="flex-1 flex flex-col">
+          <div className={`flex-1 flex flex-col ${
+            selectedConversation ? 'flex' : 'hidden md:flex'
+          }`}>
             {selectedConversation ? (
               <>
                 {/* Chat Header */}
                 <div className="p-4 border-b border-white/10 flex items-center gap-3 bg-background/80">
+                  {/* Back button for mobile */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSelectedConversation(null)}
+                    className="md:hidden"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </Button>
+                  
                   {selectedConversation.partnerImage ? (
                     <img 
                       src={selectedConversation.partnerImage} 

@@ -5111,7 +5111,10 @@ export default function VenueDashboard() {
                           </div>
 
                           <Button
-                            onClick={() => openProfitabilityEdit(event)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openProfitabilityEdit(event);
+                            }}
                             size="sm"
                             variant="outline"
                             className="rounded-full"

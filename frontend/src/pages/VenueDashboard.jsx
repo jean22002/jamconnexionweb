@@ -4555,7 +4555,11 @@ export default function VenueDashboard() {
                   {bands.map((band) => (
                     <div key={band.id} className="glassmorphism rounded-xl p-5">
                       {band.photo && (
-                        <img src={band.photo} alt={band.name} className="w-full h-40 object-cover rounded-lg mb-4" />
+                        <LazyImage 
+                          src={band.photo} 
+                          alt={band.name} 
+                          className="w-full h-40 object-cover rounded-lg mb-4" 
+                        />
                       )}
                       
                       <h3 className="font-heading font-semibold text-lg mb-2">{band.name}</h3>

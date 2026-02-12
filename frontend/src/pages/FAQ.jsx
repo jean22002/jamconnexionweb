@@ -113,7 +113,50 @@ export default function FAQ() {
     }
   ];
 
-  const currentFAQ = userType === 'venue' ? venueFAQ : musicianFAQ;
+  const melomaneFAQ = [
+    {
+      question: "L'inscription est-elle payante ?",
+      answer: "Non. L'inscription et l'utilisation de Jam Connexion sont entièrement gratuites pour les mélomanes."
+    },
+    {
+      question: "À quoi sert un compte mélomane ?",
+      answer: "Le compte mélomane vous permet de découvrir les concerts à venir dans votre région, de recevoir des notifications sur les événements musicaux près de chez vous, et de suivre vos établissements et musiciens préférés."
+    },
+    {
+      question: "Comment fonctionne le système de notifications ?",
+      answer: "Vous pouvez définir un rayon de recherche autour de votre localisation. Lorsqu'un concert est annoncé dans cette zone, vous recevez une notification. Vous pouvez activer ou désactiver les notifications à tout moment depuis votre profil."
+    },
+    {
+      question: "Puis-je voir tous les concerts de ma région ?",
+      answer: "Oui. La carte interactive vous permet de visualiser tous les concerts à venir dans votre région. Vous pouvez filtrer par style musical, date et localisation."
+    },
+    {
+      question: "Mes données personnelles sont-elles protégées ?",
+      answer: "Oui. Vos données personnelles sont traitées conformément au RGPD et à la Politique de confidentialité. Vous disposez de droits d'accès, de rectification, de suppression et d'opposition."
+    },
+    {
+      question: "Puis-je contacter les établissements ou musiciens ?",
+      answer: "Non. Le compte mélomane est conçu uniquement pour la découverte et la consultation des événements. Les échanges directs se font uniquement entre établissements et musiciens."
+    },
+    {
+      question: "Comment mettre à jour mon profil mélomane ?",
+      answer: "Vous pouvez modifier votre profil à tout moment depuis votre tableau de bord : changer votre localisation, ajuster le rayon de notification, mettre à jour vos styles musicaux préférés, etc."
+    },
+    {
+      question: "Puis-je supprimer mon compte ?",
+      answer: "Oui. Vous pouvez demander la suppression de votre compte à tout moment en nous contactant à jamconnexion@gmail.com"
+    },
+    {
+      question: "Le service est-il vraiment gratuit ?",
+      answer: "Oui, l'accès mélomane est et restera 100% gratuit. Seuls les établissements paient un abonnement pour diffuser leurs événements."
+    },
+    {
+      question: "Qui contacter en cas de question ?",
+      answer: "Pour toute question ou assistance, vous pouvez contacter : jamconnexion@gmail.com"
+    }
+  ];
+
+  const currentFAQ = userType === 'venue' ? venueFAQ : (userType === 'musician' ? musicianFAQ : melomaneFAQ);
 
   return (
     <div className="min-h-screen bg-background">
@@ -136,7 +179,7 @@ export default function FAQ() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* User Type Selector */}
-        <div className="flex gap-4 mb-8 justify-center">
+        <div className="flex gap-4 mb-8 justify-center flex-wrap">
           <Button
             onClick={() => setUserType('venue')}
             variant={userType === 'venue' ? 'default' : 'outline'}
@@ -151,12 +194,19 @@ export default function FAQ() {
           >
             🎸 Musiciens
           </Button>
+          <Button
+            onClick={() => setUserType('melomane')}
+            variant={userType === 'melomane' ? 'default' : 'outline'}
+            className="rounded-full px-6"
+          >
+            🎵 Mélomanes
+          </Button>
         </div>
 
         {/* FAQ Title */}
         <div className="text-center mb-8">
           <h2 className="font-heading font-bold text-3xl mb-3">
-            {userType === 'venue' ? 'FAQ - Établissements' : 'FAQ - Musiciens'}
+            {userType === 'venue' ? 'FAQ - Établissements' : (userType === 'musician' ? 'FAQ - Musiciens' : 'FAQ - Mélomanes')}
           </h2>
           <p className="text-muted-foreground">
             Retrouvez les réponses aux questions les plus fréquentes

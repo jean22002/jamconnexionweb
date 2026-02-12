@@ -2645,7 +2645,11 @@ export default function MusicianDashboard() {
               {friendRequests.map(req => (
                 <div key={req.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
                   {req.from_user_image ? (
-                    <img src={req.from_user_image} alt="" className="w-10 h-10 rounded-full object-cover" />
+                    <LazyImage 
+                      src={req.from_user_image} 
+                      alt={req.from_user_name} 
+                      className="w-10 h-10 rounded-full object-cover" 
+                    />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center"><User className="w-5 h-5" /></div>
                   )}
@@ -2921,7 +2925,13 @@ export default function MusicianDashboard() {
                         <Link key={venue.id} to={`/venue/${venue.id}`} className="block" data-testid={`venue-card-${venue.id}`}>
                           <div className={`card-venue p-5 group ${isNearby ? 'border border-primary/30' : ''}`}>
                             <div className="flex items-start gap-4">
-                              {venue.profile_image && <img src={venue.profile_image} alt="" className="w-16 h-16 rounded-xl object-cover" />}
+                              {venue.profile_image && (
+                                <LazyImage 
+                                  src={venue.profile_image} 
+                                  alt={venue.name} 
+                                  className="w-16 h-16 rounded-xl object-cover" 
+                                />
+                              )}
                               <div className="flex-1">
                                 <div className="flex items-center gap-2">
                                   <h3 className="font-heading font-semibold text-lg group-hover:text-primary transition-colors">{venue.name}</h3>
@@ -3911,7 +3921,11 @@ export default function MusicianDashboard() {
                   <div key={friend.id} className="card-venue p-5">
                     <div className="flex items-center gap-4">
                       {friend.profile_image ? (
-                        <img src={friend.profile_image} alt="" className="w-14 h-14 rounded-full object-cover" />
+                        <LazyImage 
+                          src={friend.profile_image} 
+                          alt={friend.pseudo} 
+                          className="w-14 h-14 rounded-full object-cover" 
+                        />
                       ) : (
                         <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center"><User className="w-7 h-7 text-primary" /></div>
                       )}

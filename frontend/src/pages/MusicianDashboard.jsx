@@ -3961,7 +3961,11 @@ export default function MusicianDashboard() {
                   >
                     <div className="flex items-center gap-4">
                       {sub.venue_image ? (
-                        <img src={sub.venue_image} alt="" className="w-14 h-14 rounded-xl object-cover" />
+                        <LazyImage 
+                          src={sub.venue_image} 
+                          alt={sub.venue_name} 
+                          className="w-14 h-14 rounded-xl object-cover" 
+                        />
                       ) : (
                         <div className="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center"><Music className="w-7 h-7 text-primary" /></div>
                       )}
@@ -4118,7 +4122,11 @@ export default function MusicianDashboard() {
                   {bands.map((band) => (
                     <div key={band.id} className="glassmorphism rounded-xl p-5 hover:bg-white/5 transition-all">
                       {band.photo && (
-                        <img src={band.photo} alt={band.name} className="w-full h-40 object-cover rounded-lg mb-4" />
+                        <LazyImage 
+                          src={band.photo} 
+                          alt={band.name} 
+                          className="w-full h-40 object-cover rounded-lg mb-4" 
+                        />
                       )}
                       <h3 className="font-heading font-semibold text-lg mb-2">{band.name}</h3>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
@@ -4226,7 +4234,11 @@ export default function MusicianDashboard() {
                     <div className="space-y-6">
                       {/* Photo */}
                       {selectedBand.photo && (
-                        <img src={selectedBand.photo} alt={selectedBand.name} className="w-full h-48 object-cover rounded-lg" />
+                        <LazyImage 
+                          src={selectedBand.photo} 
+                          alt={selectedBand.name} 
+                          className="w-full h-48 object-cover rounded-lg" 
+                        />
                       )}
 
                       {/* Infos principales */}

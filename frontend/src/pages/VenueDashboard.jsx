@@ -4431,7 +4431,11 @@ export default function VenueDashboard() {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3">
                           {review.musician_image ? (
-                            <img src={review.musician_image} alt="" className="w-10 h-10 rounded-full object-cover" />
+                            <LazyImage 
+                              src={review.musician_image} 
+                              alt={review.musician_name} 
+                              className="w-10 h-10 rounded-full object-cover" 
+                            />
                           ) : (
                             <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                               <User className="w-5 h-5 text-primary" />

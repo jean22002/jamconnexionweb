@@ -5032,7 +5032,9 @@ export default function VenueDashboard() {
                     {getFilteredEvents().map((event) => (
                       <div
                         key={event.id}
-                        className="p-4 bg-card rounded-xl border border-white/10 hover:border-primary/30 transition-colors"
+                        className="p-4 bg-card rounded-xl border border-white/10 hover:border-primary/30 transition-colors cursor-pointer"
+                        onClick={() => handleEditEvent(event, event.type)}
+                        title="Cliquez pour voir les détails de l'événement"
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">

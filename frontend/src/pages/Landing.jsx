@@ -117,30 +117,30 @@ export default function Landing() {
                 <Link to="/tarifs" className="w-full">
                   <Button 
                     size="lg" 
-                    className="bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 hover:to-cyan-500 text-white rounded-full px-6 py-5 sm:py-6 font-heading font-semibold hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] hover:-translate-y-1 transition-all w-full text-sm sm:text-base"
+                    className="bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 hover:to-cyan-500 text-white rounded-full px-8 py-6 sm:py-7 font-heading font-semibold text-base sm:text-lg hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] hover:-translate-y-1 transition-all w-full"
                     data-testid="hero-musician-btn"
                   >
-                    <Guitar className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    <Guitar className="w-5 h-5 mr-2" />
                     Je suis un musicien
                   </Button>
                 </Link>
                 <Link to="/venue-register" className="w-full">
                   <Button 
                     size="lg" 
-                    className="bg-primary hover:bg-primary/90 rounded-full px-6 py-5 sm:py-6 font-heading font-semibold hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] hover:-translate-y-1 transition-all w-full text-sm sm:text-base"
+                    className="bg-primary hover:bg-primary/90 rounded-full px-8 py-6 sm:py-7 font-heading font-semibold text-base sm:text-lg hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] hover:-translate-y-1 transition-all w-full"
                     data-testid="hero-venue-btn"
                   >
-                    <Mic2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    <Mic2 className="w-5 h-5 mr-2" />
                     Je suis un établissement
                   </Button>
                 </Link>
                 <Link to="/auth?role=melomane" className="w-full">
                   <Button 
                     size="lg" 
-                    className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-full px-6 py-5 sm:py-6 font-heading font-semibold hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] hover:-translate-y-1 transition-all w-full text-sm sm:text-base"
+                    className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-full px-8 py-6 sm:py-7 font-heading font-semibold text-base sm:text-lg hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] hover:-translate-y-1 transition-all w-full"
                     data-testid="hero-melomane-btn"
                   >
-                    <Music2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    <Music2 className="w-5 h-5 mr-2" />
                     Je suis mélomane
                   </Button>
                 </Link>

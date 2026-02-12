@@ -12,6 +12,7 @@ export default function Landing() {
   const { user } = useAuth();
   const [stats, setStats] = useState({ musicians: 0, venues: 0 });
   const [showStats, setShowStats] = useState(false);
+  const [loadingStats, setLoadingStats] = useState(true);
   const [openFAQ, setOpenFAQ] = useState(null);
 
   useEffect(() => {
@@ -34,6 +35,8 @@ export default function Landing() {
         console.error("Error fetching stats:", error);
         // Fallback: Afficher des stats par défaut si l'endpoint n'existe pas encore
         setStats({ musicians: 0, venues: 0 });
+      } finally {
+        setLoadingStats(false);
       }
     };
 

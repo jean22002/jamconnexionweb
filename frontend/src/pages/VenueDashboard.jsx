@@ -5039,6 +5039,7 @@ export default function VenueDashboard() {
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
+                              <Eye className="w-4 h-4 text-primary opacity-60" />
                               <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                                 event.type === 'jam' 
                                   ? 'bg-purple-500/20 text-purple-400' 

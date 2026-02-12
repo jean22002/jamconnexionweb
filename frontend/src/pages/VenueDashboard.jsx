@@ -4132,7 +4132,11 @@ export default function VenueDashboard() {
                     <div key={subscriber.id} className="card-venue p-5">
                       <div className="flex items-start gap-4">
                         {subscriber.profile_image ? (
-                          <img src={subscriber.profile_image} alt="" className="w-16 h-16 rounded-full object-cover" />
+                          <LazyImage 
+                            src={subscriber.profile_image} 
+                            alt={subscriber.pseudo || "Abonné"} 
+                            className="w-16 h-16 rounded-full object-cover" 
+                          />
                         ) : (
                           <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
                             <User className="w-8 h-8 text-primary" />

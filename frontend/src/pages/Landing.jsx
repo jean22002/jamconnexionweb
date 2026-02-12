@@ -16,26 +16,29 @@ export default function Landing() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch musicians count
-        const musiciansRes = await axios.get(`${API}/musicians`);
-        const musiciansCount = musiciansRes.data.length;
-
-        // Fetch venues count
-        const venuesRes = await axios.get(`${API}/venues`);
-        const venuesCount = venuesRes.data.length;
-
-        setStats({ musicians: musiciansCount, venues: venuesCount });
+        // Utiliser un endpoint optimisé qui retourne juste les compteurs
+        // Au lieu de charger toutes les données
+        const response = await axios.get(`${API}/stats/counts`);
         
-        // Show stats only if at least one exceeds 100
-        if (musiciansCount > 100 || venuesCount > 100) {
-          setShowStats(true);
+        if (response.data) {
+          const { musicians: musiciansCount, venues: venuesCount } = response.data;
+          setStats({ musicians: musiciansCount, venues: venuesCount });
+          
+          // Show stats only if at least one exceeds 100
+          if (musiciansCount > 100 || venuesCount > 100) {
+            setShowStats(true);
+          }
         }
       } catch (error) {
         console.error("Error fetching stats:", error);
+        // Fallback: Afficher des stats par défaut si l'endpoint n'existe pas encore
+        setStats({ musicians: 0, venues: 0 });
       }
     };
 
-    fetchStats();
+    // Retarder légèrement le chargement des stats (non-critique)
+    const timer = setTimeout(fetchStats, 500);
+    return () => clearTimeout(timer);
   }, []);
 
   return (

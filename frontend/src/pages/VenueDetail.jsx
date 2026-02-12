@@ -13,6 +13,7 @@ import {
   Music, MapPin, Globe, Instagram, Facebook, Phone, ArrowLeft, Loader2, 
   Check, Clock, Guitar, Bell, BellOff, CalendarIcon, Send, Users, User, AlertCircle, Heart, Navigation
 } from "lucide-react";
+import LazyImage from "../components/LazyImage";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
 import JoinEventButton from "../components/JoinEventButton";

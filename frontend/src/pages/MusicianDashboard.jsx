@@ -66,8 +66,10 @@ function MusicianCard({ musician, onSendFriendRequest, onCancelRequest, sentRequ
   const requestSent = sentRequests?.some(req => req.to_user_id === musician.user_id);
   // Trouver l'ID de la demande pour pouvoir l'annuler
   const sentRequest = sentRequests?.find(req => req.to_user_id === musician.user_id);
-  // Vérifier si déjà ami
-  const isFriend = friends?.some(f => f.friend_id === musician.user_id);
+  // Vérifier si déjà ami (cherche dans user_id ET friend_id pour compatibilité)
+  const isFriend = friends?.some(f => 
+    f.friend_id === musician.user_id || f.user_id === musician.user_id
+  );
 
   return (
     <div className="card-venue p-5">

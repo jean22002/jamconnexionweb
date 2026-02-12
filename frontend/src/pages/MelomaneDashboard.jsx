@@ -430,7 +430,11 @@ export default function MelomaneDashboard() {
                 <DialogTrigger asChild>
                   <Button variant="ghost" className="gap-2" data-testid="profile-btn">
                     {profile?.profile_picture ? (
-                      <img src={profile.profile_picture} alt="" className="w-8 h-8 rounded-full object-cover" />
+                      <LazyImage 
+                        src={profile.profile_picture} 
+                        alt={profile.username} 
+                        className="w-8 h-8 rounded-full object-cover" 
+                      />
                     ) : (
                       <User className="w-5 h-5" />
                     )}
@@ -1144,7 +1148,11 @@ export default function MelomaneDashboard() {
                         <Link key={venue.id} to={`/venue/${venue.id}`}>
                           <div className="card-venue p-4 hover:border-primary/50 transition-all cursor-pointer">
                             {venue.profile_image && (
-                              <img src={venue.profile_image} alt="" className="w-full h-32 object-cover rounded-lg mb-3" />
+                              <LazyImage 
+                                src={venue.profile_image} 
+                                alt={venue.name} 
+                                className="w-full h-32 object-cover rounded-lg mb-3" 
+                              />
                             )}
                             <h3 className="font-heading font-semibold">{venue.name}</h3>
                             <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
@@ -1191,7 +1199,11 @@ export default function MelomaneDashboard() {
                         <Link key={venue.id} to={`/venue/${venue.id}`}>
                           <div className="card-venue p-4 hover:border-primary/50 transition-all cursor-pointer">
                             {venue.profile_image && (
-                              <img src={venue.profile_image} alt="" className="w-full h-32 object-cover rounded-lg mb-3" />
+                              <LazyImage 
+                                src={venue.profile_image} 
+                                alt={venue.name} 
+                                className="w-full h-32 object-cover rounded-lg mb-3" 
+                              />
                             )}
                             <h3 className="font-heading font-semibold">{venue.name}</h3>
                             <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
@@ -1235,7 +1247,11 @@ export default function MelomaneDashboard() {
                     >
                       <div className="flex items-center gap-4">
                         {sub.venue_image ? (
-                          <img src={sub.venue_image} alt="" className="w-14 h-14 rounded-xl object-cover" />
+                          <LazyImage 
+                            src={sub.venue_image} 
+                            alt={sub.venue_name} 
+                            className="w-14 h-14 rounded-xl object-cover" 
+                          />
                         ) : (
                           <div className="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center">
                             <Music className="w-7 h-7 text-primary" />

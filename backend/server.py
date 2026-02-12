@@ -832,6 +832,7 @@ async def get_friends(current_user: dict = Depends(get_current_user)):
             friends.append({
                 "id": musician["id"],
                 "user_id": musician["user_id"],
+                "friend_id": musician["user_id"],  # Ajouté pour compatibilité frontend
                 "pseudo": musician.get("pseudo", ""),
                 "profile_image": musician.get("profile_image"),
                 "instruments": musician.get("instruments", []),

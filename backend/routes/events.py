@@ -294,6 +294,13 @@ async def create_concert_event(data: ConcertEvent, current_user: dict = Depends(
         f"/venue/{venue['id']}"
     )
     
+    # Check for new badges (event created)
+    try:
+        from utils.badge_checker import check_and_award_badges_internal
+        await check_and_award_badges_internal(db, current_user["id"])
+    except Exception as e:
+        logger.warning(f"Could not check badges: {e}")
+    
     # Count participants
     participants_count = await db.event_participations.count_documents({
         "event_id": concert_id,

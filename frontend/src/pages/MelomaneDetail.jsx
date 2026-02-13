@@ -123,6 +123,13 @@ export default function MelomaneDetail() {
           </div>
         </div>
 
+        {/* Badges Section */}
+        {token && melomane.user_id && (
+          <div className="glassmorphism rounded-2xl p-6 mb-8">
+            <UserBadges userId={melomane.user_id} token={token} limit={6} />
+          </div>
+        )}
+
         {/* Favorite Styles */}
         {melomane.favorite_styles && melomane.favorite_styles.length > 0 && (
           <div className="glassmorphism rounded-2xl p-6 mb-8">

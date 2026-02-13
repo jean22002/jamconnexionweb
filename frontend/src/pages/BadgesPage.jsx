@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import BadgeCard from '../components/BadgeCard';
 import BadgeStats from '../components/BadgeStats';
-import { Loader2, Award, TrendingUp, Lock } from 'lucide-react';
+import BadgeProgressBar from '../components/BadgeProgressBar';
+import { Loader2, Award, TrendingUp, Lock, Target } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { useToast } from '../hooks/use-toast';
 

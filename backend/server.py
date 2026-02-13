@@ -1059,6 +1059,53 @@ async def list_venues(city: Optional[str] = None, style: Optional[str] = None):
     
     return result
 
+@api_router.get("/venues/map/locations")
+async def get_venues_map_locations():
+    """
+    Lightweight endpoint for map markers
+    Returns only essential data for displaying venues on a map
+    """
+    from utils.cache import cache_result
+    
+    @cache_result(ttl=600)  # Cache for 10 minutes
+    async def _fetch_map_data():
+        venues = await db.venues.find({}, {
+            "_id": 0,
+            "id": 1,
+            "name": 1,
+            "city": 1,
+            "postal_code": 1,
+            "latitude": 1,
+            "longitude": 1,
+            "music_styles": 1,
+            "profile_image": 1,
+            "venue_type": 1,
+            "user_id": 1
+        }).to_list(500)
+        
+        # Filter only venues with valid coordinates
+        valid_venues = []
+        for v in venues:
+            if v.get("latitude") and v.get("longitude"):
+                # Check if venue owner has active subscription
+                user = await db.users.find_one({"id": v["user_id"]}, {"_id": 0, "subscription_status": 1})
+                if user and user.get("subscription_status") in ["active", "trial"]:
+                    valid_venues.append({
+                        "id": v["id"],
+                        "name": v["name"],
+                        "city": v.get("city", ""),
+                        "postal_code": v.get("postal_code", ""),
+                        "latitude": float(v["latitude"]),
+                        "longitude": float(v["longitude"]),
+                        "music_styles": v.get("music_styles", []),
+                        "profile_image": v.get("profile_image"),
+                        "venue_type": v.get("venue_type", "bar")
+                    })
+        
+        return valid_venues
+    
+    return await _fetch_map_data()
+
 @api_router.get("/venues/{venue_id}", response_model=VenueProfileResponse)
 async def get_venue(venue_id: str):
     venue = await db.venues.find_one({"id": venue_id}, {"_id": 0})

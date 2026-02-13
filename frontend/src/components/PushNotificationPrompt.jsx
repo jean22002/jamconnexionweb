@@ -3,21 +3,29 @@ import { Bell, X, Check } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { usePushNotifications } from '../hooks/usePushNotifications';
+import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 
 export default function PushNotificationPrompt() {
+  const { user, token } = useAuth();
   const { isSupported, permission, isSubscribed, subscribe, sendTestNotification } = usePushNotifications();
   const [dismissed, setDismissed] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
+    // Ne montrer le prompt que si l'utilisateur est connecté
+    if (!user || !token) {
+      return;
+    }
+
     // Vérifier si l'utilisateur a déjà vu le prompt
     const hasSeenPrompt = localStorage.getItem('push_notification_prompt_seen');
     
     // Afficher le prompt seulement si :
-    // 1. Les notifications sont supportées
-    // 2. L'utilisateur n'a pas encore donné de permission
-    // 3. L'utilisateur n'a pas déjà vu le prompt
+    // 1. L'utilisateur est connecté
+    // 2. Les notifications sont supportées
+    // 3. L'utilisateur n'a pas encore donné de permission
+    // 4. L'utilisateur n'a pas déjà vu le prompt
     if (isSupported && permission === 'default' && !hasSeenPrompt && !isSubscribed) {
       // Attendre 5 secondes avant d'afficher le prompt
       const timer = setTimeout(() => {
@@ -26,7 +34,7 @@ export default function PushNotificationPrompt() {
 
       return () => clearTimeout(timer);
     }
-  }, [isSupported, permission, isSubscribed]);
+  }, [isSupported, permission, isSubscribed, user, token]);
 
   const handleSubscribe = async () => {
     try {

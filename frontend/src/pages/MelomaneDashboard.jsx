@@ -364,6 +364,13 @@ export default function MelomaneDashboard() {
             </Link>
             
             <div className="flex items-center gap-4">
+              {/* Badges */}
+              <Link to="/badges">
+                <Button variant="ghost" className="relative">
+                  <Award className="w-5 h-5" />
+                </Button>
+              </Link>
+
               {/* Notifications */}
               <Dialog onOpenChange={(open) => {
                 if (open && unreadCount > 0) {

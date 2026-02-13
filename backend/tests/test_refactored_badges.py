@@ -509,25 +509,25 @@ class TestMessagingSystem:
             pytest.skip(f"Venue login failed")
         return response.json()["token"]
     
-    def test_messages_list(self, venue_token):
-        """Test getting messages"""
-        response = requests.get(f"{BASE_URL}/api/messages/", headers={
+    def test_messages_inbox(self, venue_token):
+        """Test getting inbox messages"""
+        response = requests.get(f"{BASE_URL}/api/messages/inbox", headers={
             "Authorization": f"Bearer {venue_token}"
         })
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
-        print(f"SUCCESS: Got {len(data)} messages")
+        print(f"SUCCESS: Got {len(data)} inbox messages")
     
-    def test_conversations(self, venue_token):
-        """Test getting conversations"""
-        response = requests.get(f"{BASE_URL}/api/messages/conversations", headers={
+    def test_messages_sent(self, venue_token):
+        """Test getting sent messages"""
+        response = requests.get(f"{BASE_URL}/api/messages/sent", headers={
             "Authorization": f"Bearer {venue_token}"
         })
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
-        print(f"SUCCESS: Got {len(data)} conversations")
+        print(f"SUCCESS: Got {len(data)} sent messages")
 
 
 if __name__ == "__main__":

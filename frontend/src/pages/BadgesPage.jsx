@@ -145,6 +145,26 @@ export default function BadgesPage() {
         {/* Stats */}
         <BadgeStats stats={stats} />
 
+        {/* Next Badges to Unlock */}
+        {lockedBadges.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Target className="w-6 h-6 text-primary" />
+              <h2 className="text-2xl font-bold">Prochains Objectifs</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {lockedBadges.slice(0, 4).map(badge => (
+                <BadgeProgressBar
+                  key={badge.id}
+                  badge={badge}
+                  currentProgress={badge.progress || 0}
+                  showDetails={true}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Badges Tabs */}
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-6 bg-gray-800">

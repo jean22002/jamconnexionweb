@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import PWAPrompt from "./components/PWAPrompt";
 import "./App.css";
 
 // Pages critiques (chargées immédiatement)

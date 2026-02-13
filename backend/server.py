@@ -153,6 +153,8 @@ api_router.include_router(events.router)
 api_router.include_router(planning.router)
 api_router.include_router(bands.router)
 api_router.include_router(badges.router)
+api_router.include_router(push_notifications.router)
+api_router.include_router(badges.router)
 
 # Helper function needed by legacy routes
 async def get_current_user(authorization: str = Header(None)):

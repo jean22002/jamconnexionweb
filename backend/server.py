@@ -120,6 +120,7 @@ import routes.venues as venues
 import routes.events as events
 import routes.planning as planning
 import routes.bands as bands
+import routes.badges as badges
 
 # Include refactored routers (these replace old endpoints)
 api_router.include_router(auth_router)
@@ -138,6 +139,7 @@ musicians.set_db(db)
 events.set_db(db)
 planning.set_db(db)
 bands.set_db(db)
+badges.set_db(db)
 
 api_router.include_router(messages_router)
 api_router.include_router(reviews_router)
@@ -148,6 +150,7 @@ api_router.include_router(venues.router)
 api_router.include_router(events.router)
 api_router.include_router(planning.router)
 api_router.include_router(bands.router)
+api_router.include_router(badges.router)
 
 # Helper function needed by legacy routes
 async def get_current_user(authorization: str = Header(None)):

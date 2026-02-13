@@ -1721,9 +1721,15 @@ export default function VenueDashboard() {
                 </DialogContent>
               </Dialog>
               
+              <Link to="/badges">
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10">
+                  <Award className="w-4 h-4" />
+                </Button>
+              </Link>
+              
               <Link to="/messages-improved">
                 <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10">
-                  <Send className="w-4 h-4" />
+                  <MessageSquare className="w-4 h-4" />
                 </Button>
               </Link>
               <Button variant="ghost" onClick={logout} className="text-destructive hover:text-destructive/80" data-testid="logout-btn">

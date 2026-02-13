@@ -151,6 +151,18 @@ export default function Landing() {
                     Je suis mélomane
                   </Button>
                 </Link>
+                
+                {/* Map Explorer Link */}
+                <Link to="/map" className="w-full">
+                  <Button 
+                    size="lg" 
+                    variant="outline"
+                    className="border-2 border-primary/30 hover:border-primary hover:bg-primary/10 rounded-full px-8 py-6 sm:py-7 font-heading font-semibold text-base sm:text-lg transition-all w-full"
+                  >
+                    <MapPin className="w-5 h-5 mr-2" />
+                    Explorer la carte
+                  </Button>
+                </Link>
               </div>
             </div>
             

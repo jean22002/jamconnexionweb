@@ -112,6 +112,13 @@ async def create_jam_event(data: JamEvent, current_user: dict = Depends(get_curr
         f"/venue/{venue['id']}"
     )
     
+    # Check for new badges (event created)
+    try:
+        from utils.badge_checker import check_and_award_badges_internal
+        await check_and_award_badges_internal(db, current_user["id"])
+    except Exception as e:
+        logger.warning(f"Could not check badges: {e}")
+    
     # Alert nearby venues (within 100km)
     try:
         all_venues = await db.venues.find({}, {"_id": 0}).to_list(1000)

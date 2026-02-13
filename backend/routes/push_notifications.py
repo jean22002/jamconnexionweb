@@ -167,27 +167,56 @@ async def send_push_notification(user_id: str, notification_data: Dict[str, Any]
         
         if not subscriptions:
             logger.info(f"No active push subscriptions for user {user_id}")
-            return
+            return False
         
-        # TODO: Implémenter l'envoi réel des notifications avec pywebpush
-        # Pour l'instant, on log juste
-        logger.info(f"Would send push notification to {len(subscriptions)} device(s) for user {user_id}")
-        logger.info(f"Notification data: {notification_data}")
+        # Charger la clé VAPID privée
+        vapid_private_key_file = os.environ.get('VAPID_PRIVATE_KEY_FILE', '/tmp/vapid_private.pem')
+        vapid_claims_email = os.environ.get('VAPID_CLAIMS_EMAIL', 'noreply@jamconnexion.com')
         
-        # Dans une implémentation réelle, on utiliserait pywebpush ici
-        # from pywebpush import webpush, WebPushException
-        # for sub in subscriptions:
-        #     try:
-        #         webpush(
-        #             subscription_info=sub["subscription"],
-        #             data=json.dumps(notification_data),
-        #             vapid_private_key="YOUR_PRIVATE_KEY",
-        #             vapid_claims={"sub": "mailto:your-email@example.com"}
-        #         )
-        #     except WebPushException as e:
-        #         logger.error(f"Error sending push: {e}")
+        from pywebpush import webpush, WebPushException
+        from py_vapid import Vapid
         
-        return True
+        # Charger la clé privée VAPID
+        vapid = Vapid()
+        vapid.from_file(vapid_private_key_file)
+        vapid_claims = {"sub": f"mailto:{vapid_claims_email}"}
+        
+        success_count = 0
+        failed_count = 0
+        
+        # Envoyer la notification à tous les appareils
+        for sub in subscriptions:
+            try:
+                webpush(
+                    subscription_info=sub["subscription"],
+                    data=json.dumps(notification_data),
+                    vapid_private_key=vapid,
+                    vapid_claims=vapid_claims,
+                    timeout=10
+                )
+                success_count += 1
+                logger.info(f"Push notification sent successfully to device {sub['id'][:8]}...")
+            except WebPushException as e:
+                failed_count += 1
+                logger.error(f"Error sending push to device {sub['id'][:8]}...: {e}")
+                
+                # Si l'abonnement n'est plus valide (410 Gone), le désactiver
+                if e.response and e.response.status_code == 410:
+                    logger.info(f"Deactivating invalid subscription {sub['id'][:8]}...")
+                    await db.push_subscriptions.update_one(
+                        {"id": sub["id"]},
+                        {"$set": {"active": False}}
+                    )
+            except Exception as e:
+                failed_count += 1
+                logger.error(f"Unexpected error sending push to device {sub['id'][:8]}...: {e}")
+        
+        logger.info(f"Push notification sent: {success_count} success, {failed_count} failed")
+        return success_count > 0
+        
+    except Exception as e:
+        logger.error(f"Error sending push notification: {e}")
+        return False
     except Exception as e:
         logger.error(f"Error sending push notification: {e}")
         return False

@@ -9,6 +9,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
 import LazyImage from "../components/LazyImage";
+import UserBadges from "../components/UserBadges";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 

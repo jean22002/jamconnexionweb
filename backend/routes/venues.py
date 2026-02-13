@@ -246,6 +246,13 @@ async def subscribe_to_venue(venue_id: str, current_user: dict = Depends(get_cur
     
     await db.venue_subscriptions.insert_one(subscription_doc)
     
+    # Check for new badges (subscriber count for venue owner)
+    try:
+        from utils.badge_checker import check_and_award_badges_internal
+        await check_and_award_badges_internal(db, venue["user_id"])
+    except Exception as e:
+        logger.warning(f"Could not check badges: {e}")
+    
     return {"message": "Successfully subscribed to venue", "subscription_id": subscription_id}
 
 

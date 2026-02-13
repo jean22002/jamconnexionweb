@@ -23,7 +23,7 @@ import {
   Music, MapPin, LogOut, Search, Guitar, Users,
   Globe, Instagram, Facebook, Phone, User, Loader2, Navigation, X,
   Bell, Youtube, UserPlus, Check, Calendar as CalendarIcon, Heart,
-  Radio, MapPinOff, Locate, Settings2, Send, ArrowLeft, MessageSquare, Clock, Eye, Plus, Edit, Trash2, Award
+  Radio, MapPinOff, Locate, Settings2, Send, ArrowLeft, MessageSquare, Clock, Eye, Plus, Edit, Trash2, Award, Trophy
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useAutoGeolocation } from "../hooks/useGeolocation";

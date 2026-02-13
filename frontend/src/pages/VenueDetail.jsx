@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import JoinEventButton from "../components/JoinEventButton";
 import { StarRating, StarRatingInput } from "../components/StarRating";
 import Calendar from "../components/Calendar";
+import UserBadges from "../components/UserBadges";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 

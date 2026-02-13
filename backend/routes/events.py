@@ -617,6 +617,14 @@ async def join_event(event_id: str, event_type: str, current_user: dict = Depend
     
     await db.event_participations.insert_one(participation_doc)
     
+    # Check for new badges (for musicians participating in events)
+    try:
+        from utils.badge_checker import check_and_award_badges_internal
+        if current_user["role"] == "musician":
+            await check_and_award_badges_internal(db, current_user["id"])
+    except Exception as e:
+        logger.warning(f"Could not check badges: {e}")
+    
     return {"message": "Successfully joined event", "participation_id": participation_id}
 
 

@@ -830,6 +830,29 @@ async def accept_friend_request(request_id: str, current_user: dict = Depends(ge
         None
     )
     
+    # Send push notification
+    try:
+        from routes.push_notifications import send_push_notification
+        # Get acceptor's profile image
+        acceptor_musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+        acceptor_image = acceptor_musician.get("profile_image") if acceptor_musician else None
+        
+        await send_push_notification(
+            user_id=request["user1_id"],
+            notification_data={
+                "title": "✅ Demande acceptée !",
+                "message": f"{current_user['name']} a accepté votre demande d'ami",
+                "link": "/musician",
+                "type": "friend_accepted",
+                "icon": acceptor_image,
+                "data": {
+                    "friend_id": current_user["id"]
+                }
+            }
+        )
+    except Exception as e:
+        print(f"Failed to send push notification: {e}")
+    
     return {"message": "Friend request accepted"}
 
 @api_router.post("/friends/reject/{request_id}")

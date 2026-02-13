@@ -27,7 +27,7 @@ import {
 import { 
   Music, LogOut, MapPin, Globe, Instagram, Facebook, Phone, Edit, Save, 
   Loader2, CreditCard, Check, Clock, AlertCircle, X, Plus, CalendarIcon, 
-  Users, Bell, Trash2, Eye, FileText, User, Youtube, Send, Heart, Plug
+  Users, Bell, Trash2, Eye, FileText, User, Youtube, Send, Heart, Plug, Award, MessageSquare
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import SocialLinks from "../components/SocialLinks";

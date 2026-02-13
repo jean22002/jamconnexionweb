@@ -29,6 +29,7 @@ const PaymentCancel = lazy(() => import("./pages/PaymentCancel"));
 const TrialExpired = lazy(() => import("./pages/TrialExpired"));
 const CGU = lazy(() => import("./pages/CGU"));
 const CGV = lazy(() => import("./pages/CGV"));
+const MapExplorer = lazy(() => import("./pages/MapExplorer"));
 
 // Loading fallback component
 const PageLoader = () => (

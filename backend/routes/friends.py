@@ -167,6 +167,14 @@ async def accept_friend_request(request_id: str, current_user: dict = Depends(ge
         None
     )
     
+    # Check for new badges for both users (friend count badges)
+    try:
+        from utils.badge_checker import check_and_award_badges_internal
+        await check_and_award_badges_internal(db, current_user["id"])
+        await check_and_award_badges_internal(db, request["user1_id"])
+    except Exception as e:
+        logger.warning(f"Could not check badges: {e}")
+    
     return {"message": "Friend request accepted"}
 
 

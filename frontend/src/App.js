@@ -89,6 +89,7 @@ function App() {
             className: "glassmorphism text-foreground",
           }}
         />
+        <PWAPrompt />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Landing />} />

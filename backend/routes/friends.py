@@ -4,6 +4,7 @@ Friends router - Handles friend requests and friendships (Jacks system)
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List
 import uuid
+import logging
 from datetime import datetime, timezone
 
 from models import FriendRequest, FriendRequestResponse
@@ -11,6 +12,7 @@ from utils import get_current_user, create_notification, get_db
 
 router = APIRouter(prefix="/friends", tags=["Friends"])
 db = get_db()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/request")

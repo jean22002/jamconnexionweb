@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import PWAPrompt from "./components/PWAPrompt";
+import "leaflet/dist/leaflet.css";
 import "./App.css";
 
 // Pages critiques (chargées immédiatement)

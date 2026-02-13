@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import LazyImage from "../components/LazyImage";
+import UserBadges from "../components/UserBadges";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 

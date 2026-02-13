@@ -9,9 +9,7 @@ export default function UserBadges({ userId, token, limit = 5 }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (token) {
-      fetchUserBadges();
-    }
+    fetchUserBadges();
   }, [userId, token]);
 
   const fetchUserBadges = async () => {

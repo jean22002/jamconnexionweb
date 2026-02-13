@@ -1,39 +1,59 @@
 /* eslint-disable no-restricted-globals */
-// Service Worker pour les notifications push et fonctionnement en arrière-plan
-// Compatible avec les futures applications smartphone
+// Service Worker PWA pour Jam Connexion
+// Support du mode hors ligne, notifications push et cache intelligent
 
-const CACHE_NAME = 'jam-connexion-v2'; // Incremented version to force cache update
-const urlsToCache = [
+const CACHE_VERSION = 'v3.0';
+const CACHE_NAME = `jam-connexion-${CACHE_VERSION}`;
+const RUNTIME_CACHE = `jam-connexion-runtime-${CACHE_VERSION}`;
+const IMAGE_CACHE = `jam-connexion-images-${CACHE_VERSION}`;
+
+// URLs critiques à mettre en cache lors de l'installation
+const CRITICAL_URLS = [
   '/',
-  '/static/css/main.css',
-  '/static/js/main.js'
+  '/manifest.json'
 ];
 
+// Durée de vie du cache (en millisecondes)
+const CACHE_EXPIRATION = {
+  images: 7 * 24 * 60 * 60 * 1000,  // 7 jours
+  runtime: 24 * 60 * 60 * 1000,      // 24 heures
+  api: 5 * 60 * 1000                 // 5 minutes
+};
+
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Installation');
+  console.log('[SW] Installation - Version', CACHE_VERSION);
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('[Service Worker] Cache ouvert');
-        return cache.addAll(urlsToCache);
+        console.log('[SW] Mise en cache des ressources critiques');
+        return cache.addAll(CRITICAL_URLS).catch(err => {
+          console.warn('[SW] Erreur cache initial:', err);
+        });
       })
-      .then(() => self.skipWaiting())
+      .then(() => {
+        console.log('[SW] Installation terminée, activation immédiate');
+        return self.skipWaiting();
+      })
   );
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] Activation');
+  console.log('[SW] Activation');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('[Service Worker] Suppression ancien cache:', cacheName);
+          // Supprimer tous les anciens caches sauf les actuels
+          if (!cacheName.includes(CACHE_VERSION)) {
+            console.log('[SW] Suppression ancien cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      console.log('[SW] Prise de contrôle des clients');
+      return self.clients.claim();
+    })
   );
 });
 

@@ -36,6 +36,7 @@ from .message import MessageCreate, MessageResponse
 from .payment import CheckoutRequest
 from .notification import NotificationResponse
 from .profitability import ProfitabilityData, ProfitabilityResponse
+from .badge import Badge, UserBadge, BadgeResponse, UserStatsResponse
 
 __all__ = [
     'UserRegister', 'UserLogin', 'UserResponse', 'TokenResponse', 'ChangePasswordRequest',
@@ -50,5 +51,6 @@ __all__ = [
     'MessageCreate', 'MessageResponse',
     'CheckoutRequest',
     'NotificationResponse',
-    'ProfitabilityData', 'ProfitabilityResponse'
+    'ProfitabilityData', 'ProfitabilityResponse',
+    'Badge', 'UserBadge', 'BadgeResponse', 'UserStatsResponse'
 ]

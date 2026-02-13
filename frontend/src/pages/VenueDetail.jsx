@@ -688,6 +688,13 @@ export default function VenueDetail() {
           <TabsContent value="info">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-2 space-y-6">
+                {/* Badges Section */}
+                {token && venue.user_id && (
+                  <div className="glassmorphism rounded-2xl p-6">
+                    <UserBadges userId={venue.user_id} token={token} limit={6} />
+                  </div>
+                )}
+                
                 {/* Équipements & Services Section */}
                 {(venue.has_stage || venue.has_sound_engineer || venue.has_pa_system || venue.has_lights) && (
                   <div className="glassmorphism rounded-2xl p-6 space-y-6">

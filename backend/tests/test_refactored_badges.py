@@ -407,7 +407,7 @@ class TestNotificationsSystem:
     
     def test_notifications_list(self, venue_token):
         """Test getting notifications"""
-        response = requests.get(f"{BASE_URL}/api/notifications/", headers={
+        response = requests.get(f"{BASE_URL}/api/notifications", headers={
             "Authorization": f"Bearer {venue_token}"
         })
         assert response.status_code == 200
@@ -417,7 +417,7 @@ class TestNotificationsSystem:
     
     def test_notifications_unread_count(self, venue_token):
         """Test getting unread count"""
-        response = requests.get(f"{BASE_URL}/api/notifications/unread-count", headers={
+        response = requests.get(f"{BASE_URL}/api/notifications/unread/count", headers={
             "Authorization": f"Bearer {venue_token}"
         })
         assert response.status_code == 200

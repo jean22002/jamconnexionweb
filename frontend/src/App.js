@@ -161,7 +161,6 @@ function App() {
           />
           <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
           <Route path="/messages-improved" element={<ProtectedRoute><MessagesImproved /></ProtectedRoute>} />
-          <Route path="/badges" element={<ProtectedRoute><BadgesPage /></ProtectedRoute>} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/venue-register" element={<VenueRegister />} />

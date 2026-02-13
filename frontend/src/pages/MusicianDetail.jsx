@@ -170,6 +170,13 @@ export default function MusicianDetail() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Bio & Instruments */}
           <div className="space-y-6">
+            {/* Badges Section */}
+            {token && (
+              <div className="glassmorphism rounded-2xl p-6">
+                <UserBadges userId={musician.user_id} token={token} limit={6} />
+              </div>
+            )}
+            
             {musician.bio && (
               <div className="glassmorphism rounded-2xl p-6">
                 <h2 className="font-heading font-semibold text-lg mb-4">Bio</h2>

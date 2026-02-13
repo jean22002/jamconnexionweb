@@ -16,11 +16,15 @@ export default function UserBadges({ userId, token, limit = 5 }) {
 
   const fetchUserBadges = async () => {
     try {
-      const response = await fetch(`${API}/api/badges/my-badges`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      // Si userId est fourni, récupérer les badges de cet utilisateur (endpoint public)
+      // Sinon, récupérer les badges de l'utilisateur connecté
+      const endpoint = userId 
+        ? `${API}/api/badges/user/${userId}`
+        : `${API}/api/badges/my-badges`;
+      
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      
+      const response = await fetch(endpoint, { headers });
       
       if (response.ok) {
         const data = await response.json();

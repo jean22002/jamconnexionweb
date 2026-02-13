@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import PWAPrompt from "./components/PWAPrompt";
+import PushNotificationPrompt from "./components/PushNotificationPrompt";
 import "leaflet/dist/leaflet.css";
 import "./App.css";
 
@@ -93,6 +94,7 @@ function App() {
           }}
         />
         <PWAPrompt />
+        <PushNotificationPrompt />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Landing />} />

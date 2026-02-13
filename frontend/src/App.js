@@ -32,6 +32,7 @@ const CGU = lazy(() => import("./pages/CGU"));
 const CGV = lazy(() => import("./pages/CGV"));
 const MapExplorer = lazy(() => import("./pages/MapExplorer"));
 const BadgesPage = lazy(() => import("./pages/BadgesPage"));
+const NotificationSettingsPage = lazy(() => import("./pages/NotificationSettingsPage"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -106,6 +107,7 @@ function App() {
             <Route path="/melomane/:id" element={<MelomaneDetail />} />
             <Route path="/map" element={<MapExplorer />} />
             <Route path="/badges" element={<ProtectedRoute><BadgesPage /></ProtectedRoute>} />
+            <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettingsPage /></ProtectedRoute>} />
             <Route path="/cgu" element={<CGU />} />
             <Route path="/cgv" element={<CGV />} />
             <Route 

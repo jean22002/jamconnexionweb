@@ -159,6 +159,7 @@ async def mark_participation(
         "event_type": event_type,
         "participant_id": user_id,
         "participant_type": "melomane",
+        "active": True,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
@@ -169,6 +170,13 @@ async def mark_participation(
         {"user_id": user_id},
         {"$inc": {"events_attended": 1}}
     )
+    
+    # Check for new badges
+    try:
+        from utils.badge_checker import check_and_award_badges_internal
+        await check_and_award_badges_internal(db, user_id)
+    except Exception as e:
+        logger.warning(f"Could not check badges: {e}")
     
     return {"message": "Participation marked successfully"}
 

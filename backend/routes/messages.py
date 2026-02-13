@@ -65,6 +65,24 @@ async def send_message(data: MessageCreate, current_user: dict = Depends(get_cur
     }
     await db.notifications.insert_one(notification_doc)
     
+    # Send push notification
+    try:
+        from routes.push_notifications import send_push_notification
+        await send_push_notification(
+            user_id=data.recipient_id,
+            notification_data={
+                "title": f"💬 {current_user['name']}",
+                "message": data.subject[:100] if data.subject else "Nouveau message",
+                "link": "/messages-improved",
+                "type": "message",
+                "id": message_doc["id"],
+                "icon": sender_image
+            }
+        )
+    except Exception as e:
+        # Don't fail the request if push notification fails
+        print(f"Failed to send push notification: {e}")
+    
     return MessageResponse(**message_doc)
 
 @router.get("/inbox", response_model=List[MessageResponse])

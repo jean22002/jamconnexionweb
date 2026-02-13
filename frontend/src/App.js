@@ -101,6 +101,7 @@ function App() {
             <Route path="/venue/:id" element={<VenueDetail />} />
             <Route path="/musician/:id" element={<MusicianDetail />} />
             <Route path="/melomane/:id" element={<MelomaneDetail />} />
+            <Route path="/map" element={<MapExplorer />} />
             <Route path="/cgu" element={<CGU />} />
             <Route path="/cgv" element={<CGV />} />
             <Route 

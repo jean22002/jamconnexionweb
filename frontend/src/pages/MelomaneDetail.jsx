@@ -14,7 +14,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function MelomaneDetail() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const navigate = useNavigate();
   const [melomane, setMelomane] = useState(null);
   const [loading, setLoading] = useState(true);

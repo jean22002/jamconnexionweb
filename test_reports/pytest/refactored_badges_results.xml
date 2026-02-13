@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="6" skipped="0" tests="29" time="14.009" timestamp="2026-02-13T23:22:05.770553+00:00" hostname="agent-env-743e5bda-6a54-459d-8e08-5dc441ae7388"><testcase classname="tests.test_refactored_badges.TestAuthentication" name="test_health_check" time="0.285"><failure message="requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)">/root/.venv/lib/python3.11/site-packages/requests/models.py:976: in json
+    return complexjson.loads(self.text, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/decoder.py:355: in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+tests/test_refactored_badges.py:33: in test_health_check
+    data = response.json()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/models.py:980: in json
+    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+E   requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)</failure></testcase><testcase classname="tests.test_refactored_badges.TestAuthentication" name="test_venue_login" time="0.444" /><testcase classname="tests.test_refactored_badges.TestAuthentication" name="test_login_invalid_credentials" time="0.288" /><testcase classname="tests.test_refactored_badges.TestAuthentication" name="test_auth_me_without_token" time="0.186" /><testcase classname="tests.test_refactored_badges.TestAuthentication" name="test_auth_me_with_token" time="0.475" /><testcase classname="tests.test_refactored_badges.TestBadgesSystem" name="test_badges_all_without_auth" time="0.112" /><testcase classname="tests.test_refactored_badges.TestBadgesSystem" name="test_badges_all_with_auth" time="0.558" /><testcase classname="tests.test_refactored_badges.TestBadgesSystem" name="test_badges_my_badges" time="0.502" /><testcase classname="tests.test_refactored_badges.TestBadgesSystem" name="test_badges_user_public_endpoint" time="0.867" /><testcase classname="tests.test_refactored_badges.TestBadgesSystem" name="test_badges_stats" time="0.491" /><testcase classname="tests.test_refactored_badges.TestBadgesSystem" name="test_badges_check" time="0.507" /><testcase classname="tests.test_refactored_badges.TestVenueProfilesAndEvents" name="test_venues_me" time="0.484" /><testcase classname="tests.test_refactored_badges.TestVenueProfilesAndEvents" name="test_venues_list" time="0.149" /><testcase classname="tests.test_refactored_badges.TestVenueProfilesAndEvents" name="test_venues_jams_list" time="0.603" /><testcase classname="tests.test_refactored_badges.TestVenueProfilesAndEvents" name="test_venues_concerts_list" time="0.638" /><testcase classname="tests.test_refactored_badges.TestMusicianSystem" name="test_musicians_list" time="0.169" /><testcase classname="tests.test_refactored_badges.TestMusicianSystem" name="test_musicians_me" time="0.649" /><testcase classname="tests.test_refactored_badges.TestFriendSystem" name="test_friends_list" time="0.467" /><testcase classname="tests.test_refactored_badges.TestFriendSystem" name="test_friend_requests" time="0.541" /><testcase classname="tests.test_refactored_badges.TestFriendSystem" name="test_sent_friend_requests" time="0.479" /><testcase classname="tests.test_refactored_badges.TestMelomaneSystem" name="test_melomanes_list" time="0.147"><failure message="assert 520 == 200&#10; +  where 520 = &lt;Response [520]&gt;.status_code">tests/test_refactored_badges.py:379: in test_melomanes_list
+    assert response.status_code == 200
+E   assert 520 == 200
+E    +  where 520 = &lt;Response [520]&gt;.status_code</failure></testcase><testcase classname="tests.test_refactored_badges.TestMelomaneSystem" name="test_melomanes_me" time="0.463" /><testcase classname="tests.test_refactored_badges.TestNotificationsSystem" name="test_notifications_list" time="0.721"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">tests/test_refactored_badges.py:414: in test_notifications_list
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="tests.test_refactored_badges.TestNotificationsSystem" name="test_notifications_unread_count" time="0.500"><failure message="assert 405 == 200&#10; +  where 405 = &lt;Response [405]&gt;.status_code">tests/test_refactored_badges.py:424: in test_notifications_unread_count
+    assert response.status_code == 200
+E   assert 405 == 200
+E    +  where 405 = &lt;Response [405]&gt;.status_code</failure></testcase><testcase classname="tests.test_refactored_badges.TestVenueSubscription" name="test_subscribe_to_venue" time="0.816" /><testcase classname="tests.test_refactored_badges.TestVenueSubscription" name="test_subscription_status" time="0.677" /><testcase classname="tests.test_refactored_badges.TestEventParticipation" name="test_get_musician_participations" time="0.467" /><testcase classname="tests.test_refactored_badges.TestMessagingSystem" name="test_messages_list" time="0.711"><failure message="assert 405 == 200&#10; +  where 405 = &lt;Response [405]&gt;.status_code">tests/test_refactored_badges.py:518: in test_messages_list
+    assert response.status_code == 200
+E   assert 405 == 200
+E    +  where 405 = &lt;Response [405]&gt;.status_code</failure></testcase><testcase classname="tests.test_refactored_badges.TestMessagingSystem" name="test_conversations" time="0.436"><failure message="assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code">tests/test_refactored_badges.py:528: in test_conversations
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</failure></testcase></testsuite></testsuites>

@@ -3,8 +3,8 @@ import { useAuth } from '../context/AuthContext';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-// Clé VAPID publique - à générer côté serveur
-const VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Oi-7KE7VWi5Q83w1IiQ7y5L-XZXdoIJ_l7FqPCh4sLX9qZE_b5u5hqM2fqg';
+// Clé VAPID publique - générée avec py_vapid
+const VAPID_PUBLIC_KEY = 'BEeRFe_n_8rtLRIiR8fO6CtMfF8w88Vs2Xsb95WHuWUCilhoaKjO4DYMHjprm1rbOrHbrq66xBw5MT4r8U2ncw4';
 
 export function usePushNotifications() {
   const { token, user } = useAuth();

@@ -511,5 +511,25 @@ async def create_badge_notification(user_id: str, badge: dict):
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.notifications.insert_one(notification_doc)
+        
+        # Send push notification
+        try:
+            from routes.push_notifications import send_push_notification
+            await send_push_notification(
+                user_id=user_id,
+                notification_data={
+                    "title": f"🏆 Badge débloqué !",
+                    "message": f"{badge['icon']} {badge['name']} - {badge['unlock_message']}",
+                    "link": "/badges",
+                    "type": "badge",
+                    "icon": badge["icon"],
+                    "data": {
+                        "badge_id": badge["id"],
+                        "points": badge["points"]
+                    }
+                }
+            )
+        except Exception as push_error:
+            logger.error(f"Error sending push notification for badge: {push_error}")
     except Exception as e:
         logger.error(f"Error creating badge notification: {e}")

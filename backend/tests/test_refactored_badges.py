@@ -374,7 +374,7 @@ class TestMelomaneSystem:
     
     def test_melomanes_list(self):
         """Test public melomanes list"""
-        response = requests.get(f"{BASE_URL}/api/melomanes/")
+        response = requests.get(f"{BASE_URL}/api/melomanes/")  # Note: trailing slash required
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)

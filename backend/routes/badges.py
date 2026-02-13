@@ -518,7 +518,7 @@ async def create_badge_notification(user_id: str, badge: dict):
             await send_push_notification(
                 user_id=user_id,
                 notification_data={
-                    "title": f"🏆 Badge débloqué !",
+                    "title": "🏆 Badge débloqué !",
                     "message": f"{badge['icon']} {badge['name']} - {badge['unlock_message']}",
                     "link": "/badges",
                     "type": "badge",

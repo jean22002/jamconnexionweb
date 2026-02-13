@@ -142,63 +142,204 @@ self.addEventListener('periodicsync', (event) => {
   }
 });
 
-// Stratégie de cache : Network First, puis Cache
+// Stratégie de cache intelligente
 self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+  
   // Skip pour les requêtes non-GET
-  if (event.request.method !== 'GET') return;
+  if (request.method !== 'GET') return;
   
-  // Skip pour les requêtes API (toujours en ligne)
-  if (event.request.url.includes('/api/')) return;
+  // Skip pour les requêtes vers des domaines externes (sauf images)
+  if (url.origin !== location.origin && !isImageRequest(request)) return;
   
-  // Pour les fichiers HTML, JS, CSS : toujours essayer le réseau d'abord
-  const isNavigationRequest = event.request.mode === 'navigate' || 
-                               event.request.destination === 'document' ||
-                               event.request.url.endsWith('.html') ||
-                               event.request.url.endsWith('.js') ||
-                               event.request.url.endsWith('.css');
+  // 1. STRATÉGIE POUR LES IMAGES : Cache First (longue durée)
+  if (isImageRequest(request)) {
+    event.respondWith(handleImageRequest(request));
+    return;
+  }
   
-  if (isNavigationRequest) {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          // Clone la réponse avant de la mettre en cache
-          const responseToCache = response.clone();
-          
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          
-          return response;
-        })
-        .catch(() => {
-          // Si le réseau échoue, utiliser le cache (offline fallback)
-          return caches.match(event.request);
-        })
-    );
-  } else {
-    // Pour les autres ressources (images, fonts, etc.) : Cache First
-    event.respondWith(
-      caches.match(event.request)
-        .then((response) => {
-          if (response) {
-            return response;
-          }
-          
-          return fetch(event.request).then((response) => {
-            const responseToCache = response.clone();
-            
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-            
-            return response;
-          });
-        })
+  // 2. STRATÉGIE POUR LES API : Network First avec cache court
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(handleAPIRequest(request));
+    return;
+  }
+  
+  // 3. STRATÉGIE POUR LES PAGES HTML/JS/CSS : Network First avec fallback
+  if (isNavigationRequest(request) || isAssetRequest(request)) {
+    event.respondWith(handleNavigationRequest(request));
+    return;
+  }
+  
+  // 4. STRATÉGIE PAR DÉFAUT : Network avec fallback cache
+  event.respondWith(
+    fetch(request)
+      .then(response => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(RUNTIME_CACHE).then(cache => cache.put(request, clone));
+        }
+        return response;
+      })
+      .catch(() => caches.match(request))
+  );
+});
+
+// Helpers
+function isImageRequest(request) {
+  return request.destination === 'image' || 
+         /\.(jpg|jpeg|png|gif|webp|svg|ico)$/i.test(request.url);
+}
+
+function isNavigationRequest(request) {
+  return request.mode === 'navigate' || 
+         request.destination === 'document' ||
+         request.url.endsWith('.html');
+}
+
+function isAssetRequest(request) {
+  return request.destination === 'script' || 
+         request.destination === 'style' ||
+         /\.(js|css)$/i.test(request.url);
+}
+
+// Handler pour les images : Cache First avec expiration
+async function handleImageRequest(request) {
+  try {
+    const cache = await caches.open(IMAGE_CACHE);
+    const cached = await cache.match(request);
+    
+    if (cached) {
+      // Vérifier l'âge du cache
+      const cacheDate = cached.headers.get('sw-cache-date');
+      if (cacheDate) {
+        const age = Date.now() - parseInt(cacheDate);
+        if (age < CACHE_EXPIRATION.images) {
+          return cached;
+        }
+      }
+    }
+    
+    // Fetch et mise en cache
+    const response = await fetch(request);
+    if (response.ok) {
+      const clone = response.clone();
+      const newHeaders = new Headers(clone.headers);
+      newHeaders.append('sw-cache-date', Date.now().toString());
+      
+      const newResponse = new Response(clone.body, {
+        status: clone.status,
+        statusText: clone.statusText,
+        headers: newHeaders
+      });
+      
+      cache.put(request, newResponse);
+    }
+    return response;
+  } catch (error) {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    
+    // Retourner une image placeholder en cas d'échec total
+    return new Response(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="#ddd"/></svg>',
+      { headers: { 'Content-Type': 'image/svg+xml' }}
     );
   }
-});
+}
+
+// Handler pour les API : Network First avec cache court
+async function handleAPIRequest(request) {
+  try {
+    const response = await fetch(request);
+    
+    if (response.ok) {
+      const clone = response.clone();
+      const cache = await caches.open(RUNTIME_CACHE);
+      
+      // Ajouter metadata de cache
+      const newHeaders = new Headers(clone.headers);
+      newHeaders.append('sw-cache-date', Date.now().toString());
+      
+      const cachedResponse = new Response(clone.body, {
+        status: clone.status,
+        statusText: clone.statusText,
+        headers: newHeaders
+      });
+      
+      cache.put(request, cachedResponse);
+    }
+    return response;
+  } catch (error) {
+    // Fallback sur le cache si disponible et pas trop vieux
+    const cache = await caches.open(RUNTIME_CACHE);
+    const cached = await cache.match(request);
+    
+    if (cached) {
+      const cacheDate = cached.headers.get('sw-cache-date');
+      if (cacheDate) {
+        const age = Date.now() - parseInt(cacheDate);
+        if (age < CACHE_EXPIRATION.api) {
+          console.log('[SW] Using cached API response');
+          return cached;
+        }
+      }
+    }
+    
+    throw error;
+  }
+}
+
+// Handler pour la navigation : Network First avec fallback offline
+async function handleNavigationRequest(request) {
+  try {
+    const response = await fetch(request);
+    
+    if (response.ok) {
+      const clone = response.clone();
+      caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+    }
+    
+    return response;
+  } catch (error) {
+    // Fallback sur le cache
+    const cached = await caches.match(request);
+    if (cached) {
+      return cached;
+    }
+    
+    // Si aucun cache, retourner la page d'accueil en cache
+    const indexCache = await caches.match('/');
+    if (indexCache) {
+      return indexCache;
+    }
+    
+    // Dernière option : page offline basique
+    return new Response(
+      `<!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <title>Hors ligne - Jam Connexion</title>
+          <style>
+            body{font-family:system-ui;text-align:center;padding:50px;background:#0a0118;color:#fff}
+            .icon{font-size:64px;margin:20px}
+            button{background:#a855f7;color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-size:16px}
+            button:hover{background:#9333ea}
+          </style>
+        </head>
+        <body>
+          <div class="icon">📡</div>
+          <h1>Vous êtes hors ligne</h1>
+          <p>Vérifiez votre connexion Internet et réessayez.</p>
+          <button onclick="location.reload()">Réessayer</button>
+        </body>
+      </html>`,
+      { headers: { 'Content-Type': 'text/html' }}
+    );
+  }
+}
 
 // Fonctions de synchronisation
 async function syncNotifications() {

@@ -384,6 +384,141 @@ async def get_user_stats(current_user: dict = Depends(get_current_user)):
         logger.error(f"Error fetching user stats: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching user stats: {str(e)}")
 
+@router.get("/leaderboard")
+async def get_leaderboard(
+    category: Optional[str] = None,  # 'musician', 'venue', 'melomane', or None for all
+    limit: int = 10
+):
+    """
+    Get leaderboard of top users by badges and points
+    Returns top 10 (or limit) users with their stats
+    """
+    try:
+        # Construire le pipeline d'agrégation
+        pipeline = []
+        
+        # Joindre avec les badges pour calculer les points
+        pipeline.extend([
+            {
+                "$lookup": {
+                    "from": "badges",
+                    "localField": "badge_id",
+                    "foreignField": "id",
+                    "as": "badge_info"
+                }
+            },
+            {"$unwind": "$badge_info"},
+            {
+                "$group": {
+                    "_id": "$user_id",
+                    "total_points": {"$sum": "$badge_info.points"},
+                    "badges_count": {"$sum": 1}
+                }
+            }
+        ])
+        
+        # Joindre avec les utilisateurs pour obtenir les infos
+        pipeline.extend([
+            {
+                "$lookup": {
+                    "from": "users",
+                    "localField": "_id",
+                    "foreignField": "id",
+                    "as": "user"
+                }
+            },
+            {"$unwind": "$user"}
+        ])
+        
+        # Filtrer par catégorie si spécifié
+        if category:
+            pipeline.append({
+                "$match": {"user.role": category}
+            })
+        
+        # Joindre avec les profils spécifiques
+        pipeline.extend([
+            {
+                "$lookup": {
+                    "from": "musicians",
+                    "localField": "_id",
+                    "foreignField": "user_id",
+                    "as": "musician_profile"
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "venues",
+                    "localField": "_id",
+                    "foreignField": "user_id",
+                    "as": "venue_profile"
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "melomanes",
+                    "localField": "_id",
+                    "foreignField": "user_id",
+                    "as": "melomane_profile"
+                }
+            }
+        ])
+        
+        # Projection finale
+        pipeline.extend([
+            {
+                "$project": {
+                    "user_id": "$_id",
+                    "name": "$user.name",
+                    "email": "$user.email",
+                    "role": "$user.role",
+                    "total_points": 1,
+                    "badges_count": 1,
+                    "profile_picture": {
+                        "$cond": {
+                            "if": {"$gt": [{"$size": "$musician_profile"}, 0]},
+                            "then": {"$arrayElemAt": ["$musician_profile.profile_picture", 0]},
+                            "else": {
+                                "$cond": {
+                                    "if": {"$gt": [{"$size": "$venue_profile"}, 0]},
+                                    "then": {"$arrayElemAt": ["$venue_profile.profile_picture", 0]},
+                                    "else": {"$arrayElemAt": ["$melomane_profile.profile_picture", 0]}
+                                }
+                            }
+                        }
+                    },
+                    "pseudo": {
+                        "$cond": {
+                            "if": {"$gt": [{"$size": "$musician_profile"}, 0]},
+                            "then": {"$arrayElemAt": ["$musician_profile.pseudo", 0]},
+                            "else": {
+                                "$cond": {
+                                    "if": {"$gt": [{"$size": "$melomane_profile"}, 0]},
+                                    "then": {"$arrayElemAt": ["$melomane_profile.pseudo", 0]},
+                                    "else": "$user.name"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {"$sort": {"total_points": -1, "badges_count": -1}},
+            {"$limit": limit}
+        ])
+        
+        # Exécuter l'agrégation
+        leaderboard = await db.user_badges.aggregate(pipeline).to_list(limit)
+        
+        # Calculer le niveau pour chaque utilisateur
+        for entry in leaderboard:
+            entry["level"] = calculate_level(entry["total_points"])
+        
+        return leaderboard
+        
+    except Exception as e:
+        logger.error(f"Error fetching leaderboard: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching leaderboard: {str(e)}")
+
 @router.post("/check")
 async def check_and_award_badges(current_user: dict = Depends(get_current_user)):
     """Check and award badges based on current user activity"""

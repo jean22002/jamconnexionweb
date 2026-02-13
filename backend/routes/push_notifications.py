@@ -217,6 +217,3 @@ async def send_push_notification(user_id: str, notification_data: Dict[str, Any]
     except Exception as e:
         logger.error(f"Error sending push notification: {e}")
         return False
-    except Exception as e:
-        logger.error(f"Error sending push notification: {e}")
-        return False

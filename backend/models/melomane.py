@@ -74,18 +74,18 @@ class MelomaneResponse(BaseModel):
     city: Optional[str] = None
     region: Optional[str] = None
     postal_code: Optional[str] = None
-    country: str
+    country: Optional[str] = "France"
     latitude: Optional[float] = None
     longitude: Optional[float] = None
-    favorite_styles: List[str]
-    favorite_venues: List[str]
+    favorite_styles: List[str] = []
+    favorite_venues: List[str] = []
     profile_picture: Optional[str] = None
     cover_photo: Optional[str] = None
     facebook: Optional[str] = None
     instagram: Optional[str] = None
     twitter: Optional[str] = None
-    notifications_enabled: bool
-    notification_radius_km: float
-    events_attended: int
-    favorite_count: int
+    notifications_enabled: bool = True
+    notification_radius_km: float = 50.0
+    events_attended: int = 0
+    favorite_count: int = 0
     created_at: str

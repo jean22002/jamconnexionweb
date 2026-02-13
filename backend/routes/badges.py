@@ -316,6 +316,36 @@ async def get_my_badges(current_user: dict = Depends(get_current_user)):
         logger.error(f"Error fetching user badges: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching user badges: {str(e)}")
 
+@router.get("/user/{user_id}", response_model=List[BadgeResponse])
+async def get_user_badges(user_id: str):
+    """Get unlocked badges for any user (public)"""
+    try:
+        # Récupérer les badges débloqués de l'utilisateur
+        user_badges = await db.user_badges.find(
+            {"user_id": user_id},
+            {"_id": 0}
+        ).to_list(100)
+        
+        response = []
+        for ub in user_badges:
+            badge = await db.badges.find_one({"id": ub["badge_id"]}, {"_id": 0})
+            if badge:
+                badge_response = BadgeResponse(
+                    **badge,
+                    unlocked=True,
+                    unlocked_at=ub["unlocked_at"],
+                    progress=badge["requirement_value"],
+                    progress_percentage=100.0
+                )
+                response.append(badge_response)
+        
+        # Trier par date de déverrouillage (plus récent en premier)
+        response.sort(key=lambda x: x.unlocked_at or "", reverse=True)
+        return response
+    except Exception as e:
+        logger.error(f"Error fetching user badges: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching user badges: {str(e)}")
+
 @router.get("/stats", response_model=UserStatsResponse)
 async def get_user_stats(current_user: dict = Depends(get_current_user)):
     """Get gamification stats for current user"""

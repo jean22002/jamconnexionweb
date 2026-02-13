@@ -714,6 +714,26 @@ async def send_friend_request(data: FriendRequest, current_user: dict = Depends(
         f"/musician/{sender_musician['id'] if sender_musician else ''}"
     )
     
+    # Send push notification
+    try:
+        from routes.push_notifications import send_push_notification
+        await send_push_notification(
+            user_id=data.to_user_id,
+            notification_data={
+                "title": "👥 Nouvelle demande d'ami",
+                "message": f"{current_user['name']} souhaite devenir ami avec vous",
+                "link": "/musician",
+                "type": "friend_request",
+                "icon": sender_image,
+                "data": {
+                    "request_id": request_id,
+                    "from_user_id": current_user["id"]
+                }
+            }
+        )
+    except Exception as e:
+        print(f"Failed to send push notification: {e}")
+    
     return {"message": "Friend request sent", "request_id": request_id}
 
 @api_router.get("/friends/requests")

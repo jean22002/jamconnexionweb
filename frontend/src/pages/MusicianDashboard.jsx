@@ -250,6 +250,7 @@ function FollowUser({ position, enabled }) {
 
 export default function MusicianDashboard() {
   const { user, token, logout } = useAuth();
+  const { triggerBadgeCheck } = useBadgeAutoCheck();
   
   // Hook pour les notifications push
   useNotifications(token, user);

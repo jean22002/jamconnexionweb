@@ -283,6 +283,18 @@ export default function MusicianDetail() {
           </div>
         </div>
       </main>
+      
+      {/* Report Dialog */}
+      {musician && (
+        <ReportProfileDialog
+          isOpen={showReportDialog}
+          onClose={() => setShowReportDialog(false)}
+          reportedUserId={musician.user_id}
+          reportedProfileType="musician"
+          reportedProfileName={musician.pseudo}
+          token={token}
+        />
+      )}
     </div>
   );
 }

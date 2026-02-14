@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import LazyImage from "../components/LazyImage";
 import { useAuth } from "../context/AuthContext";
+import { useBadgeAutoCheck } from "../hooks/useBadgeAutoCheck";
 import { toast } from "sonner";
 import JoinEventButton from "../components/JoinEventButton";
 import { StarRating, StarRatingInput } from "../components/StarRating";

@@ -89,16 +89,17 @@ const PublicRoute = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Toaster 
-          position="top-right" 
-          toastOptions={{
-            className: "glassmorphism text-foreground",
-          }}
-        />
-        <PWAPrompt />
-        <PushNotificationPrompt />
-        <Suspense fallback={<PageLoader />}>
+      <BadgeProvider>
+        <BrowserRouter>
+          <Toaster 
+            position="top-right" 
+            toastOptions={{
+              className: "glassmorphism text-foreground",
+            }}
+          />
+          <PWAPrompt />
+          <PushNotificationPrompt />
+          <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />

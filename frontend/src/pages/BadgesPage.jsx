@@ -15,6 +15,7 @@ const API = process.env.REACT_APP_BACKEND_URL;
 export default function BadgesPage() {
   const { token } = useAuth();
   const { toast } = useToast();
+  const { showMultipleBadges } = useBadge();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
   const [allBadges, setAllBadges] = useState([]);

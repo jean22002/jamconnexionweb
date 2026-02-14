@@ -1372,6 +1372,10 @@ export default function VenueDashboard() {
     try {
       await axios.post(`${API}/jams`, jamForm, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Boeuf musical créé!");
+      
+      // ⭐ Check for new badges after creating event
+      triggerBadgeCheck();
+      
       setShowJamDialog(false);
       setJamForm({ date: "", start_time: "", end_time: "", music_styles: [], rules: "", has_instruments: false, has_pa_system: false, instruments_available: [], additional_info: "" });
       fetchEvents();

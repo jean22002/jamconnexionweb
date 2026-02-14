@@ -183,9 +183,17 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
-            <Button onClick={logout} variant="outline" className="rounded-full">
-              Déconnexion
-            </Button>
+            <div className="flex gap-2">
+              <Link to="/admin/analytics">
+                <Button variant="outline" className="rounded-full">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Analytics
+                </Button>
+              </Link>
+              <Button onClick={logout} variant="outline" className="rounded-full">
+                Déconnexion
+              </Button>
+            </div>
           </div>
         </div>
       </div>

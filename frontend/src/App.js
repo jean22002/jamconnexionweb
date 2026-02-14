@@ -36,6 +36,7 @@ const BadgesPage = lazy(() => import("./pages/BadgesPage"));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
 const NotificationSettingsPage = lazy(() => import("./pages/NotificationSettingsPage"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const UserHistoryPage = lazy(() => import("./pages/UserHistoryPage"));
 const MyReportsPage = lazy(() => import("./pages/MyReportsPage"));
 
@@ -117,6 +118,7 @@ function App() {
             <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettingsPage /></ProtectedRoute>} />
             <Route path="/my-reports" element={<ProtectedRoute><MyReportsPage /></ProtectedRoute>} />
             <Route path="/admin/reports" element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/analytics" element={<ProtectedRoute allowedRole="admin"><AnalyticsPage /></ProtectedRoute>} />
             <Route path="/admin/user/:userId/history" element={<ProtectedRoute allowedRole="admin"><UserHistoryPage /></ProtectedRoute>} />
             <Route path="/cgu" element={<CGU />} />
             <Route path="/cgv" element={<CGV />} />

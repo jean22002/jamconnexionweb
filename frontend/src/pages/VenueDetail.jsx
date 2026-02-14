@@ -641,8 +641,7 @@ export default function VenueDetail() {
                 </div>
               </div>
               
-              <div className="flex flex-col gap-2 w-full md:w-auto"
->
+              <div className="flex flex-col gap-2 w-full md:w-auto">
                 {(user?.role === "musician" || user?.role === "melomane") && (
                   <Button 
                     onClick={handleSubscribe} 
@@ -664,6 +663,17 @@ export default function VenueDetail() {
                     ) : (
                       <><Heart className="w-4 h-4 fill-current" /> Se connecter</>
                     )}
+                  </Button>
+                )}
+                
+                {user && user.id !== venue?.user_id && token && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowReportDialog(true)}
+                    className="rounded-full border-red-500/50 text-red-500 hover:bg-red-500/10 gap-2"
+                  >
+                    <Flag className="w-4 h-4" />
+                    Signaler
                   </Button>
                 )}
               </div>

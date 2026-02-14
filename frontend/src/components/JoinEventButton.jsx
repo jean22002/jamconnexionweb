@@ -17,6 +17,7 @@ export default function JoinEventButton({
 }) {
   const [loading, setLoading] = useState(false);
   const [localParticipating, setLocalParticipating] = useState(false);
+  const { triggerBadgeCheck } = useBadgeAutoCheck();
   
   // Sync local state with prop when it changes
   useEffect(() => {

@@ -155,12 +155,34 @@ async def list_venues(city: Optional[str] = None, style: Optional[str] = None):
     
     venues = await db.venues.find(query, {"_id": 0}).to_list(100)
     
+    if not venues:
+        return []
+    
+    # Optimisation: Récupérer tous les utilisateurs en une seule requête
+    user_ids = [v["user_id"] for v in venues]
+    users = await db.users.find(
+        {"id": {"$in": user_ids}},
+        {"_id": 0, "id": 1, "subscription_status": 1}
+    ).to_list(None)
+    users_map = {u["id"]: u for u in users}
+    
+    # Optimisation: Compter tous les abonnés en une seule agrégation
+    venue_ids = [v["id"] for v in venues]
+    subscribers_pipeline = [
+        {"$match": {"venue_id": {"$in": venue_ids}}},
+        {"$group": {"_id": "$venue_id", "count": {"$sum": 1}}}
+    ]
+    subscribers_result = await db.venue_subscriptions.aggregate(subscribers_pipeline).to_list(None)
+    subscribers_map = {item["_id"]: item["count"] for item in subscribers_result}
+    
+    # Construire le résultat
     result = []
     for v in venues:
-        user = await db.users.find_one({"id": v["user_id"]}, {"_id": 0})
+        user = users_map.get(v["user_id"])
         user_subscription_status = user.get("subscription_status") if user else None
+        
         if user_subscription_status in ["active", "trial"]:
-            subscribers_count = await db.venue_subscriptions.count_documents({"venue_id": v["id"]})
+            subscribers_count = subscribers_map.get(v["id"], 0)
             v["subscription_status"] = user_subscription_status
             v["subscribers_count"] = subscribers_count
             result.append(VenueProfileResponse(**v))

@@ -23,6 +23,7 @@ export default function MusicianDetail() {
   const [musician, setMusician] = useState(null);
   const [loading, setLoading] = useState(true);
   const [participation, setParticipation] = useState(null);
+  const [showReportDialog, setShowReportDialog] = useState(false);
 
   const fetchMusician = useCallback(async () => {
     try {

@@ -120,6 +120,17 @@ export default function MelomaneDetail() {
                     </span>
                   </div>
                 )}
+                
+                {user && user.id !== melomane.user_id && token && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowReportDialog(true)}
+                    className="rounded-full border-red-500/50 text-red-500 hover:bg-red-500/10 gap-2"
+                  >
+                    <Flag className="w-4 h-4" />
+                    Signaler
+                  </Button>
+                )}
               </div>
             </div>
           </div>

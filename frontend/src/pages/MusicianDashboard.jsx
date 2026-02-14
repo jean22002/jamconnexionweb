@@ -26,6 +26,7 @@ import {
   Radio, MapPinOff, Locate, Settings2, Send, ArrowLeft, MessageSquare, Clock, Eye, Plus, Edit, Trash2, Award, Trophy
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useBadgeAutoCheck } from "../hooks/useBadgeAutoCheck";
 import { useAutoGeolocation } from "../hooks/useGeolocation";
 import { useNotifications } from "../hooks/useNotifications";
 import { toast } from "sonner";

@@ -491,7 +491,7 @@ async def update_report_status(
         # Si le signalement est marqué comme "resolved", vérifier l'auto-modération
         auto_action_result = None
         if status == "resolved":
-            from utils.auto_moderation import check_auto_moderation, send_suspension_notification
+            from app.utils.auto_moderation import check_auto_moderation, send_suspension_notification
             
             auto_action_result = await check_auto_moderation(db, report["reported_user_id"])
             

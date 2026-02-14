@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { BadgeProvider } from "./context/BadgeContext";
 import PWAPrompt from "./components/PWAPrompt";
 import PushNotificationPrompt from "./components/PushNotificationPrompt";
 import "leaflet/dist/leaflet.css";

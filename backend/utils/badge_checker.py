@@ -48,7 +48,7 @@ async def check_and_award_badges_internal(db, user_id: str) -> list:
         user_id: ID de l'utilisateur
         
     Returns:
-        Liste des badges nouvellement débloqués
+        Liste des badges nouvellement débloqués (objets complets)
     """
     try:
         from datetime import datetime, timezone
@@ -90,7 +90,7 @@ async def check_and_award_badges_internal(db, user_id: str) -> list:
                 await db.user_badges.insert_one(user_badge_doc)
                 newly_unlocked.append(badge)
                 
-                # Créer une notification
+                # Créer une notification ET envoyer push notification
                 await create_badge_notification_internal(db, user_id, badge)
         
         if newly_unlocked:

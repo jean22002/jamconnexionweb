@@ -141,18 +141,56 @@ async def list_musicians(instrument: Optional[str] = None, style: Optional[str] 
         query["city"] = {"$regex": city, "$options": "i"}
     
     musicians = await db.musicians.find(query, {"_id": 0}).to_list(100)
+    
+    # Optimisation: Récupérer tous les compteurs d'amis en une seule requête
+    user_ids = [m["user_id"] for m in musicians]
+    
+    if user_ids:
+        # Agrégation pour compter les amis de tous les musiciens en une requête
+        friend_counts_pipeline = [
+            {
+                "$match": {
+                    "$or": [
+                        {"user1_id": {"$in": user_ids}, "status": "accepted"},
+                        {"user2_id": {"$in": user_ids}, "status": "accepted"}
+                    ]
+                }
+            },
+            {
+                "$project": {
+                    "user_id": {
+                        "$cond": [
+                            {"$in": ["$user1_id", user_ids]},
+                            "$user1_id",
+                            "$user2_id"
+                        ]
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$user_id",
+                    "count": {"$sum": 1}
+                }
+            }
+        ]
+        
+        friend_counts_result = await db.friends.aggregate(friend_counts_pipeline).to_list(None)
+        friend_counts_map = {item["_id"]: item["count"] for item in friend_counts_result}
+    else:
+        friend_counts_map = {}
+    
+    # Construire le résultat avec les compteurs d'amis
     result = []
     for m in musicians:
-        friends_count = await db.friends.count_documents({
-            "$or": [{"user1_id": m["user_id"]}, {"user2_id": m["user_id"]}],
-            "status": "accepted"
-        })
+        friends_count = friend_counts_map.get(m["user_id"], 0)
         try:
             result.append(MusicianProfileResponse(**{**m, "friends_count": friends_count}))
         except Exception as e:
             # Skip musicians with invalid data
             logger.warning(f"Skipping musician {m.get('id')} due to validation error: {e}")
             continue
+    
     return result
 
 

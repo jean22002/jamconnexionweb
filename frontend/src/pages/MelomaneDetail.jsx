@@ -205,6 +205,18 @@ export default function MelomaneDetail() {
           </div>
         )}
       </main>
+      
+      {/* Report Dialog */}
+      {melomane && (
+        <ReportProfileDialog
+          isOpen={showReportDialog}
+          onClose={() => setShowReportDialog(false)}
+          reportedUserId={melomane.user_id}
+          reportedProfileType="melomane"
+          reportedProfileName={melomane.pseudo}
+          token={token}
+        />
+      )}
     </div>
   );
 }

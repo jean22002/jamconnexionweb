@@ -488,10 +488,31 @@ async def update_report_status(
         
         logger.info(f"Report {report_id} status updated to {status} by admin {admin_user['id']}")
         
+        # Si le signalement est marqué comme "resolved", vérifier l'auto-modération
+        auto_action_result = None
+        if status == "resolved":
+            from utils.auto_moderation import check_auto_moderation, send_suspension_notification
+            
+            auto_action_result = await check_auto_moderation(db, report["reported_user_id"])
+            
+            if auto_action_result:
+                logger.info(f"Auto-moderation triggered for user {report['reported_user_id']}: {auto_action_result}")
+                
+                # Envoyer les notifications
+                await send_suspension_notification(db, report["reported_user_id"], auto_action_result)
+        
         # Récupérer le signalement mis à jour
         updated_report = await db.reports.find_one({"id": report_id}, {"_id": 0})
         
-        return ReportResponse(**updated_report)
+        # Ajouter les informations d'auto-modération si applicables
+        response_data = ReportResponse(**updated_report)
+        if auto_action_result:
+            return {
+                **response_data.model_dump(),
+                "auto_moderation": auto_action_result
+            }
+        
+        return response_data
         
     except HTTPException:
         raise

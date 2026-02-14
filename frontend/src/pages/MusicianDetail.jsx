@@ -7,6 +7,7 @@ import {
   Globe, Instagram, Facebook, Youtube, UserPlus, Users
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useBadgeAutoCheck } from "../hooks/useBadgeAutoCheck";
 import { toast } from "sonner";
 import LazyImage from "../components/LazyImage";
 import UserBadges from "../components/UserBadges";

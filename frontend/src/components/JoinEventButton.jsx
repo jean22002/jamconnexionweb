@@ -51,6 +51,9 @@ export default function JoinEventButton({
       // Update local state immediately for instant UI feedback
       setLocalParticipating(true);
       
+      // ⭐ Check for new badges after participation
+      triggerBadgeCheck();
+      
       // Notify parent to refresh participation status
       if (onParticipationChange) {
         onParticipationChange(true, event.id, event.type).catch(err => {

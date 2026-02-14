@@ -76,6 +76,9 @@ export default function BadgesPage() {
       const data = await response.json();
       
       if (data.newly_unlocked && data.newly_unlocked.length > 0) {
+        // Show badge unlock toasts
+        showMultipleBadges(data.newly_unlocked);
+        
         toast({
           title: "🎉 Nouveaux badges !",
           description: `Vous avez débloqué ${data.newly_unlocked.length} nouveau(x) badge(s) !`

@@ -1441,6 +1441,10 @@ export default function VenueDashboard() {
     try {
       await axios.post(`${API}/spectacle`, spectacleForm, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Spectacle créé!");
+      
+      // ⭐ Check for new badges after creating event
+      triggerBadgeCheck();
+      
       setShowSpectacleDialog(false);
       setSpectacleForm({ date: "", start_time: "", end_time: "", type: "", artist_name: "", description: "", price: "" });
       fetchEvents();

@@ -30,6 +30,7 @@ import {
   Users, Bell, Trash2, Eye, FileText, User, Youtube, Send, Heart, Plug, Award, MessageSquare, Trophy
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useBadgeAutoCheck } from "../hooks/useBadgeAutoCheck";
 import SocialLinks from "../components/SocialLinks";
 import { StarRating } from "../components/StarRating";
 import { toast } from "sonner";

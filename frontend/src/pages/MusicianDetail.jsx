@@ -4,13 +4,14 @@ import axios from "axios";
 import { Button } from "../components/ui/button";
 import { 
   Music, ArrowLeft, Loader2, User, Guitar, MapPin, Calendar,
-  Globe, Instagram, Facebook, Youtube, UserPlus, Users
+  Globe, Instagram, Facebook, Youtube, UserPlus, Users, Flag
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useBadgeAutoCheck } from "../hooks/useBadgeAutoCheck";
 import { toast } from "sonner";
 import LazyImage from "../components/LazyImage";
 import UserBadges from "../components/UserBadges";
+import ReportProfileDialog from "../components/ReportProfileDialog";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 

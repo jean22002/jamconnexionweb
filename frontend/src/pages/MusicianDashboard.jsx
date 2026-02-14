@@ -1026,6 +1026,10 @@ export default function MusicianDashboard() {
     try {
       await axios.post(`${API}/friends/request`, { to_user_id: userId }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Demande envoyée!");
+      
+      // ⭐ Check for new badges after friend request
+      triggerBadgeCheck();
+      
       fetchFriends(); // Refresh pour mettre à jour l'état des boutons
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur");

@@ -28,6 +28,7 @@ export default function VenueDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, token } = useAuth();
+  const { triggerBadgeCheck } = useBadgeAutoCheck();
   const [venue, setVenue] = useState(null);
   const [loading, setLoading] = useState(true);
   const [jams, setJams] = useState([]);

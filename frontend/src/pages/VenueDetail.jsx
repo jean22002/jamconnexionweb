@@ -1604,6 +1604,18 @@ export default function VenueDetail() {
           </TabsContent>
         </Tabs>
       </main>
+      
+      {/* Report Dialog */}
+      {venue && (
+        <ReportProfileDialog
+          isOpen={showReportDialog}
+          onClose={() => setShowReportDialog(false)}
+          reportedUserId={venue.user_id}
+          reportedProfileType="venue"
+          reportedProfileName={venue.name}
+          token={token}
+        />
+      )}
     </div>
   );
 }

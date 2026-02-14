@@ -73,6 +73,7 @@ import routes.bands as bands
 import routes.badges as badges
 import routes.push_notifications as push_notifications
 import routes.friends as friends
+import routes.reports as reports
 
 # Include routers with basic functionality
 api_router.include_router(auth_router)

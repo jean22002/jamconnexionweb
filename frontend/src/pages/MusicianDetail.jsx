@@ -74,6 +74,9 @@ export default function MusicianDetail() {
     try {
       await axios.post(`${API}/friends/request`, { to_user_id: musician.user_id }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Demande envoyée!");
+      
+      // ⭐ Check for new badges after friend request
+      triggerBadgeCheck();
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur");
     }

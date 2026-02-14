@@ -74,6 +74,7 @@ import routes.badges as badges
 import routes.push_notifications as push_notifications
 import routes.friends as friends
 import routes.reports as reports
+import routes.analytics as analytics
 
 # Include routers with basic functionality
 api_router.include_router(auth_router)
@@ -97,6 +98,7 @@ bands.set_db(db)
 badges.set_db(db)
 push_notifications.set_db(db)
 reports.set_db(db)
+analytics.set_db(db)
 
 # Include domain-specific routers
 api_router.include_router(melomanes.router)
@@ -109,6 +111,7 @@ api_router.include_router(badges.router)
 api_router.include_router(push_notifications.router)
 api_router.include_router(friends.router)
 api_router.include_router(reports.router)
+api_router.include_router(analytics.router)
 
 # Geocoding utility endpoint
 @api_router.post("/geocode")

@@ -209,9 +209,14 @@ async def get_venue(venue_id: str):
 @router.post("/venues/nearby", response_model=List[VenueProfileResponse])
 async def find_nearby_venues(request: NearbySearchRequest):
     """Find venues within radius of a given position"""
-    venues = await db.venues.find({}, {"_id": 0}).to_list(1000)
+    # Récupérer seulement les champs nécessaires pour le calcul de distance
+    venues = await db.venues.find(
+        {},
+        {"_id": 0, "id": 1, "user_id": 1, "latitude": 1, "longitude": 1, "name": 1, "city": 1, "venue_type": 1, "music_styles": 1, "address": 1, "photo_url": 1}
+    ).to_list(1000)
     
-    nearby = []
+    # Filtrer les venues à proximité
+    nearby_venues = []
     for venue in venues:
         if venue.get("latitude") and venue.get("longitude"):
             distance = haversine_distance(
@@ -219,16 +224,40 @@ async def find_nearby_venues(request: NearbySearchRequest):
                 venue["latitude"], venue["longitude"]
             )
             if distance <= request.radius_km:
-                # Check if user is active
-                user = await db.users.find_one({"id": venue["user_id"]}, {"_id": 0})
-                if user and user.get("subscription_status") in ["active", "trial"]:
-                    subscribers_count = await db.venue_subscriptions.count_documents({"venue_id": venue["id"]})
-                    venue_resp = VenueProfileResponse(
-                        **venue, 
-                        subscription_status=user.get("subscription_status"),
-                        subscribers_count=subscribers_count
-                    )
-                    nearby.append(venue_resp)
+                nearby_venues.append(venue)
+    
+    if not nearby_venues:
+        return []
+    
+    # Optimisation: Récupérer tous les utilisateurs en batch
+    user_ids = [v["user_id"] for v in nearby_venues]
+    users = await db.users.find(
+        {"id": {"$in": user_ids}},
+        {"_id": 0, "id": 1, "subscription_status": 1}
+    ).to_list(None)
+    users_map = {u["id"]: u for u in users}
+    
+    # Optimisation: Compter tous les abonnés en une agrégation
+    venue_ids = [v["id"] for v in nearby_venues]
+    subscribers_pipeline = [
+        {"$match": {"venue_id": {"$in": venue_ids}}},
+        {"$group": {"_id": "$venue_id", "count": {"$sum": 1}}}
+    ]
+    subscribers_result = await db.venue_subscriptions.aggregate(subscribers_pipeline).to_list(None)
+    subscribers_map = {item["_id"]: item["count"] for item in subscribers_result}
+    
+    # Construire le résultat
+    nearby = []
+    for venue in nearby_venues:
+        user = users_map.get(venue["user_id"])
+        if user and user.get("subscription_status") in ["active", "trial"]:
+            subscribers_count = subscribers_map.get(venue["id"], 0)
+            venue_resp = VenueProfileResponse(
+                **venue,
+                subscription_status=user.get("subscription_status"),
+                subscribers_count=subscribers_count
+            )
+            nearby.append(venue_resp)
     
     return nearby
 

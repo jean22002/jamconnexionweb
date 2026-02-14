@@ -355,6 +355,14 @@ export default function AdminDashboard() {
                             </div>
 
                             <div className="flex flex-col gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => viewUserHistory(report.reported_user_id)}
+                              >
+                                <UserCheck className="w-4 h-4 mr-2" />
+                                Historique
+                              </Button>
                               {report.status === 'pending' && (
                                 <>
                                   <Button

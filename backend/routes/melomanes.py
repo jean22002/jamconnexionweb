@@ -2,9 +2,11 @@ from fastapi import APIRouter, HTTPException, Depends, Header
 from datetime import datetime, timezone
 from typing import List
 import uuid
+import logging
 
 from models.melomane import MelomaneCreate, MelomaneUpdate, MelomaneResponse
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/melomanes", tags=["Melomanes"])
 
 # DB will be injected by the main server

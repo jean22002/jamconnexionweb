@@ -1424,6 +1424,10 @@ export default function VenueDashboard() {
     try {
       await axios.post(`${API}/karaoke`, karaokeForm, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Soirée karaoké créée!");
+      
+      // ⭐ Check for new badges after creating event
+      triggerBadgeCheck();
+      
       setShowKaraokeDialog(false);
       setKaraokeForm({ date: "", start_time: "", end_time: "", title: "", description: "", music_styles: [] });
       fetchEvents();

@@ -112,7 +112,10 @@ function App() {
             <Route path="/melomane/:id" element={<MelomaneDetail />} />
             <Route path="/map" element={<MapExplorer />} />
             <Route path="/badges" element={<ProtectedRoute><BadgesPage /></ProtectedRoute>} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettingsPage /></ProtectedRoute>} />
+            <Route path="/my-reports" element={<ProtectedRoute><MyReportsPage /></ProtectedRoute>} />
+            <Route path="/admin/reports" element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>} />
             <Route path="/cgu" element={<CGU />} />
             <Route path="/cgv" element={<CGV />} />
             <Route 

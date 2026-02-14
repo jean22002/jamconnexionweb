@@ -364,6 +364,13 @@ export default function MelomaneDashboard() {
             </Link>
             
             <div className="flex items-center gap-4">
+              {/* Leaderboard */}
+              <Link to="/leaderboard">
+                <Button variant="ghost" className="relative">
+                  <Trophy className="w-5 h-5" />
+                </Button>
+              </Link>
+
               {/* Badges */}
               <Link to="/badges">
                 <Button variant="ghost" className="relative">

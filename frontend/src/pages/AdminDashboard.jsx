@@ -103,13 +103,19 @@ export default function AdminDashboard() {
     }
   }, [statusFilter, reasonFilter, profileTypeFilter]);
 
-  const updateReportStatus = async (reportId, newStatus) => {
+  const updateReportStatus = async (reportId, newStatus, notes = '') => {
     try {
       setUpdating(true);
+      const params = new URLSearchParams();
+      params.append('status', newStatus);
+      if (notes) {
+        params.append('admin_notes', notes);
+      }
+      
       await axios.patch(
-        `${API}/api/reports/admin/${reportId}/status`,
-        { status: newStatus, admin_notes: adminNotes },
-        { headers: { Authorization: `Bearer ${token}` }, params: { status: newStatus, admin_notes: adminNotes } }
+        `${API}/api/reports/admin/${reportId}/status?${params.toString()}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       
       toast.success(`Signalement marqué comme "${STATUS_LABELS[newStatus]}"`);
@@ -125,15 +131,19 @@ export default function AdminDashboard() {
   };
 
   const suspendUser = async (userId, duration = 7) => {
-    if (!confirm(`Êtes-vous sûr de vouloir suspendre cet utilisateur pour ${duration} jours ?`)) {
+    if (!window.confirm(`Êtes-vous sûr de vouloir suspendre cet utilisateur pour ${duration} jours ?`)) {
       return;
     }
 
     try {
+      const params = new URLSearchParams();
+      params.append('duration_days', duration);
+      params.append('reason', 'Multiple signalements');
+      
       await axios.post(
-        `${API}/api/reports/admin/suspend-user/${userId}`,
-        { duration_days: duration, reason: "Multiple signalements" },
-        { headers: { Authorization: `Bearer ${token}` }, params: { duration_days: duration, reason: "Multiple signalements" } }
+        `${API}/api/reports/admin/suspend-user/${userId}?${params.toString()}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       
       toast.success(`Utilisateur suspendu pour ${duration} jours`);
@@ -142,6 +152,10 @@ export default function AdminDashboard() {
       console.error('Error suspending user:', error);
       toast.error("Erreur lors de la suspension");
     }
+  };
+  
+  const viewUserHistory = (userId) => {
+    navigate(`/admin/user/${userId}/history`);
   };
 
   if (!user || user.role !== 'admin') {

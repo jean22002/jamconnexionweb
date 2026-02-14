@@ -36,6 +36,7 @@ const BadgesPage = lazy(() => import("./pages/BadgesPage"));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
 const NotificationSettingsPage = lazy(() => import("./pages/NotificationSettingsPage"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const UserHistoryPage = lazy(() => import("./pages/UserHistoryPage"));
 const MyReportsPage = lazy(() => import("./pages/MyReportsPage"));
 
 // Loading fallback component

@@ -19,6 +19,7 @@ export default function MelomaneDetail() {
   const navigate = useNavigate();
   const [melomane, setMelomane] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showReportDialog, setShowReportDialog] = useState(false);
 
   const fetchMelomane = useCallback(async () => {
     try {

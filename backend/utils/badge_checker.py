@@ -105,6 +105,7 @@ async def check_and_award_badges_internal(db, user_id: str) -> list:
 async def calculate_badge_progress(db, user: dict, badge: dict) -> int:
     """Calculate current progress for a badge"""
     try:
+        from datetime import datetime, timezone
         req_type = badge["requirement_type"]
         
         if req_type == "event_participation":

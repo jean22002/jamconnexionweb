@@ -4,11 +4,12 @@ import axios from "axios";
 import { Button } from "../components/ui/button";
 import { 
   Music, ArrowLeft, Loader2, User, MapPin, Heart,
-  Globe, Instagram, Facebook, Twitter
+  Globe, Instagram, Facebook, Twitter, Flag
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import LazyImage from "../components/LazyImage";
 import UserBadges from "../components/UserBadges";
+import ReportProfileDialog from "../components/ReportProfileDialog";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 

@@ -121,7 +121,11 @@ async def create_jam_event(data: JamEvent, current_user: dict = Depends(get_curr
     
     # Alert nearby venues (within 100km)
     try:
-        all_venues = await db.venues.find({}, {"_id": 0}).to_list(1000)
+        # Optimisation: Ne récupérer que les champs nécessaires pour le calcul de distance et notification
+        all_venues = await db.venues.find(
+            {},
+            {"_id": 0, "id": 1, "user_id": 1, "latitude": 1, "longitude": 1, "name": 1}
+        ).to_list(1000)
         
         nearby_venues = []
         for other_venue in all_venues:

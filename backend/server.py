@@ -108,6 +108,7 @@ api_router.include_router(bands.router)
 api_router.include_router(badges.router)
 api_router.include_router(push_notifications.router)
 api_router.include_router(friends.router)
+api_router.include_router(reports.router)
 
 # Geocoding utility endpoint
 @api_router.post("/geocode")

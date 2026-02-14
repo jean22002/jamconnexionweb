@@ -587,3 +587,163 @@ async def unsuspend_user(
     except Exception as e:
         logger.error(f"Error unsuspending user: {e}")
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+
+
+@router.get("/admin/user/{user_id}/history")
+async def get_user_history(
+    user_id: str,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """
+    Récupérer l'historique complet d'un utilisateur (Admin uniquement)
+    
+    Inclut:
+    - Informations du profil
+    - Signalements reçus
+    - Événements créés/participations
+    - Messages envoyés (aperçu)
+    - Amitiés
+    - Statut de suspension
+    """
+    try:
+        # Récupérer l'utilisateur
+        user = await db.users.find_one({"id": user_id}, {"_id": 0})
+        if not user:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        
+        # Récupérer le profil spécifique selon le role
+        profile = None
+        if user["role"] == "musician":
+            profile = await db.musicians.find_one({"user_id": user_id}, {"_id": 0})
+        elif user["role"] == "venue":
+            profile = await db.venues.find_one({"user_id": user_id}, {"_id": 0})
+        elif user["role"] == "melomane":
+            profile = await db.melomanes.find_one({"user_id": user_id}, {"_id": 0})
+        
+        # Récupérer les signalements reçus
+        reports_received = await db.reports.find(
+            {"reported_user_id": user_id},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(50)
+        
+        # Récupérer les signalements créés
+        reports_created = await db.reports.find(
+            {"reporter_user_id": user_id},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(50)
+        
+        # Récupérer les événements (créés si venue, participations si musician/melomane)
+        events_data = {"created": [], "participated": []}
+        
+        if user["role"] == "venue":
+            venue_profile = await db.venues.find_one({"user_id": user_id}, {"_id": 0})
+            if venue_profile:
+                events_created = await db.events.find(
+                    {"venue_id": venue_profile["id"]},
+                    {"_id": 0}
+                ).sort("date", -1).limit(20).to_list(20)
+                events_data["created"] = events_created
+        
+        # Participations aux événements
+        participations = await db.event_participations.find(
+            {"participant_id": user_id},
+            {"_id": 0}
+        ).to_list(100)
+        
+        # Récupérer les détails des événements participés
+        event_ids = [p["event_id"] for p in participations[:20]]
+        if event_ids:
+            events_participated = await db.events.find(
+                {"id": {"$in": event_ids}},
+                {"_id": 0}
+            ).to_list(20)
+            events_data["participated"] = events_participated
+        
+        # Récupérer les amitiés
+        friends = await db.friends.find(
+            {
+                "$or": [
+                    {"user1_id": user_id},
+                    {"user2_id": user_id}
+                ],
+                "status": "accepted"
+            },
+            {"_id": 0}
+        ).to_list(100)
+        
+        # Récupérer un aperçu des messages (nombre total)
+        messages_sent_count = await db.messages.count_documents({"sender_id": user_id})
+        messages_received_count = await db.messages.count_documents({"receiver_id": user_id})
+        
+        # Récupérer les derniers messages
+        recent_messages = await db.messages.find(
+            {
+                "$or": [
+                    {"sender_id": user_id},
+                    {"receiver_id": user_id}
+                ]
+            },
+            {"_id": 0, "id": 1, "sender_id": 1, "receiver_id": 1, "timestamp": 1, "content": 1}
+        ).sort("timestamp", -1).limit(10).to_list(10)
+        
+        # Récupérer les badges
+        badges = await db.user_badges.find(
+            {"user_id": user_id},
+            {"_id": 0}
+        ).to_list(100)
+        
+        # Récupérer les avis donnés/reçus
+        reviews_given = await db.reviews.find(
+            {"reviewer_id": user_id},
+            {"_id": 0}
+        ).sort("created_at", -1).limit(20).to_list(20)
+        
+        reviews_received_count = 0
+        if user["role"] == "venue":
+            venue_profile = await db.venues.find_one({"user_id": user_id}, {"_id": 0})
+            if venue_profile:
+                reviews_received_count = await db.reviews.count_documents({"venue_id": venue_profile["id"]})
+        
+        return {
+            "user": user,
+            "profile": profile,
+            "reports": {
+                "received": reports_received,
+                "created": reports_created,
+                "received_count": len(reports_received),
+                "created_count": len(reports_created)
+            },
+            "events": {
+                "created": events_data["created"],
+                "participated": events_data["participated"],
+                "created_count": len(events_data["created"]),
+                "participated_count": len(participations)
+            },
+            "social": {
+                "friends_count": len(friends),
+                "friends": friends[:20]  # Limiter à 20 pour l'affichage
+            },
+            "messages": {
+                "sent_count": messages_sent_count,
+                "received_count": messages_received_count,
+                "recent": recent_messages
+            },
+            "badges": badges,
+            "reviews": {
+                "given": reviews_given,
+                "given_count": len(reviews_given),
+                "received_count": reviews_received_count
+            },
+            "suspension_status": {
+                "is_suspended": user.get("is_suspended", False),
+                "suspended_until": user.get("suspended_until"),
+                "suspension_reason": user.get("suspension_reason")
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching user history: {e}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")

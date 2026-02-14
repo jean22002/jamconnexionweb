@@ -1133,6 +1133,10 @@ export default function MusicianDashboard() {
     try {
       await axios.post(`${API}/friends/accept/${requestId}`, {}, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Demande acceptée!");
+      
+      // ⭐ Check for new badges after accepting friend
+      triggerBadgeCheck();
+      
       fetchFriends();
       fetchNotifications();
     } catch (error) {

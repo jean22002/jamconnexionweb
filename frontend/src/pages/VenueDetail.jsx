@@ -63,6 +63,7 @@ export default function VenueDetail() {
   const [subscribing, setSubscribing] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
+  const [showReportDialog, setShowReportDialog] = useState(false);
   const [showCalendarView, setShowCalendarView] = useState(false);
   const [selectedSlotForPreview, setSelectedSlotForPreview] = useState(null);
 

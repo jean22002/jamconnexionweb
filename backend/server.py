@@ -96,6 +96,7 @@ planning.set_db(db)
 bands.set_db(db)
 badges.set_db(db)
 push_notifications.set_db(db)
+reports.set_db(db)
 
 # Include domain-specific routers
 api_router.include_router(melomanes.router)

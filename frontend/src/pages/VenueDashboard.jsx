@@ -54,6 +54,7 @@ const INSTRUMENTS_BASE = [
 
 export default function VenueDashboard() {
   const { user, token, logout, refreshUser } = useAuth();
+  const { triggerBadgeCheck } = useBadgeAutoCheck();
   
   // Hook pour les notifications push
   useNotifications(token, user);

@@ -1406,6 +1406,10 @@ export default function VenueDashboard() {
     try {
       await axios.post(`${API}/concerts`, concertForm, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Concert créé!");
+      
+      // ⭐ Check for new badges after creating event
+      triggerBadgeCheck();
+      
       setShowConcertDialog(false);
       setConcertForm({ date: "", start_time: "", end_time: "", title: "", description: "", bands: [], price: "", music_styles: [] });
       fetchEvents();

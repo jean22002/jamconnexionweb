@@ -171,6 +171,7 @@ function App() {
         </Routes>
         </Suspense>
       </BrowserRouter>
+      </BadgeProvider>
     </AuthProvider>
   );
 }

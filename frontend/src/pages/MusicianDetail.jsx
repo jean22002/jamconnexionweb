@@ -166,11 +166,24 @@ export default function MusicianDetail() {
               </div>
             </div>
             
-            {user?.role === "musician" && user?.id !== musician.user_id && (
-              <Button onClick={sendFriendRequest} className="bg-primary hover:bg-primary/90 rounded-full gap-2">
-                <UserPlus className="w-4 h-4" /> Ajouter
-              </Button>
-            )}
+            <div className="flex gap-3">
+              {user?.role === "musician" && user?.id !== musician.user_id && (
+                <Button onClick={sendFriendRequest} className="bg-primary hover:bg-primary/90 rounded-full gap-2">
+                  <UserPlus className="w-4 h-4" /> Ajouter
+                </Button>
+              )}
+              
+              {user && user.id !== musician.user_id && token && (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowReportDialog(true)}
+                  className="rounded-full border-red-500/50 text-red-500 hover:bg-red-500/10 gap-2"
+                >
+                  <Flag className="w-4 h-4" />
+                  Signaler
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 

@@ -1050,6 +1050,10 @@ export default function MusicianDashboard() {
     try {
       await axios.post(`${API}/venues/${venueId}/subscribe`, {}, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Connecté à l'établissement!");
+      
+      // ⭐ Check for new badges after subscribing to venue
+      triggerBadgeCheck();
+      
       fetchFriends(); // Refresh pour mettre à jour subscriptions
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur");

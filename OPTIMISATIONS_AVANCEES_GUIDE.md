@@ -45,7 +45,7 @@ POST /api/admin/optimize-images
 
 **Utilisation :**
 ```bash
-API_URL="https://gamified-venue.preview.emergentagent.com"
+API_URL="https://gamification-preview.preview.emergentagent.com"
 TOKEN="votre_token"
 
 curl -X POST "$API_URL/api/admin/optimize-images" \

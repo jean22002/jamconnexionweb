@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { Radio, Loader2, LogOut } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
+import { useBadgeAutoCheck } from "../hooks/useBadgeAutoCheck";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 

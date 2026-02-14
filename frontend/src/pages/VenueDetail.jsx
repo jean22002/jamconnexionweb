@@ -248,6 +248,9 @@ export default function VenueDetail() {
         );
         setIsSubscribed(true);
         toast.success("Connecté à cet établissement ! Il apparaîtra dans votre onglet Connexions.");
+        
+        // ⭐ Check for new badges after subscribing
+        triggerBadgeCheck();
       }
       fetchVenue(); // Refresh subscriber count
     } catch (error) {

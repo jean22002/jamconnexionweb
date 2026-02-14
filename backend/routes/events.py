@@ -161,7 +161,7 @@ async def create_jam_event(data: JamEvent, current_user: dict = Depends(get_curr
                 "id": str(uuid.uuid4()),
                 "user_id": nearby["venue"]["user_id"],
                 "type": "nearby_jam_alert",
-                "title": f"🎵 Bœuf planifié à proximité",
+                "title": "🎵 Bœuf planifié à proximité",
                 "message": f"{venue['name']} organise un bœuf le {data.date} de {data.start_time} à {data.end_time} ({nearby['distance_km']}km de chez vous). Pensez à vérifier votre planning !",
                 "data": {
                     "jam_id": jam_id,

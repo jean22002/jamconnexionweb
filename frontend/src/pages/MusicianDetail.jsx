@@ -17,6 +17,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 export default function MusicianDetail() {
   const { id } = useParams();
   const { user, token } = useAuth();
+  const { triggerBadgeCheck } = useBadgeAutoCheck();
   const navigate = useNavigate();
   const [musician, setMusician] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -307,3 +307,283 @@ async def get_my_reports(current_user: dict = Depends(get_current_user)):
     except Exception as e:
         logger.error(f"Error fetching user reports: {e}")
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+
+
+# ==================== ADMIN ROUTES ====================
+
+# Helper function for admin authentication
+async def get_admin_user(authorization: str = Header(None)):
+    """Vérifie que l'utilisateur est un administrateur"""
+    user = await get_current_user(authorization)
+    
+    # Vérifier si l'utilisateur a le rôle admin
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Accès réservé aux administrateurs")
+    
+    return user
+
+
+@router.get("/admin/all", response_model=List[ReportResponse])
+async def get_all_reports_admin(
+    status: str = None,
+    reason: str = None,
+    profile_type: str = None,
+    limit: int = 100,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """
+    Récupérer tous les signalements (Admin uniquement)
+    
+    Filtres optionnels:
+    - status: pending, reviewed, resolved, dismissed
+    - reason: raison du signalement
+    - profile_type: musician, venue, melomane
+    - limit: nombre max de résultats (défaut: 100)
+    """
+    try:
+        # Construire le filtre
+        filter_query = {}
+        
+        if status:
+            filter_query["status"] = status
+        
+        if reason:
+            filter_query["reason"] = reason
+        
+        if profile_type:
+            filter_query["reported_profile_type"] = profile_type
+        
+        # Récupérer les signalements
+        reports = await db.reports.find(
+            filter_query,
+            {"_id": 0}
+        ).sort("created_at", -1).limit(limit).to_list(limit)
+        
+        return [ReportResponse(**report) for report in reports]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching all reports: {e}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+
+@router.get("/admin/stats")
+async def get_reports_statistics(admin_user: dict = Depends(get_admin_user)):
+    """
+    Récupérer les statistiques des signalements (Admin uniquement)
+    """
+    try:
+        # Total des signalements
+        total_reports = await db.reports.count_documents({})
+        
+        # Signalements par statut
+        pending_count = await db.reports.count_documents({"status": "pending"})
+        reviewed_count = await db.reports.count_documents({"status": "reviewed"})
+        resolved_count = await db.reports.count_documents({"status": "resolved"})
+        dismissed_count = await db.reports.count_documents({"status": "dismissed"})
+        
+        # Signalements par raison (agrégation)
+        reasons_pipeline = [
+            {"$group": {"_id": "$reason", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]
+        reasons_stats = await db.reports.aggregate(reasons_pipeline).to_list(100)
+        
+        # Signalements par type de profil
+        profile_types_pipeline = [
+            {"$group": {"_id": "$reported_profile_type", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]
+        profile_types_stats = await db.reports.aggregate(profile_types_pipeline).to_list(100)
+        
+        # Top utilisateurs signalés
+        top_reported_pipeline = [
+            {"$group": {
+                "_id": "$reported_user_id",
+                "count": {"$sum": 1},
+                "email": {"$first": "$reported_user_email"},
+                "name": {"$first": "$reported_profile_name"}
+            }},
+            {"$sort": {"count": -1}},
+            {"$limit": 10}
+        ]
+        top_reported = await db.reports.aggregate(top_reported_pipeline).to_list(10)
+        
+        # Signalements des 7 derniers jours
+        seven_days_ago = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        seven_days_ago = seven_days_ago.replace(day=seven_days_ago.day - 7).isoformat()
+        
+        recent_reports = await db.reports.count_documents({
+            "created_at": {"$gte": seven_days_ago}
+        })
+        
+        return {
+            "total_reports": total_reports,
+            "by_status": {
+                "pending": pending_count,
+                "reviewed": reviewed_count,
+                "resolved": resolved_count,
+                "dismissed": dismissed_count
+            },
+            "by_reason": [{"reason": item["_id"], "count": item["count"]} for item in reasons_stats],
+            "by_profile_type": [{"type": item["_id"], "count": item["count"]} for item in profile_types_stats],
+            "top_reported_users": [
+                {
+                    "user_id": item["_id"],
+                    "email": item["email"],
+                    "name": item["name"],
+                    "count": item["count"]
+                }
+                for item in top_reported
+            ],
+            "recent_reports_7_days": recent_reports
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching reports statistics: {e}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+
+@router.patch("/admin/{report_id}/status")
+async def update_report_status(
+    report_id: str,
+    status: str,
+    admin_notes: str = None,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """
+    Mettre à jour le statut d'un signalement (Admin uniquement)
+    
+    Statuts valides: pending, reviewed, resolved, dismissed
+    """
+    try:
+        valid_statuses = ["pending", "reviewed", "resolved", "dismissed"]
+        
+        if status not in valid_statuses:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Statut invalide. Statuts valides: {', '.join(valid_statuses)}"
+            )
+        
+        # Vérifier que le signalement existe
+        report = await db.reports.find_one({"id": report_id}, {"_id": 0})
+        if not report:
+            raise HTTPException(status_code=404, detail="Signalement non trouvé")
+        
+        # Mettre à jour le signalement
+        update_data = {
+            "status": status,
+            "reviewed_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        if admin_notes:
+            update_data["admin_notes"] = admin_notes
+        
+        await db.reports.update_one(
+            {"id": report_id},
+            {"$set": update_data}
+        )
+        
+        logger.info(f"Report {report_id} status updated to {status} by admin {admin_user['id']}")
+        
+        # Récupérer le signalement mis à jour
+        updated_report = await db.reports.find_one({"id": report_id}, {"_id": 0})
+        
+        return ReportResponse(**updated_report)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating report status: {e}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+
+@router.post("/admin/suspend-user/{user_id}")
+async def suspend_user(
+    user_id: str,
+    duration_days: int = 7,
+    reason: str = None,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """
+    Suspendre un utilisateur (Admin uniquement)
+    
+    Args:
+    - user_id: ID de l'utilisateur à suspendre
+    - duration_days: Durée de suspension en jours (défaut: 7)
+    - reason: Raison de la suspension
+    """
+    try:
+        # Vérifier que l'utilisateur existe
+        user = await db.users.find_one({"id": user_id}, {"_id": 0})
+        if not user:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        
+        # Calculer la date de fin de suspension
+        suspended_until = datetime.now(timezone.utc)
+        suspended_until = suspended_until.replace(day=suspended_until.day + duration_days)
+        
+        # Mettre à jour l'utilisateur
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {
+                "is_suspended": True,
+                "suspended_until": suspended_until.isoformat(),
+                "suspension_reason": reason or "Violation du règlement"
+            }}
+        )
+        
+        logger.info(f"User {user_id} suspended by admin {admin_user['id']} until {suspended_until}")
+        
+        return {
+            "message": "Utilisateur suspendu avec succès",
+            "user_id": user_id,
+            "suspended_until": suspended_until.isoformat(),
+            "duration_days": duration_days
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error suspending user: {e}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+
+@router.post("/admin/unsuspend-user/{user_id}")
+async def unsuspend_user(
+    user_id: str,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """
+    Lever la suspension d'un utilisateur (Admin uniquement)
+    """
+    try:
+        # Vérifier que l'utilisateur existe
+        user = await db.users.find_one({"id": user_id}, {"_id": 0})
+        if not user:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        
+        # Mettre à jour l'utilisateur
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {
+                "is_suspended": False,
+                "suspended_until": None,
+                "suspension_reason": None
+            }}
+        )
+        
+        logger.info(f"User {user_id} unsuspended by admin {admin_user['id']}")
+        
+        return {
+            "message": "Suspension levée avec succès",
+            "user_id": user_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error unsuspending user: {e}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")

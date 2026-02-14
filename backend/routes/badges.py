@@ -558,7 +558,7 @@ async def check_and_award_badges(current_user: dict = Depends(get_current_user))
         
         return {
             "message": f"{len(newly_unlocked)} nouveaux badges débloqués",
-            "newly_unlocked": [{"id": b["id"], "name": b["name"], "icon": b["icon"]} for b in newly_unlocked]
+            "newly_unlocked": newly_unlocked  # Return full badge objects
         }
     except Exception as e:
         logger.error(f"Error checking badges: {e}")

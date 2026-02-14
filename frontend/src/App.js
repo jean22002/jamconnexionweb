@@ -117,6 +117,7 @@ function App() {
             <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettingsPage /></ProtectedRoute>} />
             <Route path="/my-reports" element={<ProtectedRoute><MyReportsPage /></ProtectedRoute>} />
             <Route path="/admin/reports" element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/user/:userId/history" element={<ProtectedRoute allowedRole="admin"><UserHistoryPage /></ProtectedRoute>} />
             <Route path="/cgu" element={<CGU />} />
             <Route path="/cgv" element={<CGV />} />
             <Route 

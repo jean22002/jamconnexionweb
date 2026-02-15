@@ -301,7 +301,8 @@ export default function VenueDashboard() {
   }, [token, editing, navigate]);
 
   const fetchEvents = useCallback(async () => {
-    if (!profile) return;
+    if (!profile?.id) return; // Guard: Don't fetch if no profile ID yet
+    
     try {
       const [jamsRes, concertsRes, karaokeRes, spectacleRes, planningRes] = await Promise.all([
         axios.get(`${API}/venues/${profile.id}/jams`),
@@ -343,7 +344,7 @@ export default function VenueDashboard() {
     } catch (error) {
       console.error("Error:", error);
     }
-  }, [profile]);
+  }, [profile?.id]); // FIXED: Only depend on profile.id
 
   const fetchMusicians = useCallback(async () => {
     try {

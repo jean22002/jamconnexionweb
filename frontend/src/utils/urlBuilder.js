@@ -6,10 +6,13 @@
 /**
  * Constructs a complete image URL from a backend path
  * @param {string} path - The image path from backend (e.g., "/api/uploads/venues/file.jpg")
- * @param {string} backendUrl - The backend URL (defaults to REACT_APP_BACKEND_URL)
+ * @param {string} backendUrl - Optional backend URL (if different from current domain)
  * @returns {string} Complete image URL or empty string
+ * 
+ * If path is already absolute (starts with http) or relative (starts with /), returns as-is.
+ * This allows the browser to use the current domain automatically.
  */
-export const buildImageUrl = (path, backendUrl = process.env.REACT_APP_BACKEND_URL) => {
+export const buildImageUrl = (path, backendUrl) => {
   if (!path) return "";
   
   // If already a complete URL, return as-is
@@ -17,10 +20,14 @@ export const buildImageUrl = (path, backendUrl = process.env.REACT_APP_BACKEND_U
     return path;
   }
   
-  // Construct full URL using backend URL
-  // Backend returns paths like "/api/uploads/..." so we prepend the backend URL
-  const normalizedPath = path.startsWith('/') ? path : '/' + path;
-  return `${backendUrl}${normalizedPath}`;
+  // If path starts with /, it's already relative - return as-is
+  // The browser will use the current domain (jamconnexion.com or preview)
+  if (path.startsWith('/')) {
+    return path;
+  }
+  
+  // Otherwise, ensure it starts with /
+  return `/${path}`;
 };
 
 /**

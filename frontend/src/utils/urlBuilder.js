@@ -6,10 +6,10 @@
 /**
  * Constructs a complete image URL from a backend path
  * @param {string} path - The image path from backend (e.g., "/api/uploads/venues/file.jpg")
- * @param {string} backendUrl - The backend URL (defaults to current window origin for multi-domain support)
+ * @param {string} backendUrl - The backend URL (defaults to REACT_APP_BACKEND_URL)
  * @returns {string} Complete image URL or empty string
  */
-export const buildImageUrl = (path, backendUrl) => {
+export const buildImageUrl = (path, backendUrl = process.env.REACT_APP_BACKEND_URL) => {
   if (!path) return "";
   
   // If already a complete URL, return as-is
@@ -17,13 +17,10 @@ export const buildImageUrl = (path, backendUrl) => {
     return path;
   }
   
-  // Use current window origin if no backendUrl provided (supports custom domains)
-  const baseUrl = backendUrl || (typeof window !== 'undefined' ? window.location.origin : process.env.REACT_APP_BACKEND_URL);
-  
-  // Construct full URL
-  // Backend returns paths like "/api/uploads/..." so we prepend the base URL
+  // Construct full URL using backend URL
+  // Backend returns paths like "/api/uploads/..." so we prepend the backend URL
   const normalizedPath = path.startsWith('/') ? path : '/' + path;
-  return `${baseUrl}${normalizedPath}`;
+  return `${backendUrl}${normalizedPath}`;
 };
 
 /**

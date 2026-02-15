@@ -463,7 +463,13 @@ export default function MusicianDashboard() {
       console.log('[MusicianDashboard] Venues loaded successfully. Count:', venuesRes.data.length);
       
       if (Array.isArray(venuesRes.data)) {
-        setVenues(venuesRes.data);
+        // Transform image URLs before setting state
+        const venuesWithUrls = venuesRes.data.map(venue => ({
+          ...venue,
+          profile_image: venue.profile_image ? buildImageUrl(venue.profile_image) : null,
+          cover_image: venue.cover_image ? buildImageUrl(venue.cover_image) : null
+        }));
+        setVenues(venuesWithUrls);
         console.log('[MusicianDashboard] Venues state updated successfully');
       } else {
         console.error('[MusicianDashboard] Venues data is not an array:', typeof venuesRes.data);
@@ -476,7 +482,13 @@ export default function MusicianDashboard() {
         console.log('[MusicianDashboard] Musicians loaded successfully. Count:', musiciansRes.data.length);
         
         if (Array.isArray(musiciansRes.data)) {
-          setMusicians(musiciansRes.data);
+          // Transform image URLs before setting state
+          const musiciansWithUrls = musiciansRes.data.map(musician => ({
+            ...musician,
+            profile_image: musician.profile_image ? buildImageUrl(musician.profile_image) : null,
+            cover_image: musician.cover_image ? buildImageUrl(musician.cover_image) : null
+          }));
+          setMusicians(musiciansWithUrls);
         } else {
           setMusicians([]);
         }
@@ -588,9 +600,22 @@ export default function MusicianDashboard() {
         axios.get(`${API}/friends/sent`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API}/my-subscriptions`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
-      setFriends(friendsRes.data);
-      setFriendRequests(requestsRes.data);
-      setSentRequests(sentRes.data);
+      // Transform image URLs before setting state
+      const friendsWithUrls = (friendsRes.data || []).map(friend => ({
+        ...friend,
+        profile_image: friend.profile_image ? buildImageUrl(friend.profile_image) : null
+      }));
+      const requestsWithUrls = (requestsRes.data || []).map(req => ({
+        ...req,
+        profile_image: req.profile_image ? buildImageUrl(req.profile_image) : null
+      }));
+      const sentWithUrls = (sentRes.data || []).map(sent => ({
+        ...sent,
+        profile_image: sent.profile_image ? buildImageUrl(sent.profile_image) : null
+      }));
+      setFriends(friendsWithUrls);
+      setFriendRequests(requestsWithUrls);
+      setSentRequests(sentWithUrls);
       setSubscriptions(subsRes.data);
     } catch (error) {
       console.error("Error:", error);
@@ -678,7 +703,12 @@ export default function MusicianDashboard() {
       }
       
       const response = await axios.get(`${API}/bands?${params.toString()}`);
-      setBands(response.data);
+      // Transform image URLs before setting state
+      const bandsWithUrls = (response.data || []).map(band => ({
+        ...band,
+        photo: band.photo ? buildImageUrl(band.photo) : null
+      }));
+      setBands(bandsWithUrls);
     } catch (error) {
       console.error("Error fetching bands:", error);
       toast.error("Erreur lors du chargement des groupes");

@@ -1787,7 +1787,7 @@ export default function VenueDashboard() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="font-heading font-bold text-3xl mb-2">
-            Bienvenue, <span className="text-gradient">{user?.name}</span>!
+            Bienvenue, <span className="text-gradient">{profile?.name || user?.name}</span>!
           </h1>
           <p className="text-muted-foreground">Gérez votre établissement et vos événements</p>
         </div>

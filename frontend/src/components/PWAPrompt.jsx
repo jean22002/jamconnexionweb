@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Download, X, Wifi, WifiOff } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function PWAPrompt() {
+  const { user } = useAuth(); // Récupérer l'utilisateur connecté
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -161,8 +163,8 @@ export default function PWAPrompt() {
         </div>
       )}
 
-      {/* Indicateur en ligne (petit, discret) */}
-      {isOnline && showOfflineBanner === false && (
+      {/* Indicateur en ligne (petit, discret) - UNIQUEMENT pour utilisateurs connectés */}
+      {user && isOnline && showOfflineBanner === false && (
         <div className="fixed bottom-20 right-4 z-40">
           <div className="bg-green-500/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-lg flex items-center gap-2 animate-fade-in">
             <Wifi className="w-3 h-3 text-white" />

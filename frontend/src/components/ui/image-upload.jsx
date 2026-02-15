@@ -30,11 +30,17 @@ export function ImageUpload({
 
   const handleFileSelect = async (e) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      console.log('[ImageUpload] No file selected');
+      return;
+    }
+
+    console.log('[ImageUpload] File selected:', file.name, file.type, file.size);
 
     // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
+      console.error('[ImageUpload] Invalid file type:', file.type);
       setError("Format non supporté. Utilisez JPG, PNG, GIF ou WebP.");
       return;
     }
@@ -42,17 +48,27 @@ export function ImageUpload({
     // Validate file size (10MB max for cropping)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
+      console.error('[ImageUpload] File too large:', file.size);
       setError("Fichier trop volumineux. Maximum 10MB.");
       return;
     }
 
     setError(null);
     
+    console.log('[ImageUpload] Reading file as Data URL...');
+    
     // Create preview URL and show cropper
     const reader = new FileReader();
     reader.onload = () => {
+      console.log('[ImageUpload] File read successfully, showing cropper');
+      console.log('[ImageUpload] Image data length:', reader.result?.length);
       setSelectedImage(reader.result);
       setShowCropper(true);
+      console.log('[ImageUpload] showCropper state set to true');
+    };
+    reader.onerror = (error) => {
+      console.error('[ImageUpload] Error reading file:', error);
+      setError("Erreur lors de la lecture du fichier");
     };
     reader.readAsDataURL(file);
   };

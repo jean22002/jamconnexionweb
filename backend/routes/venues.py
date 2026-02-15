@@ -80,7 +80,8 @@ async def create_venue_profile(data: VenueProfile, current_user: dict = Depends(
 
 @router.put("/venues", response_model=VenueProfileResponse)
 async def update_venue_profile(data: VenueProfile, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != "venue":
+    # Permettre aux venues ET aux admins de modifier
+    if current_user["role"] not in ["venue", "admin"]:
         raise HTTPException(status_code=403, detail="Only venue accounts can update venue profiles")
     
     # DEBUG: Log les images reçues
@@ -109,7 +110,8 @@ async def update_venue_profile(data: VenueProfile, current_user: dict = Depends(
 
 @router.get("/venues/me", response_model=VenueProfileResponse)
 async def get_my_venue(current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != "venue":
+    # Permettre aux venues ET aux admins d'accéder
+    if current_user["role"] not in ["venue", "admin"]:
         raise HTTPException(status_code=403, detail="Only venue accounts can access this")
     
     venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})

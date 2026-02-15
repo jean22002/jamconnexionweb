@@ -128,7 +128,7 @@ export default function MelomaneDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [geoPosition, searchRadius]);
+  }, [searchRadius]); // FIXED: Don't depend on geoPosition to prevent loops
   
   // Fonction pour calculer la distance entre deux points GPS
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -232,18 +232,20 @@ export default function MelomaneDashboard() {
     fetchNotifications();
     fetchParticipations();
     fetchSubscriptions();
-  }, [fetchVenues, fetchProfile, fetchNotifications, fetchParticipations, fetchSubscriptions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // FIXED: Empty dependency array - run only once on mount
 
-  // Polling pour rafraîchir les notifications toutes les 15 secondes
+  // Polling pour rafraîchir les notifications toutes les 30 secondes (réduit de 15s à 30s)
   useEffect(() => {
     if (!token) return;
     
     const notificationInterval = setInterval(() => {
       fetchNotifications();
-    }, 15000); // 15 secondes
+    }, 30000); // 30 secondes au lieu de 15
     
     return () => clearInterval(notificationInterval);
-  }, [token, fetchNotifications]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]); // FIXED: Don't add fetchNotifications as dependency
 
   const handleSaveProfile = async () => {
     try {

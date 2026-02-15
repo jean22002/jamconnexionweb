@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 
 class MelomaneBugFixTester:
-    def __init__(self, base_url="https://community-safety-6.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://admin-analytics-44.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0

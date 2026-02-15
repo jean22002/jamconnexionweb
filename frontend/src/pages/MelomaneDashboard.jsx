@@ -32,6 +32,7 @@ import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
 import { MUSIC_STYLES_LIST } from "../data/music-styles";
 import { useNotifications } from "../hooks/useNotifications";
+import { buildImageUrl } from "../utils/urlBuilder";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -95,19 +96,11 @@ export default function MelomaneDashboard() {
     try {
       const response = await axios.get(`${API}/venues`);
       
-      // Reconstruire les URLs complètes pour les images des venues
+      // Transform image URLs before setting state using buildImageUrl
       const venuesWithFullUrls = response.data.map(venue => ({
         ...venue,
-        profile_image: venue.profile_image 
-          ? (venue.profile_image.startsWith('http') 
-              ? venue.profile_image 
-              : `${API}${venue.profile_image}`)
-          : "",
-        cover_image: venue.cover_image
-          ? (venue.cover_image.startsWith('http')
-              ? venue.cover_image
-              : `${API}${venue.cover_image}`)
-          : ""
+        profile_image: venue.profile_image ? buildImageUrl(venue.profile_image) : "",
+        cover_image: venue.cover_image ? buildImageUrl(venue.cover_image) : ""
       }));
       
       setVenues(venuesWithFullUrls);

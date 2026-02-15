@@ -23,6 +23,8 @@ export default function ImageCropper({
   cropShape = "rect", // "rect" or "round"
   open = true 
 }) {
+  console.log('[ImageCropper] Component mounted/updated', { imageSrc: imageSrc?.substring(0, 50), open, aspectRatio, cropShape });
+  
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);

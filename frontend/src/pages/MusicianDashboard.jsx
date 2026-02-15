@@ -380,14 +380,15 @@ export default function MusicianDashboard() {
     } catch (error) {
       console.error("Error fetching nearby venues:", error);
     }
-  }, [searchRadius, nearbyVenues.length]);
+  }, [searchRadius]); // FIXED: Don't depend on nearbyVenues.length to prevent loops
 
   // Effect to refetch when radius changes
   useEffect(() => {
     if (geoPosition) {
       fetchNearbyVenues(geoPosition.latitude, geoPosition.longitude);
     }
-  }, [searchRadius, geoPosition, fetchNearbyVenues]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchRadius]); // FIXED: Don't add geoPosition and fetchNearbyVenues as dependencies to prevent loops
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -738,13 +739,15 @@ export default function MusicianDashboard() {
     if (activeTab === "bands") {
       fetchBands();
     }
-  }, [activeTab, bandFilters, bandSearchMode, bandSearchRadius, geoPosition]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, bandFilters, bandSearchMode, bandSearchRadius]); // FIXED: Don't add geoPosition as it causes loops
 
   useEffect(() => {
     if (activeTab === "my-applications") {
       fetchMyApplications();
     }
-  }, [activeTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]); // FIXED: Don't add fetchMyApplications as dependency
 
   // Toggle geolocation tracking
   const toggleGeolocation = () => {

@@ -298,7 +298,7 @@ export default function VenueDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [token, editing, navigate]);
+  }, [token, navigate]); // FIXED: Removed 'editing' from dependencies to prevent loop
 
   const fetchEvents = useCallback(async () => {
     if (!profile?.id) return; // Guard: Don't fetch if no profile ID yet
@@ -630,15 +630,15 @@ export default function VenueDashboard() {
   };
 
   useEffect(() => {
-    if (activeTab === "notifications" && profile) {
+    if (activeTab === "notifications" && profile?.id) {
       fetchNearbyMusiciansCount();
       fetchBroadcastHistory();
       fetchSubscribers(); // Rafraîchir les abonnés
     }
-    if (activeTab === "jacks" && profile) {
+    if (activeTab === "jacks" && profile?.id) {
       fetchSubscribers(); // Rafraîchir les abonnés quand on ouvre l'onglet Jacks
     }
-  }, [activeTab, profile]);
+  }, [activeTab, profile?.id]); // FIXED: Only depend on profile.id instead of full profile object
 
   // Reviews Management
   const fetchMyReviews = async () => {
@@ -758,18 +758,18 @@ export default function VenueDashboard() {
   };
 
   useEffect(() => {
-    if (activeTab === "reviews" && profile) {
+    if (activeTab === "reviews" && profile?.id) {
       fetchMyReviews();
       setShowReviews(profile.show_reviews ?? true);
     }
-  }, [activeTab, profile]);
+  }, [activeTab, profile?.id]); // FIXED: Only depend on profile.id instead of full profile object
 
   // Charger les avis au démarrage si on a un profil
   useEffect(() => {
-    if (profile) {
+    if (profile?.id) {
       fetchMyReviews();
     }
-  }, [profile]);
+  }, [profile?.id]); // FIXED: Only depend on profile.id instead of full profile object
 
   // Bands Management
   const fetchBands = async () => {
@@ -824,7 +824,8 @@ export default function VenueDashboard() {
     if (activeTab === "bands") {
       fetchBands();
     }
-  }, [activeTab, bandFilters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, bandFilters]); // FIXED: Don't need fetchBands as dependency
 
   // ============= PROFITABILITY & HISTORY FUNCTIONS =============
   
@@ -904,7 +905,8 @@ export default function VenueDashboard() {
       fetchPastEvents();
       fetchProfitabilityStats();
     }
-  }, [activeTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]); // FIXED: Don't need to add fetch functions as dependencies
 
   // Filter past events based on selected filters
   const getFilteredEvents = () => {

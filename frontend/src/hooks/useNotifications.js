@@ -108,20 +108,33 @@ export const useNotifications = (token, user) => {
     }
 
     // Afficher la notification
-    if (serviceWorkerRef.current) {
-      // Utiliser le Service Worker si disponible
-      serviceWorkerRef.current.showNotification(title, {
-        icon: '/logo192.png',
-        badge: '/logo192.png',
-        vibrate: [200, 100, 200],
-        ...options
-      });
-    } else {
-      // Fallback: notification directe
-      new Notification(title, {
-        icon: '/logo192.png',
-        ...options
-      });
+    try {
+      if (serviceWorkerRef.current && serviceWorkerRef.current.active) {
+        // Utiliser le Service Worker si disponible et actif
+        await serviceWorkerRef.current.showNotification(title, {
+          icon: '/logo192.png',
+          badge: '/logo192.png',
+          vibrate: [200, 100, 200],
+          ...options
+        });
+      } else {
+        // Fallback: notification directe
+        new Notification(title, {
+          icon: '/logo192.png',
+          ...options
+        });
+      }
+    } catch (error) {
+      console.warn('Erreur lors de l\'affichage de la notification:', error);
+      // Dernier fallback: notification simple
+      try {
+        new Notification(title, {
+          icon: '/logo192.png',
+          ...options
+        });
+      } catch (fallbackError) {
+        console.error('Impossible d\'afficher la notification:', fallbackError);
+      }
     }
   }, [requestPermission]);
 

@@ -75,6 +75,7 @@ import routes.push_notifications as push_notifications
 import routes.friends as friends
 import routes.reports as reports
 import routes.analytics as analytics
+import routes.online_status as online_status
 
 # Include routers with basic functionality
 api_router.include_router(auth_router)
@@ -112,6 +113,7 @@ api_router.include_router(push_notifications.router)
 api_router.include_router(friends.router)
 api_router.include_router(reports.router)
 api_router.include_router(analytics.router)
+api_router.include_router(online_status.router)
 
 # Geocoding utility endpoint
 @api_router.post("/geocode")

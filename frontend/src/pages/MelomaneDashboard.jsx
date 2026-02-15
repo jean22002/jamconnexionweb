@@ -212,7 +212,7 @@ export default function MelomaneDashboard() {
               ...sub,
               venue_name: venueRes.data.name,
               city: venueRes.data.city,
-              venue_image: venueRes.data.profile_image
+              venue_image: buildImageUrl(venueRes.data.profile_image)
             };
           } catch (err) {
             return sub;

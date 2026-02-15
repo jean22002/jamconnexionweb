@@ -25,7 +25,7 @@ ONLINE_THRESHOLD_MINUTES = 5
 @router.get("/mode")
 async def get_online_status_mode(current_user: dict = Depends(get_current_user)):
     """Récupérer le mode de statut en ligne de l'utilisateur"""
-    user = await db.users.find_one({"id": current_user["user_id"]}, {"_id": 0})
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     
@@ -69,11 +69,11 @@ async def update_online_status_mode(
         update_data["manual_online_status"] = False
     
     await db.users.update_one(
-        {"id": current_user["user_id"]},
+        {"id": current_user["id"]},
         {"$set": update_data}
     )
     
-    user = await db.users.find_one({"id": current_user["user_id"]}, {"_id": 0})
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
     
     return {
         "mode": data.mode,
@@ -88,7 +88,7 @@ async def update_manual_status(
     current_user: dict = Depends(get_current_user)
 ):
     """Mettre à jour manuellement le statut en ligne (uniquement en mode manuel)"""
-    user = await db.users.find_one({"id": current_user["user_id"]}, {"_id": 0})
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
     
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
@@ -101,7 +101,7 @@ async def update_manual_status(
         )
     
     await db.users.update_one(
-        {"id": current_user["user_id"]},
+        {"id": current_user["id"]},
         {"$set": {
             "manual_online_status": data.is_online,
             "updated_at": datetime.now(timezone.utc).isoformat()
@@ -116,7 +116,7 @@ async def update_manual_status(
 @router.post("/heartbeat")
 async def update_activity(current_user: dict = Depends(get_current_user)):
     """Mettre à jour l'activité de l'utilisateur (pour le mode auto)"""
-    user = await db.users.find_one({"id": current_user["user_id"]}, {"_id": 0})
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
     
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
@@ -127,7 +127,7 @@ async def update_activity(current_user: dict = Depends(get_current_user)):
     if mode == "auto":
         now = datetime.now(timezone.utc).isoformat()
         await db.users.update_one(
-            {"id": current_user["user_id"]},
+            {"id": current_user["id"]},
             {"$set": {"last_activity": now}}
         )
         return {"last_activity": now, "is_online": True}

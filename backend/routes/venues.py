@@ -50,6 +50,9 @@ async def create_venue_profile(data: VenueProfile, current_user: dict = Depends(
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venue accounts can create venue profiles")
     
+    # DEBUG: Log les images reçues
+    logger.info(f"🔍 CREATE VENUE - Images received: profile={data.profile_image}, cover={data.cover_image}")
+    
     existing = await db.venues.find_one({"user_id": current_user["id"]})
     if existing:
         raise HTTPException(status_code=400, detail="Venue profile already exists")
@@ -63,6 +66,8 @@ async def create_venue_profile(data: VenueProfile, current_user: dict = Depends(
         **data.model_dump(),
         "created_at": now
     }
+    
+    logger.info(f"✅ VENUE CREATED - Images in doc: profile={venue_doc.get('profile_image')}, cover={venue_doc.get('cover_image')}")
     
     await db.venues.insert_one(venue_doc)
     

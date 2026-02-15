@@ -78,6 +78,9 @@ async def update_venue_profile(data: VenueProfile, current_user: dict = Depends(
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venue accounts can update venue profiles")
     
+    # DEBUG: Log les images reçues
+    logger.info(f"🔍 UPDATE VENUE - Images received: profile={data.profile_image}, cover={data.cover_image}")
+    
     venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
     if not venue:
         raise HTTPException(status_code=404, detail="Venue profile not found")
@@ -88,6 +91,8 @@ async def update_venue_profile(data: VenueProfile, current_user: dict = Depends(
     )
     
     updated = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    logger.info(f"✅ VENUE UPDATED - Images in DB: profile={updated.get('profile_image')}, cover={updated.get('cover_image')}")
+    
     subscribers_count = await db.venue_subscriptions.count_documents({"venue_id": venue["id"]})
     
     # Update the dict

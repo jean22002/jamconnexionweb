@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import LazyImage from "../components/LazyImage";
 import UserBadges from "../components/UserBadges";
 import ReportProfileDialog from "../components/ReportProfileDialog";
+import { buildImageUrl } from "../utils/urlBuilder";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -29,19 +30,11 @@ export default function MusicianDetail() {
     try {
       const response = await axios.get(`${API}/musicians/${id}`);
       
-      // Reconstruire les URLs complètes pour les images
+      // Transform image URLs using buildImageUrl
       const musicianData = {
         ...response.data,
-        profile_image: response.data.profile_image
-          ? (response.data.profile_image.startsWith('http')
-              ? response.data.profile_image
-              : `${API}${response.data.profile_image}`)
-          : "",
-        cover_image: response.data.cover_image
-          ? (response.data.cover_image.startsWith('http')
-              ? response.data.cover_image
-              : `${API}${response.data.cover_image}`)
-          : ""
+        profile_image: buildImageUrl(response.data.profile_image),
+        cover_image: buildImageUrl(response.data.cover_image)
       };
       
       setMusician(musicianData);

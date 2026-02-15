@@ -576,7 +576,12 @@ export default function VenueDashboard() {
       const response = await axios.get(`${API}/venues/me/subscribers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setSubscribers(response.data || []);
+      // Transform image URLs before setting state
+      const subscribersWithUrls = (response.data || []).map(sub => ({
+        ...sub,
+        profile_image: sub.profile_image ? buildImageUrl(sub.profile_image) : null
+      }));
+      setSubscribers(subscribersWithUrls);
     } catch (error) {
       console.error("Error fetching subscribers:", error);
       setSubscribers([]);
@@ -641,7 +646,12 @@ export default function VenueDashboard() {
         axios.get(`${API}/venues/me/reviews`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API}/venues/${profile.id}/average-rating`)
       ]);
-      setReviews(reviewsRes.data);
+      // Transform image URLs before setting state
+      const reviewsWithUrls = (reviewsRes.data || []).map(review => ({
+        ...review,
+        musician_image: review.musician_image ? buildImageUrl(review.musician_image) : null
+      }));
+      setReviews(reviewsWithUrls);
       setAverageRating(ratingRes.data.average_rating);
       setTotalReviews(ratingRes.data.total_reviews);
     } catch (error) {
@@ -769,7 +779,12 @@ export default function VenueDashboard() {
       if (bandFilters.city) params.append('city', bandFilters.city);
       
       const response = await axios.get(`${API}/bands?${params.toString()}`);
-      setBands(response.data);
+      // Transform image URLs before setting state
+      const bandsWithUrls = (response.data || []).map(band => ({
+        ...band,
+        photo: band.photo ? buildImageUrl(band.photo) : null
+      }));
+      setBands(bandsWithUrls);
     } catch (error) {
       console.error("Error fetching bands:", error);
       toast.error("Erreur lors du chargement des groupes");
@@ -1361,7 +1376,12 @@ export default function VenueDashboard() {
       const response = await axios.get(`${API}/planning/${slotId}/applications`, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
-      setApplications({ ...applications, [slotId]: response.data });
+      // Transform image URLs before setting state
+      const applicationsWithUrls = (response.data || []).map(app => ({
+        ...app,
+        band_photo: app.band_photo ? buildImageUrl(app.band_photo) : null
+      }));
+      setApplications({ ...applications, [slotId]: applicationsWithUrls });
     } catch (error) {
       console.error("Error fetching applications:", error);
     }

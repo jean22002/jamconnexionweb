@@ -505,6 +505,113 @@ async def remove_friend(friend_user_id: str, current_user: dict = Depends(get_cu
     return {"message": "Friend removed"}
 
 
+# ============= BLOCK SYSTEM =============
+
+@router.post("/users/block/{user_id}")
+async def block_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Block a user"""
+    # Vérifier que l'utilisateur ne se bloque pas lui-même
+    if current_user["id"] == user_id:
+        raise HTTPException(status_code=400, detail="Vous ne pouvez pas vous bloquer vous-même")
+    
+    # Vérifier que l'utilisateur cible existe
+    target_user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+    
+    # Vérifier si déjà bloqué
+    existing_block = await db.blocked_users.find_one({
+        "blocker_id": current_user["id"],
+        "blocked_id": user_id
+    })
+    if existing_block:
+        raise HTTPException(status_code=400, detail="Utilisateur déjà bloqué")
+    
+    # Supprimer l'amitié si elle existe
+    await db.friends.delete_many({
+        "$or": [
+            {"from_user_id": current_user["id"], "to_user_id": user_id},
+            {"from_user_id": user_id, "to_user_id": current_user["id"]}
+        ]
+    })
+    
+    # Supprimer toutes les demandes d'ami en attente dans les deux sens
+    await db.friends.delete_many({
+        "$or": [
+            {"from_user_id": current_user["id"], "to_user_id": user_id, "status": "pending"},
+            {"from_user_id": user_id, "to_user_id": current_user["id"], "status": "pending"}
+        ]
+    })
+    
+    # Créer le blocage
+    block_id = str(uuid.uuid4())
+    block_doc = {
+        "id": block_id,
+        "blocker_id": current_user["id"],
+        "blocked_id": user_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.blocked_users.insert_one(block_doc)
+    
+    return {"message": "Utilisateur bloqué"}
+
+
+@router.delete("/users/unblock/{user_id}")
+async def unblock_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Unblock a user"""
+    result = await db.blocked_users.delete_one({
+        "blocker_id": current_user["id"],
+        "blocked_id": user_id
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Blocage introuvable")
+    
+    return {"message": "Utilisateur débloqué"}
+
+
+@router.get("/users/blocked")
+async def get_blocked_users(current_user: dict = Depends(get_current_user)):
+    """Get list of blocked users"""
+    blocks = await db.blocked_users.find({
+        "blocker_id": current_user["id"]
+    }, {"_id": 0}).to_list(1000)
+    
+    result = []
+    for block in blocks:
+        # Récupérer les infos de l'utilisateur bloqué
+        blocked_user = await db.users.find_one({"id": block["blocked_id"]}, {"_id": 0, "password": 0})
+        if blocked_user:
+            blocked_data = {
+                "user_id": block["blocked_id"],
+                "name": blocked_user.get("name"),
+                "email": blocked_user.get("email"),
+                "role": blocked_user.get("role"),
+                "blocked_at": block.get("created_at")
+            }
+            
+            # Récupérer le profil selon le rôle
+            if blocked_user.get("role") == "musician":
+                musician = await db.musicians.find_one({"user_id": block["blocked_id"]}, {"_id": 0})
+                if musician:
+                    blocked_data["pseudo"] = musician.get("pseudo")
+                    blocked_data["profile_image"] = musician.get("profile_image")
+            elif blocked_user.get("role") == "venue":
+                venue = await db.venues.find_one({"user_id": block["blocked_id"]}, {"_id": 0})
+                if venue:
+                    blocked_data["pseudo"] = venue.get("name")
+                    blocked_data["profile_image"] = venue.get("profile_image")
+            elif blocked_user.get("role") == "melomane":
+                melomane = await db.melomanes.find_one({"user_id": block["blocked_id"]}, {"_id": 0})
+                if melomane:
+                    blocked_data["pseudo"] = melomane.get("pseudo")
+                    blocked_data["profile_image"] = melomane.get("profile_image")
+            
+            result.append(blocked_data)
+    
+    return result
+
+
 
 
 # ============= MUSICIAN PARTICIPATIONS =============

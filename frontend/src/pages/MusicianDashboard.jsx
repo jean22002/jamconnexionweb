@@ -658,6 +658,7 @@ export default function MusicianDashboard() {
     
     const notificationInterval = setInterval(() => {
       fetchNotifications();
+      fetchFriends(); // Rafraîchir aussi les demandes d'amis pour mettre à jour le compteur
     }, 30000); // 30 secondes au lieu de 15
     
     return () => clearInterval(notificationInterval);

@@ -246,11 +246,11 @@ async def send_friend_request(request: FriendRequest, current_user: dict = Depen
     if current_user["id"] == request.to_user_id:
         raise HTTPException(status_code=400, detail="Vous ne pouvez pas vous ajouter vous-même")
     
-    # Vérifier s'il existe déjà une amitié
+    # Vérifier s'il existe déjà une amitié ou demande
     existing_friendship = await db.friends.find_one({
         "$or": [
-            {"user1_id": current_user["id"], "user2_id": request.to_user_id},
-            {"user1_id": request.to_user_id, "user2_id": current_user["id"]}
+            {"from_user_id": current_user["id"], "to_user_id": request.to_user_id},
+            {"from_user_id": request.to_user_id, "to_user_id": current_user["id"]}
         ]
     })
     if existing_friendship:

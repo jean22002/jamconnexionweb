@@ -17,6 +17,7 @@ export default function VenueRegister() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     name: ''
   });
 

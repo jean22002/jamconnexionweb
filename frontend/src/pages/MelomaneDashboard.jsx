@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import LazyImage from "../components/LazyImage";
 import OnlineStatusSelector from "../components/OnlineStatusSelector";
+import BackgroundSyncSettings from "../components/BackgroundSyncSettings";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -1284,7 +1285,10 @@ export default function MelomaneDashboard() {
           <TabsContent value="settings">
             <div className="glassmorphism rounded-2xl p-6">
               <h2 className="font-heading font-semibold text-xl mb-6">Paramètres</h2>
-              <OnlineStatusSelector />
+              <div className="space-y-6">
+                <OnlineStatusSelector />
+                <BackgroundSyncSettings />
+              </div>
             </div>
           </TabsContent>
 

@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { VenueImageUpload } from "../components/ui/image-upload";
 import LazyImage from "../components/LazyImage";
 import OnlineStatusSelector from "../components/OnlineStatusSelector";
+import BackgroundSyncSettings from "../components/BackgroundSyncSettings";
 // NEW: Import refactored utilities
 import { buildImageUrl } from "../utils/urlBuilder";
 import {
@@ -5292,7 +5293,10 @@ export default function VenueDashboard() {
           <TabsContent value="settings">
             <div className="glassmorphism rounded-2xl p-6">
               <h2 className="font-heading font-semibold text-xl mb-6">Paramètres</h2>
-              <OnlineStatusSelector />
+              <div className="space-y-6">
+                <OnlineStatusSelector />
+                <BackgroundSyncSettings />
+              </div>
             </div>
           </TabsContent>
 

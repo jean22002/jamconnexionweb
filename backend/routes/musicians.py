@@ -72,7 +72,7 @@ async def create_musician_profile(data: MusicianProfile, current_user: dict = De
     await db.musicians.insert_one(musician_doc)
     
     friends_count = await db.friends.count_documents({
-        "$or": [{"user1_id": current_user["id"]}, {"user2_id": current_user["id"]}],
+        "$or": [{"from_user_id": current_user["id"]}, {"to_user_id": current_user["id"]}],
         "status": "accepted"
     })
     

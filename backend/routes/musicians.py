@@ -392,7 +392,33 @@ async def accept_friend_request(request_id: str, current_user: dict = Depends(ge
     if not request:
         raise HTTPException(status_code=404, detail="Demande d'ami introuvable")
     
+    # Accepter la demande
     await db.friends.update_one({"id": request_id}, {"$set": {"status": "accepted"}})
+    
+    # Créer une notification pour l'expéditeur
+    notification_id = str(uuid.uuid4())
+    accepter_user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+    accepter_name = accepter_user.get("name", "Un utilisateur") if accepter_user else "Un utilisateur"
+    
+    notification_doc = {
+        "id": notification_id,
+        "user_id": request["from_user_id"],
+        "type": "friend_accepted",
+        "message": f"{accepter_name} a accepté votre demande d'ami",
+        "related_id": request_id,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "read": False
+    }
+    await db.notifications.insert_one(notification_doc)
+    
+    # Supprimer la notification de demande d'ami pour l'accepteur
+    await db.notifications.delete_many({
+        "related_id": request_id,
+        "type": "friend_request",
+        "user_id": current_user["id"]
+    })
+    
+    return {"message": "Demande d'ami acceptée"}
     return {"message": "Demande d'ami acceptée"}
 
 

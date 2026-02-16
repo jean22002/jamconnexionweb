@@ -27,7 +27,7 @@ import {
 import { MelomaneImageUpload } from "../components/ui/image-upload";
 import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
 import { 
-  Music, MapPin, LogOut, User, Loader2, Bell, 
+  Music, MapPin, LogOut, User, Loader2, Bell, Menu,
   Calendar as CalendarIcon, Check, Trash2, Heart, MessageSquare,
   Search, Radio, MapPinOff, Locate, X, ChevronDown, Home, Building2, Users as UsersIcon, Clock, Award, Trophy
 } from "lucide-react";

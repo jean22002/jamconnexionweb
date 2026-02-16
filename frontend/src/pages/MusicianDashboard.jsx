@@ -2777,12 +2777,17 @@ export default function MusicianDashboard() {
                     <div className="border-t border-white/10 my-2"></div>
 
                     {/* Profile Edit Button - Opens the existing profile dialog */}
-                    <DialogTrigger asChild>
-                      <button className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors text-left w-full">
-                        <User className="w-5 h-5 text-primary" />
-                        <span className="font-medium">Mon Profil</span>
-                      </button>
-                    </DialogTrigger>
+                    <button 
+                      onClick={() => {
+                        // Close the sheet first, then open the profile dialog
+                        document.querySelector('[data-radix-collection-item]')?.click(); // Close sheet
+                        setTimeout(() => setEditingProfile(true), 100);
+                      }}
+                      className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors text-left w-full"
+                    >
+                      <User className="w-5 h-5 text-primary" />
+                      <span className="font-medium">Mon Profil</span>
+                    </button>
 
                     <button 
                       onClick={logout} 

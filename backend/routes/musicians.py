@@ -246,6 +246,16 @@ async def send_friend_request(request: FriendRequest, current_user: dict = Depen
     if current_user["id"] == request.to_user_id:
         raise HTTPException(status_code=400, detail="Vous ne pouvez pas vous ajouter vous-même")
     
+    # Vérifier si l'utilisateur est bloqué (dans les deux sens)
+    is_blocked = await db.blocked_users.find_one({
+        "$or": [
+            {"blocker_id": current_user["id"], "blocked_id": request.to_user_id},
+            {"blocker_id": request.to_user_id, "blocked_id": current_user["id"]}
+        ]
+    })
+    if is_blocked:
+        raise HTTPException(status_code=403, detail="Impossible d'envoyer une demande d'ami")
+    
     # Vérifier s'il existe déjà une amitié ou demande
     existing_friendship = await db.friends.find_one({
         "$or": [

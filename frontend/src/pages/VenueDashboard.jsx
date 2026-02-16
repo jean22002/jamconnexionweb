@@ -26,8 +26,9 @@ import { TimeSelect } from "../components/ui/time-select";
 import { 
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter
 } from "../components/ui/dialog";
+import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
 import { 
-  Music, LogOut, MapPin, Globe, Instagram, Facebook, Phone, Edit, Save, 
+  Music, LogOut, MapPin, Globe, Instagram, Facebook, Phone, Edit, Save, Menu, 
   Loader2, CreditCard, Check, Clock, AlertCircle, X, Plus, CalendarIcon, 
   Users, Bell, Trash2, Eye, FileText, User, Youtube, Send, Heart, Plug, Award, MessageSquare, Trophy
 } from "lucide-react";

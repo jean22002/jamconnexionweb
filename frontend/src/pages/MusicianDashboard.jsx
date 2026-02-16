@@ -3203,21 +3203,33 @@ export default function MusicianDashboard() {
                 ) : (
                   <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2">
                     {/* Filtrer pour n'afficher que les établissements dans le rayon si géolocalisation active */}
-                    {(geoPosition && nearbyVenues.length > 0 ? nearbyVenues : venues)
-                      .filter(venue => {
-                        // Filtrer par ville si recherche active
-                        if (searchCity && searchCity.trim() !== '') {
-                          const searchLower = searchCity.toLowerCase().trim();
-                          const cityMatch = venue.city?.toLowerCase().includes(searchLower);
-                          const nameMatch = venue.name?.toLowerCase().includes(searchLower);
-                          const postalMatch = venue.postal_code?.includes(searchCity.trim());
-                          return cityMatch || nameMatch || postalMatch;
-                        }
-                        return true; // Afficher tous si pas de recherche
-                      })
-                      .map((venue) => {
-                      const isNearby = nearbyVenues.some(nv => nv.id === venue.id);
-                      return (
+                    {(() => {
+                      const filteredVenues = (geoPosition && nearbyVenues.length > 0 ? nearbyVenues : venues)
+                        .filter(venue => {
+                          // Filtrer par ville si recherche active
+                          if (searchCity && searchCity.trim() !== '') {
+                            const searchLower = searchCity.toLowerCase().trim();
+                            const cityMatch = venue.city?.toLowerCase().includes(searchLower);
+                            const nameMatch = venue.name?.toLowerCase().includes(searchLower);
+                            const postalMatch = venue.postal_code?.includes(searchCity.trim());
+                            return cityMatch || nameMatch || postalMatch;
+                          }
+                          return true; // Afficher tous si pas de recherche
+                        });
+                      
+                      if (filteredVenues.length === 0 && searchCity.trim() !== '') {
+                        return (
+                          <div className="text-center py-12 text-muted-foreground">
+                            <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                            <p className="text-lg mb-2">Aucun résultat pour "{searchCity}"</p>
+                            <p className="text-sm">Essayez une autre ville ou effacez la recherche</p>
+                          </div>
+                        );
+                      }
+                      
+                      return filteredVenues.map((venue) => {
+                        const isNearby = nearbyVenues.some(nv => nv.id === venue.id);
+                        return (
                         <Link key={venue.id} to={`/venue/${venue.id}`} className="block" data-testid={`venue-card-${venue.id}`}>
                           <div className={`card-venue p-5 group ${isNearby ? 'border border-primary/30' : ''}`}>
                             <div className="flex items-start gap-4">

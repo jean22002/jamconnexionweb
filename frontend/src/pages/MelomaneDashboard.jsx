@@ -13,6 +13,7 @@ import { Slider } from "../components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import LazyImage from "../components/LazyImage";
+import OnlineStatusSelector from "../components/OnlineStatusSelector";
 import { 
   DropdownMenu,
   DropdownMenuContent,

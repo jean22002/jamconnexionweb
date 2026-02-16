@@ -3203,7 +3203,19 @@ export default function MusicianDashboard() {
                 ) : (
                   <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2">
                     {/* Filtrer pour n'afficher que les établissements dans le rayon si géolocalisation active */}
-                    {(geoPosition && nearbyVenues.length > 0 ? nearbyVenues : venues).map((venue) => {
+                    {(geoPosition && nearbyVenues.length > 0 ? nearbyVenues : venues)
+                      .filter(venue => {
+                        // Filtrer par ville si recherche active
+                        if (searchCity && searchCity.trim() !== '') {
+                          const searchLower = searchCity.toLowerCase().trim();
+                          const cityMatch = venue.city?.toLowerCase().includes(searchLower);
+                          const nameMatch = venue.name?.toLowerCase().includes(searchLower);
+                          const postalMatch = venue.postal_code?.includes(searchCity.trim());
+                          return cityMatch || nameMatch || postalMatch;
+                        }
+                        return true; // Afficher tous si pas de recherche
+                      })
+                      .map((venue) => {
                       const isNearby = nearbyVenues.some(nv => nv.id === venue.id);
                       return (
                         <Link key={venue.id} to={`/venue/${venue.id}`} className="block" data-testid={`venue-card-${venue.id}`}>

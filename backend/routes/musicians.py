@@ -201,7 +201,7 @@ async def get_musician(musician_id: str):
         raise HTTPException(status_code=404, detail="Musician not found")
     
     friends_count = await db.friends.count_documents({
-        "$or": [{"user1_id": musician["user_id"]}, {"user2_id": musician["user_id"]}],
+        "$or": [{"from_user_id": musician["user_id"]}, {"to_user_id": musician["user_id"]}],
         "status": "accepted"
     })
     

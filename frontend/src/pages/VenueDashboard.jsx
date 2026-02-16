@@ -1303,8 +1303,11 @@ export default function VenueDashboard() {
         accommodation_capacity: 0,
         accommodation_tbd: false
       });
-      fetchPlanningSlots();
-      fetchEvents();
+      // Recharger les données
+      if (profile?.id) {
+        await fetchPlanningSlots();
+        await fetchEvents();
+      }
     } catch (error) {
       console.error("Error deleting planning slot:", error);
       toast.error(error.response?.data?.detail || "Erreur lors de la suppression");

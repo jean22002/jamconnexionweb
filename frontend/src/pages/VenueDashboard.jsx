@@ -1360,11 +1360,14 @@ export default function VenueDashboard() {
         accommodation_capacity: 0,
         accommodation_tbd: false
       });
-      fetchPlanningSlots();
-      fetchEvents();
+      // Recharger les données
+      if (profile?.id) {
+        await fetchPlanningSlots();
+        await fetchEvents();
+      }
     } catch (error) {
-      toast.error("Erreur lors de la mise à jour du créneau");
-      console.error(error);
+      toast.error(error.response?.data?.detail || "Erreur lors de la mise à jour du créneau");
+      console.error("Error updating planning slot:", error);
     }
   };
 

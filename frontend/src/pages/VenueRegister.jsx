@@ -162,6 +162,35 @@ export default function VenueRegister() {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirmer le mot de passe *</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  placeholder="••••••••"
+                  required
+                  className={`bg-black/20 border-white/10 ${
+                    formData.confirmPassword && formData.password !== formData.confirmPassword 
+                      ? 'border-red-500' 
+                      : ''
+                  }`}
+                />
+                {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                  <p className="text-xs text-red-500 flex items-center gap-1">
+                    <X className="w-3 h-3" />
+                    Les mots de passe ne correspondent pas
+                  </p>
+                )}
+                {formData.confirmPassword && formData.password === formData.confirmPassword && formData.password.length > 0 && (
+                  <p className="text-xs text-green-500 flex items-center gap-1">
+                    <Check className="w-3 h-3" />
+                    Les mots de passe correspondent
+                  </p>
+                )}
+              </div>
+
               <Button
                 type="submit"
                 className="w-full bg-primary hover:bg-primary/90 rounded-full py-6 text-lg"

@@ -48,6 +48,11 @@ export default function MusicianRegister() {
         toast.error('Veuillez remplir tous les champs');
         return;
       }
+      // Vérifier que les mots de passe correspondent
+      if (formData.password !== formData.confirmPassword) {
+        toast.error('Les mots de passe ne correspondent pas');
+        return;
+      }
       setStep(2);
       return;
     }

@@ -1279,6 +1279,15 @@ export default function MelomaneDashboard() {
               )}
             </div>
           </TabsContent>
+
+          {/* Settings Tab */}
+          <TabsContent value="settings">
+            <div className="glassmorphism rounded-2xl p-6">
+              <h2 className="font-heading font-semibold text-xl mb-6">Paramètres</h2>
+              <OnlineStatusSelector />
+            </div>
+          </TabsContent>
+
         </Tabs>
       </main>
     </div>

@@ -119,6 +119,16 @@ export default function BadgesPage() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
+        {/* Back Button */}
+        <Button
+          variant="ghost"
+          onClick={() => navigate(-1)}
+          className="mb-4 gap-2 text-white hover:bg-white/10"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Retour
+        </Button>
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">

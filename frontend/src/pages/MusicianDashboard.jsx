@@ -1207,7 +1207,8 @@ export default function MusicianDashboard() {
               <span className="font-heading font-bold text-xl text-gradient">Jam Connexion</span>
             </div>
             
-            <div className="flex items-center gap-4">
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-4">
               {/* Leaderboard */}
               <Link to="/leaderboard">
                 <Button variant="ghost" className="relative">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useBadge } from '../context/BadgeContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -6,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import BadgeCard from '../components/BadgeCard';
 import BadgeStats from '../components/BadgeStats';
 import BadgeProgressBar from '../components/BadgeProgressBar';
-import { Loader2, Award, TrendingUp, Lock, Target } from 'lucide-react';
+import { Loader2, Award, TrendingUp, Lock, Target, ArrowLeft } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { useToast } from '../hooks/use-toast';
 
@@ -14,6 +15,7 @@ const API = process.env.REACT_APP_BACKEND_URL;
 
 export default function BadgesPage() {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { showMultipleBadges } = useBadge();
   const [loading, setLoading] = useState(true);

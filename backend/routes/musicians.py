@@ -106,7 +106,7 @@ async def update_musician_profile(data: MusicianProfile, current_user: dict = De
     
     updated = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
     friends_count = await db.friends.count_documents({
-        "$or": [{"user1_id": current_user["id"]}, {"user2_id": current_user["id"]}],
+        "$or": [{"from_user_id": current_user["id"]}, {"to_user_id": current_user["id"]}],
         "status": "accepted"
     })
     
@@ -123,7 +123,7 @@ async def get_my_musician_profile(current_user: dict = Depends(get_current_user)
         raise HTTPException(status_code=404, detail="Musician profile not found")
     
     friends_count = await db.friends.count_documents({
-        "$or": [{"user1_id": current_user["id"]}, {"user2_id": current_user["id"]}],
+        "$or": [{"from_user_id": current_user["id"]}, {"to_user_id": current_user["id"]}],
         "status": "accepted"
     })
     

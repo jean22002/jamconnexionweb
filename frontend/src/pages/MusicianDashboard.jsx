@@ -3266,7 +3266,7 @@ export default function MusicianDashboard() {
                           </div>
                         </Link>
                       );
-                    })}
+                    })()}
                   </div>
                 )}
               </div>

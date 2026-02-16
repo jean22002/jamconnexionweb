@@ -151,8 +151,8 @@ async def list_musicians(instrument: Optional[str] = None, style: Optional[str] 
             {
                 "$match": {
                     "$or": [
-                        {"user1_id": {"$in": user_ids}, "status": "accepted"},
-                        {"user2_id": {"$in": user_ids}, "status": "accepted"}
+                        {"from_user_id": {"$in": user_ids}, "status": "accepted"},
+                        {"to_user_id": {"$in": user_ids}, "status": "accepted"}
                     ]
                 }
             },
@@ -160,9 +160,9 @@ async def list_musicians(instrument: Optional[str] = None, style: Optional[str] 
                 "$project": {
                     "user_id": {
                         "$cond": [
-                            {"$in": ["$user1_id", user_ids]},
-                            "$user1_id",
-                            "$user2_id"
+                            {"$in": ["$from_user_id", user_ids]},
+                            "$from_user_id",
+                            "$to_user_id"
                         ]
                     }
                 }

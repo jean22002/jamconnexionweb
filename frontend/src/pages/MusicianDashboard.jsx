@@ -2815,23 +2815,78 @@ export default function MusicianDashboard() {
         {/* Friend Requests */}
         {friendRequests.length > 0 && (
           <div className="mb-6 p-4 glassmorphism rounded-xl neon-border">
-            <h3 className="font-heading font-semibold mb-3">Demandes d'ami ({friendRequests.length})</h3>
-            <div className="flex flex-wrap gap-3">
+            <h3 className="font-heading font-semibold mb-4">Demandes d'ami ({friendRequests.length})</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {friendRequests.map(req => (
-                <div key={req.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                  {req.from_user_image ? (
-                    <LazyImage 
-                      src={req.from_user_image} 
-                      alt={req.from_user_name} 
-                      className="w-10 h-10 rounded-full object-cover" 
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center"><User className="w-5 h-5" /></div>
+                <div key={req.id} className="p-4 bg-muted/30 border border-white/10 rounded-xl hover:bg-muted/50 transition-all">
+                  {/* Profile Header */}
+                  <div className="flex items-center gap-3 mb-3">
+                    {req.from_user_image ? (
+                      <LazyImage 
+                        src={req.from_user_image} 
+                        alt={req.from_user_name} 
+                        className="w-14 h-14 rounded-full object-cover border-2 border-primary/30" 
+                      />
+                    ) : (
+                      <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/30">
+                        <User className="w-7 h-7 text-primary" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-base truncate">{req.from_user_name}</h4>
+                      {req.from_user_city && (
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {req.from_user_city}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Additional Info */}
+                  {(req.from_user_instruments || req.from_user_styles) && (
+                    <div className="space-y-2 mb-3 text-sm">
+                      {req.from_user_instruments && (
+                        <div className="flex items-center gap-2">
+                          <Guitar className="w-4 h-4 text-primary" />
+                          <span className="text-xs text-muted-foreground truncate">
+                            {req.from_user_instruments}
+                          </span>
+                        </div>
+                      )}
+                      {req.from_user_styles && (
+                        <div className="flex items-center gap-2">
+                          <Music className="w-4 h-4 text-primary" />
+                          <span className="text-xs text-muted-foreground truncate">
+                            {req.from_user_styles}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   )}
-                  <span>{req.from_user_name}</span>
-                  <Button size="sm" onClick={() => acceptFriendRequest(req.id)} className="bg-primary rounded-full">
-                    <Check className="w-4 h-4" />
-                  </Button>
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      onClick={() => acceptFriendRequest(req.id)} 
+                      className="flex-1 bg-primary hover:bg-primary/80 gap-2"
+                    >
+                      <Check className="w-4 h-4" />
+                      Accepter
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        // Navigate to musician profile
+                        window.location.href = `/musician/${req.from_user_id}`;
+                      }}
+                      className="border-white/20 hover:bg-white/10"
+                    >
+                      Voir profil
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>

@@ -53,6 +53,12 @@ export default function Auth() {
           setLoading(false);
           return;
         }
+        // Vérifier que les mots de passe correspondent
+        if (formData.password !== formData.confirmPassword) {
+          toast.error("Les mots de passe ne correspondent pas");
+          setLoading(false);
+          return;
+        }
         const user = await register(formData.email, formData.password, formData.name, role);
         toast.success("Compte créé avec succès!");
         navigate(user.role === "musician" ? "/musician" : user.role === "venue" ? "/venue" : "/melomane");

@@ -303,8 +303,36 @@ async def get_friend_requests(current_user: dict = Depends(get_current_user)):
     for req in requests:
         from_user = await db.users.find_one({"id": req["from_user_id"]}, {"_id": 0, "password": 0})
         if from_user:
-            req["from_user"] = from_user
-            result.append(req)
+            # Récupérer l'ID du profil selon le rôle
+            profile_id = None
+            if from_user.get("role") == "musician":
+                musician = await db.musicians.find_one({"user_id": from_user["id"]}, {"_id": 0, "id": 1, "pseudo": 1, "profile_image": 1, "city": 1, "instruments": 1, "music_styles": 1})
+                if musician:
+                    profile_id = musician.get("id")
+                    req["from_user_name"] = musician.get("pseudo", from_user.get("email"))
+                    req["from_user_image"] = musician.get("profile_image")
+                    req["from_user_city"] = musician.get("city")
+                    req["from_user_instruments"] = ", ".join(musician.get("instruments", [])[:3]) if musician.get("instruments") else None
+                    req["from_user_styles"] = ", ".join(musician.get("music_styles", [])[:3]) if musician.get("music_styles") else None
+            elif from_user.get("role") == "venue":
+                venue = await db.venues.find_one({"user_id": from_user["id"]}, {"_id": 0, "id": 1, "name": 1, "profile_image": 1, "city": 1})
+                if venue:
+                    profile_id = venue.get("id")
+                    req["from_user_name"] = venue.get("name", from_user.get("email"))
+                    req["from_user_image"] = venue.get("profile_image")
+                    req["from_user_city"] = venue.get("city")
+            elif from_user.get("role") == "melomane":
+                melomane = await db.melomanes.find_one({"user_id": from_user["id"]}, {"_id": 0, "id": 1, "pseudo": 1, "profile_image": 1, "city": 1})
+                if melomane:
+                    profile_id = melomane.get("id")
+                    req["from_user_name"] = melomane.get("pseudo", from_user.get("email"))
+                    req["from_user_image"] = melomane.get("profile_image")
+                    req["from_user_city"] = melomane.get("city")
+            
+            if profile_id:
+                req["from_profile_id"] = profile_id
+                req["from_user_role"] = from_user.get("role")
+                result.append(req)
     
     return result
 

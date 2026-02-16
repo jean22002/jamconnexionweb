@@ -409,35 +409,54 @@ async def reject_friend_request(request_id: str, current_user: dict = Depends(ge
 @router.get("/friends")
 async def list_friends(current_user: dict = Depends(get_current_user)):
     """List all friends of the current user"""
+    # Chercher les amitiés acceptées (utilise from_user_id et to_user_id)
     friendships = await db.friends.find({
         "$or": [
-            {"user1_id": current_user["id"], "status": "accepted"},
-            {"user2_id": current_user["id"], "status": "accepted"}
+            {"from_user_id": current_user["id"], "status": "accepted"},
+            {"to_user_id": current_user["id"], "status": "accepted"}
         ]
     }, {"_id": 0}).to_list(1000)
     
     result = []
     for friendship in friendships:
         # Déterminer qui est l'ami
-        friend_id = friendship["user2_id"] if friendship.get("user1_id") == current_user["id"] else friendship.get("user1_id")
+        friend_id = friendship["to_user_id"] if friendship.get("from_user_id") == current_user["id"] else friendship.get("from_user_id")
         
         # Récupérer les infos de l'ami
         friend_user = await db.users.find_one({"id": friend_id}, {"_id": 0, "password": 0})
         if friend_user:
             friend_data = {
                 "friend_id": friend_id,
+                "user_id": friend_id,  # Ajouter pour compatibilité
                 "friend_name": friend_user.get("name"),
                 "friend_email": friend_user.get("email"),
                 "friend_role": friend_user.get("role"),
                 "since": friendship.get("created_at")
             }
             
-            # Si c'est un musicien, récupérer son profil
+            # Récupérer le profil selon le rôle
             if friend_user.get("role") == "musician":
                 musician = await db.musicians.find_one({"user_id": friend_id}, {"_id": 0})
                 if musician:
                     friend_data["pseudo"] = musician.get("pseudo")
                     friend_data["profile_image"] = musician.get("profile_image")
+                    friend_data["profile_id"] = musician.get("id")  # ID du profil musicien
+                    friend_data["city"] = musician.get("city")
+                    friend_data["instruments"] = musician.get("instruments", [])
+            elif friend_user.get("role") == "venue":
+                venue = await db.venues.find_one({"user_id": friend_id}, {"_id": 0})
+                if venue:
+                    friend_data["pseudo"] = venue.get("name")
+                    friend_data["profile_image"] = venue.get("profile_image")
+                    friend_data["profile_id"] = venue.get("id")
+                    friend_data["city"] = venue.get("city")
+            elif friend_user.get("role") == "melomane":
+                melomane = await db.melomanes.find_one({"user_id": friend_id}, {"_id": 0})
+                if melomane:
+                    friend_data["pseudo"] = melomane.get("pseudo")
+                    friend_data["profile_image"] = melomane.get("profile_image")
+                    friend_data["profile_id"] = melomane.get("id")
+                    friend_data["city"] = melomane.get("city")
             
             result.append(friend_data)
     

@@ -252,6 +252,38 @@ export default function Auth() {
                 </div>
 
                 {mode === "register" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="••••••••"
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                      className={`h-12 bg-black/20 border-white/10 focus:border-primary/50 ${
+                        formData.confirmPassword && formData.password !== formData.confirmPassword 
+                          ? 'border-red-500 focus:border-red-500' 
+                          : ''
+                      }`}
+                      required
+                      data-testid="input-confirm-password"
+                    />
+                    {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                      <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                        <X className="w-3 h-3" />
+                        Les mots de passe ne correspondent pas
+                      </p>
+                    )}
+                    {formData.confirmPassword && formData.password === formData.confirmPassword && formData.password.length > 0 && (
+                      <p className="text-xs text-green-500 flex items-center gap-1 mt-1">
+                        <Check className="w-3 h-3" />
+                        Les mots de passe correspondent
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {mode === "register" && (
                   <div className="flex items-start space-x-3 pt-2">
                     <input
                       type="checkbox"

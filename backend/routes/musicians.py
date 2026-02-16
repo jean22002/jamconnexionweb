@@ -468,10 +468,9 @@ async def remove_friend(friend_user_id: str, current_user: dict = Depends(get_cu
     """Remove a friend"""
     result = await db.friends.delete_one({
         "$or": [
-            {"user1_id": current_user["id"], "user2_id": friend_user_id},
-            {"user1_id": friend_user_id, "user2_id": current_user["id"]}
-        ],
-        "status": "accepted"
+            {"from_user_id": current_user["id"], "to_user_id": friend_user_id, "status": "accepted"},
+            {"from_user_id": friend_user_id, "to_user_id": current_user["id"], "status": "accepted"}
+        ]
     })
     
     if result.deleted_count == 0:

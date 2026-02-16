@@ -648,6 +648,7 @@ export default function MusicianDashboard() {
     fetchProfile();
     fetchNotifications();
     fetchFriends();
+    fetchBlockedUsers();
     fetchCurrentParticipation();
     fetchParticipations();
     // eslint-disable-next-line react-hooks/exhaustive-deps

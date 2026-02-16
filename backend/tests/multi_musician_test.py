@@ -9,7 +9,7 @@ import json
 from datetime import datetime, timedelta
 
 class MultiMusicianTester:
-    def __init__(self, base_url="https://moderation-dashboard-1.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://jam-profile-fix.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0

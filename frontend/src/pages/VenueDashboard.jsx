@@ -1787,6 +1787,135 @@ export default function VenueDashboard() {
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
+
+            {/* Mobile Navigation - Hamburger Menu */}
+            <div className="flex md:hidden items-center gap-2">
+              {/* Notifications visible on mobile */}
+              <Dialog open={showNotificationsDialog} onOpenChange={(open) => {
+                setShowNotificationsDialog(open);
+                if (open && unreadCount > 0) {
+                  (async () => {
+                    try {
+                      await axios.post(`${API}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                      fetchNotifications();
+                    } catch (error) {
+                      console.error("Error marking notifications as read:", error);
+                    }
+                  })();
+                }
+              }}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="relative">
+                    <Bell className="w-5 h-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="glassmorphism border-white/10 max-w-[95vw] max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="font-heading">Notifications</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    {notifications.length > 0 ? (
+                      <>
+                        <div className="flex justify-between items-center mb-3">
+                          <Button variant="outline" size="sm" onClick={async () => {
+                            try {
+                              await axios.post(`${API}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                              fetchNotifications();
+                              toast.success("Tout marqué comme lu");
+                            } catch (error) {
+                              console.error("Error:", error);
+                            }
+                          }}>
+                            <Check className="w-4 h-4" />
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={async () => {
+                            if (!window.confirm("Effacer tout ?")) return;
+                            try {
+                              await axios.delete(`${API}/notifications`, { headers: { Authorization: `Bearer ${token}` } });
+                              toast.success("Effacé");
+                              fetchNotifications();
+                            } catch (error) {
+                              console.error("Error:", error);
+                            }
+                          }}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        {notifications.map((notif) => (
+                          <div key={notif.id} className={`p-3 rounded-lg border ${notif.is_read ? 'bg-black/20 border-white/5' : 'bg-primary/10 border-primary/30'}`}>
+                            <p className="text-sm">{notif.message}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {new Date(notif.created_at).toLocaleDateString('fr-FR')}
+                            </p>
+                          </div>
+                        ))}
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                        <Bell className="w-12 h-12 mb-4 opacity-50" />
+                        <p>Aucune notification</p>
+                      </div>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              {/* Hamburger Menu */}
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <Menu className="w-6 h-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[300px] sm:w-[400px] glassmorphism border-white/10">
+                  <div className="flex flex-col gap-4 mt-6">
+                    {/* Status */}
+                    <div className="flex flex-col gap-3 pb-4 border-b border-white/10">
+                      <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${status.color}`}>
+                        <StatusIcon className="w-5 h-5" />
+                        <span className="font-medium">{status.label}</span>
+                      </div>
+                      {profile && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
+                          <Users className="w-5 h-5" />
+                          <span>{profile.subscribers_count} abonnés</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <Link to="/leaderboard" className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors">
+                      <Trophy className="w-5 h-5 text-primary" />
+                      <span className="font-medium">Trophées</span>
+                    </Link>
+
+                    <Link to="/badges" className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors">
+                      <Award className="w-5 h-5 text-primary" />
+                      <span className="font-medium">Badges</span>
+                    </Link>
+
+                    <Link to="/messages-improved" className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors">
+                      <MessageSquare className="w-5 h-5 text-primary" />
+                      <span className="font-medium">Messages</span>
+                    </Link>
+
+                    <div className="border-t border-white/10 my-2"></div>
+
+                    <button 
+                      onClick={logout} 
+                      className="flex items-center gap-3 p-3 hover:bg-destructive/10 rounded-lg transition-colors text-destructive"
+                    >
+                      <LogOut className="w-5 h-5" />
+                      <span className="font-medium">Déconnexion</span>
+                    </button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </header>

@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Medal, Award, Crown, TrendingUp, Filter } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Trophy, Medal, Award, Crown, TrendingUp, Filter, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import LazyImage from '../components/LazyImage';
+import { Button } from '../components/ui/button';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
 export default function LeaderboardPage() {
   const { user, token } = useAuth();
+  const navigate = useNavigate();
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState('all');

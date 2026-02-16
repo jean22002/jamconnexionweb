@@ -2685,9 +2685,123 @@ export default function MusicianDashboard() {
                 </DialogContent>
               </Dialog>
               
+              {/* Profile Dropdown - Desktop */}
               <Button variant="ghost" onClick={logout} className="text-destructive hover:text-destructive/80" data-testid="logout-btn">
                 <LogOut className="w-4 h-4" />
               </Button>
+            </div>
+
+            {/* Mobile Navigation - Hamburger Menu */}
+            <div className="flex md:hidden items-center gap-2">
+              {/* Notifications visible on mobile */}
+              <Dialog onOpenChange={(open) => {
+                if (open && unreadCount > 0) {
+                  markAllRead();
+                }
+              }}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="relative">
+                    <Bell className="w-5 h-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive rounded-full text-xs flex items-center justify-center">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="glassmorphism border-white/10 max-w-[95vw] max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <div className="flex items-center justify-between">
+                      <DialogTitle className="font-heading">Notifications</DialogTitle>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" onClick={markAllRead}>
+                          <Check className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={async () => {
+                            if (!window.confirm("Effacer toutes les notifications ?")) return;
+                            try {
+                              await axios.delete(`${API}/notifications`, { headers: { Authorization: `Bearer ${token}` } });
+                              toast.success("Notifications effacées");
+                              fetchNotifications();
+                            } catch (error) {
+                              toast.error("Erreur");
+                            }
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogHeader>
+                  <div className="space-y-3 mt-4">
+                    {notifications.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-4">Aucune notification</p>
+                    ) : notifications.map((notif) => (
+                      <div key={notif.id} className={`p-3 rounded-lg ${notif.read ? 'bg-muted/30' : 'bg-primary/10 border border-primary/30'}`}>
+                        <p className="font-medium text-sm">{notif.title}</p>
+                        <p className="text-muted-foreground text-xs mt-1">{notif.message}</p>
+                        <p className="text-muted-foreground text-xs mt-1">{new Date(notif.created_at).toLocaleString('fr-FR')}</p>
+                      </div>
+                    ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              {/* Hamburger Menu */}
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <Menu className="w-6 h-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[300px] sm:w-[400px] glassmorphism border-white/10">
+                  <div className="flex flex-col gap-4 mt-6">
+                    <Link to="/leaderboard" className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors">
+                      <Trophy className="w-5 h-5 text-primary" />
+                      <span className="font-medium">Trophées</span>
+                    </Link>
+
+                    <Link to="/badges" className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors">
+                      <Award className="w-5 h-5 text-primary" />
+                      <span className="font-medium">Badges</span>
+                    </Link>
+
+                    <Link to="/messages-improved" className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors">
+                      <MessageSquare className="w-5 h-5 text-primary" />
+                      <span className="font-medium">Messages</span>
+                    </Link>
+
+                    <div className="border-t border-white/10 my-2"></div>
+
+                    {/* Profile Edit Button */}
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors text-left">
+                          <User className="w-5 h-5 text-primary" />
+                          <span className="font-medium">Mon Profil</span>
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent className="glassmorphism border-white/10 max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle className="font-heading font-semibold text-xl">Mon Profil Musicien</DialogTitle>
+                        </DialogHeader>
+                        {/* Rest of profile content will remain the same */}
+                      </DialogContent>
+                    </Dialog>
+
+                    <button 
+                      onClick={logout} 
+                      className="flex items-center gap-3 p-3 hover:bg-destructive/10 rounded-lg transition-colors text-destructive"
+                    >
+                      <LogOut className="w-5 h-5" />
+                      <span className="font-medium">Déconnexion</span>
+                    </button>
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
         </div>

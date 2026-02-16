@@ -790,7 +790,8 @@ export default function MelomaneDashboard() {
                     {/* Profile Edit Button - Opens the existing profile dialog */}
                     <button 
                       onClick={() => {
-                        setEditingProfile(true);
+                        // Close the sheet first, then open the profile dialog
+                        setTimeout(() => setEditingProfile(true), 100);
                       }}
                       className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors text-left w-full"
                     >

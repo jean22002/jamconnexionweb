@@ -1176,6 +1176,52 @@ export default function MusicianDashboard() {
     }
   };
 
+  const removeFriend = async (friendUserId) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet ami ?")) {
+      return;
+    }
+    try {
+      await axios.delete(`${API}/friends/${friendUserId}`, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Ami supprimé");
+      fetchFriends();
+    } catch (error) {
+      toast.error("Erreur lors de la suppression");
+    }
+  };
+
+  const blockUser = async (userId) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir bloquer cet utilisateur ? Cela supprimera aussi l'amitié.")) {
+      return;
+    }
+    try {
+      await axios.post(`${API}/users/block/${userId}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Utilisateur bloqué");
+      fetchFriends();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur lors du blocage");
+    }
+  };
+
+  const unblockUser = async (userId) => {
+    try {
+      await axios.delete(`${API}/users/unblock/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Utilisateur débloqué");
+      fetchBlockedUsers();
+    } catch (error) {
+      toast.error("Erreur lors du déblocage");
+    }
+  };
+
+  const fetchBlockedUsers = async () => {
+    try {
+      const response = await axios.get(`${API}/users/blocked`, { headers: { Authorization: `Bearer ${token}` } });
+      setBlockedUsers(response.data || []);
+    } catch (error) {
+      console.error("Error fetching blocked users:", error);
+      setBlockedUsers([]);
+    }
+  };
+
   const markAllRead = async () => {
     try {
       await axios.post(`${API}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${token}` } });

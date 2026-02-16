@@ -8,7 +8,7 @@ import sys
 from datetime import datetime
 
 def run_final_test():
-    base_url = "https://dashboard-bugfix-6.preview.emergentagent.com/api"
+    base_url = "https://moderation-dashboard-1.preview.emergentagent.com/api"
     timestamp = datetime.now().strftime('%H%M%S')
     
     print("🎭 FINAL COMPREHENSIVE MELOMANE TEST")

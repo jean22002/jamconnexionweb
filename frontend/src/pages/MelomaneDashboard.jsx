@@ -787,21 +787,16 @@ export default function MelomaneDashboard() {
 
                     <div className="border-t border-white/10 my-2"></div>
 
-                    {/* Profile Edit Button */}
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <button className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors text-left">
-                          <User className="w-5 h-5 text-primary" />
-                          <span className="font-medium">Mon Profil</span>
-                        </button>
-                      </DialogTrigger>
-                      <DialogContent className="glassmorphism border-white/10 max-w-lg max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle className="font-heading font-semibold text-xl">Mon Profil Mélomane</DialogTitle>
-                        </DialogHeader>
-                        {/* Profile content remains the same */}
-                      </DialogContent>
-                    </Dialog>
+                    {/* Profile Edit Button - Opens the existing profile dialog */}
+                    <button 
+                      onClick={() => {
+                        setEditingProfile(true);
+                      }}
+                      className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors text-left w-full"
+                    >
+                      <User className="w-5 h-5 text-primary" />
+                      <span className="font-medium">Mon Profil</span>
+                    </button>
 
                     <button 
                       onClick={logout} 

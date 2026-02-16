@@ -17,6 +17,7 @@ import LazyImage from "../components/LazyImage";
 import { TimeSelect } from "../components/ui/time-select";
 import { MusicianImageUpload } from "../components/ui/image-upload";
 import OnlineStatusSelector from "../components/OnlineStatusSelector";
+import BackgroundSyncSettings from "../components/BackgroundSyncSettings";
 // NEW: Import refactored utilities
 import { buildImageUrl } from "../utils/urlBuilder";
 import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
@@ -1966,6 +1967,9 @@ export default function MusicianDashboard() {
                     <TabsContent value="settings" className="space-y-4 mt-4">
                       {/* Online Status Section */}
                       <OnlineStatusSelector />
+
+                      {/* Background Sync Settings */}
+                      <BackgroundSyncSettings />
 
                       {/* Change Password Section */}
                       <div className="space-y-4 p-4 border-2 border-primary/20 rounded-xl">

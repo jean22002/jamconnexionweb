@@ -1659,7 +1659,8 @@ export default function VenueDashboard() {
               <span className="font-heading font-bold text-xl text-gradient">Jam Connexion</span>
             </div>
             
-            <div className="flex items-center gap-4">
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-4">
               <div className={`flex items-center gap-2 px-3 py-1 rounded-full bg-muted/50 ${status.color}`}>
                 <StatusIcon className="w-4 h-4" />
                 <span className="text-sm font-medium">{status.label}</span>

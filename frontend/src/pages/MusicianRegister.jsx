@@ -17,6 +17,7 @@ export default function MusicianRegister() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     name: ''
   });
 

@@ -2875,17 +2875,22 @@ export default function MusicianDashboard() {
                       <Check className="w-4 h-4" />
                       Accepter
                     </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => {
-                        // Navigate to musician profile
-                        window.location.href = `/musician/${req.from_user_id}`;
-                      }}
-                      className="border-white/20 hover:bg-white/10"
-                    >
-                      Voir profil
-                    </Button>
+                    {req.from_profile_id && req.from_user_role && (
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          // Navigate to profile based on role
+                          const profilePath = req.from_user_role === "musician" ? "musician" 
+                            : req.from_user_role === "venue" ? "venue" 
+                            : "melomane";
+                          window.location.href = `/${profilePath}/${req.from_profile_id}`;
+                        }}
+                        className="border-white/20 hover:bg-white/10"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}

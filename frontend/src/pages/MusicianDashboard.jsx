@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import LazyImage from "../components/LazyImage";
 import { TimeSelect } from "../components/ui/time-select";
 import { MusicianImageUpload } from "../components/ui/image-upload";
+import OnlineStatusSelector from "../components/OnlineStatusSelector";
 // NEW: Import refactored utilities
 import { buildImageUrl } from "../utils/urlBuilder";
 import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
@@ -1197,12 +1198,12 @@ export default function MusicianDashboard() {
       <header className="sticky top-0 z-50 glassmorphism">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center neon-border">
                 <Music className="w-5 h-5 text-primary" />
               </div>
               <span className="font-heading font-bold text-xl text-gradient">Jam Connexion</span>
-            </Link>
+            </div>
             
             <div className="flex items-center gap-4">
               {/* Leaderboard */}
@@ -1963,6 +1964,9 @@ export default function MusicianDashboard() {
 
                     {/* Settings Tab - Account Management */}
                     <TabsContent value="settings" className="space-y-4 mt-4">
+                      {/* Online Status Section */}
+                      <OnlineStatusSelector />
+
                       {/* Change Password Section */}
                       <div className="space-y-4 p-4 border-2 border-primary/20 rounded-xl">
                         <h4 className="font-medium text-primary flex items-center gap-2">

@@ -617,7 +617,6 @@ export default function MusicianDashboard() {
       setFriends(friendsWithUrls);
       setFriendRequests(requestsWithUrls);
       setSentRequests(sentWithUrls);
-      console.log('🔍 DEBUG Subscriptions data:', subsWithUrls);
       setSubscriptions(subsWithUrls);
     } catch (error) {
       console.error("Error:", error);

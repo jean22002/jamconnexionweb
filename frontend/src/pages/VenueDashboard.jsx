@@ -3622,32 +3622,40 @@ export default function VenueDashboard() {
 
           {/* Planning Tab - Calendrier Visuel */}
           <TabsContent value="planning">
-            <div className="space-y-6">
-              {/* Légendes du calendrier */}
-              <div className="glassmorphism rounded-xl p-4">
-                <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Légende :</h3>
-                <div className="flex flex-wrap gap-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded bg-green-500/20 border-2 border-green-500"></div>
-                    <span className="text-sm">Concert</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded bg-purple-500/20 border-2 border-purple-500"></div>
-                    <span className="text-sm">Bœuf</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded bg-pink-500/20 border-2 border-pink-500"></div>
-                    <span className="text-sm">Karaoké</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded bg-cyan-500/20 border-2 border-cyan-500"></div>
-                    <span className="text-sm">Spectacle</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded bg-yellow-500/20 border-2 border-yellow-500"></div>
-                    <span className="text-sm">Ouvert</span>
-                  </div>
-                  <div className="flex items-center gap-2">
+            {loadingEvents ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-primary" />
+                  <p className="text-muted-foreground">Chargement des événements...</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Légendes du calendrier */}
+                <div className="glassmorphism rounded-xl p-4">
+                  <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Légende :</h3>
+                  <div className="flex flex-wrap gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded bg-green-500/20 border-2 border-green-500"></div>
+                      <span className="text-sm">Concert</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded bg-purple-500/20 border-2 border-purple-500"></div>
+                      <span className="text-sm">Bœuf</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded bg-pink-500/20 border-2 border-pink-500"></div>
+                      <span className="text-sm">Karaoké</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded bg-cyan-500/20 border-2 border-cyan-500"></div>
+                      <span className="text-sm">Spectacle</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded bg-yellow-500/20 border-2 border-yellow-500"></div>
+                      <span className="text-sm">Ouvert</span>
+                    </div>
+                    <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded bg-orange-500/20 border-2 border-orange-500"></div>
                     <span className="text-sm">En cours</span>
                   </div>

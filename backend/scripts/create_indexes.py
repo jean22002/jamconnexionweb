@@ -19,6 +19,26 @@ import sys
 MONGO_URL = os.environ.get('MONGO_URL')
 DB_NAME = os.environ.get('DB_NAME', 'jamconnexion')
 
+async def create_index_safe(collection, keys, name, unique=False):
+    """Create index if it doesn't exist, or skip if already exists"""
+    existing_indexes = await collection.index_information()
+    
+    if name in existing_indexes:
+        print(f"  ℹ️  Skipped: {name} (already exists)")
+        return False
+    else:
+        try:
+            await collection.create_index(keys, name=name, unique=unique)
+            suffix = " - UNIQUE" if unique else ""
+            print(f"  ✓ Created: {name}{suffix}")
+            return True
+        except Exception as e:
+            if "already exists" in str(e).lower() or "duplicate" in str(e).lower():
+                print(f"  ℹ️  Skipped: {name} (conflict with existing index)")
+                return False
+            else:
+                raise
+
 async def create_indexes():
     """Create all necessary indexes for optimized queries"""
     

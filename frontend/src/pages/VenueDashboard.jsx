@@ -308,45 +308,54 @@ export default function VenueDashboard() {
     if (!profile?.id) return; // Guard: Don't fetch if no profile ID yet
     
     try {
-      const [jamsRes, concertsRes, karaokeRes, spectacleRes, planningRes] = await Promise.all([
+      // Faire les requêtes en parallèle avec gestion d'erreur individuelle
+      const [jamsRes, concertsRes, karaokeRes, spectacleRes, planningRes] = await Promise.allSettled([
         axios.get(`${API}/venues/${profile.id}/jams`),
         axios.get(`${API}/venues/${profile.id}/concerts`),
         axios.get(`${API}/venues/${profile.id}/karaoke`),
         axios.get(`${API}/venues/${profile.id}/spectacle`),
         axios.get(`${API}/venues/${profile.id}/planning`)
       ]);
-      setJams(jamsRes.data);
-      setConcerts(concertsRes.data);
-      setKaraokes(karaokeRes.data);
-      setSpectacles(spectacleRes.data);
-      setPlanningSlots(planningRes.data);
+      
+      // Extraire les données réussies, ou utiliser [] si échoué
+      const jams = jamsRes.status === 'fulfilled' ? jamsRes.value.data : [];
+      const concerts = concertsRes.status === 'fulfilled' ? concertsRes.value.data : [];
+      const karaokes = karaokeRes.status === 'fulfilled' ? karaokeRes.value.data : [];
+      const spectacles = spectacleRes.status === 'fulfilled' ? spectacleRes.value.data : [];
+      const planning = planningRes.status === 'fulfilled' ? planningRes.value.data : [];
+      
+      setJams(jams);
+      setConcerts(concerts);
+      setKaraokes(karaokes);
+      setSpectacles(spectacles);
+      setPlanningSlots(planning);
       
       // Construire le tableau des dates réservées
       const bookedDatesArray = [
-        ...jamsRes.data.map(j => j.date),
-        ...concertsRes.data.map(c => c.date),
-        ...karaokeRes.data.map(k => k.date),
-        ...spectacleRes.data.map(s => s.date)
+        ...jams.map(j => j.date),
+        ...concerts.map(c => c.date),
+        ...karaokes.map(k => k.date),
+        ...spectacles.map(s => s.date)
       ];
       setBookedDates(bookedDatesArray);
       
       // Construire l'objet des événements par date avec leur type
       const eventsMap = {};
-      jamsRes.data.forEach(jam => {
+      jams.forEach(jam => {
         eventsMap[jam.date] = 'jam'; // Mauve pour les bœufs
       });
-      concertsRes.data.forEach(concert => {
+      concerts.forEach(concert => {
         eventsMap[concert.date] = 'concert'; // Vert pour les concerts
       });
-      karaokeRes.data.forEach(karaoke => {
+      karaokes.forEach(karaoke => {
         eventsMap[karaoke.date] = 'karaoke'; // Couleur pour karaoké
       });
-      spectacleRes.data.forEach(spectacle => {
+      spectacles.forEach(spectacle => {
         eventsMap[spectacle.date] = 'spectacle'; // Couleur pour spectacle
       });
       setEventsByDate(eventsMap);
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error fetching events:", error);
     }
   }, [profile?.id]); // FIXED: Only depend on profile.id
 

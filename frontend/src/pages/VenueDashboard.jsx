@@ -1555,7 +1555,27 @@ export default function VenueDashboard() {
       await axios.post(`${API}/planning`, planningForm, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Date disponible publiée!");
       setShowPlanningDialog(false);
-      setPlanningForm({ date: "", music_styles: [], description: "" });
+      setPlanningForm({ 
+        date: "", 
+        time: '',
+        title: '',
+        music_styles: [], 
+        artist_categories: [],
+        description: "",
+        expectedBandStyle: '',
+        expectedAttendance: '',
+        payment: '',
+        payment_type: 'manual',
+        payment_base: '',
+        num_bands_needed: 1,
+        has_catering: false,
+        catering_drinks: 0,
+        catering_respect: false,
+        catering_tbd: false,
+        has_accommodation: false,
+        accommodation_capacity: 0,
+        accommodation_tbd: false
+      });
       fetchEvents();
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur");

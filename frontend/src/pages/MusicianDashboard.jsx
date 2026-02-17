@@ -4370,6 +4370,7 @@ export default function MusicianDashboard() {
                   </Link>
                 ))}
               </div>
+              </>
             )}
           </TabsContent>
 

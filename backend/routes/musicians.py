@@ -515,25 +515,151 @@ async def get_friend_requests(current_user: dict = Depends(get_current_user)):
 
 @router.get("/friends/sent")
 async def get_sent_requests(current_user: dict = Depends(get_current_user)):
-    """Get sent friend requests"""
-    requests = await db.friends.find({
-        "from_user_id": current_user["id"],
-        "status": "pending"
-    }, {"_id": 0}).to_list(100)
+    """Get sent friend requests (optimized with aggregation)"""
+    # Utiliser une agrégation pour éviter le problème N+1
+    pipeline = [
+        # 1. Filtrer les requêtes envoyées par l'utilisateur
+        {
+            "$match": {
+                "from_user_id": current_user["id"],
+                "status": "pending"
+            }
+        },
+        # 2. Joindre avec users
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "to_user_id",
+                "foreignField": "id",
+                "as": "to_user_data"
+            }
+        },
+        {"$unwind": {"path": "$to_user_data", "preserveNullAndEmptyArrays": False}},
+        # 3. Joindre avec musicians
+        {
+            "$lookup": {
+                "from": "musicians",
+                "let": {"user_id": "$to_user_data.id", "role": "$to_user_data.role"},
+                "pipeline": [
+                    {"$match": {"$expr": {
+                        "$and": [
+                            {"$eq": ["$$role", "musician"]},
+                            {"$eq": ["$user_id", "$$user_id"]}
+                        ]
+                    }}}
+                ],
+                "as": "musician_data"
+            }
+        },
+        # 4. Joindre avec venues
+        {
+            "$lookup": {
+                "from": "venues",
+                "let": {"user_id": "$to_user_data.id", "role": "$to_user_data.role"},
+                "pipeline": [
+                    {"$match": {"$expr": {
+                        "$and": [
+                            {"$eq": ["$$role", "venue"]},
+                            {"$eq": ["$user_id", "$$user_id"]}
+                        ]
+                    }}}
+                ],
+                "as": "venue_data"
+            }
+        },
+        # 5. Joindre avec melomanes
+        {
+            "$lookup": {
+                "from": "melomanes",
+                "let": {"user_id": "$to_user_data.id", "role": "$to_user_data.role"},
+                "pipeline": [
+                    {"$match": {"$expr": {
+                        "$and": [
+                            {"$eq": ["$$role", "melomane"]},
+                            {"$eq": ["$user_id", "$$user_id"]}
+                        ]
+                    }}}
+                ],
+                "as": "melomane_data"
+            }
+        },
+        # 6. Projeter les champs finaux
+        {
+            "$project": {
+                "_id": 0,
+                "id": 1,
+                "from_user_id": 1,
+                "to_user_id": 1,
+                "status": 1,
+                "created_at": 1,
+                # to_user enrichi
+                "to_user": {
+                    "id": "$to_user_data.id",
+                    "email": "$to_user_data.email",
+                    "role": "$to_user_data.role",
+                    "pseudo": {
+                        "$switch": {
+                            "branches": [
+                                {
+                                    "case": {"$eq": ["$to_user_data.role", "musician"]},
+                                    "then": {"$arrayElemAt": ["$musician_data.pseudo", 0]}
+                                },
+                                {
+                                    "case": {"$eq": ["$to_user_data.role", "venue"]},
+                                    "then": {"$arrayElemAt": ["$venue_data.name", 0]}
+                                },
+                                {
+                                    "case": {"$eq": ["$to_user_data.role", "melomane"]},
+                                    "then": {"$arrayElemAt": ["$melomane_data.pseudo", 0]}
+                                }
+                            ],
+                            "default": "$to_user_data.email"
+                        }
+                    },
+                    "profile_image": {
+                        "$switch": {
+                            "branches": [
+                                {
+                                    "case": {"$eq": ["$to_user_data.role", "musician"]},
+                                    "then": {"$arrayElemAt": ["$musician_data.profile_image", 0]}
+                                },
+                                {
+                                    "case": {"$eq": ["$to_user_data.role", "venue"]},
+                                    "then": {"$arrayElemAt": ["$venue_data.profile_image", 0]}
+                                },
+                                {
+                                    "case": {"$eq": ["$to_user_data.role", "melomane"]},
+                                    "then": {"$arrayElemAt": ["$melomane_data.profile_image", 0]}
+                                }
+                            ],
+                            "default": None
+                        }
+                    },
+                    "city": {
+                        "$switch": {
+                            "branches": [
+                                {
+                                    "case": {"$eq": ["$to_user_data.role", "musician"]},
+                                    "then": {"$arrayElemAt": ["$musician_data.city", 0]}
+                                },
+                                {
+                                    "case": {"$eq": ["$to_user_data.role", "venue"]},
+                                    "then": {"$arrayElemAt": ["$venue_data.city", 0]}
+                                },
+                                {
+                                    "case": {"$eq": ["$to_user_data.role", "melomane"]},
+                                    "then": {"$arrayElemAt": ["$melomane_data.city", 0]}
+                                }
+                            ],
+                            "default": None
+                        }
+                    }
+                }
+            }
+        }
+    ]
     
-    # Récupérer les infos des destinataires
-    result = []
-    for req in requests:
-        to_user = await db.users.find_one({"id": req["to_user_id"]}, {"_id": 0, "password": 0})
-        if to_user:
-            # Récupérer le profil du musicien si c'est un musicien
-            if to_user.get("role") == "musician":
-                musician = await db.musicians.find_one({"user_id": to_user["id"]}, {"_id": 0})
-                if musician:
-                    to_user["pseudo"] = musician.get("pseudo")
-            req["to_user"] = to_user
-            result.append(req)
-    
+    result = await db.friends.aggregate(pipeline).to_list(100)
     return result
 
 

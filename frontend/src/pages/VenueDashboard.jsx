@@ -405,11 +405,11 @@ export default function VenueDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Polling pour rafraîchir les événements toutes les 60 secondes (réduit de 10s à 60s)
+  // Polling pour rafraîchir les événements toutes les 15 secondes pour mise à jour temps réel
   useEffect(() => {
     const interval = setInterval(() => {
       fetchEvents();
-    }, 60000); // 60 seconds instead of 10
+    }, 15000); // 15 secondes pour mises à jour temps réel des participants
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

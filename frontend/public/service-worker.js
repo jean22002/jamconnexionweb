@@ -2,7 +2,7 @@
 // Service Worker PWA pour Jam Connexion
 // Support du mode hors ligne, notifications push et cache intelligent
 
-const CACHE_VERSION = 'v3.0';
+const CACHE_VERSION = 'v4.0';
 const CACHE_NAME = `jam-connexion-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `jam-connexion-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE = `jam-connexion-images-${CACHE_VERSION}`;
@@ -13,11 +13,21 @@ const CRITICAL_URLS = [
   '/manifest.json'
 ];
 
+// Endpoints critiques qui ne doivent JAMAIS être mis en cache
+const NO_CACHE_ENDPOINTS = [
+  '/api/my-subscriptions',
+  '/api/friends',
+  '/api/friends/requests',
+  '/api/friends/sent',
+  '/api/musicians/me',
+  '/api/venues/me'
+];
+
 // Durée de vie du cache (en millisecondes)
 const CACHE_EXPIRATION = {
   images: 7 * 24 * 60 * 60 * 1000,  // 7 jours
   runtime: 24 * 60 * 60 * 1000,      // 24 heures
-  api: 5 * 60 * 1000                 // 5 minutes
+  api: 30 * 1000                     // 30 secondes (réduit de 5 minutes)
 };
 
 self.addEventListener('install', (event) => {

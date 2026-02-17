@@ -308,6 +308,7 @@ export default function VenueDashboard() {
   const fetchEvents = useCallback(async () => {
     if (!profile?.id) return; // Guard: Don't fetch if no profile ID yet
     
+    setLoadingEvents(true);
     try {
       // Faire les requêtes en parallèle avec gestion d'erreur individuelle
       const [jamsRes, concertsRes, karaokeRes, spectacleRes, planningRes] = await Promise.allSettled([
@@ -357,6 +358,8 @@ export default function VenueDashboard() {
       setEventsByDate(eventsMap);
     } catch (error) {
       console.error("Error fetching events:", error);
+    } finally {
+      setLoadingEvents(false);
     }
   }, [profile?.id]); // FIXED: Only depend on profile.id
 

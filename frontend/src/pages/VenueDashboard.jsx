@@ -414,6 +414,29 @@ export default function VenueDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Mettre à jour selectedEvent quand les données sont rafraîchies
+  useEffect(() => {
+    if (selectedEvent && selectedEventType) {
+      let updatedEvent = null;
+      
+      if (selectedEventType === 'concert') {
+        updatedEvent = concerts.find(c => c.id === selectedEvent.id);
+      } else if (selectedEventType === 'jam') {
+        updatedEvent = jams.find(j => j.id === selectedEvent.id);
+      } else if (selectedEventType === 'karaoke') {
+        updatedEvent = karaokes.find(k => k.id === selectedEvent.id);
+      } else if (selectedEventType === 'spectacle') {
+        updatedEvent = spectacles.find(s => s.id === selectedEvent.id);
+      }
+      
+      // Mettre à jour selectedEvent si l'événement existe toujours
+      if (updatedEvent) {
+        setSelectedEvent(updatedEvent);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [concerts, jams, karaokes, spectacles]);
+
   // Charger les événements quand on ouvre l'onglet Planning et que le profil est disponible
   useEffect(() => {
     if (activeTab === 'planning' && profile?.id) {

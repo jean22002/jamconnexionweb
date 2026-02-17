@@ -609,11 +609,16 @@ export default function MusicianDashboard() {
         ...sent,
         profile_image: sent.profile_image ? buildImageUrl(sent.profile_image) : null
       }));
+      // Transform subscriptions image URLs too
+      const subsWithUrls = (subsRes.data || []).map(sub => ({
+        ...sub,
+        venue_image: sub.venue_image ? buildImageUrl(sub.venue_image) : null
+      }));
       setFriends(friendsWithUrls);
       setFriendRequests(requestsWithUrls);
       setSentRequests(sentWithUrls);
-      console.log('🔍 DEBUG Subscriptions data:', subsRes.data);
-      setSubscriptions(subsRes.data);
+      console.log('🔍 DEBUG Subscriptions data:', subsWithUrls);
+      setSubscriptions(subsWithUrls);
     } catch (error) {
       console.error("Error:", error);
     }

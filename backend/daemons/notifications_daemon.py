@@ -154,7 +154,7 @@ async def send_event_reminders_j1():
                 message = f"N'oubliez pas : {event_type_label.get(collection_name, 'Événement')} à {venue_name} demain à {event.get('start_time', 'TBD')}"
                 
                 await create_notification(
-                    user_id=participant["participant_id"],
+                    user_id=participant.get("user_id") or participant.get("participant_id") or participant.get("musician_id"),
                     notification_type="event_reminder_j1",
                     title=title,
                     message=message,

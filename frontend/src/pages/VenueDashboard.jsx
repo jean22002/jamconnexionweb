@@ -1212,6 +1212,10 @@ export default function VenueDashboard() {
   };
 
   const handleCreatePlanningSlot = async () => {
+    // Empêcher les clics multiples
+    if (creatingSlot) return;
+    
+    setCreatingSlot(true);
     try {
       await axios.post(
         `${API}/planning`,
@@ -1266,6 +1270,8 @@ export default function VenueDashboard() {
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur lors de la création du créneau");
       console.error("Error creating planning slot:", error);
+    } finally {
+      setCreatingSlot(false);
     }
   };
 

@@ -4268,6 +4268,7 @@ export default function VenueDashboard() {
                 </DialogContent>
               </Dialog>
             </div>
+            )}
           </TabsContent>
 
           {/* Candidatures Tab - Créneaux ouverts aux groupes */}

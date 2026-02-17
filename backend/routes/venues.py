@@ -346,11 +346,46 @@ async def get_subscription_status(venue_id: str, current_user: dict = Depends(ge
 
 @router.get("/my-subscriptions")
 async def get_my_subscriptions(current_user: dict = Depends(get_current_user)):
-    """Get all venues the current user is subscribed to"""
-    subscriptions = await db.venue_subscriptions.find(
-        {"subscriber_id": current_user["id"]},
-        {"_id": 0}
-    ).to_list(1000)
+    """Get all venues the current user is subscribed to with full venue details"""
+    pipeline = [
+        # Match subscriptions for current user
+        {
+            "$match": {"subscriber_id": current_user["id"]}
+        },
+        # Join with venues collection
+        {
+            "$lookup": {
+                "from": "venues",
+                "localField": "venue_id",
+                "foreignField": "id",
+                "as": "venue_details"
+            }
+        },
+        # Unwind venue details (convert array to object)
+        {
+            "$unwind": {
+                "path": "$venue_details",
+                "preserveNullAndEmptyArrays": False
+            }
+        },
+        # Project fields needed by frontend
+        {
+            "$project": {
+                "_id": 0,
+                "id": 1,
+                "venue_id": 1,
+                "subscriber_id": 1,
+                "subscriber_role": 1,
+                "created_at": 1,
+                "venue_name": "$venue_details.name",
+                "venue_image": "$venue_details.profile_image",
+                "city": "$venue_details.city",
+                "department": "$venue_details.department"
+            }
+        }
+    ]
+    
+    subscriptions = await db.venue_subscriptions.aggregate(pipeline).to_list(1000)
     
     return subscriptions
 

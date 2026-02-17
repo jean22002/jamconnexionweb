@@ -754,6 +754,52 @@ async def join_event(event_id: str, event_type: str, current_user: dict = Depend
     
     await db.event_participations.insert_one(participation_doc)
     
+    # ✨ NOUVEAU : Notifier l'établissement de la participation
+    try:
+        # Récupérer les infos du venue
+        venue = await db.venues.find_one({"id": event["venue_id"]}, {"_id": 0, "user_id": 1, "name": 1})
+        
+        if venue:
+            # Récupérer les infos du participant
+            participant_name = "Un utilisateur"
+            participant_type = "utilisateur"
+            
+            if current_user["role"] == "musician":
+                musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0, "pseudo": 1})
+                if musician:
+                    participant_name = musician.get("pseudo", "Un musicien")
+                    participant_type = "musicien"
+            elif current_user["role"] == "melomane":
+                melomane = await db.melomanes.find_one({"user_id": current_user["id"]}, {"_id": 0, "pseudo": 1})
+                if melomane:
+                    participant_name = melomane.get("pseudo", "Un mélomane")
+                    participant_type = "mélomane"
+            
+            # Créer la notification pour l'établissement
+            event_type_label = {
+                "jam": "bœuf",
+                "concert": "concert",
+                "karaoke": "karaoké",
+                "spectacle": "spectacle"
+            }
+            
+            notification = {
+                "id": str(uuid.uuid4()),
+                "user_id": venue["user_id"],
+                "type": "new_participation",
+                "title": f"🎵 Nouvelle participation : {participant_name}",
+                "message": f"{participant_name} ({participant_type}) a rejoint votre {event_type_label.get(event_type, 'événement')} du {event.get('date', 'TBD')}",
+                "related_id": event_id,
+                "read": False,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+            await db.notifications.insert_one(notification)
+            logger.info(f"✓ Notification sent to venue {venue['user_id']} for participation in event {event_id}")
+            
+    except Exception as e:
+        logger.error(f"Failed to create venue notification: {e}")
+    
     # Check for new badges (for musicians participating in events)
     try:
         from utils.badge_checker import check_and_award_badges_internal

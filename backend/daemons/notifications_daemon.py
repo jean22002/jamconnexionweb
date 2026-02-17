@@ -35,7 +35,7 @@ db = client[DB_NAME]
 
 
 async def create_notification(user_id: str, notification_type: str, title: str, message: str, related_id: str = None):
-    """Créer une notification dans la base de données"""
+    """Créer une notification dans la base de données et envoyer push si possible"""
     notification = {
         "id": str(uuid4()),
         "user_id": user_id,
@@ -50,6 +50,30 @@ async def create_notification(user_id: str, notification_type: str, title: str, 
     try:
         await db.notifications.insert_one(notification)
         logger.info(f"✓ Notification created for user {user_id}: {title}")
+        
+        # 🔔 Envoyer notification push en temps réel
+        try:
+            # Import dynamique pour éviter les dépendances circulaires
+            import sys
+            sys.path.insert(0, '/app/backend')
+            from routes.push_notifications import send_push_notification
+            
+            await send_push_notification(
+                user_id=user_id,
+                notification_data={
+                    "title": title,
+                    "message": message,
+                    "link": "/",  # Lien par défaut
+                    "data": {
+                        "type": notification_type,
+                        "related_id": related_id
+                    }
+                }
+            )
+            logger.info(f"✓ Push notification sent to user {user_id}")
+        except Exception as push_error:
+            logger.debug(f"Push notification skipped (user may not have subscription): {push_error}")
+        
         return True
     except Exception as e:
         logger.error(f"✗ Failed to create notification: {e}")

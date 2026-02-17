@@ -357,38 +357,117 @@ async def create_concert_event(data: ConcertEvent, current_user: dict = Depends(
 
 @router.get("/concerts", response_model=List[ConcertEventResponse])
 async def list_concerts(venue_id: Optional[str] = None):
-    query = {}
+    """List all concerts with participants count (optimized with aggregation)"""
+    # Construire le match query
+    match_query = {}
     if venue_id:
-        query["venue_id"] = venue_id
+        match_query["venue_id"] = venue_id
     
-    concerts = await db.concerts.find(query, {"_id": 0}).sort("date", 1).to_list(100)
+    # Utiliser une agrégation pour compter les participants en une seule requête
+    pipeline = [
+        # 1. Filtrer les concerts
+        {"$match": match_query} if match_query else {"$match": {}},
+        # 2. Joindre avec event_participations pour compter
+        {
+            "$lookup": {
+                "from": "event_participations",
+                "let": {"concert_id": "$id"},
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    {"$eq": ["$event_id", "$$concert_id"]},
+                                    {"$eq": ["$event_type", "concert"]},
+                                    {"$eq": ["$active", True]}
+                                ]
+                            }
+                        }
+                    },
+                    {"$count": "count"}
+                ],
+                "as": "participants_data"
+            }
+        },
+        # 3. Extraire le count
+        {
+            "$addFields": {
+                "participants_count": {
+                    "$ifNull": [
+                        {"$arrayElemAt": ["$participants_data.count", 0]},
+                        0
+                    ]
+                }
+            }
+        },
+        # 4. Retirer _id et champs temporaires
+        {
+            "$project": {
+                "_id": 0,
+                "participants_data": 0
+            }
+        },
+        # 5. Trier par date
+        {"$sort": {"date": 1}}
+    ]
     
-    result = []
-    for concert in concerts:
-        participants_count = await db.event_participations.count_documents({
-            "event_id": concert["id"],
-            "event_type": "concert",
-            "active": True
-        })
-        result.append(ConcertEventResponse(**concert, participants_count=participants_count))
-    
-    return result
+    concerts = await db.concerts.aggregate(pipeline).to_list(100)
+    return [ConcertEventResponse(**concert) for concert in concerts]
 
 
 @router.get("/venues/{venue_id}/concerts", response_model=List[ConcertEventResponse])
 async def get_venue_concerts(venue_id: str):
-    concerts = await db.concerts.find({"venue_id": venue_id}, {"_id": 0}).sort("date", 1).to_list(100)
+    """Get all concerts for a venue with participants count (optimized with aggregation)"""
+    # Utiliser une agrégation pour compter les participants en une seule requête
+    pipeline = [
+        # 1. Filtrer les concerts du venue
+        {"$match": {"venue_id": venue_id}},
+        # 2. Joindre avec event_participations pour compter
+        {
+            "$lookup": {
+                "from": "event_participations",
+                "let": {"concert_id": "$id"},
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    {"$eq": ["$event_id", "$$concert_id"]},
+                                    {"$eq": ["$event_type", "concert"]},
+                                    {"$eq": ["$active", True]}
+                                ]
+                            }
+                        }
+                    },
+                    {"$count": "count"}
+                ],
+                "as": "participants_data"
+            }
+        },
+        # 3. Extraire le count
+        {
+            "$addFields": {
+                "participants_count": {
+                    "$ifNull": [
+                        {"$arrayElemAt": ["$participants_data.count", 0]},
+                        0
+                    ]
+                }
+            }
+        },
+        # 4. Retirer _id et champs temporaires
+        {
+            "$project": {
+                "_id": 0,
+                "participants_data": 0
+            }
+        },
+        # 5. Trier par date
+        {"$sort": {"date": 1}}
+    ]
     
-    result = []
-    for concert in concerts:
-        participants_count = await db.event_participations.count_documents({
-            "event_id": concert["id"],
-            "event_type": "concert",
-            "active": True
-        })
-        result.append(ConcertEventResponse(**concert, participants_count=participants_count))
-    
-    return result
+    concerts = await db.concerts.aggregate(pipeline).to_list(100)
+    return [ConcertEventResponse(**concert) for concert in concerts]
 
 
 @router.delete("/concerts/{concert_id}")

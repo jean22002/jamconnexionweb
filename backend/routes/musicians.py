@@ -305,49 +305,212 @@ async def send_friend_request(request: FriendRequest, current_user: dict = Depen
 
 @router.get("/friends/requests")
 async def get_friend_requests(current_user: dict = Depends(get_current_user)):
-    """Get incoming friend requests"""
-    requests = await db.friends.find({
-        "to_user_id": current_user["id"],
-        "status": "pending"
-    }, {"_id": 0}).to_list(100)
+    """Get incoming friend requests with enriched sender data (optimized with aggregation)"""
+    # Utiliser une agrégation pour éviter le problème N+1
+    pipeline = [
+        # 1. Filtrer les requêtes pending pour l'utilisateur actuel
+        {
+            "$match": {
+                "to_user_id": current_user["id"],
+                "status": "pending"
+            }
+        },
+        # 2. Joindre avec la collection users
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "from_user_id",
+                "foreignField": "id",
+                "as": "from_user_data"
+            }
+        },
+        {"$unwind": {"path": "$from_user_data", "preserveNullAndEmptyArrays": False}},
+        # 3. Joindre avec musicians (si role = musician)
+        {
+            "$lookup": {
+                "from": "musicians",
+                "let": {"user_id": "$from_user_data.id", "role": "$from_user_data.role"},
+                "pipeline": [
+                    {"$match": {"$expr": {
+                        "$and": [
+                            {"$eq": ["$$role", "musician"]},
+                            {"$eq": ["$user_id", "$$user_id"]}
+                        ]
+                    }}}
+                ],
+                "as": "musician_data"
+            }
+        },
+        # 4. Joindre avec venues (si role = venue)
+        {
+            "$lookup": {
+                "from": "venues",
+                "let": {"user_id": "$from_user_data.id", "role": "$from_user_data.role"},
+                "pipeline": [
+                    {"$match": {"$expr": {
+                        "$and": [
+                            {"$eq": ["$$role", "venue"]},
+                            {"$eq": ["$user_id", "$$user_id"]}
+                        ]
+                    }}}
+                ],
+                "as": "venue_data"
+            }
+        },
+        # 5. Joindre avec melomanes (si role = melomane)
+        {
+            "$lookup": {
+                "from": "melomanes",
+                "let": {"user_id": "$from_user_data.id", "role": "$from_user_data.role"},
+                "pipeline": [
+                    {"$match": {"$expr": {
+                        "$and": [
+                            {"$eq": ["$$role", "melomane"]},
+                            {"$eq": ["$user_id", "$$user_id"]}
+                        ]
+                    }}}
+                ],
+                "as": "melomane_data"
+            }
+        },
+        # 6. Projeter les champs finaux
+        {
+            "$project": {
+                "_id": 0,
+                "id": 1,
+                "from_user_id": 1,
+                "to_user_id": 1,
+                "status": 1,
+                "created_at": 1,
+                "from_user_role": "$from_user_data.role",
+                # Profile ID selon le rôle
+                "from_profile_id": {
+                    "$switch": {
+                        "branches": [
+                            {
+                                "case": {"$eq": ["$from_user_data.role", "musician"]},
+                                "then": {"$arrayElemAt": ["$musician_data.id", 0]}
+                            },
+                            {
+                                "case": {"$eq": ["$from_user_data.role", "venue"]},
+                                "then": {"$arrayElemAt": ["$venue_data.id", 0]}
+                            },
+                            {
+                                "case": {"$eq": ["$from_user_data.role", "melomane"]},
+                                "then": {"$arrayElemAt": ["$melomane_data.id", 0]}
+                            }
+                        ],
+                        "default": None
+                    }
+                },
+                "from_user_name": {
+                    "$switch": {
+                        "branches": [
+                            {
+                                "case": {"$eq": ["$from_user_data.role", "musician"]},
+                                "then": {"$arrayElemAt": ["$musician_data.pseudo", 0]}
+                            },
+                            {
+                                "case": {"$eq": ["$from_user_data.role", "venue"]},
+                                "then": {"$arrayElemAt": ["$venue_data.name", 0]}
+                            },
+                            {
+                                "case": {"$eq": ["$from_user_data.role", "melomane"]},
+                                "then": {"$arrayElemAt": ["$melomane_data.pseudo", 0]}
+                            }
+                        ],
+                        "default": "$from_user_data.email"
+                    }
+                },
+                "from_user_image": {
+                    "$switch": {
+                        "branches": [
+                            {
+                                "case": {"$eq": ["$from_user_data.role", "musician"]},
+                                "then": {"$arrayElemAt": ["$musician_data.profile_image", 0]}
+                            },
+                            {
+                                "case": {"$eq": ["$from_user_data.role", "venue"]},
+                                "then": {"$arrayElemAt": ["$venue_data.profile_image", 0]}
+                            },
+                            {
+                                "case": {"$eq": ["$from_user_data.role", "melomane"]},
+                                "then": {"$arrayElemAt": ["$melomane_data.profile_image", 0]}
+                            }
+                        ],
+                        "default": None
+                    }
+                },
+                "from_user_city": {
+                    "$switch": {
+                        "branches": [
+                            {
+                                "case": {"$eq": ["$from_user_data.role", "musician"]},
+                                "then": {"$arrayElemAt": ["$musician_data.city", 0]}
+                            },
+                            {
+                                "case": {"$eq": ["$from_user_data.role", "venue"]},
+                                "then": {"$arrayElemAt": ["$venue_data.city", 0]}
+                            },
+                            {
+                                "case": {"$eq": ["$from_user_data.role", "melomane"]},
+                                "then": {"$arrayElemAt": ["$melomane_data.city", 0]}
+                            }
+                        ],
+                        "default": None
+                    }
+                },
+                "from_user_instruments": {
+                    "$cond": {
+                        "if": {"$eq": ["$from_user_data.role", "musician"]},
+                        "then": {
+                            "$reduce": {
+                                "input": {"$slice": [{"$arrayElemAt": ["$musician_data.instruments", 0]}, 3]},
+                                "initialValue": "",
+                                "in": {
+                                    "$concat": [
+                                        "$$value",
+                                        {"$cond": [{"$eq": ["$$value", ""]}, "", ", "]},
+                                        "$$this"
+                                    ]
+                                }
+                            }
+                        },
+                        "else": None
+                    }
+                },
+                "from_user_styles": {
+                    "$cond": {
+                        "if": {"$eq": ["$from_user_data.role", "musician"]},
+                        "then": {
+                            "$reduce": {
+                                "input": {"$slice": [{"$arrayElemAt": ["$musician_data.music_styles", 0]}, 3]},
+                                "initialValue": "",
+                                "in": {
+                                    "$concat": [
+                                        "$$value",
+                                        {"$cond": [{"$eq": ["$$value", ""]}, "", ", "]},
+                                        "$$this"
+                                    ]
+                                }
+                            }
+                        },
+                        "else": None
+                    }
+                }
+            }
+        },
+        # 7. Filtrer les résultats qui ont un profile_id valide
+        {
+            "$match": {
+                "from_profile_id": {"$ne": None}
+            }
+        }
+    ]
     
-    # Récupérer les infos des expéditeurs
-    result = []
-    for req in requests:
-        from_user = await db.users.find_one({"id": req["from_user_id"]}, {"_id": 0, "password": 0})
-        if from_user:
-            # Récupérer l'ID du profil selon le rôle
-            profile_id = None
-            if from_user.get("role") == "musician":
-                musician = await db.musicians.find_one({"user_id": from_user["id"]}, {"_id": 0, "id": 1, "pseudo": 1, "profile_image": 1, "city": 1, "instruments": 1, "music_styles": 1})
-                if musician:
-                    profile_id = musician.get("id")
-                    req["from_user_name"] = musician.get("pseudo", from_user.get("email"))
-                    req["from_user_image"] = musician.get("profile_image")
-                    req["from_user_city"] = musician.get("city")
-                    req["from_user_instruments"] = ", ".join(musician.get("instruments", [])[:3]) if musician.get("instruments") else None
-                    req["from_user_styles"] = ", ".join(musician.get("music_styles", [])[:3]) if musician.get("music_styles") else None
-            elif from_user.get("role") == "venue":
-                venue = await db.venues.find_one({"user_id": from_user["id"]}, {"_id": 0, "id": 1, "name": 1, "profile_image": 1, "city": 1})
-                if venue:
-                    profile_id = venue.get("id")
-                    req["from_user_name"] = venue.get("name", from_user.get("email"))
-                    req["from_user_image"] = venue.get("profile_image")
-                    req["from_user_city"] = venue.get("city")
-            elif from_user.get("role") == "melomane":
-                melomane = await db.melomanes.find_one({"user_id": from_user["id"]}, {"_id": 0, "id": 1, "pseudo": 1, "profile_image": 1, "city": 1})
-                if melomane:
-                    profile_id = melomane.get("id")
-                    req["from_user_name"] = melomane.get("pseudo", from_user.get("email"))
-                    req["from_user_image"] = melomane.get("profile_image")
-                    req["from_user_city"] = melomane.get("city")
-            
-            if profile_id:
-                req["from_profile_id"] = profile_id
-                req["from_user_role"] = from_user.get("role")
-                result.append(req)
-    
+    result = await db.friends.aggregate(pipeline).to_list(100)
     return result
+
 
 
 @router.get("/friends/sent")

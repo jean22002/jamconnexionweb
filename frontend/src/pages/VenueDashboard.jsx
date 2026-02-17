@@ -4267,7 +4267,7 @@ export default function VenueDashboard() {
                   </div>
                 </DialogContent>
               </Dialog>
-            </div>
+              </div>
             )}
           </TabsContent>
 

@@ -410,6 +410,14 @@ export default function VenueDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Charger les événements quand on ouvre l'onglet Planning et que le profil est disponible
+  useEffect(() => {
+    if (activeTab === 'planning' && profile?.id) {
+      fetchEvents();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, profile?.id]);
+
   const handleSave = async () => {
     setSaving(true);
     

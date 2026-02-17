@@ -4359,8 +4359,8 @@ export default function MusicianDashboard() {
                         <div className="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center"><Music className="w-7 h-7 text-primary" /></div>
                       )}
                       <div>
-                        <h3 className="font-heading font-semibold">{sub.venue_name}</h3>
-                        <p className="text-sm text-muted-foreground">{sub.city}</p>
+                        <h3 className="font-heading font-semibold">{sub.venue_name || 'Nom non disponible'}</h3>
+                        <p className="text-sm text-muted-foreground">{sub.city || 'Ville non disponible'}</p>
                       </div>
                     </div>
                   </Link>

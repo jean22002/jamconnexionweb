@@ -36,6 +36,7 @@ const BadgesPage = lazy(() => import("./pages/BadgesPage"));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
 const NotificationSettingsPage = lazy(() => import("./pages/NotificationSettingsPage"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const UserHistoryPage = lazy(() => import("./pages/UserHistoryPage"));
 const MyReportsPage = lazy(() => import("./pages/MyReportsPage"));

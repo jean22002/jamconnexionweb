@@ -58,9 +58,9 @@ class ConcertEvent(BaseModel):
 class ConcertEventResponse(BaseModel):
     id: str
     venue_id: str
-    venue_name: str
+    venue_name: str = ""  # Default for older records
     date: str
-    start_time: str
+    start_time: str = ""  # Default for older records
     end_time: Optional[str] = None
     title: Optional[str] = None
     description: Optional[str] = None

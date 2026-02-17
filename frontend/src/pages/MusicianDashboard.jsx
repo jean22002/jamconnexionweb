@@ -4351,11 +4351,7 @@ export default function MusicianDashboard() {
                 <p>Vous n'êtes connecté à aucun établissement</p>
               </div>
             ) : (
-              <>
-                <div className="mb-4 p-3 bg-blue-500/20 text-blue-300 rounded-lg text-sm">
-                  DEBUG: {subscriptions.length} connexion(s) trouvée(s)
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {subscriptions.map((sub) => (
                   <Link 
                     key={sub.venue_id} 

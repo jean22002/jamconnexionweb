@@ -198,17 +198,57 @@ async def list_jam_events(venue_id: Optional[str] = None, date_from: Optional[st
 
 @router.get("/venues/{venue_id}/jams", response_model=List[JamEventResponse])
 async def get_venue_jams(venue_id: str):
-    jams = await db.jams.find({"venue_id": venue_id}, {"_id": 0}).sort("date", 1).to_list(100)
-    result = []
-    for jam in jams:
-        # Count active participants for this jam
-        participants_count = await db.event_participations.count_documents({
-            "event_id": jam["id"],
-            "event_type": "jam",
-            "active": {"$ne": False}
-        })
-        result.append(JamEventResponse(**jam, participants_count=participants_count))
-    return result
+    """Get all jams for a venue with participants count (optimized with aggregation)"""
+    # Utiliser une agrégation pour compter les participants en une seule requête
+    pipeline = [
+        # 1. Filtrer les jams du venue
+        {"$match": {"venue_id": venue_id}},
+        # 2. Joindre avec event_participations pour compter
+        {
+            "$lookup": {
+                "from": "event_participations",
+                "let": {"jam_id": "$id"},
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    {"$eq": ["$event_id", "$$jam_id"]},
+                                    {"$eq": ["$event_type", "jam"]},
+                                    {"$ne": ["$active", False]}
+                                ]
+                            }
+                        }
+                    },
+                    {"$count": "count"}
+                ],
+                "as": "participants_data"
+            }
+        },
+        # 3. Extraire le count (ou 0 si pas de participants)
+        {
+            "$addFields": {
+                "participants_count": {
+                    "$ifNull": [
+                        {"$arrayElemAt": ["$participants_data.count", 0]},
+                        0
+                    ]
+                }
+            }
+        },
+        # 4. Retirer _id et les champs temporaires
+        {
+            "$project": {
+                "_id": 0,
+                "participants_data": 0
+            }
+        },
+        # 5. Trier par date
+        {"$sort": {"date": 1}}
+    ]
+    
+    jams = await db.jams.aggregate(pipeline).to_list(100)
+    return [JamEventResponse(**jam) for jam in jams]
 
 
 @router.delete("/jams/{jam_id}")

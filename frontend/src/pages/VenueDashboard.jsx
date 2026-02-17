@@ -3837,7 +3837,7 @@ export default function VenueDashboard() {
                                 type="button"
                                 onClick={() => setPlanningForm({ 
                                   ...planningForm, 
-                                  music_styles: planningForm.music_styles.filter((_, i) => i !== idx) 
+                                  music_styles: (planningForm.music_styles || []).filter((_, i) => i !== idx) 
                                 })}
                                 className="hover:text-primary-foreground"
                               >

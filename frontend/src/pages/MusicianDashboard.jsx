@@ -657,6 +657,16 @@ export default function MusicianDashboard() {
     fetchBlockedUsers();
     fetchCurrentParticipation();
     fetchParticipations();
+    
+    // Force service worker update to get latest cache version
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(reg => {
+          console.log('🔄 Forcing service worker update...');
+          reg.update();
+        });
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty array = run only once on mount
 

@@ -3802,10 +3802,10 @@ export default function VenueDashboard() {
                       <Select 
                         value="" 
                         onValueChange={(value) => {
-                          if (value && !planningForm.music_styles.includes(value)) {
+                          if (value && !(planningForm.music_styles || []).includes(value)) {
                             setPlanningForm({ 
                               ...planningForm, 
-                              music_styles: [...planningForm.music_styles, value] 
+                              music_styles: [...(planningForm.music_styles || []), value] 
                             });
                           }
                         }}
@@ -3818,16 +3818,16 @@ export default function VenueDashboard() {
                             <SelectItem 
                               key={style} 
                               value={style}
-                              disabled={planningForm.music_styles.includes(style)}
+                              disabled={(planningForm.music_styles || []).includes(style)}
                             >
                               {style}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      {planningForm.music_styles.length > 0 && (
+                      {(planningForm.music_styles || []).length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-2">
-                          {planningForm.music_styles.map((style, idx) => (
+                          {(planningForm.music_styles || []).map((style, idx) => (
                             <span 
                               key={idx} 
                               className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm flex items-center gap-2"

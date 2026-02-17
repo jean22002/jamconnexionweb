@@ -3,6 +3,15 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
 
 const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, eventsByDate = {}, concerts = [], jams = [], karaokes = [], spectacles = [], planningSlots = [], myApplications = [] }) => {
+  // Debug: Vérifier que les données arrivent
+  console.log('[Calendar] Rendering with:', {
+    planningSlots: planningSlots.length,
+    concerts: concerts.length,
+    jams: jams.length,
+    bookedDates: bookedDates.length,
+    eventsByDate: Object.keys(eventsByDate).length
+  });
+  
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();

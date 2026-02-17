@@ -163,6 +163,13 @@ self.addEventListener('fetch', (event) => {
   // Skip pour les requêtes vers des domaines externes (sauf images)
   if (url.origin !== location.origin && !isImageRequest(request)) return;
   
+  // NOUVEAU: Skip cache pour les endpoints critiques de données utilisateur
+  if (NO_CACHE_ENDPOINTS.some(endpoint => url.pathname.startsWith(endpoint))) {
+    console.log('[SW] Network only (no cache) for:', url.pathname);
+    event.respondWith(fetch(request));
+    return;
+  }
+  
   // 1. STRATÉGIE POUR LES IMAGES : Cache First (longue durée)
   if (isImageRequest(request)) {
     event.respondWith(handleImageRequest(request));

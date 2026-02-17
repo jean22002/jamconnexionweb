@@ -66,6 +66,7 @@ export default function VenueDashboard() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [loadingEvents, setLoadingEvents] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
   
   // Subscription state

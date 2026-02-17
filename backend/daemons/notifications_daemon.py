@@ -101,7 +101,7 @@ async def send_event_reminders_j3():
                 message = f"{event_type_label.get(collection_name, 'Événement')} à {venue_name} le {target_date_str} à {event.get('start_time', 'TBD')}"
                 
                 await create_notification(
-                    user_id=participant["participant_id"],
+                    user_id=participant.get("user_id") or participant.get("participant_id") or participant.get("musician_id"),
                     notification_type="event_reminder_j3",
                     title=title,
                     message=message,

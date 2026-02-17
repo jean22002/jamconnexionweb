@@ -59,31 +59,31 @@ async def create_indexes():
         print("📁 Collection: friends")
         
         # Index for incoming friend requests (/api/friends/requests)
-        await db.friends.create_index(
+        await create_index_safe(
+            db.friends,
             [("to_user_id", 1), ("status", 1)],
-            name="idx_friends_to_user_status"
+            "idx_friends_to_user_status"
         )
-        print("  ✓ Created: idx_friends_to_user_status (to_user_id + status)")
         
         # Index for sent friend requests (/api/friends/sent)
-        await db.friends.create_index(
+        await create_index_safe(
+            db.friends,
             [("from_user_id", 1), ("status", 1)],
-            name="idx_friends_from_user_status"
+            "idx_friends_from_user_status"
         )
-        print("  ✓ Created: idx_friends_from_user_status (from_user_id + status)")
         
         # Index for friends list - bidirectional queries (/api/friends)
-        await db.friends.create_index(
+        await create_index_safe(
+            db.friends,
             [("from_user_id", 1)],
-            name="idx_friends_from_user"
+            "idx_friends_from_user"
         )
-        print("  ✓ Created: idx_friends_from_user (from_user_id)")
         
-        await db.friends.create_index(
+        await create_index_safe(
+            db.friends,
             [("to_user_id", 1)],
-            name="idx_friends_to_user"
+            "idx_friends_to_user"
         )
-        print("  ✓ Created: idx_friends_to_user (to_user_id)")
         
         # ========================================
         # EVENT_PARTICIPATIONS COLLECTION

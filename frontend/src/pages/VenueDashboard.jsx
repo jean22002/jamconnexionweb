@@ -1327,6 +1327,8 @@ export default function VenueDashboard() {
           time: planningForm.time,
           title: planningForm.title,
           description: planningForm.description,
+          music_styles: planningForm.music_styles || [],
+          artist_categories: planningForm.artist_categories || [],
           expected_band_style: planningForm.expectedBandStyle,
           expected_attendance: parseInt(planningForm.expectedAttendance) || 0,
           payment: planningForm.payment,

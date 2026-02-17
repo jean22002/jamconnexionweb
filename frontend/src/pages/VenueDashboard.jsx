@@ -4067,9 +4067,17 @@ export default function VenueDashboard() {
                         <>
                           <Button
                             onClick={handleCreatePlanningSlot}
-                            className="flex-1 bg-primary hover:bg-primary/90 rounded-full"
+                            disabled={creatingSlot}
+                            className="flex-1 bg-primary hover:bg-primary/90 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            Publier le créneau
+                            {creatingSlot ? (
+                              <div className="flex items-center gap-2">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span>Publication...</span>
+                              </div>
+                            ) : (
+                              "Publier le créneau"
+                            )}
                           </Button>
                           <Button
                             onClick={() => {

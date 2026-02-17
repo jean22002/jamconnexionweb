@@ -165,9 +165,9 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
       colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 cursor-pointer';
       label = 'Réservé';
     } else if (isPast) {
-      // Gris pour le passé
-      colorClasses = 'bg-muted/20 text-muted-foreground cursor-not-allowed opacity-40';
-      label = '';
+      // Gris pour le passé MAIS garder le label si c'est libre
+      colorClasses = 'bg-muted/20 text-muted-foreground cursor-not-allowed opacity-60';
+      label = 'Passé';
     } else {
       // BLEU pour les jours LIBRES (disponibles pour créer un créneau)
       colorClasses = 'bg-blue-500/20 text-blue-400 border-2 border-blue-500/40 hover:bg-blue-500/30 cursor-pointer';

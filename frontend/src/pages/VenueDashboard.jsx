@@ -88,6 +88,7 @@ export default function VenueDashboard() {
   const [showSpectacleDialog, setShowSpectacleDialog] = useState(false);
   const [showPlanningDialog, setShowPlanningDialog] = useState(false);
   const [viewingApplications, setViewingApplications] = useState(null);
+  const [creatingSlot, setCreatingSlot] = useState(false); // Loading state pour création de créneau
   
   // Broadcast notifications
   const [broadcastMessage, setBroadcastMessage] = useState("");

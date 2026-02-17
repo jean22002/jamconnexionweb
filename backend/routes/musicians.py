@@ -127,7 +127,10 @@ async def get_my_musician_profile(current_user: dict = Depends(get_current_user)
         "status": "accepted"
     })
     
-    return MusicianProfileResponse(**{**musician, "friends_count": friends_count})
+    # Récupérer les groupes dont le musicien est le leader
+    bands = await db.bands.find({"leader_id": musician["id"]}, {"_id": 0}).to_list(100)
+    
+    return MusicianProfileResponse(**{**musician, "friends_count": friends_count, "bands": bands})
 
 
 @router.get("/musicians", response_model=List[MusicianProfileResponse])

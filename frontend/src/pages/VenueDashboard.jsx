@@ -6695,14 +6695,27 @@ export default function VenueDashboard() {
                                                 selectedEventType === 'concert' ? 'concerts' :
                                                 selectedEventType === 'karaoke' ? 'karaoke' : 'spectacle';
                                 
-                                await axios.patch(
-                                  `${API}/${endpoint}/${selectedEvent.id}`,
-                                  { ...selectedEvent, invoice_file: null },
+                                await axios.delete(
+                                  `${API}/${endpoint}/${selectedEvent.id}/invoice`,
                                   { headers: { Authorization: `Bearer ${token}` } }
                                 );
                                 
                                 setSelectedEvent({ ...selectedEvent, invoice_file: null });
-                                toast.success("Facture supprimée");
+                                
+                                // Update local events list
+                                const updateInvoice = (events) => 
+                                  events.map(e => 
+                                    e.id === selectedEvent.id 
+                                      ? { ...e, invoice_file: null }
+                                      : e
+                                  );
+                                
+                                if (selectedEventType === 'jam') setJams(updateInvoice);
+                                else if (selectedEventType === 'concert') setConcerts(updateInvoice);
+                                else if (selectedEventType === 'karaoke') setKaraokes(updateInvoice);
+                                else if (selectedEventType === 'spectacle') setSpectacles(updateInvoice);
+                                
+                                toast.success("Facture supprimée !");
                               } catch (error) {
                                 toast.error("Erreur lors de la suppression");
                               }

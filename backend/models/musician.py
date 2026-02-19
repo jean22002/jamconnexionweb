@@ -65,6 +65,8 @@ class MusicianProfile(BaseModel):
     bands: List[BandInfo] = []
     solo_profile: Optional[Dict[str, Any]] = None
     concerts: List[MusicianConcert] = []
+    # Comptabilité / Paiements
+    payment_methods: List[str] = []  # ["facture", "guso"]
 
 class MusicianProfileResponse(BaseModel):
     id: str
@@ -93,6 +95,8 @@ class MusicianProfileResponse(BaseModel):
     concerts: List[Dict[str, Any]] = []
     friends_count: int = 0
     created_at: str
+    # Comptabilité / Paiements
+    payment_methods: List[str] = []  # ["facture", "guso"]
 
 class FriendRequest(BaseModel):
     to_user_id: str

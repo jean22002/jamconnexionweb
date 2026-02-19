@@ -1238,40 +1238,6 @@ async def upload_spectacle_invoice(
     
     return {"success": True, "filename": unique_filename}
 
-        raise HTTPException(
-            status_code=400, 
-            detail=f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
-        )
-    
-    # Validate file size
-    file_content = await file.read()
-    if len(file_content) > MAX_FILE_SIZE:
-        raise HTTPException(status_code=400, detail="File too large. Max size: 10MB")
-    
-    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
-    if not venue:
-        raise HTTPException(status_code=404, detail="Venue profile not found")
-    
-    concert = await db.concerts.find_one({"id": concert_id, "venue_id": venue["id"]}, {"_id": 0})
-    if not concert:
-        raise HTTPException(status_code=404, detail="Concert not found")
-    
-    # Generate unique filename
-    unique_filename = f"{concert_id}_{uuid.uuid4().hex[:8]}{file_ext}"
-    file_path = UPLOAD_DIR / unique_filename
-    
-    # Save file
-    with open(file_path, "wb") as f:
-        f.write(file_content)
-    
-    # Update database
-    await db.concerts.update_one(
-        {"id": concert_id},
-        {"$set": {"invoice_file": unique_filename}}
-    )
-    
-    return {"success": True, "filename": unique_filename}
-
 
 @router.get("/invoices/{filename}")
 async def get_invoice_file(

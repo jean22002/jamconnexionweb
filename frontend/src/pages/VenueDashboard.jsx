@@ -168,6 +168,15 @@ export default function VenueDashboard() {
     customStartDate: '',
     customEndDate: ''
   });
+
+  // Accounting filters
+  const [accountingFilters, setAccountingFilters] = useState({
+    payment_method: 'all', // 'all', 'facture', 'guso'
+    period: 'all', // 'all', 'month', 'quarter', 'year', 'custom'
+    status: 'all', // 'all', 'paid', 'pending', 'cancelled'
+    customStartDate: '',
+    customEndDate: ''
+  });
   
   // Bands
   const [bands, setBands] = useState([]);

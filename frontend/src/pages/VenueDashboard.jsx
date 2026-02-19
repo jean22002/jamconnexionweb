@@ -6020,7 +6020,7 @@ export default function VenueDashboard() {
                                       variant="ghost" 
                                       size="sm"
                                       onClick={() => {
-                                        window.open(`${API}/invoices/${transaction.invoice_file}`, '_blank');
+                                        window.open(`${API}/invoices/${transaction.invoice_file}?token=${token}`, '_blank');
                                       }}
                                       className="hover:bg-primary/20 h-8 w-8 p-0"
                                       title="Voir la facture"

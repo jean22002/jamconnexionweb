@@ -86,7 +86,7 @@ async def login(data: UserLogin):
     return TokenResponse(
         token=token,
         user=UserResponse(
-            id=user["id"], email=user["email"], name=user["name"], role=user["role"],
+            id=user["id"], email=user["email"], name=user.get("name", user["email"]), role=user["role"],
             created_at=user["created_at"], subscription_status=user.get("subscription_status"),
             trial_end=user.get("trial_end")
         )
@@ -95,7 +95,7 @@ async def login(data: UserLogin):
 @router.get("/me", response_model=UserResponse)
 async def get_me(current_user: dict = Depends(get_current_user)):
     return UserResponse(
-        id=current_user["id"], email=current_user["email"], name=current_user["name"],
+        id=current_user["id"], email=current_user["email"], name=current_user.get("name", current_user["email"]),
         role=current_user["role"], created_at=current_user["created_at"],
         subscription_status=current_user.get("subscription_status"),
         trial_end=current_user.get("trial_end")

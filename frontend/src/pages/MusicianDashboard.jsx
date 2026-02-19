@@ -444,7 +444,8 @@ export default function MusicianDashboard() {
     association_name: "",
     has_label: false,
     label_name: "",
-    label_city: ""
+    label_city: "",
+    payment_methods: [] // ["facture", "guso"]
   });
 
   // State for solo profile

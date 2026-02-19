@@ -6,7 +6,7 @@ from datetime import datetime
 
 def test_concert_date_bug():
     """Test the specific bug reported by user: Concert date not saving/displaying correctly"""
-    base_url = "https://venue-login-fix.preview.emergentagent.com/api"
+    base_url = "https://transaction-vault-1.preview.emergentagent.com/api"
     
     try:
         print("\n🔍 TESTING CONCERT DATE BUG - User reported issue")

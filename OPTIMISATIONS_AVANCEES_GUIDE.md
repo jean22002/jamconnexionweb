@@ -45,7 +45,7 @@ POST /api/admin/optimize-images
 
 **Utilisation :**
 ```bash
-API_URL="https://venue-login-fix.preview.emergentagent.com"
+API_URL="https://transaction-vault-1.preview.emergentagent.com"
 TOKEN="votre_token"
 
 curl -X POST "$API_URL/api/admin/optimize-images" \

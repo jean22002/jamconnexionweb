@@ -5845,14 +5845,52 @@ export default function VenueDashboard() {
                                 )}
                               </td>
                               <td className="p-3 text-center">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => handleEditEvent(transaction, transaction.type.toLowerCase())}
-                                  className="hover:bg-primary/20"
-                                >
-                                  <Eye className="w-4 h-4" />
-                                </Button>
+                                <div className="flex items-center justify-center gap-1">
+                                  {/* Change status dropdown */}
+                                  <select
+                                    value={transaction.payment_status}
+                                    onChange={async (e) => {
+                                      const newStatus = e.target.value;
+                                      try {
+                                        // Determine endpoint based on transaction type
+                                        const endpoint = transaction.type_key === 'jam' ? 'jams' :
+                                                        transaction.type_key === 'concert' ? 'concerts' :
+                                                        transaction.type_key === 'karaoke' ? 'karaokes' :
+                                                        'spectacles';
+                                        
+                                        await axios.put(
+                                          `${API}/${endpoint}/${transaction.id}`,
+                                          { ...transaction, payment_status: newStatus },
+                                          { headers: { Authorization: `Bearer ${token}` } }
+                                        );
+                                        
+                                        toast.success(`Statut mis à jour : ${newStatus === 'paid' ? 'Payé' : newStatus === 'pending' ? 'En attente' : 'Annulé'}`);
+                                        
+                                        // Refresh events
+                                        await fetchEvents();
+                                      } catch (error) {
+                                        toast.error("Erreur lors de la mise à jour du statut");
+                                        console.error(error);
+                                      }
+                                    }}
+                                    className="h-8 px-2 bg-black/20 border border-white/10 rounded text-xs text-white cursor-pointer hover:border-primary/50"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <option value="pending">⏳ En attente</option>
+                                    <option value="paid">✓ Payé</option>
+                                    <option value="cancelled">✗ Annulé</option>
+                                  </select>
+
+                                  {/* View button */}
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => handleEditEvent(transaction, transaction.type_key)}
+                                    className="hover:bg-primary/20 h-8 w-8 p-0"
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </Button>
+                                </div>
                               </td>
                             </tr>
                           ))}

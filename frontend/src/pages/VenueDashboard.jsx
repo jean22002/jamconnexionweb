@@ -6020,7 +6020,7 @@ export default function VenueDashboard() {
                                       variant="ghost" 
                                       size="sm"
                                       onClick={() => {
-                                        window.open(`${API}/invoices/${transaction.invoice_file}?token=${token}`, '_blank');
+                                        window.open(`${API}/api/invoices/${transaction.invoice_file}?token=${token}`, '_blank');
                                       }}
                                       className="hover:bg-primary/20 h-8 w-8 p-0"
                                       title="Voir la facture"
@@ -6678,7 +6678,7 @@ export default function VenueDashboard() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => window.open(`${API}/invoices/${selectedEvent.invoice_file}?token=${token}`, '_blank')}
+                        onClick={() => window.open(`${API}/api/invoices/${selectedEvent.invoice_file}?token=${token}`, '_blank')}
                         className="border-green-500/30"
                       >
                         <FileText className="w-4 h-4 mr-2" />

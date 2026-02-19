@@ -2782,6 +2782,52 @@ export default function VenueDashboard() {
                         <Textarea value={jamForm.additional_info} onChange={(e) => setJamForm({ ...jamForm, additional_info: e.target.value })} className="bg-black/20 border-white/10" rows={2} />
                       </div>
 
+                      {/* Comptabilité */}
+                      <div className="space-y-4 p-4 border-2 border-primary/20 rounded-xl">
+                        <h4 className="font-medium text-primary flex items-center gap-2">
+                          💰 Comptabilité (optionnel)
+                        </h4>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Méthode de paiement</Label>
+                            <Select 
+                              value={jamForm.payment_method} 
+                              onValueChange={(value) => setJamForm({ ...jamForm, payment_method: value })}
+                            >
+                              <SelectTrigger className="bg-black/20 border-white/10">
+                                <SelectValue placeholder="Sélectionnez" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background border-white/10">
+                                <SelectItem value="">Aucune</SelectItem>
+                                <SelectItem value="facture">Facture</SelectItem>
+                                <SelectItem value="guso">GUSO</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Montant (€)</Label>
+                            <Input 
+                              type="number" 
+                              value={jamForm.amount} 
+                              onChange={(e) => setJamForm({ ...jamForm, amount: e.target.value })} 
+                              className="bg-black/20 border-white/10"
+                              placeholder="0.00"
+                              step="0.01"
+                            />
+                          </div>
+                        </div>
+
+                        {jamForm.payment_method && jamForm.amount && (
+                          <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                            <p className="text-sm">
+                              <span className="font-medium">Paiement:</span> {jamForm.payment_method === "facture" ? "📄 Facture" : "🎫 GUSO"} • {parseFloat(jamForm.amount || 0).toFixed(2)} €
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
                       <Button onClick={createJam} className="w-full bg-primary hover:bg-primary/90 rounded-full">Créer</Button>
                     </div>
                   </DialogContent>

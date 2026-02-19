@@ -5939,9 +5939,95 @@ export default function VenueDashboard() {
                                     size="sm"
                                     onClick={() => handleEditEvent(transaction, transaction.type_key)}
                                     className="hover:bg-primary/20 h-8 w-8 p-0"
+                                    title="Voir les détails"
                                   >
                                     <Eye className="w-4 h-4" />
                                   </Button>
+                                  
+                                  {/* Upload invoice button */}
+                                  <label className="cursor-pointer">
+                                    <input
+                                      type="file"
+                                      accept=".pdf,.png,.jpg,.jpeg,.gif,.webp"
+                                      className="hidden"
+                                      onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        
+                                        if (file.size > 10 * 1024 * 1024) {
+                                          toast.error("Fichier trop volumineux (max 10MB)");
+                                          return;
+                                        }
+                                        
+                                        try {
+                                          const formData = new FormData();
+                                          formData.append('file', file);
+                                          
+                                          const endpoint = transaction.type_key === 'jam' ? 'jams' :
+                                                          transaction.type_key === 'concert' ? 'concerts' :
+                                                          transaction.type_key === 'karaoke' ? 'karaoke' :
+                                                          'spectacle';
+                                          
+                                          const response = await axios.post(
+                                            `${API}/${endpoint}/${transaction.id}/invoice`,
+                                            formData,
+                                            { 
+                                              headers: { 
+                                                Authorization: `Bearer ${token}`,
+                                                'Content-Type': 'multipart/form-data'
+                                              } 
+                                            }
+                                          );
+                                          
+                                          // Update local state with actual filename from server
+                                          const updateInvoice = (events) => 
+                                            events.map(e => 
+                                              e.id === transaction.id 
+                                                ? { ...e, invoice_file: response.data.filename }
+                                                : e
+                                            );
+                                          
+                                          if (transaction.type_key === 'jam') setJams(updateInvoice);
+                                          else if (transaction.type_key === 'concert') setConcerts(updateInvoice);
+                                          else if (transaction.type_key === 'karaoke') setKaraokes(updateInvoice);
+                                          else if (transaction.type_key === 'spectacle') setSpectacles(updateInvoice);
+                                          
+                                          toast.success("Facture ajoutée !");
+                                          e.target.value = '';
+                                        } catch (error) {
+                                          toast.error("Erreur lors de l'upload");
+                                          console.error(error);
+                                        }
+                                      }}
+                                    />
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm"
+                                      className="hover:bg-primary/20 h-8 w-8 p-0"
+                                      title={transaction.invoice_file ? "Remplacer la facture" : "Joindre une facture"}
+                                    >
+                                      {transaction.invoice_file ? (
+                                        <Check className="w-4 h-4 text-green-500" />
+                                      ) : (
+                                        <Paperclip className="w-4 h-4" />
+                                      )}
+                                    </Button>
+                                  </label>
+
+                                  {/* View invoice button */}
+                                  {transaction.invoice_file && (
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm"
+                                      onClick={() => {
+                                        window.open(`${API}/invoices/${transaction.invoice_file}`, '_blank');
+                                      }}
+                                      className="hover:bg-primary/20 h-8 w-8 p-0"
+                                      title="Voir la facture"
+                                    >
+                                      <FileText className="w-4 h-4" />
+                                    </Button>
+                                  )}
                                 </div>
                               </td>
                             </tr>

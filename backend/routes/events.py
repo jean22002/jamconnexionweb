@@ -905,3 +905,134 @@ async def get_my_participations(current_user: dict = Depends(get_current_user)):
             enriched_participations.append(participation)
     
     return enriched_participations
+
+
+# ============= ACCOUNTING - UPDATE PAYMENT STATUS =============
+
+@router.patch("/jams/{jam_id}/payment-status")
+async def update_jam_payment_status(
+    jam_id: str,
+    payment_status: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update only the payment status of a jam event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update payment status")
+    
+    # Validate status
+    valid_statuses = ["Payé", "En attente", "Annulé", "Non spécifié"]
+    if payment_status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    jam = await db.jams.find_one({"id": jam_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not jam:
+        raise HTTPException(status_code=404, detail="Jam event not found")
+    
+    # Update only payment_status
+    await db.jams.update_one(
+        {"id": jam_id},
+        {"$set": {"payment_status": payment_status}}
+    )
+    
+    return {"success": True, "payment_status": payment_status}
+
+
+@router.patch("/concerts/{concert_id}/payment-status")
+async def update_concert_payment_status(
+    concert_id: str,
+    payment_status: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update only the payment status of a concert event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update payment status")
+    
+    # Validate status
+    valid_statuses = ["Payé", "En attente", "Annulé", "Non spécifié"]
+    if payment_status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    concert = await db.concerts.find_one({"id": concert_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not concert:
+        raise HTTPException(status_code=404, detail="Concert not found")
+    
+    # Update only payment_status
+    await db.concerts.update_one(
+        {"id": concert_id},
+        {"$set": {"payment_status": payment_status}}
+    )
+    
+    return {"success": True, "payment_status": payment_status}
+
+
+@router.patch("/karaoke/{karaoke_id}/payment-status")
+async def update_karaoke_payment_status(
+    karaoke_id: str,
+    payment_status: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update only the payment status of a karaoke event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update payment status")
+    
+    # Validate status
+    valid_statuses = ["Payé", "En attente", "Annulé", "Non spécifié"]
+    if payment_status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    karaoke = await db.karaoke.find_one({"id": karaoke_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not karaoke:
+        raise HTTPException(status_code=404, detail="Karaoke event not found")
+    
+    # Update only payment_status
+    await db.karaoke.update_one(
+        {"id": karaoke_id},
+        {"$set": {"payment_status": payment_status}}
+    )
+    
+    return {"success": True, "payment_status": payment_status}
+
+
+@router.patch("/spectacle/{spectacle_id}/payment-status")
+async def update_spectacle_payment_status(
+    spectacle_id: str,
+    payment_status: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update only the payment status of a spectacle event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update payment status")
+    
+    # Validate status
+    valid_statuses = ["Payé", "En attente", "Annulé", "Non spécifié"]
+    if payment_status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    spectacle = await db.spectacle.find_one({"id": spectacle_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not spectacle:
+        raise HTTPException(status_code=404, detail="Spectacle event not found")
+    
+    # Update only payment_status
+    await db.spectacle.update_one(
+        {"id": spectacle_id},
+        {"$set": {"payment_status": payment_status}}
+    )
+    
+    return {"success": True, "payment_status": payment_status}
+

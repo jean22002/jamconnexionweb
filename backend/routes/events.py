@@ -909,10 +909,15 @@ async def get_my_participations(current_user: dict = Depends(get_current_user)):
 
 # ============= ACCOUNTING - UPDATE PAYMENT STATUS =============
 
+from pydantic import BaseModel
+
+class PaymentStatusUpdate(BaseModel):
+    payment_status: str
+
 @router.patch("/jams/{jam_id}/payment-status")
 async def update_jam_payment_status(
     jam_id: str,
-    payment_status: str,
+    data: PaymentStatusUpdate,
     current_user: dict = Depends(get_current_user)
 ):
     """Update only the payment status of a jam event"""
@@ -921,7 +926,7 @@ async def update_jam_payment_status(
     
     # Validate status
     valid_statuses = ["Payé", "En attente", "Annulé", "Non spécifié"]
-    if payment_status not in valid_statuses:
+    if data.payment_status not in valid_statuses:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
     
     venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
@@ -935,16 +940,16 @@ async def update_jam_payment_status(
     # Update only payment_status
     await db.jams.update_one(
         {"id": jam_id},
-        {"$set": {"payment_status": payment_status}}
+        {"$set": {"payment_status": data.payment_status}}
     )
     
-    return {"success": True, "payment_status": payment_status}
+    return {"success": True, "payment_status": data.payment_status}
 
 
 @router.patch("/concerts/{concert_id}/payment-status")
 async def update_concert_payment_status(
     concert_id: str,
-    payment_status: str,
+    data: PaymentStatusUpdate,
     current_user: dict = Depends(get_current_user)
 ):
     """Update only the payment status of a concert event"""
@@ -953,7 +958,7 @@ async def update_concert_payment_status(
     
     # Validate status
     valid_statuses = ["Payé", "En attente", "Annulé", "Non spécifié"]
-    if payment_status not in valid_statuses:
+    if data.payment_status not in valid_statuses:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
     
     venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
@@ -967,10 +972,10 @@ async def update_concert_payment_status(
     # Update only payment_status
     await db.concerts.update_one(
         {"id": concert_id},
-        {"$set": {"payment_status": payment_status}}
+        {"$set": {"payment_status": data.payment_status}}
     )
     
-    return {"success": True, "payment_status": payment_status}
+    return {"success": True, "payment_status": data.payment_status}
 
 
 @router.patch("/karaoke/{karaoke_id}/payment-status")

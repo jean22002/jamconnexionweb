@@ -5544,6 +5544,183 @@ export default function VenueDashboard() {
             </div>
           </TabsContent>
 
+          {/* Comptabilité Tab */}
+          <TabsContent value="accounting">
+            <div className="glassmorphism rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="font-heading font-semibold text-xl mb-2">💰 Comptabilité</h2>
+                  <p className="text-muted-foreground text-sm">
+                    Suivez tous vos paiements pour les événements
+                  </p>
+                </div>
+              </div>
+
+              {/* Statistiques rapides */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="p-4 bg-green-500/10 rounded-xl border border-green-500/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-muted-foreground">Payé</span>
+                    <Check className="w-4 h-4 text-green-500" />
+                  </div>
+                  <p className="text-2xl font-bold text-green-500">
+                    {(() => {
+                      const paidEvents = [...jams, ...concerts, ...karaokes, ...spectacles].filter(e => e.payment_status === 'paid' && e.amount);
+                      const total = paidEvents.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+                      return total.toFixed(2);
+                    })()} €
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {[...jams, ...concerts, ...karaokes, ...spectacles].filter(e => e.payment_status === 'paid').length} événement(s)
+                  </p>
+                </div>
+
+                <div className="p-4 bg-orange-500/10 rounded-xl border border-orange-500/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-muted-foreground">En attente</span>
+                    <Clock className="w-4 h-4 text-orange-500" />
+                  </div>
+                  <p className="text-2xl font-bold text-orange-500">
+                    {(() => {
+                      const pendingEvents = [...jams, ...concerts, ...karaokes, ...spectacles].filter(e => e.payment_status === 'pending' && e.amount);
+                      const total = pendingEvents.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+                      return total.toFixed(2);
+                    })()} €
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {[...jams, ...concerts, ...karaokes, ...spectacles].filter(e => e.payment_status === 'pending').length} événement(s)
+                  </p>
+                </div>
+
+                <div className="p-4 bg-red-500/10 rounded-xl border border-red-500/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-muted-foreground">Annulé</span>
+                    <X className="w-4 h-4 text-red-500" />
+                  </div>
+                  <p className="text-2xl font-bold text-red-500">
+                    {(() => {
+                      const cancelledEvents = [...jams, ...concerts, ...karaokes, ...spectacles].filter(e => e.payment_status === 'cancelled' && e.amount);
+                      const total = cancelledEvents.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+                      return total.toFixed(2);
+                    })()} €
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {[...jams, ...concerts, ...karaokes, ...spectacles].filter(e => e.payment_status === 'cancelled').length} événement(s)
+                  </p>
+                </div>
+
+                <div className="p-4 bg-primary/10 rounded-xl border border-primary/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-muted-foreground">Total</span>
+                    <CreditCard className="w-4 h-4 text-primary" />
+                  </div>
+                  <p className="text-2xl font-bold text-primary">
+                    {(() => {
+                      const allEvents = [...jams, ...concerts, ...karaokes, ...spectacles].filter(e => e.amount);
+                      const total = allEvents.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+                      return total.toFixed(2);
+                    })()} €
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {[...jams, ...concerts, ...karaokes, ...spectacles].filter(e => e.payment_method).length} événement(s)
+                  </p>
+                </div>
+              </div>
+
+              {/* Liste des transactions */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg mb-4">Transactions</h3>
+                
+                {(() => {
+                  const allTransactions = [
+                    ...jams.map(e => ({ ...e, type: 'Bœuf' })),
+                    ...concerts.map(e => ({ ...e, type: 'Concert' })),
+                    ...karaokes.map(e => ({ ...e, type: 'Karaoké' })),
+                    ...spectacles.map(e => ({ ...e, type: 'Spectacle' }))
+                  ].filter(e => e.payment_method && e.amount);
+
+                  if (allTransactions.length === 0) {
+                    return (
+                      <div className="text-center py-12 text-muted-foreground glassmorphism rounded-xl">
+                        <CreditCard className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>Aucune transaction comptable</p>
+                        <p className="text-sm mt-2">Les événements avec informations de paiement apparaîtront ici</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-white/10">
+                            <th className="text-left p-3 text-sm font-semibold">Date</th>
+                            <th className="text-left p-3 text-sm font-semibold">Type</th>
+                            <th className="text-left p-3 text-sm font-semibold">Événement</th>
+                            <th className="text-left p-3 text-sm font-semibold">Méthode</th>
+                            <th className="text-right p-3 text-sm font-semibold">Montant</th>
+                            <th className="text-center p-3 text-sm font-semibold">Statut</th>
+                            <th className="text-center p-3 text-sm font-semibold">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date)).map((transaction) => (
+                            <tr key={transaction.id} className="border-b border-white/5 hover:bg-white/5">
+                              <td className="p-3 text-sm">
+                                {new Date(transaction.date).toLocaleDateString('fr-FR')}
+                              </td>
+                              <td className="p-3 text-sm">
+                                <span className="px-2 py-1 bg-primary/20 text-primary rounded-full text-xs">
+                                  {transaction.type}
+                                </span>
+                              </td>
+                              <td className="p-3 text-sm">
+                                {transaction.title || `${transaction.type} du ${transaction.start_time}`}
+                              </td>
+                              <td className="p-3 text-sm">
+                                {transaction.payment_method === 'facture' ? '📄 Facture' : '🎫 GUSO'}
+                              </td>
+                              <td className="p-3 text-sm text-right font-semibold">
+                                {parseFloat(transaction.amount).toFixed(2)} €
+                              </td>
+                              <td className="p-3 text-center">
+                                {transaction.payment_status === 'paid' && (
+                                  <span className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full text-xs font-medium">
+                                    ✓ Payé
+                                  </span>
+                                )}
+                                {transaction.payment_status === 'pending' && (
+                                  <span className="px-3 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs font-medium">
+                                    ⏳ En attente
+                                  </span>
+                                )}
+                                {transaction.payment_status === 'cancelled' && (
+                                  <span className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs font-medium">
+                                    ✗ Annulé
+                                  </span>
+                                )}
+                              </td>
+                              <td className="p-3 text-center">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleEditEvent(transaction, transaction.type.toLowerCase())}
+                                  className="hover:bg-primary/20"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </TabsContent>
+
           {/* Dialog for editing profitability */}
           <Dialog open={editingProfitability !== null} onOpenChange={(open) => !open && setEditingProfitability(null)}>
             <DialogContent className="glassmorphism border-white/10 max-w-md">

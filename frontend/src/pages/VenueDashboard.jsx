@@ -6678,7 +6678,7 @@ export default function VenueDashboard() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => window.open(`${API}/invoices/${selectedEvent.invoice_file}`, '_blank')}
+                        onClick={() => window.open(`${API}/invoices/${selectedEvent.invoice_file}?token=${token}`, '_blank')}
                         className="border-green-500/30"
                       >
                         <FileText className="w-4 h-4 mr-2" />

@@ -101,6 +101,11 @@ class KaraokeEvent(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     music_styles: List[str] = []
+    # Comptabilité
+    payment_method: Optional[str] = None
+    amount: Optional[float] = None
+    payment_status: Optional[str] = "pending"
+    invoice_file: Optional[str] = None
 
 class KaraokeEventResponse(BaseModel):
     id: str
@@ -114,6 +119,11 @@ class KaraokeEventResponse(BaseModel):
     music_styles: List[str] = []
     participants_count: int = 0
     created_at: str
+    # Comptabilité
+    payment_method: Optional[str] = None
+    amount: Optional[float] = None
+    payment_status: Optional[str] = "pending"
+    invoice_file: Optional[str] = None
 
 class SpectacleEvent(BaseModel):
     date: str

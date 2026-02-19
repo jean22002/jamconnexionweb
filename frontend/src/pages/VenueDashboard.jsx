@@ -5636,17 +5636,152 @@ export default function VenueDashboard() {
                 </div>
               </div>
 
+              {/* Filtres */}
+              <div className="space-y-4 mb-6 p-4 bg-muted/30 rounded-xl">
+                <h3 className="font-semibold text-base mb-3">🔍 Filtres</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-sm mb-2 block">Méthode de paiement</Label>
+                    <select
+                      value={accountingFilters.payment_method}
+                      onChange={(e) => setAccountingFilters({...accountingFilters, payment_method: e.target.value})}
+                      className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white"
+                    >
+                      <option value="all">Toutes les méthodes</option>
+                      <option value="facture">Facture uniquement</option>
+                      <option value="guso">GUSO uniquement</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm mb-2 block">Période</Label>
+                    <select
+                      value={accountingFilters.period}
+                      onChange={(e) => setAccountingFilters({...accountingFilters, period: e.target.value, customStartDate: '', customEndDate: ''})}
+                      className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white"
+                    >
+                      <option value="all">Toutes les périodes</option>
+                      <option value="month">Mois en cours</option>
+                      <option value="quarter">Trimestre en cours</option>
+                      <option value="year">Année en cours</option>
+                      <option value="custom">Période personnalisée</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm mb-2 block">Statut</Label>
+                    <select
+                      value={accountingFilters.status}
+                      onChange={(e) => setAccountingFilters({...accountingFilters, status: e.target.value})}
+                      className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white"
+                    >
+                      <option value="all">Tous les statuts</option>
+                      <option value="paid">Payé uniquement</option>
+                      <option value="pending">En attente uniquement</option>
+                      <option value="cancelled">Annulé uniquement</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Custom Date Range - Only shown when custom period selected */}
+                {accountingFilters.period === 'custom' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-white/10">
+                    <div>
+                      <Label className="text-sm mb-2 block">Date de début</Label>
+                      <Input
+                        type="date"
+                        value={accountingFilters.customStartDate}
+                        onChange={(e) => setAccountingFilters({...accountingFilters, customStartDate: e.target.value})}
+                        className="bg-black/20 border-white/10"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm mb-2 block">Date de fin</Label>
+                      <Input
+                        type="date"
+                        value={accountingFilters.customEndDate}
+                        onChange={(e) => setAccountingFilters({...accountingFilters, customEndDate: e.target.value})}
+                        className="bg-black/20 border-white/10"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Reset filters button */}
+                {(accountingFilters.payment_method !== 'all' || accountingFilters.period !== 'all' || accountingFilters.status !== 'all') && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setAccountingFilters({
+                      payment_method: 'all',
+                      period: 'all',
+                      status: 'all',
+                      customStartDate: '',
+                      customEndDate: ''
+                    })}
+                    className="mt-2"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Réinitialiser les filtres
+                  </Button>
+                )}
+              </div>
+
               {/* Liste des transactions */}
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg mb-4">Transactions</h3>
                 
                 {(() => {
-                  const allTransactions = [
-                    ...jams.map(e => ({ ...e, type: 'Bœuf' })),
-                    ...concerts.map(e => ({ ...e, type: 'Concert' })),
-                    ...karaokes.map(e => ({ ...e, type: 'Karaoké' })),
-                    ...spectacles.map(e => ({ ...e, type: 'Spectacle' }))
+                  // Get all transactions
+                  let allTransactions = [
+                    ...jams.map(e => ({ ...e, type: 'Bœuf', type_key: 'jam' })),
+                    ...concerts.map(e => ({ ...e, type: 'Concert', type_key: 'concert' })),
+                    ...karaokes.map(e => ({ ...e, type: 'Karaoké', type_key: 'karaoke' })),
+                    ...spectacles.map(e => ({ ...e, type: 'Spectacle', type_key: 'spectacle' }))
                   ].filter(e => e.payment_method && e.amount);
+
+                  // Apply filters
+                  if (accountingFilters.payment_method !== 'all') {
+                    allTransactions = allTransactions.filter(t => t.payment_method === accountingFilters.payment_method);
+                  }
+
+                  if (accountingFilters.status !== 'all') {
+                    allTransactions = allTransactions.filter(t => t.payment_status === accountingFilters.status);
+                  }
+
+                  // Period filter
+                  if (accountingFilters.period !== 'all') {
+                    const now = new Date();
+                    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+                    if (accountingFilters.period === 'month') {
+                      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                      allTransactions = allTransactions.filter(t => {
+                        const eventDate = new Date(t.date);
+                        return eventDate >= firstDayOfMonth && eventDate <= today;
+                      });
+                    } else if (accountingFilters.period === 'quarter') {
+                      const quarter = Math.floor(now.getMonth() / 3);
+                      const firstDayOfQuarter = new Date(now.getFullYear(), quarter * 3, 1);
+                      allTransactions = allTransactions.filter(t => {
+                        const eventDate = new Date(t.date);
+                        return eventDate >= firstDayOfQuarter && eventDate <= today;
+                      });
+                    } else if (accountingFilters.period === 'year') {
+                      const firstDayOfYear = new Date(now.getFullYear(), 0, 1);
+                      allTransactions = allTransactions.filter(t => {
+                        const eventDate = new Date(t.date);
+                        return eventDate >= firstDayOfYear && eventDate <= today;
+                      });
+                    } else if (accountingFilters.period === 'custom' && accountingFilters.customStartDate && accountingFilters.customEndDate) {
+                      const startDate = new Date(accountingFilters.customStartDate);
+                      const endDate = new Date(accountingFilters.customEndDate);
+                      allTransactions = allTransactions.filter(t => {
+                        const eventDate = new Date(t.date);
+                        return eventDate >= startDate && eventDate <= endDate;
+                      });
+                    }
+                  }
 
                   if (allTransactions.length === 0) {
                     return (

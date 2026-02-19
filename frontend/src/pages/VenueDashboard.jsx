@@ -2117,6 +2117,9 @@ export default function VenueDashboard() {
               Notifications
             </TabsTrigger>
             <TabsTrigger value="history" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Historique</TabsTrigger>
+            <TabsTrigger value="accounting" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
+              💰 Comptabilité
+            </TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Avis</TabsTrigger>
             <TabsTrigger value="bands" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Groupes</TabsTrigger>
             <TabsTrigger value="gallery" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Galerie</TabsTrigger>

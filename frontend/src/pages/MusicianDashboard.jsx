@@ -564,7 +564,8 @@ export default function MusicianDashboard() {
         has_band: profileData.has_band || false,
         band: profileData.band || { name: "", photo: "", facebook: "", instagram: "", youtube: "", website: "", bandcamp: "" },
         bands: bandsArray,
-        concerts: profileData.concerts || []
+        concerts: profileData.concerts || [],
+        payment_methods: profileData.payment_methods || []
       });
       
       // Charger le profil solo s'il existe

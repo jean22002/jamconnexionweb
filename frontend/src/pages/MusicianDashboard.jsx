@@ -886,7 +886,8 @@ export default function MusicianDashboard() {
       is_public: true,
       has_sound_engineer: false,
       is_admin: false,
-      admin_id: null
+      admin_id: null,
+      payment_methods: []
     });
   };
 

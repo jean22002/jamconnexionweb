@@ -5947,6 +5947,17 @@ export default function VenueDashboard() {
                             </tr>
                           ))}
                         </tbody>
+                        <tfoot className="border-t-2 border-primary/30 bg-primary/5">
+                          <tr>
+                            <td colSpan="4" className="p-3 text-sm font-bold text-right">
+                              Total :
+                            </td>
+                            <td className="p-3 text-sm text-right font-bold text-primary text-lg">
+                              {allTransactions.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0).toFixed(2)} €
+                            </td>
+                            <td colSpan="2"></td>
+                          </tr>
+                        </tfoot>
                       </table>
                     </div>
                   );

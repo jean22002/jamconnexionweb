@@ -413,6 +413,13 @@ export default function VenueDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty array = run only once on mount
 
+  // Re-fetch events when profile is loaded (fix for Comptabilité tab)
+  useEffect(() => {
+    if (profile?.id) {
+      fetchEvents();
+    }
+  }, [profile?.id, fetchEvents]);
+
   // Polling pour rafraîchir les notifications toutes les 30 secondes (réduit de 15s à 30s)
   useEffect(() => {
     const interval = setInterval(() => {

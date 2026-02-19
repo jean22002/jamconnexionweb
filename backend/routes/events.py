@@ -1043,3 +1043,145 @@ async def update_spectacle_payment_status(
     
     return {"success": True, "payment_status": payment_status}
 
+
+
+# ============= INVOICE FILE UPLOAD =============
+
+UPLOAD_DIR = Path("/app/backend/uploads/invoices")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+ALLOWED_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".gif", ".webp"}
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+
+def get_file_extension(filename: str) -> str:
+    """Get file extension in lowercase"""
+    return Path(filename).suffix.lower()
+
+@router.post("/jams/{jam_id}/invoice")
+async def upload_jam_invoice(
+    jam_id: str,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload invoice file for a jam event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can upload invoices")
+    
+    # Validate file extension
+    file_ext = get_file_extension(file.filename)
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+    
+    # Validate file size
+    file_content = await file.read()
+    if len(file_content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Max size: 10MB")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    jam = await db.jams.find_one({"id": jam_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not jam:
+        raise HTTPException(status_code=404, detail="Jam event not found")
+    
+    # Generate unique filename
+    unique_filename = f"{jam_id}_{uuid.uuid4().hex[:8]}{file_ext}"
+    file_path = UPLOAD_DIR / unique_filename
+    
+    # Save file
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+    
+    # Update database
+    await db.jams.update_one(
+        {"id": jam_id},
+        {"$set": {"invoice_file": unique_filename}}
+    )
+    
+    return {"success": True, "filename": unique_filename}
+
+
+@router.post("/concerts/{concert_id}/invoice")
+async def upload_concert_invoice(
+    concert_id: str,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload invoice file for a concert event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can upload invoices")
+    
+    # Validate file extension
+    file_ext = get_file_extension(file.filename)
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+    
+    # Validate file size
+    file_content = await file.read()
+    if len(file_content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Max size: 10MB")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    concert = await db.concerts.find_one({"id": concert_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not concert:
+        raise HTTPException(status_code=404, detail="Concert not found")
+    
+    # Generate unique filename
+    unique_filename = f"{concert_id}_{uuid.uuid4().hex[:8]}{file_ext}"
+    file_path = UPLOAD_DIR / unique_filename
+    
+    # Save file
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+    
+    # Update database
+    await db.concerts.update_one(
+        {"id": concert_id},
+        {"$set": {"invoice_file": unique_filename}}
+    )
+    
+    return {"success": True, "filename": unique_filename}
+
+
+@router.get("/invoices/{filename}")
+async def get_invoice_file(
+    filename: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Download/view an invoice file"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can access invoices")
+    
+    file_path = UPLOAD_DIR / filename
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Invoice file not found")
+    
+    # Determine media type based on extension
+    file_ext = get_file_extension(filename)
+    media_types = {
+        ".pdf": "application/pdf",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".webp": "image/webp"
+    }
+    media_type = media_types.get(file_ext, "application/octet-stream")
+    
+    return FileResponse(
+        path=file_path,
+        media_type=media_type,
+        filename=filename
+    )
+

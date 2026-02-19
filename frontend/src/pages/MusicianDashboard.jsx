@@ -2822,6 +2822,95 @@ export default function MusicianDashboard() {
                       )}
                     </div>
 
+                    {/* Comptabilité / Méthodes de paiement Groupe */}
+                    <div className="space-y-4 p-4 border-2 border-primary/20 rounded-xl">
+                      <h4 className="font-medium text-primary flex items-center gap-2">
+                        💰 Comptabilité
+                      </h4>
+                      
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">Méthodes de paiement acceptées pour ce groupe</Label>
+                        
+                        <div className="space-y-2">
+                          {/* Checkbox Facture */}
+                          <div className="flex items-center space-x-3 p-3 bg-black/10 rounded-lg border border-white/10">
+                            <input
+                              type="checkbox"
+                              id="band-payment-facture"
+                              checked={currentBand.payment_methods?.includes("facture") || false}
+                              onChange={(e) => {
+                                const currentMethods = currentBand.payment_methods || [];
+                                if (e.target.checked) {
+                                  setCurrentBand({ 
+                                    ...currentBand, 
+                                    payment_methods: [...currentMethods, "facture"] 
+                                  });
+                                } else {
+                                  setCurrentBand({ 
+                                    ...currentBand, 
+                                    payment_methods: currentMethods.filter(m => m !== "facture") 
+                                  });
+                                }
+                              }}
+                              className="w-4 h-4 text-primary bg-black/20 border-white/10 rounded focus:ring-primary focus:ring-2"
+                            />
+                            <Label 
+                              htmlFor="band-payment-facture" 
+                              className="cursor-pointer flex-1"
+                            >
+                              <div className="font-medium">Facture</div>
+                              <div className="text-xs text-muted-foreground">Paiement par facture classique</div>
+                            </Label>
+                          </div>
+
+                          {/* Checkbox GUSO */}
+                          <div className="flex items-center space-x-3 p-3 bg-black/10 rounded-lg border border-white/10">
+                            <input
+                              type="checkbox"
+                              id="band-payment-guso"
+                              checked={currentBand.payment_methods?.includes("guso") || false}
+                              onChange={(e) => {
+                                const currentMethods = currentBand.payment_methods || [];
+                                if (e.target.checked) {
+                                  setCurrentBand({ 
+                                    ...currentBand, 
+                                    payment_methods: [...currentMethods, "guso"] 
+                                  });
+                                } else {
+                                  setCurrentBand({ 
+                                    ...currentBand, 
+                                    payment_methods: currentMethods.filter(m => m !== "guso") 
+                                  });
+                                }
+                              }}
+                              className="w-4 h-4 text-primary bg-black/20 border-white/10 rounded focus:ring-primary focus:ring-2"
+                            />
+                            <Label 
+                              htmlFor="band-payment-guso" 
+                              className="cursor-pointer flex-1"
+                            >
+                              <div className="font-medium">GUSO</div>
+                              <div className="text-xs text-muted-foreground">Guichet Unique du Spectacle Occasionnel</div>
+                            </Label>
+                          </div>
+                        </div>
+
+                        {/* Affichage des méthodes sélectionnées */}
+                        {currentBand.payment_methods && currentBand.payment_methods.length > 0 && (
+                          <div className="mt-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                            <p className="text-sm font-medium mb-2">✓ Méthodes acceptées :</p>
+                            <div className="flex flex-wrap gap-2">
+                              {currentBand.payment_methods.map((method) => (
+                                <span key={method} className="px-3 py-1 bg-primary/20 text-primary rounded-full text-xs font-medium">
+                                  {method === "facture" ? "📄 Facture" : "🎫 GUSO"}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
                     {/* Boutons */}
                     <div className="flex gap-3 pt-4">
                       <Button 

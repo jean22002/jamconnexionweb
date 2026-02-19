@@ -621,6 +621,12 @@ export default function VenueDashboard() {
     }
   };
 
+  // Handle subscription
+  const handleSubscribe = () => {
+    toast.info("La fonctionnalité d'abonnement sera bientôt disponible !");
+    // TODO: Implement payment flow with Stripe
+  };
+
   // Broadcast Notifications
   const fetchNearbyMusiciansCount = async () => {
     try {

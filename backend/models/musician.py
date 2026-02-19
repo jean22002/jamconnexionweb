@@ -33,6 +33,8 @@ class BandInfo(BaseModel):
     department: Optional[str] = None
     department_name: Optional[str] = None
     region: Optional[str] = None
+    # Comptabilité / Paiements
+    payment_methods: List[str] = []  # ["facture", "guso"]
 
 class MusicianConcert(BaseModel):
     id: Optional[str] = None
@@ -65,8 +67,6 @@ class MusicianProfile(BaseModel):
     bands: List[BandInfo] = []
     solo_profile: Optional[Dict[str, Any]] = None
     concerts: List[MusicianConcert] = []
-    # Comptabilité / Paiements
-    payment_methods: List[str] = []  # ["facture", "guso"]
 
 class MusicianProfileResponse(BaseModel):
     id: str
@@ -95,8 +95,6 @@ class MusicianProfileResponse(BaseModel):
     concerts: List[Dict[str, Any]] = []
     friends_count: int = 0
     created_at: str
-    # Comptabilité / Paiements
-    payment_methods: List[str] = []  # ["facture", "guso"]
 
 class FriendRequest(BaseModel):
     to_user_id: str

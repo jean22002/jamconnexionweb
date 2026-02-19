@@ -6662,6 +6662,127 @@ export default function VenueDashboard() {
                   </div>
                 )}
 
+                {/* Section Facture */}
+                <div className="space-y-4 pt-4 border-t border-white/10">
+                  <h3 className="text-lg font-semibold">📄 Facture</h3>
+                  
+                  {selectedEvent.invoice_file ? (
+                    <div className="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                      <Check className="w-5 h-5 text-green-500" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-green-400">Facture jointe</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {selectedEvent.invoice_file}
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => window.open(`${API}/invoices/${selectedEvent.invoice_file}`, '_blank')}
+                        className="border-green-500/30"
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Voir
+                      </Button>
+                      {isEditingEvent && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={async () => {
+                            if (window.confirm("Supprimer la facture actuelle ?")) {
+                              try {
+                                const endpoint = selectedEventType === 'jam' ? 'jams' : 
+                                                selectedEventType === 'concert' ? 'concerts' :
+                                                selectedEventType === 'karaoke' ? 'karaoke' : 'spectacle';
+                                
+                                await axios.patch(
+                                  `${API}/${endpoint}/${selectedEvent.id}`,
+                                  { ...selectedEvent, invoice_file: null },
+                                  { headers: { Authorization: `Bearer ${token}` } }
+                                );
+                                
+                                setSelectedEvent({ ...selectedEvent, invoice_file: null });
+                                toast.success("Facture supprimée");
+                              } catch (error) {
+                                toast.error("Erreur lors de la suppression");
+                              }
+                            }
+                          }}
+                          className="text-red-400 hover:text-red-300"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-muted/20 border border-white/10 rounded-lg">
+                      {isEditingEvent ? (
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept=".pdf,.png,.jpg,.jpeg,.gif,.webp"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              
+                              if (file.size > 10 * 1024 * 1024) {
+                                toast.error("Fichier trop volumineux (max 10MB)");
+                                return;
+                              }
+                              
+                              try {
+                                const formData = new FormData();
+                                formData.append('file', file);
+                                
+                                const endpoint = selectedEventType === 'jam' ? 'jams' : 
+                                                selectedEventType === 'concert' ? 'concerts' :
+                                                selectedEventType === 'karaoke' ? 'karaoke' : 'spectacle';
+                                
+                                const response = await axios.post(
+                                  `${API}/${endpoint}/${selectedEvent.id}/invoice`,
+                                  formData,
+                                  { 
+                                    headers: { 
+                                      Authorization: `Bearer ${token}`,
+                                      'Content-Type': 'multipart/form-data'
+                                    } 
+                                  }
+                                );
+                                
+                                setSelectedEvent({ ...selectedEvent, invoice_file: response.data.filename });
+                                toast.success("Facture ajoutée !");
+                                e.target.value = '';
+                              } catch (error) {
+                                toast.error("Erreur lors de l'upload");
+                                console.error(error);
+                              }
+                            }}
+                          />
+                          <div className="flex flex-col items-center gap-3 py-6">
+                            <Paperclip className="w-8 h-8 text-muted-foreground" />
+                            <div className="text-center">
+                              <p className="text-sm font-medium">Cliquez pour joindre une facture</p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                PDF, PNG, JPG (max 10MB)
+                              </p>
+                            </div>
+                            <Button size="sm" className="mt-2">
+                              <Upload className="w-4 h-4 mr-2" />
+                              Choisir un fichier
+                            </Button>
+                          </div>
+                        </label>
+                      ) : (
+                        <div className="text-center py-4 text-muted-foreground">
+                          <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">Aucune facture jointe</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 {/* Boutons d'action */}
                 <div className="flex gap-3 pt-4">
                   {isEditingEvent ? (

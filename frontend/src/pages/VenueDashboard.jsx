@@ -5906,10 +5906,11 @@ export default function VenueDashboard() {
                                         );
                                         
                                         // Update local state immediately (optimistic update)
+                                        // IMPORTANT: Update with frontend status (English) not backend status (French)
                                         const updateTransactionStatus = (events) => 
                                           events.map(e => 
                                             e.id === transaction.id 
-                                              ? { ...e, payment_status: backendStatus }
+                                              ? { ...e, payment_status: newStatus }  // Use newStatus (English) for frontend
                                               : e
                                           );
                                         

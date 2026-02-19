@@ -5865,22 +5865,42 @@ export default function VenueDashboard() {
                                     onChange={async (e) => {
                                       const newStatus = e.target.value;
                                       try {
+                                        // Map frontend status to backend French status
+                                        const statusMap = {
+                                          'paid': 'Payé',
+                                          'pending': 'En attente',
+                                          'cancelled': 'Annulé',
+                                          'unspecified': 'Non spécifié'
+                                        };
+                                        const backendStatus = statusMap[newStatus] || newStatus;
+                                        
                                         // Determine endpoint based on transaction type
                                         const endpoint = transaction.type_key === 'jam' ? 'jams' :
                                                         transaction.type_key === 'concert' ? 'concerts' :
-                                                        transaction.type_key === 'karaoke' ? 'karaokes' :
-                                                        'spectacles';
+                                                        transaction.type_key === 'karaoke' ? 'karaoke' :
+                                                        'spectacle';
                                         
-                                        await axios.put(
-                                          `${API}/${endpoint}/${transaction.id}`,
-                                          { ...transaction, payment_status: newStatus },
+                                        // Call PATCH endpoint to update only payment_status
+                                        await axios.patch(
+                                          `${API}/${endpoint}/${transaction.id}/payment-status`,
+                                          { payment_status: backendStatus },
                                           { headers: { Authorization: `Bearer ${token}` } }
                                         );
                                         
-                                        toast.success(`Statut mis à jour : ${newStatus === 'paid' ? 'Payé' : newStatus === 'pending' ? 'En attente' : 'Annulé'}`);
+                                        // Update local state immediately (optimistic update)
+                                        const updateTransactionStatus = (events) => 
+                                          events.map(e => 
+                                            e.id === transaction.id 
+                                              ? { ...e, payment_status: backendStatus }
+                                              : e
+                                          );
                                         
-                                        // Refresh events
-                                        await fetchEvents();
+                                        if (transaction.type_key === 'jam') setJams(updateTransactionStatus);
+                                        else if (transaction.type_key === 'concert') setConcerts(updateTransactionStatus);
+                                        else if (transaction.type_key === 'karaoke') setKaraokes(updateTransactionStatus);
+                                        else if (transaction.type_key === 'spectacle') setSpectacles(updateTransactionStatus);
+                                        
+                                        toast.success(`Statut mis à jour : ${backendStatus}`);
                                       } catch (error) {
                                         toast.error("Erreur lors de la mise à jour du statut");
                                         console.error(error);

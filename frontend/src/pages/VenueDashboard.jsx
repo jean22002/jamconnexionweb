@@ -325,6 +325,24 @@ export default function VenueDashboard() {
   const fetchEvents = useCallback(async () => {
     if (!profile?.id) return; // Guard: Don't fetch if no profile ID yet
     
+    // Helper function to normalize payment status from French to English
+    const normalizePaymentStatus = (status) => {
+      const statusMap = {
+        'Payé': 'paid',
+        'En attente': 'pending',
+        'Annulé': 'cancelled',
+        'Non spécifié': 'unspecified'
+      };
+      return statusMap[status] || status;
+    };
+    
+    // Helper to normalize events array
+    const normalizeEvents = (events) => 
+      events.map(event => ({
+        ...event,
+        payment_status: event.payment_status ? normalizePaymentStatus(event.payment_status) : event.payment_status
+      }));
+    
     setLoadingEvents(true);
     try {
       // Faire les requêtes en parallèle avec gestion d'erreur individuelle
@@ -336,11 +354,11 @@ export default function VenueDashboard() {
         axios.get(`${API}/venues/${profile.id}/planning`)
       ]);
       
-      // Extraire les données réussies, ou utiliser [] si échoué
-      const jams = jamsRes.status === 'fulfilled' ? jamsRes.value.data : [];
-      const concerts = concertsRes.status === 'fulfilled' ? concertsRes.value.data : [];
-      const karaokes = karaokeRes.status === 'fulfilled' ? karaokeRes.value.data : [];
-      const spectacles = spectacleRes.status === 'fulfilled' ? spectacleRes.value.data : [];
+      // Extraire les données réussies, ou utiliser [] si échoué, et normaliser les statuts
+      const jams = normalizeEvents(jamsRes.status === 'fulfilled' ? jamsRes.value.data : []);
+      const concerts = normalizeEvents(concertsRes.status === 'fulfilled' ? concertsRes.value.data : []);
+      const karaokes = normalizeEvents(karaokeRes.status === 'fulfilled' ? karaokeRes.value.data : []);
+      const spectacles = normalizeEvents(spectacleRes.status === 'fulfilled' ? spectacleRes.value.data : []);
       const planning = planningRes.status === 'fulfilled' ? planningRes.value.data : [];
       
       setJams(jams);

@@ -1242,25 +1242,21 @@ async def upload_spectacle_invoice(
 @router.get("/invoices/{filename}")
 async def get_invoice_file(
     filename: str,
-    token: str = None,
-    current_user: dict = Depends(get_current_user)
+    token: str
 ):
-    """Download/view an invoice file"""
-    # Allow authentication via query parameter for browser viewing
-    if not current_user and token:
-        try:
-            # Validate token from query param
-            import jwt
-            from os import environ
-            payload = jwt.decode(token, environ.get("JWT_SECRET", "your-secret-key-replace-me"), algorithms=["HS256"])
-            if payload.get("role") != "venue":
-                raise HTTPException(status_code=403, detail="Only venues can access invoices")
-        except Exception:
-            raise HTTPException(status_code=401, detail="Invalid token")
-    elif current_user and current_user["role"] != "venue":
-        raise HTTPException(status_code=403, detail="Only venues can access invoices")
-    elif not current_user and not token:
-        raise HTTPException(status_code=401, detail="Authentication required")
+    """Download/view an invoice file with token authentication"""
+    try:
+        # Validate token from query param
+        import jwt
+        from os import environ
+        payload = jwt.decode(token, environ.get("JWT_SECRET", "your-secret-key-replace-me"), algorithms=["HS256"])
+        
+        if payload.get("role") != "venue":
+            raise HTTPException(status_code=403, detail="Only venues can access invoices")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Authentication failed")
     
     file_path = UPLOAD_DIR / filename
     

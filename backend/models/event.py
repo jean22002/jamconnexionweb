@@ -11,6 +11,11 @@ class JamEvent(BaseModel):
     has_pa_system: bool = False
     instruments_available: List[str] = []
     additional_info: Optional[str] = None
+    # Comptabilité
+    payment_method: Optional[str] = None  # facture, guso
+    amount: Optional[float] = None
+    payment_status: Optional[str] = "pending"  # paid, pending, cancelled
+    invoice_file: Optional[str] = None
 
 class JamEventResponse(BaseModel):
     id: str
@@ -27,6 +32,11 @@ class JamEventResponse(BaseModel):
     additional_info: Optional[str] = None
     created_at: str
     participants_count: int = 0
+    # Comptabilité
+    payment_method: Optional[str] = None
+    amount: Optional[float] = None
+    payment_status: Optional[str] = "pending"
+    invoice_file: Optional[str] = None
 
 class ConcertBand(BaseModel):
     name: str
@@ -78,6 +88,11 @@ class ConcertEventResponse(BaseModel):
     has_accommodation: bool = False
     accommodation_capacity: int = 0
     accommodation_tbd: bool = False
+    # Comptabilité
+    payment_method: Optional[str] = None
+    amount: Optional[float] = None
+    payment_status: Optional[str] = "pending"
+    invoice_file: Optional[str] = None
 
 class KaraokeEvent(BaseModel):
     date: str

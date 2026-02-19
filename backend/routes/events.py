@@ -1240,6 +1240,135 @@ async def upload_spectacle_invoice(
 
 
 @router.get("/invoices/{filename}")
+
+
+@router.delete("/jams/{jam_id}/invoice")
+async def delete_jam_invoice(
+    jam_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete invoice file for a jam event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can delete invoices")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    jam = await db.jams.find_one({"id": jam_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not jam:
+        raise HTTPException(status_code=404, detail="Jam event not found")
+    
+    # Delete file if it exists
+    if jam.get("invoice_file"):
+        file_path = UPLOAD_DIR / jam["invoice_file"]
+        if file_path.exists():
+            file_path.unlink()
+    
+    # Update database
+    await db.jams.update_one(
+        {"id": jam_id},
+        {"$set": {"invoice_file": None}}
+    )
+    
+    return {"success": True, "message": "Invoice deleted"}
+
+
+@router.delete("/concerts/{concert_id}/invoice")
+async def delete_concert_invoice(
+    concert_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete invoice file for a concert event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can delete invoices")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    concert = await db.concerts.find_one({"id": concert_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not concert:
+        raise HTTPException(status_code=404, detail="Concert not found")
+    
+    # Delete file if it exists
+    if concert.get("invoice_file"):
+        file_path = UPLOAD_DIR / concert["invoice_file"]
+        if file_path.exists():
+            file_path.unlink()
+    
+    # Update database
+    await db.concerts.update_one(
+        {"id": concert_id},
+        {"$set": {"invoice_file": None}}
+    )
+    
+    return {"success": True, "message": "Invoice deleted"}
+
+
+@router.delete("/karaoke/{karaoke_id}/invoice")
+async def delete_karaoke_invoice(
+    karaoke_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete invoice file for a karaoke event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can delete invoices")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    karaoke = await db.karaoke.find_one({"id": karaoke_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not karaoke:
+        raise HTTPException(status_code=404, detail="Karaoke event not found")
+    
+    # Delete file if it exists
+    if karaoke.get("invoice_file"):
+        file_path = UPLOAD_DIR / karaoke["invoice_file"]
+        if file_path.exists():
+            file_path.unlink()
+    
+    # Update database
+    await db.karaoke.update_one(
+        {"id": karaoke_id},
+        {"$set": {"invoice_file": None}}
+    )
+    
+    return {"success": True, "message": "Invoice deleted"}
+
+
+@router.delete("/spectacle/{spectacle_id}/invoice")
+async def delete_spectacle_invoice(
+    spectacle_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete invoice file for a spectacle event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can delete invoices")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    spectacle = await db.spectacle.find_one({"id": spectacle_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not spectacle:
+        raise HTTPException(status_code=404, detail="Spectacle event not found")
+    
+    # Delete file if it exists
+    if spectacle.get("invoice_file"):
+        file_path = UPLOAD_DIR / spectacle["invoice_file"]
+        if file_path.exists():
+            file_path.unlink()
+    
+    # Update database
+    await db.spectacle.update_one(
+        {"id": spectacle_id},
+        {"$set": {"invoice_file": None}}
+    )
+    
+    return {"success": True, "message": "Invoice deleted"}
+
 async def get_invoice_file(
     filename: str,
     token: str

@@ -133,6 +133,11 @@ class SpectacleEvent(BaseModel):
     artist_name: str
     description: Optional[str] = None
     price: Optional[str] = None
+    # Comptabilité
+    payment_method: Optional[str] = None
+    amount: Optional[float] = None
+    payment_status: Optional[str] = "pending"
+    invoice_file: Optional[str] = None
 
 class SpectacleEventResponse(BaseModel):
     id: str
@@ -147,6 +152,11 @@ class SpectacleEventResponse(BaseModel):
     price: Optional[str] = None
     participants_count: int = 0
     created_at: str
+    # Comptabilité
+    payment_method: Optional[str] = None
+    amount: Optional[float] = None
+    payment_status: Optional[str] = "pending"
+    invoice_file: Optional[str] = None
 
 class PlanningSlot(BaseModel):
     date: str

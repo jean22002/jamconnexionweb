@@ -455,7 +455,8 @@ export default function MusicianDashboard() {
     show_duration: "",
     music_styles: [],
     description: "",
-    looking_for_concerts: true
+    looking_for_concerts: true,
+    payment_methods: [] // ["facture", "guso"]
   });
 
   const fetchData = useCallback(async (retryCount = 0) => {

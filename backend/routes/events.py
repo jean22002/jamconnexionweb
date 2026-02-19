@@ -1118,6 +1118,93 @@ async def upload_concert_invoice(
     # Validate file extension
     file_ext = get_file_extension(file.filename)
     if file_ext not in ALLOWED_EXTENSIONS:
+
+
+@router.post("/karaoke/{karaoke_id}/invoice")
+async def upload_karaoke_invoice(
+    karaoke_id: str,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload invoice file for a karaoke event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can upload invoices")
+    
+    file_ext = get_file_extension(file.filename)
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+    
+    file_content = await file.read()
+    if len(file_content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Max size: 10MB")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    karaoke = await db.karaoke.find_one({"id": karaoke_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not karaoke:
+        raise HTTPException(status_code=404, detail="Karaoke event not found")
+    
+    unique_filename = f"{karaoke_id}_{uuid.uuid4().hex[:8]}{file_ext}"
+    file_path = UPLOAD_DIR / unique_filename
+    
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+    
+    await db.karaoke.update_one(
+        {"id": karaoke_id},
+        {"$set": {"invoice_file": unique_filename}}
+    )
+    
+    return {"success": True, "filename": unique_filename}
+
+
+@router.post("/spectacle/{spectacle_id}/invoice")
+async def upload_spectacle_invoice(
+    spectacle_id: str,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload invoice file for a spectacle event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can upload invoices")
+    
+    file_ext = get_file_extension(file.filename)
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+    
+    file_content = await file.read()
+    if len(file_content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Max size: 10MB")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    spectacle = await db.spectacle.find_one({"id": spectacle_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not spectacle:
+        raise HTTPException(status_code=404, detail="Spectacle event not found")
+    
+    unique_filename = f"{spectacle_id}_{uuid.uuid4().hex[:8]}{file_ext}"
+    file_path = UPLOAD_DIR / unique_filename
+    
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+    
+    await db.spectacle.update_one(
+        {"id": spectacle_id},
+        {"$set": {"invoice_file": unique_filename}}
+    )
+    
+    return {"success": True, "filename": unique_filename}
+
         raise HTTPException(
             status_code=400, 
             detail=f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"

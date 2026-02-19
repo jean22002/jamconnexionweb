@@ -824,7 +824,8 @@ export default function MusicianDashboard() {
         looking_for_profiles: [],
         is_public: true,
         is_admin: false,
-        admin_id: null
+        admin_id: null,
+        payment_methods: []
       });
       setEditingBandIndex(null);
     }

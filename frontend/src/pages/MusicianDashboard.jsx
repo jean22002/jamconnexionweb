@@ -410,7 +410,8 @@ export default function MusicianDashboard() {
     has_band: false,
     band: { name: "", photo: "", facebook: "", instagram: "", youtube: "", website: "", bandcamp: "" },
     bands: [], // Multiple bands support
-    concerts: []
+    concerts: [],
+    payment_methods: [] // ["facture", "guso"]
   });
 
   const [newConcert, setNewConcert] = useState({ date: "", venue_id: "", venue_name: "", city: "", description: "" });

@@ -209,7 +209,9 @@ export default function VenueDashboard() {
   const [jamForm, setJamForm] = useState({
     date: "", start_time: "", end_time: "", music_styles: [],
     rules: "", has_instruments: false, has_pa_system: false,
-    instruments_available: [], additional_info: ""
+    instruments_available: [], additional_info: "",
+    // Comptabilité
+    payment_method: "", amount: "", payment_status: "pending"
   });
 
   const [concertForm, setConcertForm] = useState({
@@ -218,17 +220,23 @@ export default function VenueDashboard() {
     // Catering
     has_catering: false, catering_drinks: 0, catering_respect: false, catering_tbd: false,
     // Accommodation
-    has_accommodation: false, accommodation_capacity: 0, accommodation_tbd: false
+    has_accommodation: false, accommodation_capacity: 0, accommodation_tbd: false,
+    // Comptabilité
+    payment_method: "", amount: "", payment_status: "pending"
   });
 
   const [karaokeForm, setKaraokeForm] = useState({
     date: "", start_time: "", end_time: "", title: "", description: "",
-    music_styles: [], has_catering: false, catering_drinks: 0
+    music_styles: [], has_catering: false, catering_drinks: 0,
+    // Comptabilité
+    payment_method: "", amount: "", payment_status: "pending"
   });
 
   const [spectacleForm, setSpectacleForm] = useState({
     date: "", start_time: "", end_time: "", type: "", artist_name: "",
-    description: "", price: ""
+    description: "", price: "",
+    // Comptabilité
+    payment_method: "", amount: "", payment_status: "pending"
   });
 
   const [newBand, setNewBand] = useState({ name: "", musician_id: "", members_count: 0, photo: "", facebook: "", instagram: "" });

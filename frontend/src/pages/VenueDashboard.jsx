@@ -318,7 +318,11 @@ export default function VenueDashboard() {
           cover_image_url
         });
     } catch (error) {
-      if (error.response?.status === 404) setEditing(true);
+      console.error('❌ fetchProfile: Error loading profile', error.response?.status, error.message);
+      if (error.response?.status === 404) {
+        console.log('⚠️ fetchProfile: Profile not found (404), enabling edit mode');
+        setEditing(true);
+      }
     } finally {
       setLoading(false);
     }

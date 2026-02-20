@@ -5610,6 +5610,16 @@ export default function VenueDashboard() {
                 </div>
               </div>
 
+              {/* Debug info - sera supprimé après diagnostic */}
+              {console.log('📊 Comptabilité - Events data:', {
+                jams: jams.length,
+                concerts: concerts.length,
+                karaokes: karaokes.length,
+                spectacles: spectacles.length,
+                withPaymentMethod: [...jams, ...concerts, ...karaokes, ...spectacles].filter(e => e.payment_method).length,
+                withAmount: [...jams, ...concerts, ...karaokes, ...spectacles].filter(e => e.amount).length
+              })}
+
               {/* Statistiques rapides */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className="p-4 bg-green-500/10 rounded-xl border border-green-500/30">

@@ -251,8 +251,10 @@ export default function VenueDashboard() {
   const [newBand, setNewBand] = useState({ name: "", musician_id: "", members_count: 0, photo: "", facebook: "", instagram: "" });
 
   const fetchProfile = useCallback(async () => {
+    console.log('🔄 fetchProfile: Starting profile fetch...');
     try {
       const response = await axios.get(`${API}/venues/me`, { headers: { Authorization: `Bearer ${token}` } });
+      console.log('✅ fetchProfile: Profile loaded successfully', { venue_id: response.data.id, venue_name: response.data.name });
       setProfile(response.data);
       
       // Get subscription status

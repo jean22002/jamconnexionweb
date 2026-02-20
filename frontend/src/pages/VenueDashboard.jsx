@@ -323,7 +323,12 @@ export default function VenueDashboard() {
   }, [token, navigate]); // FIXED: Removed 'editing' from dependencies to prevent loop
 
   const fetchEvents = useCallback(async () => {
-    if (!profile?.id) return; // Guard: Don't fetch if no profile ID yet
+    if (!profile?.id) {
+      console.log('⚠️ fetchEvents: No profile ID, skipping fetch');
+      return; // Guard: Don't fetch if no profile ID yet
+    }
+    
+    console.log(`🔄 fetchEvents: Loading events for venue ${profile.id}`);
     
     // Helper function to normalize payment status from French to English
     const normalizePaymentStatus = (status) => {
@@ -354,12 +359,21 @@ export default function VenueDashboard() {
         axios.get(`${API}/venues/${profile.id}/planning`)
       ]);
       
+      // Log des erreurs éventuelles
+      if (jamsRes.status === 'rejected') console.error('❌ Error loading jams:', jamsRes.reason);
+      if (concertsRes.status === 'rejected') console.error('❌ Error loading concerts:', concertsRes.reason);
+      if (karaokeRes.status === 'rejected') console.error('❌ Error loading karaokes:', karaokeRes.reason);
+      if (spectacleRes.status === 'rejected') console.error('❌ Error loading spectacles:', spectacleRes.reason);
+      if (planningRes.status === 'rejected') console.error('❌ Error loading planning:', planningRes.reason);
+      
       // Extraire les données réussies, ou utiliser [] si échoué, et normaliser les statuts
       const jams = normalizeEvents(jamsRes.status === 'fulfilled' ? jamsRes.value.data : []);
       const concerts = normalizeEvents(concertsRes.status === 'fulfilled' ? concertsRes.value.data : []);
       const karaokes = normalizeEvents(karaokeRes.status === 'fulfilled' ? karaokeRes.value.data : []);
       const spectacles = normalizeEvents(spectacleRes.status === 'fulfilled' ? spectacleRes.value.data : []);
       const planning = planningRes.status === 'fulfilled' ? planningRes.value.data : [];
+      
+      console.log(`✅ Events loaded - Jams: ${jams.length}, Concerts: ${concerts.length}, Karaoke: ${karaokes.length}, Spectacles: ${spectacles.length}`);
       
       setJams(jams);
       setConcerts(concerts);

@@ -683,6 +683,22 @@ export default function MusicianDashboard() {
     return () => clearInterval(notificationInterval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+  
+  // Écouter l'événement de nouvelle notification pour rafraîchir immédiatement
+  useEffect(() => {
+    const handleNewNotification = () => {
+      console.log('🔔 Événement nouvelle notification reçu - Rafraîchissement immédiat');
+      fetchNotifications();
+      fetchFriends();
+    };
+    
+    window.addEventListener('new-notification-received', handleNewNotification);
+    
+    return () => {
+      window.removeEventListener('new-notification-received', handleNewNotification);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   // Polling for participation status (every 60 seconds - réduit de 30s à 60s)
   useEffect(() => {

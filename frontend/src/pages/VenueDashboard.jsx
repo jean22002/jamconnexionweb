@@ -68,7 +68,16 @@ export default function VenueDashboard() {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const [loadingEvents, setLoadingEvents] = useState(false);
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState(() => {
+    // Restaurer le dernier onglet depuis localStorage
+    const savedTab = localStorage.getItem('venue_activeTab');
+    return savedTab || "profile";
+  });
+  
+  // Sauvegarder l'onglet actif dans localStorage à chaque changement
+  useEffect(() => {
+    localStorage.setItem('venue_activeTab', activeTab);
+  }, [activeTab]);
   
   // Subscription state
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);

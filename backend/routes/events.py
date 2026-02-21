@@ -1282,6 +1282,94 @@ async def download_invoice(
     )
 
 
+@router.get("/invoices/download/all")
+async def download_all_invoices(
+    payment_method: Optional[str] = Query(None),
+    payment_status: Optional[str] = Query(None),
+    event_type: Optional[str] = Query(None),
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    current_user: dict = Depends(get_current_user)
+):
+    """Download all invoices matching the filters as a ZIP file"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can download invoices")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Construire les requêtes pour chaque type d'événement
+    base_query = {"venue_id": venue["id"], "invoice_file": {"$ne": None}}
+    
+    # Appliquer les filtres
+    if payment_method and payment_method != "all":
+        base_query["payment_method"] = payment_method
+    
+    if payment_status and payment_status != "all":
+        base_query["payment_status"] = payment_status
+    
+    # Filtrage par date
+    date_filter = {}
+    if start_date:
+        date_filter["$gte"] = start_date
+    if end_date:
+        date_filter["$lte"] = end_date
+    if date_filter:
+        base_query["date"] = date_filter
+    
+    # Collecter toutes les factures
+    all_invoices = []
+    
+    if not event_type or event_type == "all" or event_type == "jam":
+        jams = await db.jams.find(base_query, {"_id": 0, "invoice_file": 1, "title": 1, "date": 1}).to_list(1000)
+        all_invoices.extend([{"file": j["invoice_file"], "name": f"jam_{j['title']}_{j['date']}", "type": "jam"} for j in jams if j.get("invoice_file")])
+    
+    if not event_type or event_type == "all" or event_type == "concert":
+        concerts = await db.concerts.find(base_query, {"_id": 0, "invoice_file": 1, "title": 1, "date": 1}).to_list(1000)
+        all_invoices.extend([{"file": c["invoice_file"], "name": f"concert_{c['title']}_{c['date']}", "type": "concert"} for c in concerts if c.get("invoice_file")])
+    
+    if not event_type or event_type == "all" or event_type == "karaoke":
+        karaokes = await db.karaokes.find(base_query, {"_id": 0, "invoice_file": 1, "title": 1, "date": 1}).to_list(1000)
+        all_invoices.extend([{"file": k["invoice_file"], "name": f"karaoke_{k['title']}_{k['date']}", "type": "karaoke"} for k in karaokes if k.get("invoice_file")])
+    
+    if not event_type or event_type == "all" or event_type == "spectacle":
+        spectacles = await db.spectacle.find(base_query, {"_id": 0, "invoice_file": 1, "artist_name": 1, "date": 1}).to_list(1000)
+        all_invoices.extend([{"file": s["invoice_file"], "name": f"spectacle_{s['artist_name']}_{s['date']}", "type": "spectacle"} for s in spectacles if s.get("invoice_file")])
+    
+    if not all_invoices:
+        raise HTTPException(status_code=404, detail="No invoices found matching the filters")
+    
+    # Créer un fichier ZIP en mémoire
+    zip_buffer = io.BytesIO()
+    
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for invoice in all_invoices:
+            file_path = UPLOAD_DIR / invoice["file"]
+            if file_path.exists():
+                # Nettoyer le nom du fichier
+                safe_name = invoice["name"].replace(" ", "_").replace("/", "-")
+                # Obtenir l'extension du fichier original
+                extension = Path(invoice["file"]).suffix
+                archive_name = f"{invoice['type']}/{safe_name}{extension}"
+                
+                # Ajouter le fichier au ZIP
+                zip_file.write(file_path, archive_name)
+    
+    # Réinitialiser le curseur du buffer
+    zip_buffer.seek(0)
+    
+    # Nom du fichier ZIP
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    zip_filename = f"factures_{venue['name']}_{timestamp}.zip"
+    
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": f"attachment; filename={zip_filename}"}
+    )
+
+
 @router.delete("/jams/{jam_id}/invoice")
 async def delete_jam_invoice(
     jam_id: str,

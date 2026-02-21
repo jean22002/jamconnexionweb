@@ -255,20 +255,21 @@ export const useNotifications = (token, user) => {
     if (!token || !user) return;
 
     const init = async () => {
-      // Demander la permission
+      // Demander la permission (mais ne pas bloquer le polling si refusée)
       const hasPermission = await requestPermission();
-      if (!hasPermission) {
-        console.warn('Permission de notifications refusée');
-        return;
+      
+      // Enregistrer le Service Worker seulement si la permission est accordée
+      if (hasPermission) {
+        await registerServiceWorker();
+      } else {
+        console.warn('Permission de notifications refusée - les popups de chat fonctionneront quand même');
       }
 
-      // Enregistrer le Service Worker
-      await registerServiceWorker();
-
-      // Vérifier les notifications immédiatement
+      // Vérifier les notifications immédiatement (peu importe la permission)
       await checkNewNotifications();
 
       // Polling toutes les 10 secondes pour vérifier les nouvelles notifications
+      // Le polling fonctionne même sans permission - seules les notifications push seront désactivées
       intervalRef.current = setInterval(checkNewNotifications, 10000);
     };
 

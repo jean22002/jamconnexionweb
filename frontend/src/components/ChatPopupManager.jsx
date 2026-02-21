@@ -6,22 +6,8 @@ export default function ChatPopupManager() {
   const [minimizedChats, setMinimizedChats] = useState(new Set());
 
   useEffect(() => {
-    console.log('🎧 ChatPopupManager - Monté et prêt');
-    console.log('🎧 Nombre de chats ouverts:', openChats.length);
-    
-    // Test: Afficher un message de test
-    const testTimeout = setTimeout(() => {
-      console.log('🧪 Test: Vérification que le gestionnaire fonctionne');
-    }, 2000);
-    
-    return () => clearTimeout(testTimeout);
-  }, []);
-
-  useEffect(() => {
     // Écouter les nouveaux messages
     const handleNewMessage = (event) => {
-      console.log('📨 ChatPopupManager - Événement new-message-received reçu:', event.detail);
-      
       const { senderId, senderName, senderImage, message } = event.detail;
       
       if (!senderId) {
@@ -41,11 +27,8 @@ export default function ChatPopupManager() {
           lastMessage: message
         };
         
-        console.log('✅ Ouverture d\'un nouveau chat pour:', senderName, 'ID:', senderId);
-        
         setOpenChats(prev => {
           const updated = [...prev, newChat];
-          console.log('📊 Nouveaux chats ouverts:', updated.length);
           // Limiter à 3 chats ouverts maximum
           return updated.slice(-3);
         });
@@ -57,7 +40,6 @@ export default function ChatPopupManager() {
           return newSet;
         });
       } else {
-        console.log('ℹ️ Chat déjà ouvert - Dé-minimisation');
         // Dé-minimiser si minimisé
         setMinimizedChats(prev => {
           const newSet = new Set(prev);
@@ -67,17 +49,14 @@ export default function ChatPopupManager() {
       }
     };
 
-    console.log('🎧 ChatPopupManager - Installation de l\'écouteur d\'événements');
     window.addEventListener('new-message-received', handleNewMessage);
     
     return () => {
-      console.log('🎧 ChatPopupManager - Suppression de l\'écouteur');
       window.removeEventListener('new-message-received', handleNewMessage);
     };
   }, [openChats]);
 
   const handleClose = (partnerId) => {
-    console.log('🗑️ Fermeture du chat:', partnerId);
     setOpenChats(prev => prev.filter(chat => chat.partnerId !== partnerId));
     setMinimizedChats(prev => {
       const newSet = new Set(prev);
@@ -87,7 +66,6 @@ export default function ChatPopupManager() {
   };
 
   const handleMinimize = (partnerId) => {
-    console.log('↕️ Basculer minimisation:', partnerId);
     setMinimizedChats(prev => {
       const newSet = new Set(prev);
       if (newSet.has(partnerId)) {
@@ -98,8 +76,6 @@ export default function ChatPopupManager() {
       return newSet;
     });
   };
-
-  console.log('🎨 Rendu du ChatPopupManager avec', openChats.length, 'chat(s)');
 
   if (openChats.length === 0) {
     return null;

@@ -116,14 +116,14 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
         label = 'Bœuf';
         eventInfo = jam && jam.participants_count ? `${jam.participants_count} participants` : '';
       } else if (eventType === 'karaoke') {
-        colorClasses = 'bg-purple-500/20 text-purple-400 border-2 border-purple-500/40 hover:bg-purple-500/30 cursor-pointer';
+        colorClasses = 'bg-pink-500/20 text-pink-400 border-2 border-pink-500/40 hover:bg-pink-500/30 cursor-pointer';
         label = 'Karaoké';
         const karaoke = karaokes.find(k => k.date === dateStr);
         if (karaoke && karaoke.title) {
           eventInfo = karaoke.title.length > 20 ? karaoke.title.substring(0, 20) + '...' : karaoke.title;
         }
       } else if (eventType === 'spectacle') {
-        colorClasses = 'bg-pink-500/20 text-pink-400 border-2 border-pink-500/40 hover:bg-pink-500/30 cursor-pointer';
+        colorClasses = 'bg-cyan-500/20 text-cyan-400 border-2 border-cyan-500/40 hover:bg-cyan-500/30 cursor-pointer';
         label = 'Spectacle';
         const spectacle = spectacles.find(s => s.date === dateStr);
         if (spectacle && spectacle.artist_name) {

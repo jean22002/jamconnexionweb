@@ -190,6 +190,19 @@ export const useNotifications = (token, user) => {
         // Marquer comme affichée dans localStorage AVANT d'afficher
         markNotificationAsShown(latestNotification.id);
         
+        // Si c'est un nouveau message, ouvrir le chat popup
+        if (latestNotification.type === 'new_message') {
+          console.log('💬 Nouveau message reçu - Ouverture du chat popup');
+          window.dispatchEvent(new CustomEvent('new-message-received', {
+            detail: {
+              senderId: latestNotification.sender_id,
+              senderName: latestNotification.title?.replace('💬 Nouveau message de ', '') || 'Utilisateur',
+              senderImage: null, // Sera récupéré par le composant
+              message: latestNotification.message
+            }
+          }));
+        }
+        
         // Afficher la notification avec son
         await showNotification(latestNotification.title, {
           body: latestNotification.message,

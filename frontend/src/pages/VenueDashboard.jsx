@@ -6922,7 +6922,7 @@ export default function VenueDashboard() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => window.open(`${API}/api/invoices/${selectedEvent.invoice_file}?token=${token}`, '_blank')}
+                        onClick={() => downloadSingleInvoice(selectedEvent.invoice_file)}
                         className="border-green-500/30"
                       >
                         <FileText className="w-4 h-4 mr-2" />

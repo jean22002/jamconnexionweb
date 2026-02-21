@@ -34,7 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
 import { 
-  Music, LogOut, MapPin, Globe, Instagram, Facebook, Phone, Edit, Save, Menu, 
+  Music, LogOut, MapPin, MapPinOff, Globe, Instagram, Facebook, Phone, Edit, Save, Menu, 
   Loader2, CreditCard, Check, Clock, AlertCircle, X, Plus, CalendarIcon, 
   Users, Bell, Trash2, Eye, FileText, User, Youtube, Send, Heart, Plug, Award, MessageSquare, Trophy, Paperclip, Upload, Download, Camera
 } from "lucide-react";

@@ -5966,6 +5966,20 @@ export default function VenueDashboard() {
                     Réinitialiser les filtres
                   </Button>
                 )}
+                
+                {/* Download all invoices button */}
+                <div className="pt-4 border-t border-white/10 mt-4">
+                  <Button
+                    onClick={downloadAllInvoices}
+                    className="bg-primary hover:bg-primary/90 w-full md:w-auto"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Télécharger toutes les factures (ZIP)
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Les factures seront téléchargées selon les filtres appliqués
+                  </p>
+                </div>
               </div>
 
               {/* Liste des transactions */}

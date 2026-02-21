@@ -6265,9 +6265,7 @@ export default function VenueDashboard() {
                                     <Button 
                                       variant="ghost" 
                                       size="sm"
-                                      onClick={() => {
-                                        window.open(`${API}/api/invoices/${transaction.invoice_file}?token=${token}`, '_blank');
-                                      }}
+                                      onClick={() => downloadSingleInvoice(transaction.invoice_file)}
                                       className="hover:bg-primary/20 h-8 w-8 p-0"
                                       title="Voir la facture"
                                     >

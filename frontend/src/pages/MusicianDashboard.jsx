@@ -37,6 +37,7 @@ import JoinEventButton from "../components/JoinEventButton";
 import SocialLinks from "../components/SocialLinks";
 import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 import { MUSIC_STYLES_LIST } from "../data/music-styles";
+import DashboardNotification from "../components/DashboardNotification";
 
 // Options pour les groupes
 const BAND_TYPES = [
@@ -1293,6 +1294,9 @@ export default function MusicianDashboard() {
 
   return (
     <div className="min-h-screen bg-background" data-testid="musician-dashboard">
+      {/* Dashboard Notifications */}
+      <DashboardNotification />
+      
       {/* Header */}
       <header className="sticky top-0 z-50 glassmorphism">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

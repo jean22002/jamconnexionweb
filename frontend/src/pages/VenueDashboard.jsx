@@ -6203,7 +6203,8 @@ export default function VenueDashboard() {
                                   <label className="cursor-pointer">
                                     <input
                                       type="file"
-                                      accept=".pdf,.png,.jpg,.jpeg,.gif,.webp"
+                                      accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,image/*"
+                                      capture="environment"
                                       className="hidden"
                                       onChange={async (e) => {
                                         const file = e.target.files?.[0];

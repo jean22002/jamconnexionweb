@@ -3499,6 +3499,7 @@ export default function VenueDashboard() {
                               <SelectContent className="bg-background border-white/10">
                                 <SelectItem value="facture">Facture</SelectItem>
                                 <SelectItem value="guso">GUSO</SelectItem>
+                                <SelectItem value="promotion">Promotion du groupe</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -3519,7 +3520,11 @@ export default function VenueDashboard() {
                         {concertForm.payment_method && concertForm.amount && (
                           <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
                             <p className="text-sm">
-                              <span className="font-medium">Paiement:</span> {concertForm.payment_method === "facture" ? "📄 Facture" : "🎫 GUSO"} • {parseFloat(concertForm.amount || 0).toFixed(2)} €
+                              <span className="font-medium">Paiement:</span> {
+                                concertForm.payment_method === "facture" ? "📄 Facture" : 
+                                concertForm.payment_method === "guso" ? "🎫 GUSO" : 
+                                "🎸 Promotion du groupe"
+                              } • {parseFloat(concertForm.amount || 0).toFixed(2)} €
                             </p>
                           </div>
                         )}

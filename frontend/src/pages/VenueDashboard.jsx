@@ -236,7 +236,7 @@ export default function VenueDashboard() {
 
   const [karaokeForm, setKaraokeForm] = useState({
     date: "", start_time: "", end_time: "", title: "", description: "",
-    music_styles: [], has_catering: false, catering_drinks: 0,
+    host_name: "", has_catering: false, catering_drinks: 0,
     // Comptabilité
     payment_method: "", amount: "", payment_status: "pending"
   });

@@ -4069,7 +4069,8 @@ export default function VenueDashboard() {
                   {spectacles.map((spectacle) => (
                     <div 
                       key={spectacle.id} 
-                      className="glassmorphism rounded-xl p-5 hover:bg-white/5 transition-colors"
+                      className="glassmorphism rounded-xl p-5 cursor-pointer hover:bg-white/5 transition-colors"
+                      onClick={() => handleEditEvent(spectacle, 'spectacle')}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -4085,7 +4086,8 @@ export default function VenueDashboard() {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          onClick={async () => {
+                          onClick={async (e) => {
+                            e.stopPropagation();
                             if (window.confirm("Supprimer ce spectacle ?")) {
                               try {
                                 await axios.delete(`${API}/spectacle/${spectacle.id}`, { headers: { Authorization: `Bearer ${token}` } });

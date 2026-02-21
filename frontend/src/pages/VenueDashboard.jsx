@@ -477,6 +477,7 @@ export default function VenueDashboard() {
   useEffect(() => {
     const interval = setInterval(() => {
       fetchNotifications();
+      fetchUnreadMessages();
     }, 30000); // 30 seconds instead of 15
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -487,6 +488,7 @@ export default function VenueDashboard() {
     const handleNewNotification = () => {
       console.log('🔔 Événement nouvelle notification reçu - Rafraîchissement immédiat');
       fetchNotifications();
+      fetchUnreadMessages();
     };
     
     window.addEventListener('new-notification-received', handleNewNotification);

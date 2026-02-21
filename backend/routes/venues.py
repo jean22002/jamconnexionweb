@@ -1001,22 +1001,48 @@ async def notify_all(
             detail="Aucun destinataire trouvé. Vérifiez que vous avez des abonnés ou que des musiciens sont à proximité."
         )
     
+    # Import send_push_notification
+    from routes.push_notifications import send_push_notification
+    
+    venue_name = venue.get("name", "Un établissement")
+    
     # Create notifications for all recipients
     notifications_created = 0
     for recipient_id, recipient_role in all_recipient_ids.items():
-        notification = {
-            "id": str(uuid.uuid4()),
-            "recipient_id": recipient_id,
-            "recipient_role": recipient_role,
-            "sender_id": current_user["id"],
-            "sender_role": "venue",
-            "type": "broadcast",
-            "message": notification_message,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "read": False
-        }
-        await db.notifications.insert_one(notification)
-        notifications_created += 1
+        try:
+            notification = {
+                "id": str(uuid.uuid4()),
+                "recipient_id": recipient_id,
+                "recipient_role": recipient_role,
+                "sender_id": current_user["id"],
+                "sender_role": "venue",
+                "type": "broadcast",
+                "title": f"📢 {venue_name}",
+                "message": notification_message,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "read": False
+            }
+            await db.notifications.insert_one(notification)
+            notifications_created += 1
+            
+            # Send push notification
+            try:
+                await send_push_notification(
+                    user_id=recipient_id,
+                    notification_data={
+                        "title": f"📢 {venue_name}",
+                        "message": notification_message,
+                        "link": f"/venue/{venue_id}",
+                        "data": {"notification_id": notification["id"]}
+                    }
+                )
+                logger.info(f"Push notification sent to user {recipient_id}")
+            except Exception as push_error:
+                logger.error(f"Error sending push notification: {push_error}")
+                # Continue même si le push échoue
+                
+        except Exception as e:
+            logger.error(f"Failed to create notification: {e}")
     
     return {"recipients_count": notifications_created, "message": "Notifications sent successfully"}
 

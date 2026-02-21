@@ -1245,6 +1245,18 @@ async def upload_spectacle_invoice(
 
 
 @router.get("/invoices/{filename}")
+async def download_invoice(filename: str):
+    """Download an invoice file"""
+    file_path = UPLOAD_DIR / filename
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Invoice file not found")
+    
+    return FileResponse(
+        path=str(file_path),
+        filename=filename,
+        media_type="application/octet-stream"
+    )
 
 
 @router.delete("/jams/{jam_id}/invoice")

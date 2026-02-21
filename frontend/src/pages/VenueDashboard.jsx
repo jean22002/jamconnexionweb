@@ -6199,12 +6199,13 @@ export default function VenueDashboard() {
                                     <Eye className="w-4 h-4" />
                                   </Button>
                                   
-                                  {/* Upload invoice button */}
-                                  <label className="cursor-pointer">
+                                  {/* Upload invoice button with photo/file choice */}
+                                  <div className="relative inline-block">
+                                    {/* Hidden input for file selection */}
                                     <input
+                                      id={`file-input-${transaction.id}`}
                                       type="file"
                                       accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,image/*"
-                                      capture="environment"
                                       className="hidden"
                                       onChange={async (e) => {
                                         const file = e.target.files?.[0];
@@ -6256,17 +6257,95 @@ export default function VenueDashboard() {
                                         }
                                       }}
                                     />
-                                    <div 
-                                      className="inline-flex items-center justify-center hover:bg-primary/20 h-8 w-8 rounded-md transition-colors"
-                                      title={transaction.invoice_file ? "Remplacer la facture" : "Joindre une facture"}
-                                    >
-                                      {transaction.invoice_file ? (
-                                        <Check className="w-4 h-4 text-green-500" />
-                                      ) : (
-                                        <Paperclip className="w-4 h-4" />
-                                      )}
-                                    </div>
-                                  </label>
+                                    
+                                    {/* Hidden input for camera capture */}
+                                    <input
+                                      id={`camera-input-${transaction.id}`}
+                                      type="file"
+                                      accept="image/*"
+                                      capture="environment"
+                                      className="hidden"
+                                      onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        
+                                        if (file.size > 10 * 1024 * 1024) {
+                                          toast.error("Fichier trop volumineux (max 10MB)");
+                                          return;
+                                        }
+                                        
+                                        try {
+                                          const formData = new FormData();
+                                          formData.append('file', file);
+                                          
+                                          const endpoint = transaction.type_key === 'jam' ? 'jams' :
+                                                          transaction.type_key === 'concert' ? 'concerts' :
+                                                          transaction.type_key === 'karaoke' ? 'karaoke' :
+                                                          'spectacle';
+                                          
+                                          const response = await axios.post(
+                                            `${API}/${endpoint}/${transaction.id}/invoice`,
+                                            formData,
+                                            { 
+                                              headers: { 
+                                                Authorization: `Bearer ${token}`,
+                                                'Content-Type': 'multipart/form-data'
+                                              } 
+                                            }
+                                          );
+                                          
+                                          const updateInvoice = (events) => 
+                                            events.map(e => 
+                                              e.id === transaction.id 
+                                                ? { ...e, invoice_file: response.data.filename }
+                                                : e
+                                            );
+                                          
+                                          if (transaction.type_key === 'jam') setJams(updateInvoice);
+                                          else if (transaction.type_key === 'concert') setConcerts(updateInvoice);
+                                          else if (transaction.type_key === 'karaoke') setKaraokes(updateInvoice);
+                                          else if (transaction.type_key === 'spectacle') setSpectacles(updateInvoice);
+                                          
+                                          toast.success("Photo ajoutée !");
+                                          e.target.value = '';
+                                        } catch (error) {
+                                          toast.error("Erreur lors de l'upload");
+                                          console.error(error);
+                                        }
+                                      }}
+                                    />
+                                    
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <div 
+                                          className="inline-flex items-center justify-center hover:bg-primary/20 h-8 w-8 rounded-md transition-colors cursor-pointer"
+                                          title={transaction.invoice_file ? "Remplacer la facture" : "Joindre une facture"}
+                                        >
+                                          {transaction.invoice_file ? (
+                                            <Check className="w-4 h-4 text-green-500" />
+                                          ) : (
+                                            <Paperclip className="w-4 h-4" />
+                                          )}
+                                        </div>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end" className="bg-background border-white/10">
+                                        <DropdownMenuItem 
+                                          onClick={() => document.getElementById(`camera-input-${transaction.id}`).click()}
+                                          className="cursor-pointer"
+                                        >
+                                          <Camera className="w-4 h-4 mr-2" />
+                                          Prendre une photo
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem 
+                                          onClick={() => document.getElementById(`file-input-${transaction.id}`).click()}
+                                          className="cursor-pointer"
+                                        >
+                                          <Upload className="w-4 h-4 mr-2" />
+                                          Choisir un fichier
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </div>
 
                                   {/* View invoice button */}
                                   {transaction.invoice_file && (

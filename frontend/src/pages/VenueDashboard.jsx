@@ -1895,7 +1895,7 @@ export default function VenueDashboard() {
 
   const downloadSingleInvoice = async (filename) => {
     try {
-      const response = await axios.get(`${API}/api/invoices/${filename}`, {
+      const response = await axios.get(`${API}/invoices/${filename}`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'
       });

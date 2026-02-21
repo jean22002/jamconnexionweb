@@ -5266,345 +5266,393 @@ export default function VenueDashboard() {
           </TabsContent>
 
           {/* Bands Tab */}
-          <TabsContent value="bands">
+          <TabsContent value="bands" className="mt-6">
             <div className="space-y-6">
-              {/* Filters */}
+              {/* Titre principal */}
               <div className="glassmorphism rounded-2xl p-6">
-                <h2 className="font-heading font-semibold text-xl mb-4">🎸 Répertoire des Groupes</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="space-y-2">
-                    <Label>Pays</Label>
-                    <Select 
-                      value={bandFilters.country}
-                      onValueChange={(value) => setBandFilters({ 
-                        country: value, 
-                        region: "", 
-                        department: "", 
-                        city: "" 
-                      })}
-                    >
-                      <SelectTrigger className="bg-black/20 border-white/10">
-                        <SelectValue placeholder="Tous les pays" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background border-white/10">
-                        <SelectItem value="all">Tous les pays</SelectItem>
-                        <SelectItem value="France">France</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Région</Label>
-                    <Select 
-                      value={bandFilters.region || undefined}
-                      onValueChange={(value) => setBandFilters({ 
-                        ...bandFilters, 
-                        region: value, 
-                        department: "", 
-                        city: "" 
-                      })}
-                      disabled={bandFilters.country !== "France"}
-                    >
-                      <SelectTrigger className="bg-black/20 border-white/10">
-                        <SelectValue placeholder="Toutes les régions" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background border-white/10 max-h-[300px]">
-                        <SelectItem value="all">Toutes les régions</SelectItem>
-                        {REGIONS_FRANCE.map(region => (
-                          <SelectItem key={region} value={region}>{region}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Département</Label>
-                    <Select 
-                      value={bandFilters.department || undefined}
-                      onValueChange={(value) => setBandFilters({ 
-                        ...bandFilters, 
-                        department: value, 
-                        city: "" 
-                      })}
-                      disabled={bandFilters.country !== "France"}
-                    >
-                      <SelectTrigger className="bg-black/20 border-white/10">
-                        <SelectValue placeholder="Tous les départements" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background border-white/10 max-h-[300px]">
-                        <SelectItem value="all">Tous les départements</SelectItem>
-                        {DEPARTEMENTS_FRANCE
-                          .filter(dept => !bandFilters.region || dept.region === bandFilters.region || bandFilters.region === "all")
-                          .map(dept => (
-                            <SelectItem key={dept.code} value={dept.code}>
-                              {dept.code} - {dept.nom}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Ville</Label>
-                    <Input
-                      placeholder="Ex: Paris, Lyon..."
-                      value={bandFilters.city}
-                      onChange={(e) => setBandFilters({ ...bandFilters, city: e.target.value })}
-                      className="bg-black/20 border-white/10"
-                      disabled={bandFilters.country !== "France"}
-                    />
-                  </div>
-                </div>
+                <h2 className="font-heading font-semibold text-2xl">Filtrer par localisation</h2>
               </div>
 
-              {/* Bands List */}
-              {bandsLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
-              ) : bands.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground glassmorphism rounded-2xl">
-                  <Music className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Aucun groupe trouvé</p>
-                  <p className="text-sm mt-2">Essayez avec d'autres filtres</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {bands.map((band) => (
-                    <div key={band.id} className="glassmorphism rounded-xl p-5">
-                      {band.photo && (
-                        <LazyImage 
-                          src={band.photo} 
-                          alt={band.name} 
-                          className="w-full h-40 object-cover rounded-lg mb-4" 
-                        />
-                      )}
-                      
-                      <h3 className="font-heading font-semibold text-lg mb-2">{band.name}</h3>
-                      
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                        <MapPin className="w-4 h-4" />
-                        <span>{band.city} {band.department && `(${band.department})`}</span>
-                      </div>
+              {/* Sous-onglets de filtrage géographique */}
+              <Tabs defaultValue="all" className="w-full">
+                <TabsList className="grid w-full grid-cols-5 glassmorphism">
+                  <TabsTrigger value="all">
+                    Tous ({bands.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="france">
+                    France ({bands.filter(b => !b.country || b.country === 'France').length})
+                  </TabsTrigger>
+                  <TabsTrigger value="region">
+                    Par Région
+                  </TabsTrigger>
+                  <TabsTrigger value="department">
+                    Par Département
+                  </TabsTrigger>
+                  <TabsTrigger value="other">
+                    Autres Pays
+                  </TabsTrigger>
+                </TabsList>
 
-                      {band.members_count && (
-                        <p className="text-sm text-muted-foreground mb-2">
-                          <Users className="w-4 h-4 inline mr-1" />
-                          {band.members_count} membre(s)
-                        </p>
-                      )}
+                {/* Tous les groupes */}
+                <TabsContent value="all" className="mt-6">
+                  {bandsLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    </div>
+                  ) : bands.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground glassmorphism rounded-2xl">
+                      <Music className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>Aucun groupe trouvé</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {bands.map((band) => (
+                        <div key={band.id} className="glassmorphism rounded-xl p-5">
+                          {band.photo && (
+                            <LazyImage 
+                              src={band.photo} 
+                              alt={band.name} 
+                              className="w-full h-40 object-cover rounded-lg mb-4" 
+                            />
+                          )}
+                          
+                          <h3 className="font-heading font-semibold text-lg mb-2">{band.name}</h3>
+                          
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                            <MapPin className="w-4 h-4" />
+                            <span>{band.city} {band.department && `(${band.department})`}</span>
+                          </div>
 
-                      {band.description && (
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{band.description}</p>
-                      )}
+                          {band.members_count && (
+                            <p className="text-sm text-muted-foreground mb-2">
+                              <Users className="w-4 h-4 inline mr-1" />
+                              {band.members_count} membre(s)
+                            </p>
+                          )}
 
-                      {band.music_styles?.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {band.music_styles.map((style, i) => (
-                            <span key={i} className="text-xs px-2 py-1 bg-primary/20 text-primary rounded-full">{style}</span>
-                          ))}
-                        </div>
-                      )}
+                          {band.description && (
+                            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{band.description}</p>
+                          )}
 
-                      <div className="flex gap-2 mb-3">
-                        {band.looking_for_concerts && (
-                          <span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded-full">
-                            🎤 Cherche concerts
-                          </span>
-                        )}
-                        {band.looking_for_members && (
-                          <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full">
-                            👥 Cherche membres
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex gap-2 flex-wrap mb-3">
-                        {band.facebook && (
-                          <a href={band.facebook} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-white">
-                            <Facebook className="w-4 h-4" />
-                          </a>
-                        )}
-                        {band.instagram && (
-                          <a href={band.instagram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-white">
-                            <Instagram className="w-4 h-4" />
-                          </a>
-                        )}
-                        {band.youtube && (
-                          <a href={band.youtube} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-white">
-                            <Youtube className="w-4 h-4" />
-                          </a>
-                        )}
-                        {band.website && (
-                          <a href={band.website} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-white">
-                            <Globe className="w-4 h-4" />
-                          </a>
-                        )}
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              className="flex-1 bg-cyan-500 hover:bg-cyan-600 rounded-full gap-2"
-                            >
-                              <Eye className="w-4 h-4" />
-                              Voir le profil complet
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="glassmorphism border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
-                            <DialogHeader>
-                              <DialogTitle className="text-2xl">{band.name}</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4 mt-4">
-                              {band.photo && (
-                                <LazyImage 
-                                  src={band.photo} 
-                                  alt={band.name} 
-                                  className="w-full h-60 object-cover rounded-lg" 
-                                />
-                              )}
-                              
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <MapPin className="w-4 h-4" />
-                                <span>{band.city} {band.department && `(${band.department})`}</span>
-                              </div>
-
-                              {band.members_count && (
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                  <Users className="w-4 h-4" />
-                                  <span>{band.members_count} membre(s)</span>
-                                </div>
-                              )}
-
-                              {band.description && (
-                                <div>
-                                  <Label className="text-base font-semibold mb-2 block">Description</Label>
-                                  <p className="text-sm text-muted-foreground">{band.description}</p>
-                                </div>
-                              )}
-
-                              {band.music_styles?.length > 0 && (
-                                <div>
-                                  <Label className="text-base font-semibold mb-2 block">Styles musicaux</Label>
-                                  <div className="flex flex-wrap gap-2">
-                                    {band.music_styles.map((style, i) => (
-                                      <span key={i} className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm">{style}</span>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
-                              <div className="flex gap-2 flex-wrap">
-                                {band.looking_for_concerts && (
-                                  <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
-                                    🎤 Cherche concerts
-                                  </span>
-                                )}
-                                {band.looking_for_members && (
-                                  <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
-                                    👥 Cherche membres
-                                  </span>
-                                )}
-                              </div>
-
-                              {(band.is_association && band.association_name) && (
-                                <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                                  <Label className="text-base font-semibold mb-2 block text-blue-400">🏛️ Association</Label>
-                                  <p className="text-sm">{band.association_name}</p>
-                                </div>
-                              )}
-
-                              {(band.has_label && band.label_name) && (
-                                <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-                                  <Label className="text-base font-semibold mb-2 block text-purple-400">🎵 Label de musique</Label>
-                                  <p className="text-sm">{band.label_name}</p>
-                                  {band.label_city && <p className="text-sm text-muted-foreground mt-1">📍 {band.label_city}</p>}
-                                </div>
-                              )}
-
-                              {(band.facebook || band.instagram || band.youtube || band.website) && (
-                                <div>
-                                  <Label className="text-base font-semibold mb-2 block">Réseaux sociaux</Label>
-                                  <div className="flex gap-3">
-                                    {band.facebook && (
-                                      <a href={band.facebook} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-white">
-                                        <Facebook className="w-5 h-5" />
-                                      </a>
-                                    )}
-                                    {band.instagram && (
-                                      <a href={band.instagram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-white">
-                                        <Instagram className="w-5 h-5" />
-                                      </a>
-                                    )}
-                                    {band.youtube && (
-                                      <a href={band.youtube} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-white">
-                                        <Youtube className="w-5 h-5" />
-                                      </a>
-                                    )}
-                                    {band.website && (
-                                      <a href={band.website} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-white">
-                                        <Globe className="w-5 h-5" />
-                                      </a>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
+                          {band.music_styles?.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {band.music_styles.map((style, i) => (
+                                <span key={i} className="text-xs px-2 py-1 bg-primary/20 text-primary rounded-full">{style}</span>
+                              ))}
                             </div>
-                          </DialogContent>
-                        </Dialog>
+                          )}
 
-                        <Button
-                          onClick={() => {
-                            setSelectedBand(band);
-                            setShowMessageDialog(true);
-                          }}
-                          className="flex-1 bg-primary hover:bg-primary/90 rounded-full gap-2"
-                        >
-                          <Send className="w-4 h-4" />
-                          Contacter
-                        </Button>
+                          <div className="flex gap-2 mb-3">
+                            {band.looking_for_concerts && (
+                              <span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded-full">
+                                🎤 Cherche concerts
+                              </span>
+                            )}
+                            {band.looking_for_members && (
+                              <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full">
+                                👥 Cherche membres
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex gap-2 flex-wrap mb-3">
+                            {band.socials?.youtube && (
+                              <a href={band.socials.youtube} target="_blank" rel="noopener noreferrer" className="text-red-400 hover:text-red-300">
+                                <Youtube className="w-5 h-5" />
+                              </a>
+                            )}
+                            {band.socials?.instagram && (
+                              <a href={band.socials.instagram} target="_blank" rel="noopener noreferrer" className="text-pink-400 hover:text-pink-300">
+                                <Instagram className="w-5 h-5" />
+                              </a>
+                            )}
+                            {band.socials?.facebook && (
+                              <a href={band.socials.facebook} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">
+                                <Facebook className="w-5 h-5" />
+                              </a>
+                            )}
+                          </div>
+
+                          <Button className="w-full" size="sm">
+                            Contacter le groupe
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* France uniquement */}
+                <TabsContent value="france" className="mt-6">
+                  {(() => {
+                    const franceBands = bands.filter(b => !b.country || b.country === 'France');
+                    return franceBands.length === 0 ? (
+                      <div className="text-center py-12 text-muted-foreground glassmorphism rounded-2xl">
+                        <Music className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>Aucun groupe en France</p>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {franceBands.map((band) => (
+                          <div key={band.id} className="glassmorphism rounded-xl p-5">
+                            {/* Même carte que ci-dessus - copie du code */}
+                            {band.photo && (
+                              <LazyImage 
+                                src={band.photo} 
+                                alt={band.name} 
+                                className="w-full h-40 object-cover rounded-lg mb-4" 
+                              />
+                            )}
+                            
+                            <h3 className="font-heading font-semibold text-lg mb-2">{band.name}</h3>
+                            
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                              <MapPin className="w-4 h-4" />
+                              <span>{band.city} {band.department && `(${band.department})`}</span>
+                            </div>
 
-              {/* Message Dialog */}
-              <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
-                <DialogContent className="glassmorphism border-white/10 max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Contacter {selectedBand?.name}</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 mt-4">
-                    <div className="space-y-2">
-                      <Label>Sujet</Label>
-                      <Input
-                        value={messageForm.subject}
-                        onChange={(e) => setMessageForm({ ...messageForm, subject: e.target.value })}
-                        placeholder="Ex: Proposition de concert"
-                        className="bg-black/20 border-white/10"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Message</Label>
-                      <Textarea
-                        value={messageForm.content}
-                        onChange={(e) => setMessageForm({ ...messageForm, content: e.target.value })}
-                        placeholder="Votre message..."
-                        className="bg-black/20 border-white/10"
-                        rows={5}
-                      />
-                    </div>
-                    <Button
-                      onClick={sendMessageToBand}
-                      className="w-full bg-primary hover:bg-primary/90 rounded-full"
-                    >
-                      Envoyer le message
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                            {band.music_styles?.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mb-3">
+                                {band.music_styles.map((style, i) => (
+                                  <span key={i} className="text-xs px-2 py-1 bg-primary/20 text-primary rounded-full">{style}</span>
+                                ))}
+                              </div>
+                            )}
+
+                            <Button className="w-full" size="sm">
+                              Contacter le groupe
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </TabsContent>
+
+                {/* Par Région */}
+                <TabsContent value="region" className="mt-6">
+                  {(() => {
+                    // Compter les groupes par région
+                    const bandsByRegion = {};
+                    
+                    REGIONS_FRANCE.forEach(region => {
+                      bandsByRegion[region] = [];
+                    });
+                    
+                    bands.filter(b => !b.country || b.country === 'France').forEach(b => {
+                      const dept = DEPARTEMENTS_FRANCE.find(d => d.code === b.department);
+                      if (dept && bandsByRegion[dept.region]) {
+                        bandsByRegion[dept.region].push(b);
+                      }
+                    });
+
+                    // Si une région est sélectionnée, afficher ses groupes
+                    if (selectedRegion) {
+                      const regionBands = bandsByRegion[selectedRegion] || [];
+                      return (
+                        <div>
+                          <div className="flex items-center gap-4 mb-4">
+                            <Button
+                              onClick={() => setSelectedRegion(null)}
+                              variant="outline"
+                              size="sm"
+                            >
+                              ← Retour aux régions
+                            </Button>
+                            <h3 className="font-heading font-semibold text-lg">
+                              {selectedRegion} - {regionBands.length} groupe{regionBands.length > 1 ? 's' : ''}
+                            </h3>
+                          </div>
+                          
+                          {regionBands.length === 0 ? (
+                            <div className="text-center py-8 text-muted-foreground">
+                              <MapPinOff className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                              <p>Aucun groupe dans cette région pour le moment</p>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {regionBands.map((band) => (
+                                <div key={band.id} className="glassmorphism rounded-xl p-5">
+                                  <h3 className="font-heading font-semibold text-lg mb-2">{band.name}</h3>
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                                    <MapPin className="w-4 h-4" />
+                                    <span>{band.city} {band.department && `(${band.department})`}</span>
+                                  </div>
+                                  <Button className="w-full" size="sm">
+                                    Contacter
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // Sinon, afficher toutes les régions
+                    return (
+                      <div>
+                        <h3 className="font-heading font-semibold text-lg mb-4">
+                          Toutes les régions de France
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                          {REGIONS_FRANCE.map(region => {
+                            const count = bandsByRegion[region]?.length || 0;
+                            return (
+                              <Button
+                                key={region}
+                                onClick={() => setSelectedRegion(region)}
+                                variant="outline"
+                                className={`h-auto py-6 px-4 flex flex-col items-center gap-3 transition-all glassmorphism hover:border-primary ${
+                                  count > 0 
+                                    ? 'hover:bg-primary/10' 
+                                    : 'opacity-50'
+                                }`}
+                              >
+                                <MapPin className={`w-6 h-6 ${count > 0 ? 'text-primary' : 'text-muted-foreground'}`} />
+                                <div className="text-center">
+                                  <div className="font-semibold text-sm leading-tight">{region}</div>
+                                  <div className={`text-xs mt-2 ${count > 0 ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+                                    {count} groupe{count > 1 ? 's' : ''}
+                                  </div>
+                                </div>
+                              </Button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </TabsContent>
+
+                {/* Par Département */}
+                <TabsContent value="department" className="mt-6">
+                  {(() => {
+                    const bandsByDepartment = {};
+                    
+                    DEPARTEMENTS_FRANCE.forEach(dept => {
+                      bandsByDepartment[dept.code] = {
+                        nom: dept.nom,
+                        region: dept.region,
+                        bands: []
+                      };
+                    });
+                    
+                    bands.filter(b => !b.country || b.country === 'France').forEach(b => {
+                      if (b.department && bandsByDepartment[b.department]) {
+                        bandsByDepartment[b.department].bands.push(b);
+                      }
+                    });
+
+                    // Si un département est sélectionné
+                    if (selectedDepartment) {
+                      const deptData = bandsByDepartment[selectedDepartment];
+                      const deptBands = deptData?.bands || [];
+                      return (
+                        <div>
+                          <div className="flex items-center gap-4 mb-4">
+                            <Button
+                              onClick={() => setSelectedDepartment(null)}
+                              variant="outline"
+                              size="sm"
+                            >
+                              ← Retour aux départements
+                            </Button>
+                            <h3 className="font-heading font-semibold text-lg">
+                              {selectedDepartment} - {deptData?.nom} - {deptBands.length} groupe{deptBands.length > 1 ? 's' : ''}
+                            </h3>
+                          </div>
+                          
+                          {deptBands.length === 0 ? (
+                            <div className="text-center py-8 text-muted-foreground">
+                              <MapPinOff className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                              <p>Aucun groupe dans ce département</p>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {deptBands.map((band) => (
+                                <div key={band.id} className="glassmorphism rounded-xl p-5">
+                                  <h3 className="font-heading font-semibold text-lg mb-2">{band.name}</h3>
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                                    <MapPin className="w-4 h-4" />
+                                    <span>{band.city}</span>
+                                  </div>
+                                  <Button className="w-full" size="sm">
+                                    Contacter
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // Afficher tous les départements
+                    return (
+                      <div>
+                        <h3 className="font-heading font-semibold text-lg mb-4">
+                          Tous les départements de France
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                          {DEPARTEMENTS_FRANCE.map(dept => {
+                            const count = bandsByDepartment[dept.code]?.bands.length || 0;
+                            return (
+                              <Button
+                                key={dept.code}
+                                onClick={() => setSelectedDepartment(dept.code)}
+                                variant="outline"
+                                className={`h-auto py-4 px-3 flex flex-col items-center gap-2 transition-all glassmorphism hover:border-primary ${
+                                  count > 0 
+                                    ? 'hover:bg-primary/10' 
+                                    : 'opacity-50'
+                                }`}
+                              >
+                                <MapPin className={`w-5 h-5 ${count > 0 ? 'text-primary' : 'text-muted-foreground'}`} />
+                                <div className="text-center">
+                                  <div className="font-bold text-base">{dept.code}</div>
+                                  <div className="text-xs text-muted-foreground leading-tight mt-1">{dept.nom}</div>
+                                  <div className={`text-xs mt-1 ${count > 0 ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+                                    {count} groupe{count > 1 ? 's' : ''}
+                                  </div>
+                                </div>
+                              </Button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </TabsContent>
+
+                {/* Autres Pays */}
+                <TabsContent value="other" className="mt-6">
+                  {(() => {
+                    const otherBands = bands.filter(b => b.country && b.country !== 'France');
+                    return otherBands.length === 0 ? (
+                      <div className="text-center py-12 text-muted-foreground glassmorphism rounded-2xl">
+                        <Globe className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>Aucun groupe hors de France</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {otherBands.map((band) => (
+                          <div key={band.id} className="glassmorphism rounded-xl p-5">
+                            <h3 className="font-heading font-semibold text-lg mb-2">{band.name}</h3>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                              <Globe className="w-4 h-4" />
+                              <span>{band.city} - {band.country}</span>
+                            </div>
+                            <Button className="w-full" size="sm">
+                              Contacter
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </TabsContent>
+              </Tabs>
             </div>
           </TabsContent>
 

@@ -466,6 +466,21 @@ export default function VenueDashboard() {
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  
+  // Écouter l'événement de nouvelle notification pour rafraîchir immédiatement
+  useEffect(() => {
+    const handleNewNotification = () => {
+      console.log('🔔 Événement nouvelle notification reçu - Rafraîchissement immédiat');
+      fetchNotifications();
+    };
+    
+    window.addEventListener('new-notification-received', handleNewNotification);
+    
+    return () => {
+      window.removeEventListener('new-notification-received', handleNewNotification);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Polling pour rafraîchir les événements toutes les 15 secondes pour mise à jour temps réel
   useEffect(() => {

@@ -187,20 +187,45 @@ export const useNotifications = (token, user) => {
       if (latestNotification && latestNotification.id !== lastNotificationIdRef.current) {
         lastNotificationIdRef.current = latestNotification.id;
         
+        console.log('🔍 Nouvelle notification détectée:', {
+          type: latestNotification.type,
+          title: latestNotification.title,
+          message: latestNotification.message,
+          sender_id: latestNotification.sender_id
+        });
+        
         // Marquer comme affichée dans localStorage AVANT d'afficher
         markNotificationAsShown(latestNotification.id);
         
         // Si c'est un nouveau message, ouvrir le chat popup
         if (latestNotification.type === 'new_message') {
-          console.log('💬 Nouveau message reçu - Ouverture du chat popup');
+          console.log('💬 TYPE new_message détecté - Déclenchement événement new-message-received');
+          
+          // Extraire le nom de l'expéditeur du titre
+          let senderName = 'Utilisateur';
+          if (latestNotification.title) {
+            // Format: "Nouveau message de NOM" ou "💬 NOM"
+            const match = latestNotification.title.match(/(?:Nouveau message de|💬)\s*(.+)/);
+            if (match) {
+              senderName = match[1].trim();
+            }
+          }
+          
           window.dispatchEvent(new CustomEvent('new-message-received', {
             detail: {
-              senderId: latestNotification.sender_id,
-              senderName: latestNotification.title?.replace('💬 Nouveau message de ', '') || 'Utilisateur',
-              senderImage: null, // Sera récupéré par le composant
+              senderId: latestNotification.sender_id || latestNotification.user_id,
+              senderName: senderName,
+              senderImage: null,
               message: latestNotification.message
             }
           }));
+          
+          console.log('✅ Événement new-message-received déclenché avec:', {
+            senderId: latestNotification.sender_id || latestNotification.user_id,
+            senderName: senderName
+          });
+        } else {
+          console.log('ℹ️ Type de notification:', latestNotification.type, '(pas un message)');
         }
         
         // Afficher la notification avec son

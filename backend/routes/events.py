@@ -321,6 +321,9 @@ async def create_concert_event(data: ConcertEvent, current_user: dict = Depends(
     concert_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
     
+    # DEBUG: Log what we're receiving
+    logger.info(f"🔍 Creating concert with data: {data.model_dump()}")
+    
     concert_doc = {
         "id": concert_id,
         "venue_id": venue["id"],
@@ -328,6 +331,8 @@ async def create_concert_event(data: ConcertEvent, current_user: dict = Depends(
         **data.model_dump(),
         "created_at": now
     }
+    
+    logger.info(f"🔍 Concert doc to insert: payment_method={concert_doc.get('payment_method')}, amount={concert_doc.get('amount')}, payment_status={concert_doc.get('payment_status')}")
     
     await db.concerts.insert_one(concert_doc)
     

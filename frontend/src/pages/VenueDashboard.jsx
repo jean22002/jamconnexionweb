@@ -2908,10 +2908,9 @@ export default function VenueDashboard() {
                               onValueChange={(value) => setJamForm({ ...jamForm, payment_method: value })}
                             >
                               <SelectTrigger className="bg-black/20 border-white/10">
-                                <SelectValue placeholder="Sélectionnez" />
+                                <SelectValue placeholder="Aucune (optionnel)" />
                               </SelectTrigger>
                               <SelectContent className="bg-background border-white/10">
-                                <SelectItem value="">Aucune</SelectItem>
                                 <SelectItem value="facture">Facture</SelectItem>
                                 <SelectItem value="guso">GUSO</SelectItem>
                               </SelectContent>
@@ -3390,10 +3389,9 @@ export default function VenueDashboard() {
                               onValueChange={(value) => setConcertForm({ ...concertForm, payment_method: value })}
                             >
                               <SelectTrigger className="bg-black/20 border-white/10">
-                                <SelectValue placeholder="Sélectionnez" />
+                                <SelectValue placeholder="Aucune (optionnel)" />
                               </SelectTrigger>
                               <SelectContent className="bg-background border-white/10">
-                                <SelectItem value="">Aucune</SelectItem>
                                 <SelectItem value="facture">Facture</SelectItem>
                                 <SelectItem value="guso">GUSO</SelectItem>
                               </SelectContent>
@@ -3639,10 +3637,9 @@ export default function VenueDashboard() {
                               onValueChange={(value) => setKaraokeForm({ ...karaokeForm, payment_method: value })}
                             >
                               <SelectTrigger className="bg-black/20 border-white/10">
-                                <SelectValue placeholder="Sélectionnez" />
+                                <SelectValue placeholder="Aucune (optionnel)" />
                               </SelectTrigger>
                               <SelectContent className="bg-background border-white/10">
-                                <SelectItem value="">Aucune</SelectItem>
                                 <SelectItem value="facture">Facture</SelectItem>
                                 <SelectItem value="guso">GUSO</SelectItem>
                               </SelectContent>
@@ -3844,10 +3841,9 @@ export default function VenueDashboard() {
                               onValueChange={(value) => setSpectacleForm({ ...spectacleForm, payment_method: value })}
                             >
                               <SelectTrigger className="bg-black/20 border-white/10">
-                                <SelectValue placeholder="Sélectionnez" />
+                                <SelectValue placeholder="Aucune (optionnel)" />
                               </SelectTrigger>
                               <SelectContent className="bg-background border-white/10">
-                                <SelectItem value="">Aucune</SelectItem>
                                 <SelectItem value="facture">Facture</SelectItem>
                                 <SelectItem value="guso">GUSO</SelectItem>
                               </SelectContent>

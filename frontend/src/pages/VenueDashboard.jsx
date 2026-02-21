@@ -39,6 +39,7 @@ import { StarRating } from "../components/StarRating";
 import { toast } from "sonner";
 import { MUSIC_STYLES_LIST } from "../data/music-styles";
 import { useNotifications } from "../hooks/useNotifications";
+import DashboardNotification from "../components/DashboardNotification";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 

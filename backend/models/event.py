@@ -64,6 +64,11 @@ class ConcertEvent(BaseModel):
     has_accommodation: bool = False
     accommodation_capacity: int = 0
     accommodation_tbd: bool = False
+    # Comptabilité
+    payment_method: Optional[str] = None  # facture, guso
+    amount: Optional[float] = None
+    payment_status: Optional[str] = "pending"  # paid, pending, cancelled
+    invoice_file: Optional[str] = None
 
 class ConcertEventResponse(BaseModel):
     id: str

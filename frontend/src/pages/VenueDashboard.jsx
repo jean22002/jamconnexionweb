@@ -4000,7 +4000,13 @@ export default function VenueDashboard() {
                             <Label>Méthode de paiement</Label>
                             <Select 
                               value={spectacleForm.payment_method} 
-                              onValueChange={(value) => setSpectacleForm({ ...spectacleForm, payment_method: value })}
+                              onValueChange={(value) => {
+                                setSpectacleForm({ 
+                                  ...spectacleForm, 
+                                  payment_method: value,
+                                  amount: value === "promotion" ? "0" : spectacleForm.amount
+                                });
+                              }}
                             >
                               <SelectTrigger className="bg-black/20 border-white/10">
                                 <SelectValue placeholder="Aucune (optionnel)" />
@@ -4013,27 +4019,30 @@ export default function VenueDashboard() {
                             </Select>
                           </div>
 
-                          <div className="space-y-2">
-                            <Label>Montant (€)</Label>
-                            <Input 
-                              type="number" 
-                              value={spectacleForm.amount} 
-                              onChange={(e) => setSpectacleForm({ ...spectacleForm, amount: e.target.value })} 
-                              className="bg-black/20 border-white/10"
-                              placeholder="0.00"
-                              step="0.01"
-                            />
-                          </div>
+                          {spectacleForm.payment_method !== "promotion" && (
+                            <div className="space-y-2">
+                              <Label>Montant (€)</Label>
+                              <Input 
+                                type="number" 
+                                value={spectacleForm.amount} 
+                                onChange={(e) => setSpectacleForm({ ...spectacleForm, amount: e.target.value })} 
+                                className="bg-black/20 border-white/10"
+                                placeholder="0.00"
+                                step="0.01"
+                              />
+                            </div>
+                          )}
                         </div>
 
-                        {spectacleForm.payment_method && spectacleForm.amount && (
+                        {spectacleForm.payment_method && (spectacleForm.amount || spectacleForm.payment_method === "promotion") && (
                           <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
                             <p className="text-sm">
                               <span className="font-medium">Paiement:</span> {
                                 spectacleForm.payment_method === "facture" ? "📄 Facture" : 
                                 spectacleForm.payment_method === "guso" ? "🎫 GUSO" : 
                                 "🎸 Promotion du groupe"
-                              } • {parseFloat(spectacleForm.amount || 0).toFixed(2)} €
+                              }{spectacleForm.payment_method !== "promotion" && ` • ${parseFloat(spectacleForm.amount || 0).toFixed(2)} €`}
+                              {spectacleForm.payment_method === "promotion" && " • Gratuit"}
                             </p>
                           </div>
                         )}

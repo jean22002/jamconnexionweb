@@ -10,6 +10,7 @@ export const useNotifications = (token, user) => {
   const lastNotificationIdRef = useRef(null);
   const intervalRef = useRef(null);
   const serviceWorkerRef = useRef(null);
+  const isInitialLoadRef = useRef(true); // Suivre le premier chargement
   
   // Clé localStorage pour stocker les notifications déjà affichées
   const SHOWN_NOTIFICATIONS_KEY = 'jam_connexion_shown_notifications';

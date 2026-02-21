@@ -6326,14 +6326,34 @@ export default function VenueDashboard() {
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent align="end" className="bg-background border-white/10">
                                         <DropdownMenuItem 
-                                          onClick={() => document.getElementById(`camera-input-${transaction.id}`).click()}
+                                          onSelect={(e) => {
+                                            e.preventDefault();
+                                            setTimeout(() => {
+                                              const input = document.getElementById(`camera-input-${transaction.id}`);
+                                              if (input) {
+                                                input.click();
+                                              } else {
+                                                toast.error("Input caméra introuvable");
+                                              }
+                                            }, 100);
+                                          }}
                                           className="cursor-pointer"
                                         >
                                           <Camera className="w-4 h-4 mr-2" />
                                           Prendre une photo
                                         </DropdownMenuItem>
                                         <DropdownMenuItem 
-                                          onClick={() => document.getElementById(`file-input-${transaction.id}`).click()}
+                                          onSelect={(e) => {
+                                            e.preventDefault();
+                                            setTimeout(() => {
+                                              const input = document.getElementById(`file-input-${transaction.id}`);
+                                              if (input) {
+                                                input.click();
+                                              } else {
+                                                toast.error("Input fichier introuvable");
+                                              }
+                                            }, 100);
+                                          }}
                                           className="cursor-pointer"
                                         >
                                           <Upload className="w-4 h-4 mr-2" />

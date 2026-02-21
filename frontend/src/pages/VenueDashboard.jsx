@@ -3025,7 +3025,13 @@ export default function VenueDashboard() {
                             <Label>Méthode de paiement</Label>
                             <Select 
                               value={jamForm.payment_method} 
-                              onValueChange={(value) => setJamForm({ ...jamForm, payment_method: value })}
+                              onValueChange={(value) => {
+                                setJamForm({ 
+                                  ...jamForm, 
+                                  payment_method: value,
+                                  amount: value === "promotion" ? "0" : jamForm.amount
+                                });
+                              }}
                             >
                               <SelectTrigger className="bg-black/20 border-white/10">
                                 <SelectValue placeholder="Aucune (optionnel)" />
@@ -3038,27 +3044,30 @@ export default function VenueDashboard() {
                             </Select>
                           </div>
 
-                          <div className="space-y-2">
-                            <Label>Montant (€)</Label>
-                            <Input 
-                              type="number" 
-                              value={jamForm.amount} 
-                              onChange={(e) => setJamForm({ ...jamForm, amount: e.target.value })} 
-                              className="bg-black/20 border-white/10"
-                              placeholder="0.00"
-                              step="0.01"
-                            />
-                          </div>
+                          {jamForm.payment_method !== "promotion" && (
+                            <div className="space-y-2">
+                              <Label>Montant (€)</Label>
+                              <Input 
+                                type="number" 
+                                value={jamForm.amount} 
+                                onChange={(e) => setJamForm({ ...jamForm, amount: e.target.value })} 
+                                className="bg-black/20 border-white/10"
+                                placeholder="0.00"
+                                step="0.01"
+                              />
+                            </div>
+                          )}
                         </div>
 
-                        {jamForm.payment_method && jamForm.amount && (
+                        {jamForm.payment_method && (jamForm.amount || jamForm.payment_method === "promotion") && (
                           <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
                             <p className="text-sm">
                               <span className="font-medium">Paiement:</span> {
                                 jamForm.payment_method === "facture" ? "📄 Facture" : 
                                 jamForm.payment_method === "guso" ? "🎫 GUSO" : 
                                 "🎸 Promotion du groupe"
-                              } • {parseFloat(jamForm.amount || 0).toFixed(2)} €
+                              }{jamForm.payment_method !== "promotion" && ` • ${parseFloat(jamForm.amount || 0).toFixed(2)} €`}
+                              {jamForm.payment_method === "promotion" && " • Gratuit"}
                             </p>
                           </div>
                         )}

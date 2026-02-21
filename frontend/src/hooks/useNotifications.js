@@ -270,6 +270,12 @@ export const useNotifications = (token, user) => {
 
       // Vérifier les notifications immédiatement (peu importe la permission)
       await checkNewNotifications();
+      
+      // Après le premier check, marquer que le chargement initial est terminé
+      setTimeout(() => {
+        isInitialLoadRef.current = false;
+        console.log('✅ Chargement initial terminé - les popups de chat sont maintenant activées');
+      }, 2000); // Attendre 2 secondes pour éviter les popups au chargement
 
       // Polling toutes les 10 secondes pour vérifier les nouvelles notifications
       // Le polling fonctionne même sans permission - seules les notifications push seront désactivées
@@ -282,6 +288,8 @@ export const useNotifications = (token, user) => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      // Réinitialiser le flag quand le composant est démonté
+      isInitialLoadRef.current = true;
     };
   }, [token, user, requestPermission, registerServiceWorker, checkNewNotifications]);
 

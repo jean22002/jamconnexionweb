@@ -1643,7 +1643,12 @@ export default function VenueDashboard() {
       setKaraokeForm({ date: "", start_time: "", end_time: "", title: "", description: "", music_styles: [] });
       fetchEvents();
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Erreur");
+      const errorMsg = typeof error.response?.data?.detail === 'string' 
+        ? error.response.data.detail 
+        : Array.isArray(error.response?.data?.detail)
+        ? error.response.data.detail.map(e => e.msg).join(', ')
+        : "Erreur lors de la création";
+      toast.error(errorMsg);
     }
   };
 
@@ -1660,7 +1665,12 @@ export default function VenueDashboard() {
       setSpectacleForm({ date: "", start_time: "", end_time: "", type: "", artist_name: "", description: "", price: "" });
       fetchEvents();
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Erreur");
+      const errorMsg = typeof error.response?.data?.detail === 'string' 
+        ? error.response.data.detail 
+        : Array.isArray(error.response?.data?.detail)
+        ? error.response.data.detail.map(e => e.msg).join(', ')
+        : "Erreur lors de la création";
+      toast.error(errorMsg);
     }
   };
 

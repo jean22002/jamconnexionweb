@@ -432,7 +432,7 @@ export default function VenueDashboard() {
     try {
       const [notifsRes, countRes] = await Promise.all([
         axios.get(`${API}/notifications`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API}/notifications/unread-count`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API}/notifications/unread/count`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setNotifications(notifsRes.data);
       setUnreadCount(countRes.data.count);

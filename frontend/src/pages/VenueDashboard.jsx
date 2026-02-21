@@ -136,6 +136,7 @@ export default function VenueDashboard() {
   // Notifications states (comme pour les musiciens)
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [showNotificationsDialog, setShowNotificationsDialog] = useState(false);
   
   // Event details modal states

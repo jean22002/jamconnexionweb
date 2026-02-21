@@ -1893,6 +1893,28 @@ export default function VenueDashboard() {
     }
   };
 
+  const downloadSingleInvoice = async (filename) => {
+    try {
+      const response = await axios.get(`${API}/api/invoices/${filename}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+      
+      // Créer un lien de téléchargement
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error("Erreur lors du téléchargement de la facture");
+      console.error('Error downloading invoice:', error);
+    }
+  };
+
   const status = getSubscriptionStatus();
   const StatusIcon = status.icon;
 

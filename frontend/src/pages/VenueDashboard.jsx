@@ -3849,7 +3849,8 @@ export default function VenueDashboard() {
                   {karaokes.map((karaoke) => (
                     <div 
                       key={karaoke.id} 
-                      className="glassmorphism rounded-xl p-5 hover:bg-white/5 transition-colors"
+                      className="glassmorphism rounded-xl p-5 cursor-pointer hover:bg-white/5 transition-colors"
+                      onClick={() => handleEditEvent(karaoke, 'karaoke')}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -3862,7 +3863,8 @@ export default function VenueDashboard() {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          onClick={async () => {
+                          onClick={async (e) => {
+                            e.stopPropagation();
                             if (window.confirm("Supprimer cette soirée karaoké ?")) {
                               try {
                                 await axios.delete(`${API}/karaoke/${karaoke.id}`, { headers: { Authorization: `Bearer ${token}` } });

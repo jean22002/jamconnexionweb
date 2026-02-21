@@ -55,11 +55,14 @@ async def send_message(data: MessageCreate, current_user: dict = Depends(get_cur
     # Create notification for recipient
     notification_doc = {
         "id": str(uuid.uuid4()),
-        "user_id": data.recipient_id,
+        "recipient_id": data.recipient_id,
+        "recipient_role": recipient.get("role", "user"),
+        "sender_id": current_user["id"],
+        "sender_role": current_user.get("role", "user"),
         "type": "new_message",
         "title": f"Nouveau message de {current_user['name']}",
-        "message": data.subject,
-        "link": "/messages",
+        "message": data.subject if data.subject else "Nouveau message",
+        "link": "/messages-improved",
         "read": False,
         "created_at": datetime.now(timezone.utc).isoformat()
     }

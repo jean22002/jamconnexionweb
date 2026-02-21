@@ -7077,8 +7077,9 @@ export default function VenueDashboard() {
                   ) : (
                     <div className="p-4 bg-muted/20 border border-white/10 rounded-lg">
                       {isEditingEvent ? (
-                        <label className="cursor-pointer">
+                        <label className="cursor-pointer block">
                           <input
+                            id="modal-invoice-input"
                             type="file"
                             accept=".pdf,.png,.jpg,.jpeg,.gif,.webp"
                             className="hidden"
@@ -7127,10 +7128,12 @@ export default function VenueDashboard() {
                                 PDF, PNG, JPG (max 10MB)
                               </p>
                             </div>
-                            <Button size="sm" className="mt-2">
+                            <div 
+                              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2 mt-2"
+                            >
                               <Upload className="w-4 h-4 mr-2" />
                               Choisir un fichier
-                            </Button>
+                            </div>
                           </div>
                         </label>
                       ) : (

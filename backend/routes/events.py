@@ -1020,12 +1020,12 @@ async def update_karaoke_payment_status(
     if not venue:
         raise HTTPException(status_code=404, detail="Venue profile not found")
     
-    karaoke = await db.karaokes.find_one({"id": karaoke_id, "venue_id": venue["id"]}, {"_id": 0})
+    karaoke = await db.karaoke.find_one({"id": karaoke_id, "venue_id": venue["id"]}, {"_id": 0})
     if not karaoke:
         raise HTTPException(status_code=404, detail="Karaoke event not found")
     
     # Update only payment_status
-    await db.karaokes.update_one(
+    await db.karaoke.update_one(
         {"id": karaoke_id},
         {"$set": {"payment_status": data.payment_status}}
     )

@@ -1620,7 +1620,12 @@ export default function VenueDashboard() {
       setConcertForm({ date: "", start_time: "", end_time: "", title: "", description: "", bands: [], price: "", music_styles: [] });
       fetchEvents();
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Erreur");
+      const errorMsg = typeof error.response?.data?.detail === 'string' 
+        ? error.response.data.detail 
+        : Array.isArray(error.response?.data?.detail)
+        ? error.response.data.detail.map(e => e.msg).join(', ')
+        : "Erreur lors de la création";
+      toast.error(errorMsg);
     }
   };
 

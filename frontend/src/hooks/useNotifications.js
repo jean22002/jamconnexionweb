@@ -200,6 +200,12 @@ export const useNotifications = (token, user) => {
           requireInteraction: false, // Ne pas forcer l'interaction
           silent: false // Permettre le son
         });
+        
+        // Déclencher un événement pour rafraîchir la liste et le compteur de notifications
+        console.log('🔔 Nouvelle notification reçue - Rafraîchissement de l\'interface');
+        window.dispatchEvent(new CustomEvent('new-notification-received', {
+          detail: { notification: latestNotification }
+        }));
       }
     } catch (error) {
       console.error('Erreur lors de la vérification des notifications:', error);

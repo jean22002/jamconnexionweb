@@ -1963,8 +1963,13 @@ export default function VenueDashboard() {
               </Link>
               
               <Link to="/messages-improved">
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10">
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10 relative">
                   <MessageSquare className="w-4 h-4" />
+                  {unreadMessagesCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
+                    </span>
+                  )}
                 </Button>
               </Link>
               <Button variant="ghost" onClick={logout} className="text-destructive hover:text-destructive/80" data-testid="logout-btn">

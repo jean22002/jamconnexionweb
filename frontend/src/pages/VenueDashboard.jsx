@@ -28,9 +28,15 @@ import {
 } from "../components/ui/dialog";
 import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
 import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu";
+import { 
   Music, LogOut, MapPin, Globe, Instagram, Facebook, Phone, Edit, Save, Menu, 
   Loader2, CreditCard, Check, Clock, AlertCircle, X, Plus, CalendarIcon, 
-  Users, Bell, Trash2, Eye, FileText, User, Youtube, Send, Heart, Plug, Award, MessageSquare, Trophy, Paperclip, Upload, Download
+  Users, Bell, Trash2, Eye, FileText, User, Youtube, Send, Heart, Plug, Award, MessageSquare, Trophy, Paperclip, Upload, Download, Camera
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useBadgeAutoCheck } from "../hooks/useBadgeAutoCheck";

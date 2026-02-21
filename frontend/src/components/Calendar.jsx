@@ -106,27 +106,31 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
       label = 'Candidaté';
       eventInfo = planningSlot.title || 'Votre candidature';
     } else if (isBookedByEvent) {
-      // ROUGE pour les dates déjà réservées par un événement
-      colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 hover:bg-red-500/30 cursor-pointer';
+      // Couleurs spécifiques selon le type d'événement réservé
       if (eventType === 'concert') {
+        colorClasses = 'bg-green-500/20 text-green-400 border-2 border-green-500/40 hover:bg-green-500/30 cursor-pointer';
         label = 'Concert';
         eventInfo = concert && concert.participants_count ? `${concert.participants_count} participants` : '';
       } else if (eventType === 'jam') {
+        colorClasses = 'bg-purple-500/20 text-purple-400 border-2 border-purple-500/40 hover:bg-purple-500/30 cursor-pointer';
         label = 'Bœuf';
         eventInfo = jam && jam.participants_count ? `${jam.participants_count} participants` : '';
       } else if (eventType === 'karaoke') {
+        colorClasses = 'bg-purple-500/20 text-purple-400 border-2 border-purple-500/40 hover:bg-purple-500/30 cursor-pointer';
         label = 'Karaoké';
         const karaoke = karaokes.find(k => k.date === dateStr);
         if (karaoke && karaoke.title) {
           eventInfo = karaoke.title.length > 20 ? karaoke.title.substring(0, 20) + '...' : karaoke.title;
         }
       } else if (eventType === 'spectacle') {
+        colorClasses = 'bg-pink-500/20 text-pink-400 border-2 border-pink-500/40 hover:bg-pink-500/30 cursor-pointer';
         label = 'Spectacle';
         const spectacle = spectacles.find(s => s.date === dateStr);
         if (spectacle && spectacle.artist_name) {
           eventInfo = spectacle.artist_name.length > 20 ? spectacle.artist_name.substring(0, 20) + '...' : spectacle.artist_name;
         }
       } else {
+        colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 hover:bg-red-500/30 cursor-pointer';
         label = 'Réservé';
       }
     } else if (isSlotComplete) {

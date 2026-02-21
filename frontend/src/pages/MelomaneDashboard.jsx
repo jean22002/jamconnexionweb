@@ -69,7 +69,17 @@ export default function MelomaneDashboard() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [participations, setParticipations] = useState([]);
-  const [activeTab, setActiveTab] = useState("map");
+  const [activeTab, setActiveTab] = useState(() => {
+    // Restaurer le dernier onglet depuis localStorage
+    const savedTab = localStorage.getItem('melomane_activeTab');
+    return savedTab || "map";
+  });
+  
+  // Sauvegarder l'onglet actif dans localStorage à chaque changement
+  useEffect(() => {
+    localStorage.setItem('melomane_activeTab', activeTab);
+  }, [activeTab]);
+  
   const [mapCenter, setMapCenter] = useState([46.603354, 1.888334]);
   
   // Geo and search states

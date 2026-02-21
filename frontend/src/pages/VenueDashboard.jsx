@@ -2088,8 +2088,20 @@ export default function VenueDashboard() {
                     </Link>
 
                     <Link to="/messages-improved" className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors">
-                      <MessageSquare className="w-5 h-5 text-primary" />
+                      <div className="relative">
+                        <MessageSquare className="w-5 h-5 text-primary" />
+                        {unreadMessagesCount > 0 && (
+                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                            {unreadMessagesCount > 9 ? '9' : unreadMessagesCount}
+                          </span>
+                        )}
+                      </div>
                       <span className="font-medium">Messages</span>
+                      {unreadMessagesCount > 0 && (
+                        <span className="ml-auto text-red-500 font-bold text-sm">
+                          {unreadMessagesCount}
+                        </span>
+                      )}
                     </Link>
 
                     <div className="border-t border-white/10 my-2"></div>

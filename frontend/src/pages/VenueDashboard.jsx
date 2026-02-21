@@ -6124,7 +6124,9 @@ export default function VenueDashboard() {
                                 {transaction.title || `${transaction.type} du ${transaction.start_time}`}
                               </td>
                               <td className="p-3 text-sm">
-                                {transaction.payment_method === 'facture' ? '📄 Facture' : '🎫 GUSO'}
+                                {transaction.payment_method === 'facture' ? '📄 Facture' : 
+                                 transaction.payment_method === 'guso' ? '🎫 GUSO' : 
+                                 '🎸 Promotion du groupe'}
                               </td>
                               <td className="p-3 text-sm text-right font-semibold">
                                 {parseFloat(transaction.amount).toFixed(2)} €

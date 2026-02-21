@@ -1824,6 +1824,75 @@ export default function VenueDashboard() {
     return { label: "Inactif", color: "text-destructive", icon: AlertCircle };
   };
 
+  const downloadAllInvoices = async () => {
+    try {
+      toast.loading("Préparation du téléchargement...");
+      
+      // Construire les paramètres de filtrage
+      const params = new URLSearchParams();
+      
+      if (accountingFilters.payment_method !== 'all') {
+        params.append('payment_method', accountingFilters.payment_method);
+      }
+      
+      if (accountingFilters.status !== 'all') {
+        params.append('payment_status', accountingFilters.status);
+      }
+      
+      // Gérer les filtres de date selon la période
+      if (accountingFilters.period === 'custom') {
+        if (accountingFilters.customStartDate) {
+          params.append('start_date', accountingFilters.customStartDate);
+        }
+        if (accountingFilters.customEndDate) {
+          params.append('end_date', accountingFilters.customEndDate);
+        }
+      } else if (accountingFilters.period !== 'all') {
+        const now = new Date();
+        let startDate;
+        
+        if (accountingFilters.period === 'month') {
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        } else if (accountingFilters.period === 'quarter') {
+          const quarter = Math.floor(now.getMonth() / 3);
+          startDate = new Date(now.getFullYear(), quarter * 3, 1);
+        } else if (accountingFilters.period === 'year') {
+          startDate = new Date(now.getFullYear(), 0, 1);
+        }
+        
+        if (startDate) {
+          params.append('start_date', startDate.toISOString().split('T')[0]);
+        }
+      }
+      
+      const response = await axios.get(`${API}/invoices/download/all?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+      
+      // Créer un lien de téléchargement
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `factures_${new Date().toISOString().split('T')[0]}.zip`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.dismiss();
+      toast.success("Factures téléchargées avec succès!");
+    } catch (error) {
+      toast.dismiss();
+      if (error.response?.status === 404) {
+        toast.error("Aucune facture trouvée pour les filtres sélectionnés");
+      } else {
+        toast.error("Erreur lors du téléchargement des factures");
+      }
+      console.error('Error downloading invoices:', error);
+    }
+  };
+
   const status = getSubscriptionStatus();
   const StatusIcon = status.icon;
 

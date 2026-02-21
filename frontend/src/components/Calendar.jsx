@@ -190,8 +190,14 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
       colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 cursor-pointer';
       label = 'Réservé';
     } else if (isPast) {
-      // Gris pour le passé MAIS garder le label si c'est libre
-      colorClasses = 'bg-muted/20 text-muted-foreground cursor-not-allowed opacity-60';
+      // Gris pour le passé - MAIS garder le cursor-pointer si c'est un événement
+      if (isBookedByEvent || isSlotComplete || hasAcceptedApplications || isOpenSlot) {
+        // Les événements passés restent cliquables pour consultation
+        colorClasses = 'bg-muted/20 text-muted-foreground border-2 border-muted/40 hover:bg-muted/30 cursor-pointer opacity-70';
+      } else {
+        // Les dates passées vides ne sont pas cliquables
+        colorClasses = 'bg-muted/20 text-muted-foreground cursor-not-allowed opacity-60';
+      }
       label = 'Passé';
     } else {
       // BLEU pour les jours LIBRES (disponibles pour créer un créneau)
@@ -203,12 +209,12 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
       <button
         key={day}
         onClick={() => {
-          // Permettre le click sur les dates futures (libres OU avec événements/créneaux)
-          if (!isPast) {
+          // Permettre le click sur les dates avec événements (même passées)
+          if (!isPast || isBookedByEvent || isSlotComplete || hasAcceptedApplications || isOpenSlot) {
             onDateClick(dateStr);
           }
         }}
-        disabled={isPast}
+        disabled={isPast && !isBookedByEvent && !isSlotComplete && !hasAcceptedApplications && !isOpenSlot}
         className={`
           aspect-square p-2 rounded-lg font-semibold transition-all
           ${colorClasses}

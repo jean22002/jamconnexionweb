@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import { MUSIC_STYLES_LIST } from "../data/music-styles";
 import { useNotifications } from "../hooks/useNotifications";
 import { buildImageUrl } from "../utils/urlBuilder";
+import DashboardNotification from "../components/DashboardNotification";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -366,6 +367,9 @@ export default function MelomaneDashboard() {
 
   return (
     <div className="min-h-screen bg-background" data-testid="melomane-dashboard">
+      {/* Dashboard Notifications */}
+      <DashboardNotification />
+      
       {/* Header */}
       <header className="sticky top-0 z-50 glassmorphism">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

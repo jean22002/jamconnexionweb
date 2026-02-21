@@ -829,7 +829,7 @@ async def join_event(event_id: str, event_type: str, current_user: dict = Depend
                     notification_data={
                         "title": notification_title,
                         "message": notification_message,
-                        "link": f"/venue-dashboard?tab=planning",
+                        "link": "/venue-dashboard?tab=planning",
                         "data": {
                             "type": "new_participation",
                             "event_id": event_id,
@@ -1422,7 +1422,7 @@ async def get_invoice_file(
             raise HTTPException(status_code=403, detail="Only venues can access invoices")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=401, detail="Authentication failed")
     
     file_path = UPLOAD_DIR / filename

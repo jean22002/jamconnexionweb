@@ -102,15 +102,19 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
-        // Si une fenêtre est déjà ouverte, la focus
+        // Si une fenêtre est déjà ouverte sur ce site, la focus SANS changer l'URL
         for (let i = 0; i < clientList.length; i++) {
           const client = clientList[i];
-          if (client.url === urlToOpen && 'focus' in client) {
+          const clientOrigin = new URL(client.url).origin;
+          const targetOrigin = new URL(urlToOpen, self.location.origin).origin;
+          
+          if (clientOrigin === targetOrigin && 'focus' in client) {
+            // Focus la fenêtre existante mais ne change PAS l'URL
             return client.focus();
           }
         }
-        // Sinon, ouvrir une nouvelle fenêtre
-        if (self.clients.openWindow) {
+        // Seulement si aucune fenêtre n'est ouverte, en ouvrir une nouvelle
+        if (self.clients.openWindow && clientList.length === 0) {
           return self.clients.openWindow(urlToOpen);
         }
       })

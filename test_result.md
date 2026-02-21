@@ -6,6 +6,183 @@
 **Test Type**: Invoice Download Feature - Eye/FileText Icon
 
 
+
+## Latest Test: File Picker in Event Edit Modal ("Choisir un fichier" Button) - 2026-02-21
+
+### Test Objective
+Test the "Choisir un fichier" button inside the event edit modal (e.g., "Modifier du Bœuf" or "Modifier du Concert") in the Facture section to verify that:
+1. The button is visible and accessible when editing an event
+2. Clicking the button opens the file picker dialog
+3. The entire clickable area (paperclip icon + text + button) is functional
+4. No console errors occur
+
+This test is different from the previous "Choisir un fichier" test which focused on the dropdown menu from the paperclip icon in the transaction table. This test focuses specifically on the file upload button **inside the modal** that appears when viewing/editing event details.
+
+### Test Credentials
+- URL: https://venue-invoices.preview.emergentagent.com
+- Email: bar@gmail.com
+- Password: test
+
+### Test Results: ✅ ALL TESTS PASSED
+
+#### 1. Login & Navigation
+- ✅ Homepage loaded successfully
+- ✅ Login modal opened
+- ✅ Credentials filled (bar@gmail.com / test)
+- ✅ Login successful
+- ✅ Redirected to venue dashboard (/venue)
+- ✅ Comptabilité tab loaded successfully
+
+#### 2. Event Details Modal
+- ✅ Found 14 eye icons (FileText icons) for viewing event details
+- ✅ Clicked first eye icon to open event details modal
+- ✅ Modal opened successfully with title: **"Modifier du Bœuf"**
+- ✅ Modal already in edit mode (isEditingEvent = true)
+
+#### 3. Facture Section in Modal
+- ✅ "📄 Facture" section found in the modal
+- ✅ Section structure verified:
+  - Paperclip icon visible
+  - Text: "Cliquez pour joindre une facture"
+  - Subtext: "PDF, PNG, JPG (max 10MB)"
+  - Button: "Choisir un fichier" with Upload icon
+
+#### 4. File Picker Functionality - CRITICAL TEST
+- ✅ "Choisir un fichier" button located successfully
+- ✅ File chooser event listener set up
+- ✅ **Clicked on the clickable label area**
+- ✅ **File picker dialog opened successfully!**
+- ✅ File input triggered correctly (detected via 'filechooser' event)
+- ✅ File chooser accepts single file (is_multiple: False)
+- ✅ File chooser opened at correct page URL: venue dashboard
+- ✅ No error toasts displayed
+- ✅ No file picker related errors in console
+
+#### 5. Console Logs Analysis
+**Non-Critical Errors (Not Related to File Upload):**
+- ⚠️ 404 errors for /api/stats/counts endpoint (unimplemented feature)
+- ⚠️ 404 errors for /api/venues/me/reviews endpoint (unimplemented feature)
+- ⚠️ 520 error for /api/venues/{id}/jams endpoint (backend issue, unrelated)
+
+**No blocking errors found**
+**No file picker related errors**
+
+### Implementation Verified
+
+**Frontend Code (`/app/frontend/src/pages/VenueDashboard.jsx`):**
+
+**Modal Structure (lines 6507-6509):**
+```javascript
+<DialogTitle className="font-heading">
+  {isEditingEvent ? 'Modifier' : 'Détails'} {selectedEventType === 'concert' ? 'du Concert' : 'du Bœuf'}
+</DialogTitle>
+```
+
+**Facture Section (lines 7012-7147):**
+```javascript
+{/* Section Facture */}
+<div className="space-y-4 pt-4 border-t border-white/10">
+  <h3 className="text-lg font-semibold">📄 Facture</h3>
+  
+  {selectedEvent.invoice_file ? (
+    // Display existing invoice with view/delete buttons
+  ) : (
+    <div className="p-4 bg-muted/20 border border-white/10 rounded-lg">
+      {isEditingEvent ? (
+        <label className="cursor-pointer block">
+          <input
+            id="modal-invoice-input"
+            type="file"
+            accept=".pdf,.png,.jpg,.jpeg,.gif,.webp"
+            className="hidden"
+            onChange={async (e) => {
+              // File upload logic with FormData
+              // Endpoint: /api/{endpoint_type}/{transaction.id}/invoice
+            }}
+          />
+          <div className="flex flex-col items-center gap-3 py-6">
+            <Paperclip className="w-8 h-8 text-muted-foreground" />
+            <div className="text-center">
+              <p className="text-sm font-medium">Cliquez pour joindre une facture</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                PDF, PNG, JPG (max 10MB)
+              </p>
+            </div>
+            <div className="inline-flex items-center justify-center ... mt-2">
+              <Upload className="w-4 h-4 mr-2" />
+              Choisir un fichier
+            </div>
+          </div>
+        </label>
+      ) : (
+        // Display "no invoice" message when not editing
+      )}
+    </div>
+  )}
+</div>
+```
+
+**Key Implementation Details:**
+1. **Hidden File Input:** `<input id="modal-invoice-input" type="file" />`
+2. **Clickable Label:** Entire label area is clickable, not just the button
+3. **File Types:** Accepts .pdf, .png, .jpg, .jpeg, .gif, .webp
+4. **Size Limit:** 10MB maximum
+5. **Upload Endpoints:**
+   - `/api/jams/{id}/invoice`
+   - `/api/concerts/{id}/invoice`
+   - `/api/karaoke/{id}/invoice`
+   - `/api/spectacle/{id}/invoice`
+6. **Conditional Display:** Button only shows when `isEditingEvent` is true AND no invoice exists
+
+### Test Evidence
+
+**Screenshots Captured:**
+1. `01_comptabilite_tab.png` - Comptabilité tab with transaction table
+2. `02_event_modal_opened.png` - Event details modal opened (Modifier du Bœuf)
+3. `06_before_clicking_button.png` - Facture section visible before clicking
+4. `07_after_clicking_button.png` - State after clicking "Choisir un fichier"
+
+**File Picker Detection:**
+- Method: Playwright `page.on('filechooser', handler)`
+- Result: Event triggered successfully
+- File chooser properties: `is_multiple: False`
+- Page URL: `https://venue-invoices.preview.emergentagent.com/venue`
+
+### Differences from Previous Test
+
+| Aspect | Previous Test (Dropdown) | Current Test (Modal) |
+|--------|-------------------------|---------------------|
+| **Location** | Transaction table Actions column | Inside event edit modal |
+| **Trigger** | Paperclip icon → dropdown menu | Eye icon → modal → Facture section |
+| **UI Pattern** | DropdownMenuItem with setTimeout | Label wrapping hidden file input |
+| **Input ID** | `file-input-${transaction.id}` | `modal-invoice-input` |
+| **Visibility** | Dropdown menu (shows/hides) | Always visible in edit mode |
+| **Click Target** | Programmatic click on hidden input | Native label click behavior |
+
+### Conclusion
+✅ **TEST PASSED** - The "Choisir un fichier" button in the event edit modal is **fully functional**. When users:
+1. Navigate to Comptabilité tab
+2. Click the eye icon (FileText) on any event
+3. Modal opens showing event details
+4. If event can be edited (isEditingEvent = true)
+5. Facture section displays with "Choisir un fichier" button
+6. **Clicking anywhere in the label area opens the file picker correctly**
+7. No errors are displayed
+8. File picker is ready for file selection
+
+The implementation correctly:
+- Uses semantic HTML with label wrapping the file input
+- Makes the entire area clickable (better UX than just the button)
+- Shows clear instructions and file type/size limits
+- Displays proper icons (Paperclip + Upload)
+- Has proper file upload logic with FormData
+- Supports all event types (jam, concert, karaoke, spectacle)
+- Only shows upload UI when in edit mode and no invoice exists
+
+**No issues found. Feature working as expected.**
+
+---
+
 ## Latest Test: File Picker ("Choisir un fichier") Feature - 2026-02-21
 
 ### Test Objective

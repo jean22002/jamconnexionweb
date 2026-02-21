@@ -1,7 +1,7 @@
 """
 Events router - Handles all event types (jams, concerts, karaoke, spectacles) and participations
 """
-from fastapi import APIRouter, HTTPException, Depends, Header, UploadFile, File, Query
+from fastapi import APIRouter, HTTPException, Depends, Header, UploadFile, File, Query, Body
 from fastapi.responses import FileResponse, StreamingResponse
 from typing import List, Optional
 import uuid

@@ -114,6 +114,18 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
       } else if (eventType === 'jam') {
         label = 'Bœuf';
         eventInfo = jam && jam.participants_count ? `${jam.participants_count} participants` : '';
+      } else if (eventType === 'karaoke') {
+        label = 'Karaoké';
+        const karaoke = karaokes.find(k => k.date === dateStr);
+        if (karaoke && karaoke.title) {
+          eventInfo = karaoke.title.length > 20 ? karaoke.title.substring(0, 20) + '...' : karaoke.title;
+        }
+      } else if (eventType === 'spectacle') {
+        label = 'Spectacle';
+        const spectacle = spectacles.find(s => s.date === dateStr);
+        if (spectacle && spectacle.artist_name) {
+          eventInfo = spectacle.artist_name.length > 20 ? spectacle.artist_name.substring(0, 20) + '...' : spectacle.artist_name;
+        }
       } else {
         label = 'Réservé';
       }

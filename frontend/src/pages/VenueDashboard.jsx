@@ -441,6 +441,19 @@ export default function VenueDashboard() {
       console.error("Error fetching notifications:", error);
     }
   }, [token]);
+  
+  const fetchUnreadMessages = useCallback(async () => {
+    if (!token) return;
+    try {
+      const response = await axios.get(`${API}/messages/inbox`, { 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+      const unreadMessages = response.data.filter(msg => !msg.is_read);
+      setUnreadMessagesCount(unreadMessages.length);
+    } catch (error) {
+      console.error("Error fetching unread messages:", error);
+    }
+  }, [token]);
 
   useEffect(() => {
     // Initial data load - only runs once on mount

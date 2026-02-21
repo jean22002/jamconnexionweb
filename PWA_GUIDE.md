@@ -101,7 +101,7 @@
 ### Sur Mobile (Android)
 
 1. **Ouvrir Chrome/Firefox** sur Android
-2. Visiter `https://transaction-vault-1.preview.emergentagent.com`
+2. Visiter `https://popup-messages-1.preview.emergentagent.com`
 3. **Banner d'installation** apparaît automatiquement
    - OU menu ⋮ → "Ajouter à l'écran d'accueil"
 4. L'app s'installe avec l'icône Jam Connexion

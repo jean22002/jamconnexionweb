@@ -190,14 +190,8 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
       colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 cursor-pointer';
       label = 'Réservé';
     } else if (isPast) {
-      // Gris pour le passé - MAIS garder le cursor-pointer si c'est un événement
-      if (isBookedByEvent || isSlotComplete || hasAcceptedApplications || isOpenSlot) {
-        // Les événements passés restent cliquables pour consultation
-        colorClasses = 'bg-muted/20 text-muted-foreground border-2 border-muted/40 hover:bg-muted/30 cursor-pointer opacity-70';
-      } else {
-        // Les dates passées vides ne sont pas cliquables
-        colorClasses = 'bg-muted/20 text-muted-foreground cursor-not-allowed opacity-60';
-      }
+      // Gris pour le passé (dates vides uniquement)
+      colorClasses = 'bg-muted/20 text-muted-foreground cursor-not-allowed opacity-60';
       label = 'Passé';
     } else {
       // BLEU pour les jours LIBRES (disponibles pour créer un créneau)
@@ -205,16 +199,21 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
       label = 'Libre';
     }
     
+    // Appliquer une opacité réduite aux événements passés tout en gardant leur couleur
+    if (isPast && (isBookedByEvent || isSlotComplete || hasAcceptedApplications || isOpenSlot || hasApplied)) {
+      colorClasses = colorClasses.replace('cursor-pointer', 'cursor-pointer opacity-70');
+    }
+    
     calendarDays.push(
       <button
         key={day}
         onClick={() => {
           // Permettre le click sur les dates avec événements (même passées)
-          if (!isPast || isBookedByEvent || isSlotComplete || hasAcceptedApplications || isOpenSlot) {
+          if (!isPast || isBookedByEvent || isSlotComplete || hasAcceptedApplications || isOpenSlot || hasApplied) {
             onDateClick(dateStr);
           }
         }}
-        disabled={isPast && !isBookedByEvent && !isSlotComplete && !hasAcceptedApplications && !isOpenSlot}
+        disabled={isPast && !isBookedByEvent && !isSlotComplete && !hasAcceptedApplications && !isOpenSlot && !hasApplied}
         className={`
           aspect-square p-2 rounded-lg font-semibold transition-all
           ${colorClasses}

@@ -45,6 +45,20 @@ async def get_current_user(authorization: str = Header(None)):
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
 
+async def get_current_user_optional(authorization: str = Header(None)):
+    """Optional authentication - returns None if not authenticated"""
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    
+    token = authorization.split(" ")[1]
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        user = await db.users.find_one({"id": payload["user_id"]}, {"_id": 0})
+        return user
+    except Exception:
+        return None
+
+
 async def notify_venue_subscribers(venue_id: str, event_type: str, title: str, message: str, link: str):
     """Send notification to all venue subscribers"""
     try:

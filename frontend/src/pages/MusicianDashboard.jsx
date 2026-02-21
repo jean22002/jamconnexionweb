@@ -936,10 +936,15 @@ export default function MusicianDashboard() {
     try {
       const method = profile ? "put" : "post";
       
-      // Préparer les données avec le profil solo
+      // Préparer les données avec le profil solo ET les coordonnées GPS
       const profileData = {
         ...profileForm,
-        solo_profile: soloProfile
+        solo_profile: soloProfile,
+        // Ajouter les coordonnées GPS si disponibles
+        ...(geoPosition && {
+          latitude: geoPosition.latitude,
+          longitude: geoPosition.longitude
+        })
       };
       
       // Normalize image URLs robustly (same logic as VenueDashboard)
@@ -988,6 +993,13 @@ export default function MusicianDashboard() {
         profile_image: saved_profile_image,
         cover_image: saved_cover_image
       });
+      
+      if (geoPosition) {
+        console.log('✅ GPS coordinates saved:', {
+          latitude: geoPosition.latitude,
+          longitude: geoPosition.longitude
+        });
+      }
       
       setEditingProfile(false);
       fetchData(); // Recharger la liste des musiciens pour mettre à jour les filtres

@@ -1245,8 +1245,15 @@ async def upload_spectacle_invoice(
 
 
 @router.get("/invoices/{filename}")
-async def download_invoice(filename: str):
+async def download_invoice(
+    filename: str,
+    token: Optional[str] = None,
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
     """Download an invoice file"""
+    # L'authentification est optionnelle pour le téléchargement
+    # car le lien peut être partagé ou ouvert dans un nouvel onglet
+    
     file_path = UPLOAD_DIR / filename
     
     if not file_path.exists():

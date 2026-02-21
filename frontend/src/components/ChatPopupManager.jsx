@@ -8,7 +8,14 @@ export default function ChatPopupManager({ newMessageEvent }) {
   useEffect(() => {
     // Écouter les nouveaux messages
     const handleNewMessage = (event) => {
+      console.log('📨 ChatPopupManager - Événement new-message-received reçu:', event.detail);
+      
       const { senderId, senderName, senderImage, message } = event.detail;
+      
+      if (!senderId) {
+        console.error('❌ SenderId manquant dans l\'événement');
+        return;
+      }
       
       // Vérifier si le chat est déjà ouvert
       const existingChat = openChats.find(chat => chat.partnerId === senderId);
@@ -21,6 +28,8 @@ export default function ChatPopupManager({ newMessageEvent }) {
           partnerImage: senderImage,
           lastMessage: message
         };
+        
+        console.log('✅ Ouverture d\'un nouveau chat pour:', senderName);
         
         setOpenChats(prev => {
           // Limiter à 3 chats ouverts maximum
@@ -35,6 +44,7 @@ export default function ChatPopupManager({ newMessageEvent }) {
           return newSet;
         });
       } else {
+        console.log('ℹ️ Chat déjà ouvert - Dé-minimisation');
         // Dé-minimiser si minimisé
         setMinimizedChats(prev => {
           const newSet = new Set(prev);
@@ -44,6 +54,7 @@ export default function ChatPopupManager({ newMessageEvent }) {
       }
     };
 
+    console.log('🎧 ChatPopupManager - Écoute des événements new-message-received');
     window.addEventListener('new-message-received', handleNewMessage);
     
     return () => {

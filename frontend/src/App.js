@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { BadgeProvider } from "./context/BadgeContext";
 import PWAPrompt from "./components/PWAPrompt";
 import PushNotificationPrompt from "./components/PushNotificationPrompt";
+import ChatPopupManager from "./components/ChatPopupManager";
 import "leaflet/dist/leaflet.css";
 import "./App.css";
 
@@ -104,6 +105,7 @@ function App() {
           />
           <PWAPrompt />
           <PushNotificationPrompt />
+          <ChatPopupManager />
           <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Landing />} />

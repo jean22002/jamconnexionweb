@@ -3,69 +3,69 @@
 ## Last Test Session
 **Date**: 2026-02-21
 **Status**: ✅ PASSED
-**Test Type**: Frontend E2E - Dashboard Notifications
+**Test Type**: Backend + Frontend - Invoice Download Feature
 
 ## Changes Implemented
-1. ✅ Système de notifications in-app dans les dashboards
-2. ✅ Affichage automatique dans un rectangle en haut à droite
-3. ✅ Auto-dismiss après 5 secondes
-4. ✅ Bouton de fermeture manuelle (X)
-5. ✅ Support multi-notifications (empilement)
+1. ✅ Implémentation de l'endpoint GET `/api/invoices/{filename}`
+2. ✅ Support de l'authentification optionnelle
+3. ✅ Téléchargement de fichiers avec FileResponse
+4. ✅ Fonction `get_current_user_optional` créée
 
 ## Test Results
 
-### Frontend Manual Tests - Dashboard Notifications
+### Backend API Tests - Invoice Download
 **Status**: ✅ ALL TESTS PASSED
-**Method**: Playwright screenshot tests with event simulation
+**Method**: curl tests with local files
 **Results**:
-- ✅ Notifications s'affichent en haut à droite du dashboard
-- ✅ Design glassmorphism avec bordure primary
-- ✅ Icône Bell + titre + message
-- ✅ Bouton X de fermeture fonctionnel
-- ✅ Auto-dismiss après 5 secondes validé
-- ✅ Multi-notifications empilées correctement
-- ✅ Animations smooth (slide-in-from-top)
-- ✅ Pas d'erreurs console
+- ✅ GET `/api/invoices/{filename}` retourne HTTP 200
+- ✅ Content-Type: application/octet-stream
+- ✅ Content-Disposition avec filename correct
+- ✅ Fichier téléchargé avec contenu intact
+- ✅ Authentification optionnelle fonctionnelle
+- ✅ 404 retourné pour fichiers inexistants
 
-### Integration Points Verified
-- ✅ Hook `useNotifications` dispatch l'événement `new-notification-received`
-- ✅ Composant `DashboardNotification` écoute l'événement
-- ✅ Intégré dans les 3 dashboards (Venue, Musician, Melomane)
-- ✅ Position fixed ne gêne pas la navigation
-- ✅ z-index correct (z-50)
+### Frontend Verification
+**Status**: ✅ VERIFIED
+**Method**: Playwright screenshot test
+**Results**:
+- ✅ Page Comptabilité affichée correctement
+- ✅ 14 boutons de téléchargement de factures trouvés
+- ✅ Icône FileText visible
+- ✅ Total comptabilité affiché : 5850.00 € (12 événements)
 
-## Files Created
-- `/app/frontend/src/components/DashboardNotification.jsx` (Nouveau composant)
+## Bug Fixed
+**Issue**: Endpoint GET `/api/invoices/{filename}` existait mais n'avait pas d'implémentation
+**Root Cause**: Le corps de la fonction était vide (seulement la définition de route)
+**Fix**: 
+- Implémentation complète avec FileResponse
+- Ajout authentification optionnelle via `get_current_user_optional`
+- Validation de l'existence du fichier (404 si non trouvé)
+**Status**: RÉSOLU
 
 ## Files Modified
-- `/app/frontend/src/pages/VenueDashboard.jsx` - Import + intégration DashboardNotification
-- `/app/frontend/src/pages/MusicianDashboard.jsx` - Import + intégration DashboardNotification
-- `/app/frontend/src/pages/MelomaneDashboard.jsx` - Import + intégration DashboardNotification
+- `/app/backend/routes/events.py`:
+  - Ligne 1247-1265: Implémentation `download_invoice()`
+  - Ligne 48-61: Création `get_current_user_optional()`
+  - Lint errors fixed automatiquement
 
-## Features Implemented
-**Notification Display:**
-- Position: Fixed top-20 right-4
-- Max-width: 28rem (max-w-md)
-- Stack vertical avec space-y-2
-- Design glassmorphism cohérent avec l'app
+## API Endpoint Implemented
+**GET /api/invoices/{filename}**
+- **Description**: Télécharge une facture
+- **Auth**: Optionnelle (Bearer token ou anonymous)
+- **Params**: 
+  - `filename` (path): Nom du fichier
+  - `token` (query, optional): Token JWT
+- **Response**: Fichier en téléchargement (application/octet-stream)
+- **Errors**: 404 si fichier non trouvé
 
-**Auto-dismiss:**
-- Timer de 5000ms (5 secondes)
-- Nettoyage automatique du state
-
-**Manual Dismiss:**
-- Bouton X en haut à droite de chaque notification
-- Hover effect (hover:bg-white/10)
-- Icône X lucide-react
-
-**Content:**
-- Icône Bell dans un cercle primary
-- Titre (font-semibold, line-clamp-1)
-- Message (text-muted-foreground, line-clamp-2)
+## Files Storage
+- **Location**: `/app/backend/uploads/invoices/`
+- **Format**: Tous types de fichiers acceptés (PDF, images, etc.)
+- **Naming**: Génération automatique via upload endpoints
 
 ## Known Issues
 None - Fonctionnalité complète et testée
 
 ## Incorporate User Feedback
-Feature requested by user: "il faudrait que quand on recoit une notification elle s'affiche aussi dans un rectangle sur le Dashboard et disparaisse automatiquement au bout de 5 sd ou l'enlever manuellement sur la petite croix"
-✅ Implemented as requested
+User request: "verifie le fonctionnement de téléchargement des factures"
+✅ Verified and fixed - download endpoint now fully functional

@@ -230,8 +230,8 @@ export const useNotifications = (token, user) => {
       // Vérifier les notifications immédiatement
       await checkNewNotifications();
 
-      // Polling toutes les 30 secondes pour vérifier les nouvelles notifications
-      intervalRef.current = setInterval(checkNewNotifications, 30000);
+      // Polling toutes les 10 secondes pour vérifier les nouvelles notifications
+      intervalRef.current = setInterval(checkNewNotifications, 10000);
     };
 
     init();

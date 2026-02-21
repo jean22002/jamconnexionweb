@@ -1910,23 +1910,13 @@ export default function VenueDashboard() {
 
   const downloadSingleInvoice = async (filename) => {
     try {
-      const response = await axios.get(`${API}/invoices/${filename}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        responseType: 'blob'
-      });
-      
-      // Créer un lien de téléchargement
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      // Ouvrir la facture dans un nouvel onglet pour la visualiser
+      const invoiceUrl = `${API}/invoices/${filename}`;
+      window.open(invoiceUrl, '_blank');
+      toast.success("Facture ouverte dans un nouvel onglet");
     } catch (error) {
-      toast.error("Erreur lors du téléchargement de la facture");
-      console.error('Error downloading invoice:', error);
+      toast.error("Erreur lors de l'ouverture de la facture");
+      console.error('Error opening invoice:', error);
     }
   };
 

@@ -3782,7 +3782,13 @@ export default function VenueDashboard() {
                             <Label>Méthode de paiement</Label>
                             <Select 
                               value={karaokeForm.payment_method} 
-                              onValueChange={(value) => setKaraokeForm({ ...karaokeForm, payment_method: value })}
+                              onValueChange={(value) => {
+                                setKaraokeForm({ 
+                                  ...karaokeForm, 
+                                  payment_method: value,
+                                  amount: value === "promotion" ? "0" : karaokeForm.amount
+                                });
+                              }}
                             >
                               <SelectTrigger className="bg-black/20 border-white/10">
                                 <SelectValue placeholder="Aucune (optionnel)" />
@@ -3795,27 +3801,30 @@ export default function VenueDashboard() {
                             </Select>
                           </div>
 
-                          <div className="space-y-2">
-                            <Label>Montant (€)</Label>
-                            <Input 
-                              type="number" 
-                              value={karaokeForm.amount} 
-                              onChange={(e) => setKaraokeForm({ ...karaokeForm, amount: e.target.value })} 
-                              className="bg-black/20 border-white/10"
-                              placeholder="0.00"
-                              step="0.01"
-                            />
-                          </div>
+                          {karaokeForm.payment_method !== "promotion" && (
+                            <div className="space-y-2">
+                              <Label>Montant (€)</Label>
+                              <Input 
+                                type="number" 
+                                value={karaokeForm.amount} 
+                                onChange={(e) => setKaraokeForm({ ...karaokeForm, amount: e.target.value })} 
+                                className="bg-black/20 border-white/10"
+                                placeholder="0.00"
+                                step="0.01"
+                              />
+                            </div>
+                          )}
                         </div>
 
-                        {karaokeForm.payment_method && karaokeForm.amount && (
+                        {karaokeForm.payment_method && (karaokeForm.amount || karaokeForm.payment_method === "promotion") && (
                           <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
                             <p className="text-sm">
                               <span className="font-medium">Paiement:</span> {
                                 karaokeForm.payment_method === "facture" ? "📄 Facture" : 
                                 karaokeForm.payment_method === "guso" ? "🎫 GUSO" : 
                                 "🎸 Promotion du groupe"
-                              } • {parseFloat(karaokeForm.amount || 0).toFixed(2)} €
+                              }{karaokeForm.payment_method !== "promotion" && ` • ${parseFloat(karaokeForm.amount || 0).toFixed(2)} €`}
+                              {karaokeForm.payment_method === "promotion" && " • Gratuit"}
                             </p>
                           </div>
                         )}

@@ -1299,7 +1299,7 @@ export default function VenueDashboard() {
     const eventType = eventsByDate[dateStr];
     
     if (eventType) {
-      // Il y a un événement (concert ou jam), on l'affiche
+      // Il y a un événement (concert, jam, karaoké ou spectacle), on l'affiche
       try {
         let event = null;
         let type = null;
@@ -1312,6 +1312,14 @@ export default function VenueDashboard() {
           // Trouver le jam
           event = jams.find(j => j.date === dateStr);
           type = 'jam';
+        } else if (eventType === 'karaoke') {
+          // Trouver le karaoké
+          event = karaokes.find(k => k.date === dateStr);
+          type = 'karaoke';
+        } else if (eventType === 'spectacle') {
+          // Trouver le spectacle
+          event = spectacles.find(s => s.date === dateStr);
+          type = 'spectacle';
         }
         
         if (event) {

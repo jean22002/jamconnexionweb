@@ -1245,7 +1245,7 @@ export default function MusicianDashboard() {
 
   const markAllRead = async () => {
     try {
-      await axios.post(`${API}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.put(`${API}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${token}` } });
       fetchNotifications();
     } catch (error) {
       console.error(error);

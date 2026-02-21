@@ -1831,7 +1831,7 @@ export default function VenueDashboard() {
                   // Marquer toutes les notifications comme lues quand on ouvre le panneau
                   (async () => {
                     try {
-                      await axios.post(`${API}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                      await axios.put(`${API}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${token}` } });
                       fetchNotifications();
                     } catch (error) {
                       console.error("Error marking notifications as read:", error);
@@ -1862,7 +1862,7 @@ export default function VenueDashboard() {
                             size="sm"
                             onClick={async () => {
                               try {
-                                await axios.post(`${API}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                                await axios.put(`${API}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${token}` } });
                                 fetchNotifications();
                                 toast.success("Toutes les notifications marquées comme lues");
                               } catch (error) {
@@ -1948,7 +1948,7 @@ export default function VenueDashboard() {
                 if (open && unreadCount > 0) {
                   (async () => {
                     try {
-                      await axios.post(`${API}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                      await axios.put(`${API}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${token}` } });
                       fetchNotifications();
                     } catch (error) {
                       console.error("Error marking notifications as read:", error);
@@ -1976,7 +1976,7 @@ export default function VenueDashboard() {
                         <div className="flex justify-between items-center mb-3">
                           <Button variant="outline" size="sm" onClick={async () => {
                             try {
-                              await axios.post(`${API}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                              await axios.put(`${API}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${token}` } });
                               fetchNotifications();
                               toast.success("Tout marqué comme lu");
                             } catch (error) {

@@ -205,6 +205,8 @@ export default function VenueDashboard() {
     department: "", 
     city: "" 
   });
+  const [selectedRegion, setSelectedRegion] = useState(null);
+  const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [showMessageDialog, setShowMessageDialog] = useState(false);
   const [selectedBand, setSelectedBand] = useState(null);
   const [messageForm, setMessageForm] = useState({ subject: "", content: "" });

@@ -108,7 +108,7 @@ The following implementation was verified in `/app/frontend/src/pages/VenueDashb
 4. ✅ Bouton de téléchargement dans la section Comptabilité
 5. ✅ Organisation des factures par type dans le ZIP
 
-## Test Results
+## Test Results (Previous: Bulk Invoice Download)
 
 ### Backend Implementation
 **Status**: ✅ IMPLEMENTED

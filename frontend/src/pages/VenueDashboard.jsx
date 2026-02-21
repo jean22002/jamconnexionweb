@@ -3567,45 +3567,13 @@ export default function VenueDashboard() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Styles musicaux</Label>
-                        <Select 
-                          value="" 
-                          onValueChange={(value) => {
-                            if (value && !karaokeForm.music_styles.includes(value)) {
-                              setKaraokeForm({ 
-                                ...karaokeForm, 
-                                music_styles: [...karaokeForm.music_styles, value] 
-                              });
-                            }
-                          }}
-                        >
-                          <SelectTrigger className="bg-black/20 border-white/10">
-                            <SelectValue placeholder="Sélectionnez un style" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-background border-white/10 max-h-[300px] overflow-y-auto">
-                            {MUSIC_STYLES_LIST.map(style => (
-                              <SelectItem key={style} value={style}>{style}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {karaokeForm.music_styles.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {karaokeForm.music_styles.map((style, index) => (
-                              <span key={index} className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm flex items-center gap-2">
-                                {style}
-                                <button 
-                                  onClick={() => setKaraokeForm({ 
-                                    ...karaokeForm, 
-                                    music_styles: karaokeForm.music_styles.filter((_, i) => i !== index) 
-                                  })}
-                                  className="hover:text-red-400"
-                                >
-                                  <X className="w-3 h-3" />
-                                </button>
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                        <Label>Qui anime le karaoké ?</Label>
+                        <Input 
+                          value={karaokeForm.host_name} 
+                          onChange={(e) => setKaraokeForm({ ...karaokeForm, host_name: e.target.value })} 
+                          placeholder="Ex: DJ Martin, L'équipe du bar..."
+                          className="bg-black/20 border-white/10" 
+                        />
                       </div>
                     </div>
                     <DialogFooter>

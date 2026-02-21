@@ -174,15 +174,30 @@ export const useNotifications = (token, user) => {
       });
 
       const notifications = response.data || [];
+      
+      console.log('🔍 [DEBUG] Polling notifications - Total:', notifications.length);
+      
       if (notifications.length === 0) return;
 
       // Récupérer les notifications déjà affichées
       const shownNotifications = getShownNotifications();
+      
+      console.log('🔍 [DEBUG] Shown notifications:', shownNotifications);
 
       // Vérifier s'il y a de nouvelles notifications non lues ET non affichées
+      const unreadNotShown = notifications.filter(n => !n.read && !shownNotifications.includes(n.id));
+      console.log('🔍 [DEBUG] Unread & not shown:', unreadNotShown.length);
+      
       const latestNotification = notifications.find(n => 
         !n.read && !shownNotifications.includes(n.id)
       );
+      
+      console.log('🔍 [DEBUG] Latest notification:', latestNotification ? {
+        id: latestNotification.id,
+        type: latestNotification.type,
+        title: latestNotification.title,
+        lastRef: lastNotificationIdRef.current
+      } : 'NONE');
       
       if (latestNotification && latestNotification.id !== lastNotificationIdRef.current) {
         lastNotificationIdRef.current = latestNotification.id;

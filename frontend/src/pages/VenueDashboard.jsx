@@ -3013,6 +3013,7 @@ export default function VenueDashboard() {
                               <SelectContent className="bg-background border-white/10">
                                 <SelectItem value="facture">Facture</SelectItem>
                                 <SelectItem value="guso">GUSO</SelectItem>
+                                <SelectItem value="promotion">Promotion du groupe</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -3033,7 +3034,11 @@ export default function VenueDashboard() {
                         {jamForm.payment_method && jamForm.amount && (
                           <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
                             <p className="text-sm">
-                              <span className="font-medium">Paiement:</span> {jamForm.payment_method === "facture" ? "📄 Facture" : "🎫 GUSO"} • {parseFloat(jamForm.amount || 0).toFixed(2)} €
+                              <span className="font-medium">Paiement:</span> {
+                                jamForm.payment_method === "facture" ? "📄 Facture" : 
+                                jamForm.payment_method === "guso" ? "🎫 GUSO" : 
+                                "🎸 Promotion du groupe"
+                              } • {parseFloat(jamForm.amount || 0).toFixed(2)} €
                             </p>
                           </div>
                         )}

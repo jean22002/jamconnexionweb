@@ -1865,7 +1865,7 @@ export default function VenueDashboard() {
         }
       }
       
-      const response = await axios.get(`${API}/api/invoices/download/all?${params.toString()}`, {
+      const response = await axios.get(`${API}/invoices/download/all?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'
       });

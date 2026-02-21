@@ -1833,6 +1833,9 @@ export default function VenueDashboard() {
 
   return (
     <div className="min-h-screen bg-background" data-testid="venue-dashboard">
+      {/* Dashboard Notifications */}
+      <DashboardNotification />
+      
       {/* Header */}
       <header className="sticky top-0 z-50 glassmorphism">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

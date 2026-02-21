@@ -6,6 +6,7 @@ import { BadgeProvider } from "./context/BadgeContext";
 import PWAPrompt from "./components/PWAPrompt";
 import PushNotificationPrompt from "./components/PushNotificationPrompt";
 import ChatPopupManager from "./components/ChatPopupManager";
+import ChatPopupDebug from "./components/ChatPopupDebug";
 import "leaflet/dist/leaflet.css";
 import "./App.css";
 
@@ -106,6 +107,7 @@ function App() {
           <PWAPrompt />
           <PushNotificationPrompt />
           <ChatPopupManager />
+          <ChatPopupDebug />
           <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Landing />} />

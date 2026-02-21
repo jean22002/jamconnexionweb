@@ -149,8 +149,8 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
       label = 'Disponible';
       eventInfo = planningSlot.title || `${planningSlot.num_bands_needed || 1} groupe${planningSlot.num_bands_needed > 1 ? 's' : ''}`;
     } else if (eventType === 'concert') {
-      // Les concerts sans créneau restent en rouge (événement réservé)
-      colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 hover:bg-red-500/30 cursor-pointer';
+      // VERT pour les concerts
+      colorClasses = 'bg-green-500/20 text-green-400 border-2 border-green-500/40 hover:bg-green-500/30 cursor-pointer';
       label = 'Concert';
       // Afficher le nombre de participants et les noms des groupes
       if (concert) {
@@ -162,8 +162,8 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
         }
       }
     } else if (eventType === 'jam') {
-      // Les jams sans créneau restent en rouge (événement réservé)
-      colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 hover:bg-red-500/30 cursor-pointer';
+      // VIOLET pour les bœufs
+      colorClasses = 'bg-purple-500/20 text-purple-400 border-2 border-purple-500/40 hover:bg-purple-500/30 cursor-pointer';
       label = 'Bœuf';
       // Afficher le nombre de participants si disponible
       if (jam && jam.participants_count !== undefined) {

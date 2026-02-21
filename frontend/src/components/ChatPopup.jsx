@@ -68,18 +68,23 @@ export default function ChatPopup({ conversation, onClose, onMinimize, isMinimiz
     setSending(true);
     try {
       await axios.post(
-        `${API}/messages/`,
+        `${API}/messages`,
         {
           recipient_id: conversation.partnerId,
+          subject: "Chat", // Subject par défaut pour les messages de chat popup
           content: newMessage
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setNewMessage('');
-      fetchMessages();
+      await fetchMessages();
     } catch (error) {
       console.error('Error sending message:', error);
+      // Afficher un toast d'erreur si disponible
+      if (error.response) {
+        console.error('Erreur détaillée:', error.response.data);
+      }
     } finally {
       setSending(false);
     }

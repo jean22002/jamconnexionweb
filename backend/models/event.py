@@ -106,6 +106,7 @@ class KaraokeEvent(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     music_styles: List[str] = []
+    host_name: Optional[str] = None  # Qui anime le karaoké
     # Comptabilité
     payment_method: Optional[str] = None
     amount: Optional[float] = None
@@ -122,6 +123,7 @@ class KaraokeEventResponse(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     music_styles: List[str] = []
+    host_name: Optional[str] = None  # Qui anime le karaoké
     participants_count: int = 0
     created_at: str
     # Comptabilité

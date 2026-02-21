@@ -5268,16 +5268,79 @@ export default function VenueDashboard() {
               {/* Filters */}
               <div className="glassmorphism rounded-2xl p-6">
                 <h2 className="font-heading font-semibold text-xl mb-4">🎸 Répertoire des Groupes</h2>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <Label>Pays</Label>
+                    <Select 
+                      value={bandFilters.country}
+                      onValueChange={(value) => setBandFilters({ 
+                        country: value, 
+                        region: "", 
+                        department: "", 
+                        city: "" 
+                      })}
+                    >
+                      <SelectTrigger className="bg-black/20 border-white/10">
+                        <SelectValue placeholder="Tous les pays" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-white/10">
+                        <SelectItem value="all">Tous les pays</SelectItem>
+                        <SelectItem value="France">France</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Région</Label>
+                    <Select 
+                      value={bandFilters.region || undefined}
+                      onValueChange={(value) => setBandFilters({ 
+                        ...bandFilters, 
+                        region: value, 
+                        department: "", 
+                        city: "" 
+                      })}
+                      disabled={bandFilters.country !== "France"}
+                    >
+                      <SelectTrigger className="bg-black/20 border-white/10">
+                        <SelectValue placeholder="Toutes les régions" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-white/10 max-h-[300px]">
+                        <SelectItem value="all">Toutes les régions</SelectItem>
+                        {REGIONS_FRANCE.map(region => (
+                          <SelectItem key={region} value={region}>{region}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
                   <div className="space-y-2">
                     <Label>Département</Label>
-                    <Input
-                      placeholder="Ex: 75, 13, 69..."
-                      value={bandFilters.department}
-                      onChange={(e) => setBandFilters({ ...bandFilters, department: e.target.value })}
-                      className="bg-black/20 border-white/10"
-                    />
+                    <Select 
+                      value={bandFilters.department || undefined}
+                      onValueChange={(value) => setBandFilters({ 
+                        ...bandFilters, 
+                        department: value, 
+                        city: "" 
+                      })}
+                      disabled={bandFilters.country !== "France"}
+                    >
+                      <SelectTrigger className="bg-black/20 border-white/10">
+                        <SelectValue placeholder="Tous les départements" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-white/10 max-h-[300px]">
+                        <SelectItem value="all">Tous les départements</SelectItem>
+                        {DEPARTEMENTS_FRANCE
+                          .filter(dept => !bandFilters.region || dept.region === bandFilters.region || bandFilters.region === "all")
+                          .map(dept => (
+                            <SelectItem key={dept.code} value={dept.code}>
+                              {dept.code} - {dept.nom}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
                   </div>
+                  
                   <div className="space-y-2">
                     <Label>Ville</Label>
                     <Input
@@ -5285,6 +5348,7 @@ export default function VenueDashboard() {
                       value={bandFilters.city}
                       onChange={(e) => setBandFilters({ ...bandFilters, city: e.target.value })}
                       className="bg-black/20 border-white/10"
+                      disabled={bandFilters.country !== "France"}
                     />
                   </div>
                 </div>

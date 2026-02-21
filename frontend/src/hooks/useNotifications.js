@@ -192,14 +192,16 @@ export const useNotifications = (token, user) => {
           type: latestNotification.type,
           title: latestNotification.title,
           message: latestNotification.message,
-          sender_id: latestNotification.sender_id
+          sender_id: latestNotification.sender_id,
+          isInitialLoad: isInitialLoadRef.current
         });
         
         // Marquer comme affichée dans localStorage AVANT d'afficher
         markNotificationAsShown(latestNotification.id);
         
         // Si c'est un nouveau message, ouvrir le chat popup
-        if (latestNotification.type === 'new_message') {
+        // MAIS PAS au premier chargement de la page (pour éviter les popups indésirables)
+        if (latestNotification.type === 'new_message' && !isInitialLoadRef.current) {
           console.log('💬 TYPE new_message détecté - Déclenchement événement new-message-received');
           
           // Extraire le nom de l'expéditeur du titre

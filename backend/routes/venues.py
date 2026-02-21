@@ -795,6 +795,7 @@ async def notify_subscribers(
         raise HTTPException(status_code=404, detail="Venue profile not found")
     
     venue_id = venue["id"]
+    venue_name = venue.get("name", "Un établissement")
     notification_message = message.get("message", "")
     
     if not notification_message:
@@ -810,6 +811,9 @@ async def notify_subscribers(
             detail="Aucun abonné (Jack) trouvé. Personne ne recevra la notification."
         )
     
+    # Import send_push_notification
+    from routes.push_notifications import send_push_notification
+    
     # Create notifications for each subscriber
     notifications_created = 0
     for sub in subscriptions:
@@ -821,6 +825,7 @@ async def notify_subscribers(
                 "sender_id": current_user["id"],
                 "sender_role": "venue",
                 "type": "broadcast",
+                "title": f"📢 {venue_name}",
                 "message": notification_message,
                 "created_at": datetime.now(timezone.utc).isoformat(),
                 "read": False
@@ -828,6 +833,23 @@ async def notify_subscribers(
             result = await db.notifications.insert_one(notification)
             logger.info(f"Notification inserted: {result.inserted_id}")
             notifications_created += 1
+            
+            # Send push notification
+            try:
+                await send_push_notification(
+                    user_id=sub["subscriber_id"],
+                    notification_data={
+                        "title": f"📢 {venue_name}",
+                        "message": notification_message,
+                        "link": f"/venue/{venue_id}",
+                        "data": {"notification_id": notification["id"]}
+                    }
+                )
+                logger.info(f"Push notification sent to subscriber {sub['subscriber_id']}")
+            except Exception as push_error:
+                logger.error(f"Error sending push notification: {push_error}")
+                # Continue même si le push échoue
+                
         except Exception as e:
             logger.error(f"Failed to insert notification: {e}")
     

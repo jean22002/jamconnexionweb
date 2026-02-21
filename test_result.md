@@ -3,7 +3,7 @@
 ## Last Test Session
 **Date**: 2026-02-21
 **Status**: ✅ PASSED
-**Test Type**: Invoice Download Feature - Eye/FileText Icon
+**Test Type**: File Picker in Event Edit Modal ("Choisir un fichier" Button)
 
 
 

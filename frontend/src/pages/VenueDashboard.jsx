@@ -461,6 +461,7 @@ export default function VenueDashboard() {
     fetchMusicians();
     fetchEvents();
     fetchNotifications();
+    fetchUnreadMessages();
     fetchSubscribers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty array = run only once on mount

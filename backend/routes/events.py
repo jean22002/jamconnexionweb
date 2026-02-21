@@ -1036,7 +1036,7 @@ async def update_karaoke_payment_status(
 @router.patch("/spectacle/{spectacle_id}/payment-status")
 async def update_spectacle_payment_status(
     spectacle_id: str,
-    payment_status: str,
+    data: PaymentStatusUpdate,
     current_user: dict = Depends(get_current_user)
 ):
     """Update only the payment status of a spectacle event"""
@@ -1045,7 +1045,7 @@ async def update_spectacle_payment_status(
     
     # Validate status
     valid_statuses = ["Payé", "En attente", "Annulé", "Non spécifié"]
-    if payment_status not in valid_statuses:
+    if data.payment_status not in valid_statuses:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
     
     venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
@@ -1059,7 +1059,10 @@ async def update_spectacle_payment_status(
     # Update only payment_status
     await db.spectacle.update_one(
         {"id": spectacle_id},
-        {"$set": {"payment_status": payment_status}}
+        {"$set": {"payment_status": data.payment_status}}
+    )
+    
+    return {"success": True, "payment_status": data.payment_status}
     )
     
     return {"success": True, "payment_status": payment_status}

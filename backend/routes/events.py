@@ -1063,9 +1063,6 @@ async def update_spectacle_payment_status(
     )
     
     return {"success": True, "payment_status": data.payment_status}
-    )
-    
-    return {"success": True, "payment_status": payment_status}
 
 
 

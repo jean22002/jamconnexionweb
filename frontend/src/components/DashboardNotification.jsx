@@ -1,12 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, Bell } from 'lucide-react';
+
+// Son de notification
+const NOTIFICATION_SOUND = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjGH0fPTgjMGHm7A7+OZUQ0MUqzn77BdGAg+m93z0H0pBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ0LTKXh8bllHAU2jdXzzn0qBSh+zPPaizsIGGS57OihUQ==');
 
 export default function DashboardNotification() {
   const [notifications, setNotifications] = useState([]);
+  const audioRef = useRef(NOTIFICATION_SOUND);
 
   useEffect(() => {
     const handleNewNotification = (event) => {
       const notification = event.detail.notification;
+      
+      // Jouer le son de notification
+      try {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(err => {
+          console.warn('Impossible de jouer le son de notification:', err);
+        });
+      } catch (error) {
+        console.warn('Erreur son notification:', error);
+      }
       
       // Ajouter la notification à la liste
       const notifWithId = {

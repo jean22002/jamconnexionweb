@@ -10,6 +10,32 @@ export const useNotifications = (token, user) => {
   const lastNotificationIdRef = useRef(null);
   const intervalRef = useRef(null);
   const serviceWorkerRef = useRef(null);
+  
+  // Clé localStorage pour stocker les notifications déjà affichées
+  const SHOWN_NOTIFICATIONS_KEY = 'jam_connexion_shown_notifications';
+  
+  // Récupérer les notifications déjà affichées depuis localStorage
+  const getShownNotifications = useCallback(() => {
+    try {
+      const stored = localStorage.getItem(SHOWN_NOTIFICATIONS_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.error('Erreur lecture localStorage:', error);
+      return [];
+    }
+  }, []);
+  
+  // Ajouter une notification aux notifications affichées
+  const markNotificationAsShown = useCallback((notificationId) => {
+    try {
+      const shown = getShownNotifications();
+      // Garder seulement les 100 dernières pour éviter de surcharger le localStorage
+      const updated = [...shown, notificationId].slice(-100);
+      localStorage.setItem(SHOWN_NOTIFICATIONS_KEY, JSON.stringify(updated));
+    } catch (error) {
+      console.error('Erreur écriture localStorage:', error);
+    }
+  }, [getShownNotifications]);
 
   // Demander la permission de notifications
   const requestPermission = useCallback(async () => {
@@ -150,11 +176,19 @@ export const useNotifications = (token, user) => {
       const notifications = response.data || [];
       if (notifications.length === 0) return;
 
-      // Vérifier s'il y a de nouvelles notifications non lues
-      const latestNotification = notifications.find(n => !n.read);
+      // Récupérer les notifications déjà affichées
+      const shownNotifications = getShownNotifications();
+
+      // Vérifier s'il y a de nouvelles notifications non lues ET non affichées
+      const latestNotification = notifications.find(n => 
+        !n.read && !shownNotifications.includes(n.id)
+      );
       
       if (latestNotification && latestNotification.id !== lastNotificationIdRef.current) {
         lastNotificationIdRef.current = latestNotification.id;
+        
+        // Marquer comme affichée dans localStorage AVANT d'afficher
+        markNotificationAsShown(latestNotification.id);
         
         // Afficher la notification avec son
         await showNotification(latestNotification.title, {
@@ -162,13 +196,15 @@ export const useNotifications = (token, user) => {
           tag: latestNotification.id,
           data: {
             url: latestNotification.link || '/'
-          }
+          },
+          requireInteraction: false, // Ne pas forcer l'interaction
+          silent: false // Permettre le son
         });
       }
     } catch (error) {
       console.error('Erreur lors de la vérification des notifications:', error);
     }
-  }, [token, showNotification]);
+  }, [token, showNotification, getShownNotifications, markNotificationAsShown]);
 
   // Initialisation
   useEffect(() => {

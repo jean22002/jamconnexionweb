@@ -7077,11 +7077,12 @@ export default function VenueDashboard() {
                   ) : (
                     <div className="p-4 bg-muted/20 border border-white/10 rounded-lg">
                       {isEditingEvent ? (
-                        <label className="cursor-pointer block">
+                        <div>
+                          {/* Hidden input for file selection */}
                           <input
-                            id="modal-invoice-input"
+                            id="modal-file-input"
                             type="file"
-                            accept=".pdf,.png,.jpg,.jpeg,.gif,.webp"
+                            accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,image/*"
                             className="hidden"
                             onChange={async (e) => {
                               const file = e.target.files?.[0];
@@ -7120,6 +7121,52 @@ export default function VenueDashboard() {
                               }
                             }}
                           />
+                          
+                          {/* Hidden input for camera capture */}
+                          <input
+                            id="modal-camera-input"
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              
+                              if (file.size > 10 * 1024 * 1024) {
+                                toast.error("Fichier trop volumineux (max 10MB)");
+                                return;
+                              }
+                              
+                              try {
+                                const formData = new FormData();
+                                formData.append('file', file);
+                                
+                                const endpoint = selectedEventType === 'jam' ? 'jams' : 
+                                                selectedEventType === 'concert' ? 'concerts' :
+                                                selectedEventType === 'karaoke' ? 'karaoke' : 'spectacle';
+                                
+                                const response = await axios.post(
+                                  `${API}/${endpoint}/${selectedEvent.id}/invoice`,
+                                  formData,
+                                  { 
+                                    headers: { 
+                                      Authorization: `Bearer ${token}`,
+                                      'Content-Type': 'multipart/form-data'
+                                    } 
+                                  }
+                                );
+                                
+                                setSelectedEvent({ ...selectedEvent, invoice_file: response.data.filename });
+                                toast.success("Photo ajoutée !");
+                                e.target.value = '';
+                              } catch (error) {
+                                toast.error("Erreur lors de l'upload");
+                                console.error(error);
+                              }
+                            }}
+                          />
+                          
                           <div className="flex flex-col items-center gap-3 py-6">
                             <Paperclip className="w-8 h-8 text-muted-foreground" />
                             <div className="text-center">
@@ -7128,14 +7175,52 @@ export default function VenueDashboard() {
                                 PDF, PNG, JPG (max 10MB)
                               </p>
                             </div>
-                            <div 
-                              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2 mt-2"
-                            >
-                              <Upload className="w-4 h-4 mr-2" />
-                              Choisir un fichier
-                            </div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button size="sm" className="mt-2">
+                                  <Upload className="w-4 h-4 mr-2" />
+                                  Choisir un fichier
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="center" className="bg-background border-white/10">
+                                <DropdownMenuItem 
+                                  onSelect={(e) => {
+                                    e.preventDefault();
+                                    setTimeout(() => {
+                                      const input = document.getElementById('modal-camera-input');
+                                      if (input) {
+                                        input.click();
+                                      } else {
+                                        toast.error("Input caméra introuvable");
+                                      }
+                                    }, 100);
+                                  }}
+                                  className="cursor-pointer"
+                                >
+                                  <Camera className="w-4 h-4 mr-2" />
+                                  Prendre une photo
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onSelect={(e) => {
+                                    e.preventDefault();
+                                    setTimeout(() => {
+                                      const input = document.getElementById('modal-file-input');
+                                      if (input) {
+                                        input.click();
+                                      } else {
+                                        toast.error("Input fichier introuvable");
+                                      }
+                                    }, 100);
+                                  }}
+                                  className="cursor-pointer"
+                                >
+                                  <Upload className="w-4 h-4 mr-2" />
+                                  Choisir un fichier
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
-                        </label>
+                        </div>
                       ) : (
                         <div className="text-center py-4 text-muted-foreground">
                           <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />

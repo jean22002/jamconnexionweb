@@ -66,6 +66,7 @@ export default function MelomaneDashboard() {
   const [editingProfile, setEditingProfile] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [participations, setParticipations] = useState([]);
   const [activeTab, setActiveTab] = useState("map");
   const [mapCenter, setMapCenter] = useState([46.603354, 1.888334]);

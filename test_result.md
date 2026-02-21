@@ -5,6 +5,143 @@
 **Status**: ✅ PASSED
 **Test Type**: Invoice Download Feature - Eye/FileText Icon
 
+
+## Latest Test: File Picker ("Choisir un fichier") Feature - 2026-02-21
+
+### Test Objective
+Test the "Choisir un fichier" option from the paperclip dropdown menu in Comptabilité tab to verify that clicking this option correctly opens the file picker dialog without errors.
+
+### Test Credentials
+- URL: https://venue-invoices.preview.emergentagent.com
+- Email: bar@gmail.com
+- Password: test
+
+### Test Results: ✅ ALL TESTS PASSED
+
+#### 1. Login & Navigation
+- ✅ Application loaded successfully
+- ✅ Login modal opened via data-testid="nav-login" button
+- ✅ Credentials filled (bar@gmail.com / test)
+- ✅ Login successful
+- ✅ Redirected to venue dashboard (/venue)
+- ✅ Comptabilité tab clicked and loaded
+
+#### 2. Transaction List & Paperclip Icons
+- ✅ Transaction table loaded correctly
+- ✅ Found 10 paperclip icons in the transaction list
+- ✅ Paperclip icons visible and accessible
+- ✅ Icons represent transactions without invoices
+
+#### 3. Dropdown Menu Functionality
+- ✅ Clicked first paperclip icon
+- ✅ Dropdown menu appeared (role="menu" detected)
+- ✅ "Prendre une photo" option visible with Camera icon
+- ✅ "Choisir un fichier" option visible with Upload icon
+- ✅ Both menu items properly formatted and accessible
+
+#### 4. File Picker Functionality - CRITICAL TEST
+- ✅ File chooser event listener set up successfully
+- ✅ Clicked "Choisir un fichier" option
+- ✅ **File picker dialog opened successfully!** 
+- ✅ File input triggered correctly (detected via filechooser event)
+- ✅ File chooser accepts single file (is_multiple: False)
+- ✅ No error toast "Input fichier introuvable"
+- ✅ No error toasts of any kind detected
+- ✅ No console errors related to file picker functionality
+
+#### 5. Console Logs Analysis
+**Non-Critical Errors (Not Related to File Picker):**
+- ⚠️ 404 errors for /api/stats/counts endpoint (unimplemented feature)
+- ⚠️ 404 errors for /api/venues/me/reviews endpoint (unimplemented feature)
+- ⚠️ 520 error for /api/venues/{id}/jams endpoint (backend issue, unrelated)
+- ⚠️ Notification permissions denied (expected browser behavior)
+
+**No Blocking Errors Found**
+
+### Implementation Verified
+
+**Frontend Code (`/app/frontend/src/pages/VenueDashboard.jsx`, lines 6345-6361):**
+```javascript
+<DropdownMenuItem 
+  onSelect={(e) => {
+    e.preventDefault();
+    setTimeout(() => {
+      const input = document.getElementById(`file-input-${transaction.id}`);
+      if (input) {
+        input.click();
+      } else {
+        toast.error("Input fichier introuvable");
+      }
+    }, 100);
+  }}
+  className="cursor-pointer"
+>
+  <Upload className="w-4 h-4 mr-2" />
+  Choisir un fichier
+</DropdownMenuItem>
+```
+
+**Hidden File Input (lines 6201-6250):**
+```javascript
+<input
+  id={`file-input-${transaction.id}`}
+  type="file"
+  accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,image/*"
+  className="hidden"
+  onChange={async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Fichier trop volumineux (max 10MB)");
+      return;
+    }
+    
+    // Upload logic for different event types
+    // Endpoint: /api/{endpoint_type}/{transaction.id}/invoice
+  }}
+/>
+```
+
+### Test Evidence
+
+**Screenshots Captured:**
+1. `01_after_login.png` - Dashboard after successful login
+2. `02_comptabilite_tab.png` - Comptabilité tab view with transaction table
+3. `03_dropdown_opened.png` - Dropdown menu opened showing both options
+4. `04_final_state.png` - Final state after clicking "Choisir un fichier"
+
+**File Picker Detection:**
+- Method: Playwright `wait_for_event('filechooser')`
+- Result: Event triggered successfully
+- File chooser properties verified
+
+### Minor Observations (Non-Critical)
+- ⚠️ Dropdown menu remains visible after clicking option (minor UI behavior, doesn't affect functionality)
+- The 100ms setTimeout in the implementation ensures proper event handling
+- File input is correctly hidden and triggered programmatically
+- Error handling exists for missing input element
+
+### Conclusion
+✅ **TEST PASSED** - The "Choisir un fichier" feature is **fully functional**. When users:
+1. Click the paperclip icon on a transaction without an invoice
+2. Click "Choisir un fichier" from the dropdown menu
+3. The file picker dialog opens correctly
+4. No errors are displayed
+5. The file input is properly wired and ready for file selection
+
+The implementation correctly:
+- Identifies the file input by transaction ID
+- Uses setTimeout to avoid event conflicts
+- Triggers the file picker via programmatic click
+- Has error handling for missing elements
+- Accepts appropriate file types (.pdf, images)
+- Enforces 10MB file size limit
+
+---
+
+## Previous Test: Invoice Download Feature (Eye/FileText Icon) - 2026-02-21
+
 ## Latest Test: Invoice Download Feature (Eye/FileText Icon) - 2026-02-21
 
 ### Test Objective

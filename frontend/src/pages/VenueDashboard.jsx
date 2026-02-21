@@ -3626,9 +3626,11 @@ export default function VenueDashboard() {
                       {karaoke.description && (
                         <p className="text-muted-foreground text-sm mt-3">{karaoke.description}</p>
                       )}
-                      {karaoke.music_styles && karaoke.music_styles.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          {karaoke.music_styles.map((s, i) => <span key={i} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">{s}</span>)}
+                      {karaoke.host_name && (
+                        <div className="flex items-center gap-2 mt-3">
+                          <span className="px-3 py-1 bg-purple-500/20 text-purple-400 text-sm rounded-full">
+                            🎤 Animé par {karaoke.host_name}
+                          </span>
                         </div>
                       )}
                     </div>

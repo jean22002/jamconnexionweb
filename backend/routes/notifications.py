@@ -22,6 +22,8 @@ async def get_current_user_local(authorization: str = Header(None)):
 @router.get("", response_model=List[NotificationResponse])
 async def get_notifications(current_user: dict = Depends(get_current_user_local)):
     """Get all notifications for current user"""
+    print(f"[DEBUG] Getting notifications for user: {current_user.get('id')} (email: {current_user.get('email')})")
+    
     notifications = await db.notifications.find(
         {
             "$or": [
@@ -31,6 +33,11 @@ async def get_notifications(current_user: dict = Depends(get_current_user_local)
         },
         {"_id": 0}
     ).sort("created_at", -1).limit(50).to_list(50)
+    
+    print(f"[DEBUG] Found {len(notifications)} notifications")
+    if notifications:
+        for n in notifications[:3]:
+            print(f"[DEBUG]   - {n.get('type')}: {n.get('title')} (read: {n.get('read')})")
     
     return [NotificationResponse(**n) for n in notifications]
 

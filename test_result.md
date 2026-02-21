@@ -3,7 +3,7 @@
 ## Last Test Session
 **Date**: 2026-02-21
 **Status**: ✅ PASSED
-**Test Type**: Backend + Frontend - Bulk Invoice Download
+**Test Type**: Invoice Upload Feature - Paperclip Icon Dropdown Menu
 
 ## Changes Implemented
 1. ✅ Endpoint GET `/api/invoices/download/all` avec filtres

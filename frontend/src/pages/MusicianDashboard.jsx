@@ -276,7 +276,17 @@ export default function MusicianDashboard() {
   const [blockedUsers, setBlockedUsers] = useState([]); // Utilisateurs bloqués
   const [subscriptions, setSubscriptions] = useState([]);
   const [participations, setParticipations] = useState([]); // Participations musicien
-  const [activeTab, setActiveTab] = useState("map");
+  const [activeTab, setActiveTab] = useState(() => {
+    // Restaurer le dernier onglet depuis localStorage
+    const savedTab = localStorage.getItem('musician_activeTab');
+    return savedTab || "map";
+  });
+  
+  // Sauvegarder l'onglet actif dans localStorage à chaque changement
+  useEffect(() => {
+    localStorage.setItem('musician_activeTab', activeTab);
+  }, [activeTab]);
+  
   const [currentParticipation, setCurrentParticipation] = useState(null);
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [selectedDepartment, setSelectedDepartment] = useState(null);

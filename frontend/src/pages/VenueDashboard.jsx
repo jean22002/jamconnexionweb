@@ -6255,10 +6255,8 @@ export default function VenueDashboard() {
                                         }
                                       }}
                                     />
-                                    <Button 
-                                      variant="ghost" 
-                                      size="sm"
-                                      className="hover:bg-primary/20 h-8 w-8 p-0"
+                                    <div 
+                                      className="inline-flex items-center justify-center hover:bg-primary/20 h-8 w-8 rounded-md transition-colors"
                                       title={transaction.invoice_file ? "Remplacer la facture" : "Joindre une facture"}
                                     >
                                       {transaction.invoice_file ? (
@@ -6266,7 +6264,7 @@ export default function VenueDashboard() {
                                       ) : (
                                         <Paperclip className="w-4 h-4" />
                                       )}
-                                    </Button>
+                                    </div>
                                   </label>
 
                                   {/* View invoice button */}

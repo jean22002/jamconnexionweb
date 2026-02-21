@@ -43,6 +43,7 @@ import { useBadgeAutoCheck } from "../hooks/useBadgeAutoCheck";
 import SocialLinks from "../components/SocialLinks";
 import { StarRating } from "../components/StarRating";
 import { toast } from "sonner";
+import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 import { MUSIC_STYLES_LIST } from "../data/music-styles";
 import { useNotifications } from "../hooks/useNotifications";
 import DashboardNotification from "../components/DashboardNotification";

@@ -23,6 +23,16 @@ async def get_current_user_local(authorization: str = Header(None)):
 async def get_notifications(current_user: dict = Depends(get_current_user_local)):
     """Get all notifications for current user"""
     print(f"[DEBUG] Getting notifications for user: {current_user.get('id')} (email: {current_user.get('email')})")
+    print(f"[DEBUG] DB name: {db.name}")
+    print(f"[DEBUG] Collection: notifications")
+    
+    # Test: count all notifications
+    total_count = await db.notifications.count_documents({})
+    print(f"[DEBUG] Total notifications in DB: {total_count}")
+    
+    # Test: count for this specific user
+    user_count = await db.notifications.count_documents({"recipient_id": current_user["id"]})
+    print(f"[DEBUG] Notifications with recipient_id={current_user['id']}: {user_count}")
     
     notifications = await db.notifications.find(
         {
@@ -34,7 +44,7 @@ async def get_notifications(current_user: dict = Depends(get_current_user_local)
         {"_id": 0}
     ).sort("created_at", -1).limit(50).to_list(50)
     
-    print(f"[DEBUG] Found {len(notifications)} notifications")
+    print(f"[DEBUG] Found {len(notifications)} notifications using $or query")
     if notifications:
         for n in notifications[:3]:
             print(f"[DEBUG]   - {n.get('type')}: {n.get('title')} (read: {n.get('read')})")

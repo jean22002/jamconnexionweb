@@ -1057,6 +1057,26 @@ export default function MusicianDashboard() {
     setShowEventModal(true);
   };
 
+  const handleShowEventOnMap = (event) => {
+    // Check if event has coordinates
+    if (!event.venue_latitude || !event.venue_longitude) {
+      toast.error("Coordonnées GPS non disponibles pour cet établissement");
+      return;
+    }
+
+    // Close the modal
+    setShowEventModal(false);
+
+    // Switch to map tab
+    setActiveTab("map");
+
+    // Center map on venue location
+    setMapCenter([event.venue_latitude, event.venue_longitude]);
+
+    // Show success message
+    toast.success(`Affichage de ${event.venue_name} sur la carte`);
+  };
+
   const handleChangePassword = async () => {
     // Validation
     if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {

@@ -3650,6 +3650,20 @@ export default function MusicianDashboard() {
                                     {event.description}
                                   </p>
                                 )}
+
+                                {/* Bouton Voir sur la carte */}
+                                {event.venue_latitude && event.venue_longitude && (
+                                  <div className="mt-4 pt-3 border-t border-white/10">
+                                    <Button
+                                      onClick={() => handleShowEventOnMap(event)}
+                                      variant="outline"
+                                      className="w-full rounded-full gap-2"
+                                    >
+                                      <MapPin className="w-4 h-4" />
+                                      Voir sur la carte
+                                    </Button>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>

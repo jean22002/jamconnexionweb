@@ -124,11 +124,11 @@ const userPulseIcon = L.divIcon({
   iconAnchor: [12, 12],
 });
 
-function SetViewOnLocation({ coords, zoom = 12 }) {
+function SetViewOnLocation({ coords, zoom = 12, enabled = true }) {
   const map = useMap();
   useEffect(() => {
-    if (coords) map.setView(coords, zoom);
-  }, [coords, map, zoom]);
+    if (enabled && coords) map.setView(coords, zoom);
+  }, [coords, map, zoom, enabled]);
   return null;
 }
 

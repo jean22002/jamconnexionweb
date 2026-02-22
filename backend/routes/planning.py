@@ -719,6 +719,9 @@ async def get_musician_calendar_events(current_user: dict = Depends(get_current_
             "venue_name": concert.get("venue_name"),
             "venue_city": concert.get("city"),
             "venue_department": concert.get("department"),
+            "venue_id": concert.get("venue_id"),
+            "venue_latitude": concert.get("latitude"),
+            "venue_longitude": concert.get("longitude"),
             "title": f"Concert - {concert.get('venue_name', 'Lieu non spécifié')}",
             "description": concert.get("description"),
             "concert_id": concert.get("id")

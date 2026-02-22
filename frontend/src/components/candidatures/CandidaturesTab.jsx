@@ -134,8 +134,6 @@ export default function CandidaturesTab({
         <TabsContent value="filters" className="mt-6">
           <h3 className="font-heading font-semibold text-lg mb-4">Rechercher avec des filtres</h3>
 
-          <h3 className="font-heading font-semibold text-lg mb-4">Rechercher avec des filtres</h3>
-
           {/* Filters */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <div>

@@ -190,6 +190,9 @@ class PlanningSlotResponse(BaseModel):
     id: str
     venue_id: str
     venue_name: str
+    venue_city: Optional[str] = None
+    venue_region: Optional[str] = None
+    venue_department: Optional[str] = None
     date: str
     time: Optional[str] = None
     title: Optional[str] = None

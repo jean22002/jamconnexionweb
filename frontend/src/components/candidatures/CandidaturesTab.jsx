@@ -234,89 +234,242 @@ export default function CandidaturesTab({
           </div>
 
           {/* Results */}
-          {loadingCandidatures ? (
-        <div className="text-center py-12">
-          <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-primary" />
-          <p className="text-muted-foreground">Recherche en cours...</p>
-        </div>
-      ) : candidatures.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>Aucune candidature trouvée</p>
-          <p className="text-sm mt-2">Ajustez vos filtres et lancez une recherche</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">{candidatures.length} résultat(s) trouvé(s)</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {candidatures.map((slot) => (
-              <div key={slot.id} className="card-venue p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-heading font-semibold text-lg">{slot.venue_name}</h3>
-                    <p className="text-sm text-muted-foreground flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      {slot.venue_city}
-                      {slot.venue_department && ` (${slot.venue_department})`}
-                    </p>
-                    {slot.venue_region && (
-                      <p className="text-xs text-muted-foreground">{slot.venue_region}</p>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="space-y-2 mb-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <CalendarIcon className="w-4 h-4 text-primary" />
-                    <span>{slot.date}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <span>{slot.start_time} - {slot.end_time}</span>
-                  </div>
-                </div>
+              {loadingCandidatures ? (
+            <div className="text-center py-12">
+              <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-primary" />
+              <p className="text-muted-foreground">Recherche en cours...</p>
+            </div>
+          ) : candidatures.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>Aucune candidature trouvée</p>
+              <p className="text-sm mt-2">Ajustez vos filtres et lancez une recherche</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">{candidatures.length} résultat(s) trouvé(s)</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {candidatures.map((slot) => (
+                  <CandidatureCard key={slot.id} slot={slot} onApply={onApply} />
+                ))}
+              </div>
+            </div>
+          )}
+        </TabsContent>
 
-                {slot.music_styles && slot.music_styles.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {slot.music_styles.map((style, i) => (
-                      <span key={i} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">
-                        {style}
-                      </span>
-                    ))}
-                  </div>
-                )}
+        {/* All View */}
+        <TabsContent value="all" className="mt-6">
+          {candidatures.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>Aucune candidature trouvée</p>
+              <p className="text-sm mt-2">Utilisez l'onglet "Filtres" pour lancer une recherche</p>
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-heading font-semibold text-lg">
+                  Toutes les candidatures ({candidatures.length})
+                </h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSortBy(sortBy === "date_asc" ? "date_desc" : "date_asc")}
+                  className="gap-2"
+                >
+                  <ArrowUpDown className="w-4 h-4" />
+                  {sortBy === "date_asc" ? "Plus anciennes" : "Plus récentes"}
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {sortCandidatures(candidatures).map((slot) => (
+                  <CandidatureCard key={slot.id} slot={slot} onApply={onApply} />
+                ))}
+              </div>
+            </div>
+          )}
+        </TabsContent>
 
-                {slot.description && (
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{slot.description}</p>
-                )}
+        {/* Region View */}
+        <TabsContent value="region" className="mt-6">
+          {candidatures.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>Aucune candidature trouvée</p>
+              <p className="text-sm mt-2">Utilisez l'onglet "Filtres" pour lancer une recherche</p>
+            </div>
+          ) : (() => {
+            const candidaturesByRegion = {};
+            REGIONS_FRANCE.forEach(region => {
+              candidaturesByRegion[region] = [];
+            });
+            candidatures.forEach(c => {
+              if (c.venue_region && candidaturesByRegion[c.venue_region]) {
+                candidaturesByRegion[c.venue_region].push(c);
+              }
+            });
 
-                <div className="flex items-center justify-between pt-3 border-t border-white/10">
-                  <div className="text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Users className="w-3 h-3" />
-                      {slot.applications_count || 0} candidature(s)
-                    </span>
-                    {slot.accepted_bands_count > 0 && (
-                      <span className="flex items-center gap-1 text-green-400 mt-1">
-                        <Check className="w-3 h-3" />
-                        {slot.accepted_bands_count} acceptée(s)
-                      </span>
-                    )}
-                  </div>
-                  <Button
-                    size="sm"
-                    onClick={() => onApply(slot.id)}
-                    className="rounded-full"
-                    disabled={!slot.is_open}
-                  >
-                    {slot.is_open ? 'Candidater' : 'Fermé'}
+            if (selectedRegion) {
+              const regionCandidatures = sortCandidatures(candidaturesByRegion[selectedRegion] || []);
+              return (
+                <div>
+                  <Button onClick={() => setSelectedRegion(null)} variant="outline" className="mb-4 rounded-full gap-2">
+                    <ArrowLeft className="w-4 h-4" /> Retour aux régions
                   </Button>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-heading font-semibold text-xl flex items-center gap-2">
+                      <MapPin className="w-6 h-6 text-primary" />
+                      {selectedRegion} ({regionCandidatures.length} candidature{regionCandidatures.length > 1 ? 's' : ''})
+                    </h3>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSortBy(sortBy === "date_asc" ? "date_desc" : "date_asc")}
+                      className="gap-2"
+                    >
+                      <ArrowUpDown className="w-4 h-4" />
+                      {sortBy === "date_asc" ? "Plus anciennes" : "Plus récentes"}
+                    </Button>
+                  </div>
+                  {regionCandidatures.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {regionCandidatures.map((slot) => (
+                        <CandidatureCard key={slot.id} slot={slot} onApply={onApply} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <MapPinOff className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>Aucune candidature dans cette région</p>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            return (
+              <div>
+                <h3 className="font-heading font-semibold text-lg mb-4">Toutes les régions de France</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {REGIONS_FRANCE.map(region => {
+                    const count = candidaturesByRegion[region]?.length || 0;
+                    return (
+                      <Button
+                        key={region}
+                        onClick={() => count > 0 && setSelectedRegion(region)}
+                        variant="outline"
+                        disabled={count === 0}
+                        className={`h-auto py-4 px-4 flex flex-col items-center gap-2 transition-all ${count > 0 ? 'hover:bg-primary/10 hover:border-primary' : 'opacity-50'}`}
+                      >
+                        <MapPin className={`w-5 h-5 ${count > 0 ? 'text-primary' : 'text-muted-foreground'}`} />
+                        <div className="text-center">
+                          <div className="font-semibold text-sm">{region}</div>
+                          <div className={`text-xs mt-1 ${count > 0 ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+                            {count} candidature{count > 1 ? 's' : ''}
+                          </div>
+                        </div>
+                      </Button>
+                    );
+                  })}
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+            );
+          })()}
+        </TabsContent>
+
+        {/* Department View */}
+        <TabsContent value="department" className="mt-6">
+          {candidatures.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>Aucune candidature trouvée</p>
+              <p className="text-sm mt-2">Utilisez l'onglet "Filtres" pour lancer une recherche</p>
+            </div>
+          ) : (() => {
+            const candidaturesByDepartment = {};
+            DEPARTEMENTS_FRANCE.forEach(dept => {
+              candidaturesByDepartment[dept.code] = {
+                nom: dept.nom,
+                candidatures: []
+              };
+            });
+            candidatures.forEach(c => {
+              if (c.venue_department && candidaturesByDepartment[c.venue_department]) {
+                candidaturesByDepartment[c.venue_department].candidatures.push(c);
+              }
+            });
+
+            if (selectedDepartment) {
+              const deptData = candidaturesByDepartment[selectedDepartment];
+              const deptCandidatures = sortCandidatures(deptData?.candidatures || []);
+              return (
+                <div>
+                  <Button onClick={() => setSelectedDepartment(null)} variant="outline" className="mb-4 rounded-full gap-2">
+                    <ArrowLeft className="w-4 h-4" /> Retour aux départements
+                  </Button>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-heading font-semibold text-xl flex items-center gap-2">
+                      <MapPin className="w-6 h-6 text-secondary" />
+                      {selectedDepartment} - {deptData?.nom} ({deptCandidatures.length} candidature{deptCandidatures.length > 1 ? 's' : ''})
+                    </h3>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSortBy(sortBy === "date_asc" ? "date_desc" : "date_asc")}
+                      className="gap-2"
+                    >
+                      <ArrowUpDown className="w-4 h-4" />
+                      {sortBy === "date_asc" ? "Plus anciennes" : "Plus récentes"}
+                    </Button>
+                  </div>
+                  {deptCandidatures.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {deptCandidatures.map((slot) => (
+                        <CandidatureCard key={slot.id} slot={slot} onApply={onApply} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <MapPinOff className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>Aucune candidature dans ce département</p>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            return (
+              <div>
+                <h3 className="font-heading font-semibold text-lg mb-4">Tous les départements de France</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  {DEPARTEMENTS_FRANCE.map(dept => {
+                    const count = candidaturesByDepartment[dept.code]?.candidatures.length || 0;
+                    return (
+                      <Button
+                        key={dept.code}
+                        onClick={() => count > 0 && setSelectedDepartment(dept.code)}
+                        variant="outline"
+                        disabled={count === 0}
+                        className={`h-auto py-3 px-3 flex flex-col items-center gap-2 transition-all ${count > 0 ? 'hover:bg-secondary/10 hover:border-secondary' : 'opacity-50'}`}
+                      >
+                        <div className={`text-lg font-bold ${count > 0 ? 'text-secondary' : 'text-muted-foreground'}`}>
+                          {dept.code}
+                        </div>
+                        <div className="text-center">
+                          <div className="font-semibold text-xs leading-tight">{dept.nom}</div>
+                          <div className={`text-xs mt-1 ${count > 0 ? 'text-secondary font-semibold' : 'text-muted-foreground'}`}>
+                            {count} candidature{count > 1 ? 's' : ''}
+                          </div>
+                        </div>
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

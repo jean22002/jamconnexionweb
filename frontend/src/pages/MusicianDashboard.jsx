@@ -157,6 +157,44 @@ export default function MusicianDashboard() {
   const [loading, setLoading] = useState(true);
   const [loadingError, setLoadingError] = useState(false);
   const [searchCity, setSearchCity] = useState("");
+  const [searchingCity, setSearchingCity] = useState(false);
+
+  // Search city and center map
+  const handleSearchCity = async () => {
+    if (!searchCity.trim()) return;
+    
+    setSearchingCity(true);
+    try {
+      // Use Nominatim API to geocode the city
+      const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
+        params: {
+          q: searchCity,
+          format: 'json',
+          limit: 1,
+          countrycodes: 'fr' // Limit to France
+        }
+      });
+      
+      if (response.data && response.data.length > 0) {
+        const result = response.data[0];
+        const lat = parseFloat(result.lat);
+        const lon = parseFloat(result.lon);
+        
+        // Center map on the searched city
+        setMapCenter([lat, lon]);
+        setUserHasMovedMap(false); // Allow map to center on search result
+        
+        toast.success(`Carte centrée sur ${result.display_name.split(',')[0]}`);
+      } else {
+        toast.error(`Ville "${searchCity}" non trouvée`);
+      }
+    } catch (error) {
+      console.error("Error searching city:", error);
+      toast.error("Erreur lors de la recherche");
+    } finally {
+      setSearchingCity(false);
+    }
+  };
   const [mapCenter, setMapCenter] = useState([46.603354, 1.888334]);
   const [userHasMovedMap, setUserHasMovedMap] = useState(false); // Track if user manually moved the map
   const [profile, setProfile] = useState(null);

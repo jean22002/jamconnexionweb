@@ -41,6 +41,10 @@ import DashboardNotification from "../components/DashboardNotification";
 import CandidaturesTab from "../components/candidatures/CandidaturesTab";
 import VenuesTab from "../components/venues/VenuesTab";
 import BandsTab from "../components/bands/BandsTab";
+import MyApplicationsTab from "../components/applications/MyApplicationsTab";
+import ParticipationsTab from "../components/participations/ParticipationsTab";
+import MusiciansTab from "../components/musicians/MusiciansTab";
+import FriendsTab from "../components/friends/FriendsTab";
 import Calendar from "../components/Calendar";
 
 // Options pour les groupes

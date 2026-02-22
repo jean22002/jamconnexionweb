@@ -716,9 +716,26 @@ export default function VenueDashboard() {
   };
 
   // Handle subscription
-  const handleSubscribe = () => {
-    toast.info("La fonctionnalité d'abonnement sera bientôt disponible !");
-    // TODO: Implement payment flow with Stripe
+  const handleSubscribe = async () => {
+    try {
+      const response = await axios.post(
+        `${API}/payments/checkout`,
+        {
+          origin_url: window.location.origin
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (response.data.url) {
+        // Rediriger vers Stripe Checkout
+        window.location.href = response.data.url;
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error(error.response?.data?.detail || "Erreur lors de la création de la session de paiement");
+    }
   };
 
   // Broadcast Notifications

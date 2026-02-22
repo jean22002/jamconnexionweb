@@ -40,6 +40,7 @@ import { MUSIC_STYLES_LIST } from "../data/music-styles";
 import DashboardNotification from "../components/DashboardNotification";
 import CandidaturesTab from "../components/candidatures/CandidaturesTab";
 import VenuesTab from "../components/venues/VenuesTab";
+import BandsTab from "../components/bands/BandsTab";
 import Calendar from "../components/Calendar";
 
 // Options pour les groupes

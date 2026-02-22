@@ -44,9 +44,11 @@ export default function PaymentCancel() {
   const handleBackToDashboard = () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (user.role === "venue") {
-      navigate("/venue-dashboard");
+      navigate("/venue");
     } else if (user.role === "musician") {
-      navigate("/musician-dashboard");
+      navigate("/musician");
+    } else if (user.role === "melomane") {
+      navigate("/melomane");
     } else {
       navigate("/");
     }

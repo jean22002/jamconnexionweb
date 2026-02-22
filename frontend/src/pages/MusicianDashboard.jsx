@@ -249,7 +249,10 @@ export default function MusicianDashboard() {
   // Handle position change - fetch nearby venues
   function handlePositionChange(newPosition) {
     if (newPosition) {
-      setMapCenter([newPosition.latitude, newPosition.longitude]);
+      // Only recenter if user hasn't manually moved the map
+      if (!userHasMovedMap) {
+        setMapCenter([newPosition.latitude, newPosition.longitude]);
+      }
       
       // Debounce nearby search
       if (searchTimeoutRef.current) {

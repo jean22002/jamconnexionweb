@@ -1,8 +1,57 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "../components/ui/button";
-import { Music, AlertCircle, CreditCard } from "lucide-react";
+import { Music, AlertCircle, CreditCard, Home, Loader2 } from "lucide-react";
+import axios from "axios";
+import { toast } from "sonner";
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function PaymentCancel() {
+  const navigate = useNavigate();
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleRetryPayment = async () => {
+    setIsProcessing(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/auth");
+        return;
+      }
+
+      const response = await axios.post(
+        `${API}/payments/checkout`,
+        {
+          origin_url: window.location.origin
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (response.data.url) {
+        // Rediriger vers Stripe Checkout
+        window.location.href = response.data.url;
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error(error.response?.data?.detail || "Erreur lors de la création de la session de paiement");
+      setIsProcessing(false);
+    }
+  };
+
+  const handleBackToDashboard = () => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user.role === "venue") {
+      navigate("/venue-dashboard");
+    } else if (user.role === "musician") {
+      navigate("/musician-dashboard");
+    } else {
+      navigate("/");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
@@ -20,28 +69,51 @@ export default function PaymentCancel() {
       </header>
 
       <main className="flex-1 flex items-center justify-center p-4">
-        <div className="glassmorphism rounded-3xl p-8 md:p-12 max-w-md w-full text-center">
+        <div className="glassmorphism rounded-3xl p-8 md:p-12 max-w-lg w-full text-center">
           <div className="w-20 h-20 mx-auto rounded-full bg-orange-500/20 flex items-center justify-center mb-6">
             <AlertCircle className="w-10 h-10 text-orange-400" />
           </div>
           
           <h1 className="font-heading font-bold text-3xl mb-4">
-            Le paiement a été annulé
+            Paiement annulé
           </h1>
           
-          <p className="text-muted-foreground mb-8 text-lg">
-            Tu peux réessayer quand tu veux pour continuer ton aventure sur Jam Connexion.
+          <p className="text-muted-foreground mb-8 text-lg leading-relaxed">
+            Aucun montant n'a été débité. Vous pouvez réessayer quand vous le souhaitez ou revenir plus tard.
           </p>
-          
-          <Button 
-            asChild
-            className="bg-primary hover:bg-primary/90 rounded-full px-12 py-7 font-heading text-lg font-semibold hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] transition-all"
-          >
-            <Link to="/trial-expired">
-              <CreditCard className="w-6 h-6 mr-2" />
-              Revenir à l'abonnement
-            </Link>
-          </Button>
+
+          <div className="space-y-3">
+            <Button 
+              onClick={handleRetryPayment}
+              disabled={isProcessing}
+              className="w-full bg-primary hover:bg-primary/90 rounded-full py-6 font-heading text-lg font-semibold hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] transition-all"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Redirection...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-5 h-5 mr-2" />
+                  Réessayer le paiement
+                </>
+              )}
+            </Button>
+            
+            <Button 
+              onClick={handleBackToDashboard}
+              variant="outline"
+              className="w-full rounded-full py-6 font-heading text-lg font-semibold border-white/10 hover:bg-white/5"
+            >
+              <Home className="w-5 h-5 mr-2" />
+              Retour au tableau de bord
+            </Button>
+          </div>
+
+          <p className="text-muted-foreground text-sm mt-6">
+            Besoin d'aide ? Contactez notre support à support@jamconnexion.com
+          </p>
         </div>
       </main>
     </div>

@@ -1351,3 +1351,109 @@ None - Fonctionnalité complète et testée
 ## Incorporate User Feedback
 User request: "mettre un bouton pour pouvoir télécharger ttes le facture par filtres (période, type)"
 ✅ Implemented with full filtering support
+
+## Latest Test: Mes Candidatures Data Enrichment Fix - 2026-02-22
+
+### Test Objective
+Verify that the bug fix for "Mes Candidatures" tab is working correctly. The fix should display real venue information instead of placeholders:
+- Establishment name (not "Établissement")
+- City (not "Ville")
+- Date (not "Date")
+- Time (if available)
+- Group name
+- Status (Acceptée, Refusée, En attente)
+
+### Bug Fix Applied
+**Backend:** Modified endpoint `/api/applications/my` in `/app/backend/routes/planning.py` (lines 411-441)
+- Added venue lookup to enrich application data
+- Added fields: `slot_venue_name`, `slot_venue_city`, `slot_date`, `slot_start_time`, `slot_end_time`
+
+**Frontend:** Displays enriched data in `/app/frontend/src/pages/MusicianDashboard.jsx` (lines 3566-3633)
+- Shows venue name, city, date, time from enriched data
+- Falls back to placeholders if data is missing
+
+### Test Environment
+- **URL Attempted:** https://mielo.preview.emergentagent.com (UNAVAILABLE - Preview down)
+- **URL Used:** https://musician-rebuild.preview.emergentagent.com
+- **Credentials:** musician@gmail.com / test
+
+### Test Results: ⚠️ UNABLE TO VERIFY WITH ACTUAL DATA
+
+#### Test Execution
+- ✅ Login successful
+- ✅ Redirected to musician dashboard
+- ✅ "Mes Candidatures" tab found and accessible
+- ✅ Tab clicked and loaded successfully
+- ⚠️ **NO APPLICATIONS FOUND** - Account has 0 applications
+
+#### Empty State Message Displayed
+"Vous n'avez pas encore envoyé de candidature. Consultez l'onglet 'Candidatures' pour postuler"
+
+### Code Review Verification: ✅ IMPLEMENTATION CORRECT
+
+**Backend Implementation Verified:**
+```python
+# Lines 411-441 in /app/backend/routes/planning.py
+@router.get("/applications/my")
+async def get_my_applications(current_user: dict = Depends(get_current_user)):
+    # ... authentication ...
+    
+    for app in applications:
+        slot = await db.planning_slots.find_one({"id": app["planning_slot_id"]}, {"_id": 0})
+        if slot:
+            # Get venue information
+            venue = await db.venues.find_one({"id": slot.get("venue_id")}, {"_id": 0})
+            
+            # Add all slot and venue information needed for display
+            app["slot_venue_name"] = slot.get("venue_name") or (venue.get("name") if venue else None)
+            app["slot_venue_city"] = venue.get("city") if venue else None
+            app["slot_date"] = slot.get("date")
+            app["slot_start_time"] = slot.get("time") or slot.get("start_time")
+            app["slot_end_time"] = slot.get("end_time")
+```
+
+**Frontend Implementation Verified:**
+```javascript
+// Lines 3566-3633 in /app/frontend/src/pages/MusicianDashboard.jsx
+{myApplications.map((app) => (
+  <div key={app.id} className="card-venue p-5">
+    <h3>{app.slot_venue_name || "Établissement"}</h3>
+    <p>{app.slot_venue_city || "Ville"}</p>
+    <span>{app.slot_date || "Date"}</span>
+    <span>{app.slot_start_time || ""} - {app.slot_end_time || ""}</span>
+    <span>{app.band_name}</span>
+    {/* Status badges */}
+  </div>
+))}
+```
+
+### Screenshots Captured
+1. `01_musician_dashboard.png` - Dashboard after login showing map and venues
+2. `02_mes_candidatures_tab.png` - "Mes Candidatures" tab with empty state
+
+### Test Limitations
+❌ **Cannot verify bug fix in practice** because:
+1. The musician@gmail.com account has NO applications in the database
+2. Without application data, cannot confirm that real venue info is displayed instead of placeholders
+3. The original URL (https://mielo.preview.emergentagent.com) is unavailable
+
+### Conclusion
+✅ **CODE IMPLEMENTATION IS CORRECT**
+- Backend properly fetches venue data and enriches applications
+- Frontend correctly displays the enriched data
+- Fallback to placeholders when data is missing (as designed)
+
+⚠️ **UNABLE TO TEST WITH REAL DATA**
+- Need test account with actual applications
+- OR need to create test applications in the database
+- OR test on the production URL mentioned in review request (https://mielo.preview.emergentagent.com) when available
+
+### Recommendation
+To properly verify this bug fix:
+1. Create test applications for musician@gmail.com account
+2. OR test with a different account that has applications
+3. OR wait for https://mielo.preview.emergentagent.com to be available
+4. Manual testing recommended with actual application data
+
+---
+

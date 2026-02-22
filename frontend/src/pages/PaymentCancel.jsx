@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "../components/ui/button";
 import { Music, AlertCircle, CreditCard, Home, Loader2 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -9,6 +10,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function PaymentCancel() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleRetryPayment = async () => {
@@ -42,7 +44,15 @@ export default function PaymentCancel() {
   };
 
   const handleBackToDashboard = () => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    console.log("User from context:", user);
+    
+    if (!user) {
+      // Si pas d'utilisateur connecté, rediriger vers la page d'accueil
+      navigate("/");
+      return;
+    }
+
+    // Rediriger selon le rôle de l'utilisateur
     if (user.role === "venue") {
       navigate("/venue");
     } else if (user.role === "musician") {

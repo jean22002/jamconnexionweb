@@ -4396,17 +4396,21 @@ export default function MusicianDashboard() {
 
           {/* Bands Tab */}
           <TabsContent value="bands">
-            <div className="space-y-6">
-              {/* Filters */}
-              <div className="glassmorphism rounded-2xl p-6">
-                <h2 className="font-heading font-semibold text-xl mb-4">🎸 Répertoire des Groupes</h2>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Découvrez les groupes de musique de votre région et contactez-les directement
-                </p>
+            <BandsTab
+              bands={bands}
+              bandsLoading={bandsLoading}
+              bandTypes={BAND_TYPES}
+              repertoireTypes={REPERTOIRE_TYPES}
+              onViewDetails={(band) => {
+                setSelectedBand(band);
+                setShowBandDetailsDialog(true);
+              }}
+              bandFilters={bandFilters}
+              onFiltersChange={setBandFilters}
+            />
 
-                {/* Filtres de recherche */}
-                <div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Dialog détails du groupe (conservé en dehors du composant) */}
+            <Dialog open={showBandDetailsDialog} onOpenChange={setShowBandDetailsDialog}>
                   {/* Localisation */}
                   <div className="space-y-2">
                     <Label>Département</Label>

@@ -722,6 +722,7 @@ export default function MusicianDashboard() {
     if (geoPosition) {
       setMapCenter([geoPosition.latitude, geoPosition.longitude]);
       setFollowUser(true);
+      setUserHasMovedMap(false); // Reset the flag when user explicitly centers
     } else {
       toast.error("Position non disponible");
     }

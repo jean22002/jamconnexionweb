@@ -4412,11 +4412,12 @@ export default function MusicianDashboard() {
             {/* Dialog détails du groupe (conservé en dehors du composant) */}
             <Dialog open={showBandDetailsDialog} onOpenChange={setShowBandDetailsDialog}>
               <DialogContent className="glassmorphism border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
-              <Dialog open={showBandDetailsDialog} onOpenChange={setShowBandDetailsDialog}>
-                <DialogContent className="bg-background border-white/10 text-white max-w-2xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-heading">{selectedBand?.name}</DialogTitle>
-                  </DialogHeader>
+                <DialogHeader>
+                  <DialogTitle className="font-heading text-2xl flex items-center gap-2">
+                    <Music className="w-6 h-6 text-primary" />
+                    {selectedBand?.name}
+                  </DialogTitle>
+                </DialogHeader>
                   {selectedBand && (
                     <div className="space-y-6">
                       {/* Photo */}

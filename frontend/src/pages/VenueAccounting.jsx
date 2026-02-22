@@ -6,7 +6,7 @@ import { Button } from '../components/ui/button';
 import { Calendar, DollarSign, FileText, Download, Upload, Filter } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Label } from '../components/ui/label';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 

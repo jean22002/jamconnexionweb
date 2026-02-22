@@ -4568,7 +4568,6 @@ export default function MusicianDashboard() {
                   )}
                 </DialogContent>
               </Dialog>
-            </div>
           </TabsContent>
         </Tabs>
       </main>

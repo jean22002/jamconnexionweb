@@ -145,6 +145,7 @@ export default function MusicianDashboard() {
   const [loadingError, setLoadingError] = useState(false);
   const [searchCity, setSearchCity] = useState("");
   const [mapCenter, setMapCenter] = useState([46.603354, 1.888334]);
+  const [userHasMovedMap, setUserHasMovedMap] = useState(false); // Track if user manually moved the map
   const [profile, setProfile] = useState(null);
   const [editingProfile, setEditingProfile] = useState(false);
   const [notifications, setNotifications] = useState([]);

@@ -300,6 +300,14 @@ export default function MusicianDashboard() {
   const [venueEvents, setVenueEvents] = useState({ concerts: [], jams: [] });
   const [loadingVenueEvents, setLoadingVenueEvents] = useState(false);
 
+  // Calendar states
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [calendarEvents, setCalendarEvents] = useState([]);
+  const [eventsByDate, setEventsByDate] = useState({});
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [loadingCalendar, setLoadingCalendar] = useState(false);
+
   // Auto geolocation hook
   const { 
     position: geoPosition, 

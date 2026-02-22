@@ -424,12 +424,16 @@ async def get_my_applications(current_user: dict = Depends(get_current_user)):
     for app in applications:
         slot = await db.planning_slots.find_one({"id": app["planning_slot_id"]}, {"_id": 0})
         if slot:
-            # Add all slot information needed for display
-            app["slot_venue_name"] = slot.get("venue_name")
-            app["slot_venue_city"] = slot.get("venue_city")
+            # Get venue information
+            venue = await db.venues.find_one({"id": slot.get("venue_id")}, {"_id": 0})
+            
+            # Add all slot and venue information needed for display
+            app["slot_venue_name"] = slot.get("venue_name") or (venue.get("name") if venue else None)
+            app["slot_venue_city"] = venue.get("city") if venue else None
             app["slot_date"] = slot.get("date")
-            app["slot_start_time"] = slot.get("start_time")
+            app["slot_start_time"] = slot.get("time") or slot.get("start_time")
             app["slot_end_time"] = slot.get("end_time")
+            
             # Keep legacy fields for backward compatibility
             app["venue_name"] = slot.get("venue_name")
         result.append(app)

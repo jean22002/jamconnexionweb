@@ -73,7 +73,20 @@ const SHOW_DURATIONS = [
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Composant réutilisable pour afficher une carte de musicien
+// Component to detect manual map movements (drag, zoom)
+function MapEventHandler({ onMapMove }) {
+  const map = useMapEvents({
+    moveend: () => {
+      // User moved the map manually (drag or zoom)
+      onMapMove();
+    },
+    zoomend: () => {
+      // User zoomed the map manually
+      onMapMove();
+    }
+  });
+  return null;
+}
 
 // Custom guitar icon for venues
 const venueIcon = L.divIcon({

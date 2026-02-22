@@ -1,61 +1,19 @@
-import { useEffect, useState } from "react";
-import { useSearchParams, Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
-import { Music, Check, Loader2, AlertCircle } from "lucide-react";
+import { Music, Check } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
-
 export default function PaymentSuccess() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { token, refreshUser } = useAuth();
-  const [status, setStatus] = useState("loading"); // loading, success, error
-  const [attempts, setAttempts] = useState(0);
-
-  const sessionId = searchParams.get("session_id");
+  const { user, refreshUser } = useAuth();
 
   useEffect(() => {
-    const pollPaymentStatus = async () => {
-      if (!sessionId || !token) {
-        setStatus("error");
-        return;
-      }
-
-      if (attempts >= 5) {
-        setStatus("error");
-        return;
-      }
-
-      try {
-        const response = await axios.get(`${API}/payments/status/${sessionId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (response.data.payment_status === "paid") {
-          setStatus("success");
-          await refreshUser();
-        } else if (response.data.status === "expired") {
-          setStatus("error");
-        } else {
-          // Continue polling
-          setAttempts(prev => prev + 1);
-          setTimeout(pollPaymentStatus, 2000);
-        }
-      } catch (error) {
-        console.error("Error checking payment status:", error);
-        setAttempts(prev => prev + 1);
-        if (attempts < 4) {
-          setTimeout(pollPaymentStatus, 2000);
-        } else {
-          setStatus("error");
-        }
-      }
-    };
-
-    pollPaymentStatus();
-  }, [sessionId, token, attempts, refreshUser]);
+    // Rafraîchir les données utilisateur au cas où l'abonnement a été mis à jour
+    if (refreshUser) {
+      refreshUser();
+    }
+  }, [refreshUser]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -74,70 +32,41 @@ export default function PaymentSuccess() {
       </header>
 
       <main className="flex-1 flex items-center justify-center p-4">
-        <div className="glassmorphism rounded-3xl p-8 md:p-12 max-w-md w-full text-center">
-          {status === "loading" && (
-            <>
-              <div className="w-20 h-20 mx-auto rounded-full bg-primary/20 flex items-center justify-center mb-6">
-                <Loader2 className="w-10 h-10 text-primary animate-spin" />
-              </div>
-              <h1 className="font-heading font-bold text-2xl mb-3">
-                Vérification du paiement...
-              </h1>
-              <p className="text-muted-foreground">
-                Veuillez patienter pendant que nous confirmons votre paiement.
-              </p>
-            </>
-          )}
+        <div className="glassmorphism rounded-3xl p-8 md:p-12 max-w-lg w-full text-center">
+          <div className="w-24 h-24 mx-auto rounded-full bg-green-500/20 flex items-center justify-center mb-6 animate-pulse">
+            <Check className="w-12 h-12 text-green-400" />
+          </div>
+          
+          <h1 className="font-heading font-bold text-4xl mb-4">
+            Paiement réussi ! 🎉
+          </h1>
+          
+          <p className="text-muted-foreground text-lg mb-2">
+            Merci pour votre abonnement à Jam Connexion.
+          </p>
+          
+          <p className="text-muted-foreground mb-8">
+            Votre accès est maintenant actif. Vous pouvez profiter de toutes les fonctionnalités de la plateforme.
+          </p>
 
-          {status === "success" && (
-            <>
-              <div className="w-20 h-20 mx-auto rounded-full bg-green-500/20 flex items-center justify-center mb-6 animate-pulse-glow">
-                <Check className="w-10 h-10 text-green-400" />
-              </div>
-              <h1 className="font-heading font-bold text-3xl mb-3">
-                Merci pour ton abonnement 🎉
-              </h1>
-              <p className="text-muted-foreground mb-8">
-                Ton accès est maintenant actif. Tu peux continuer où tu t'étais arrêté.
-              </p>
-              <Button 
-                onClick={() => navigate("/venue")}
-                className="bg-primary hover:bg-primary/90 rounded-full px-12 py-7 font-heading text-lg font-semibold hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] transition-all"
-                data-testid="go-dashboard-btn"
-              >
-                Accéder à Jam Connexion
-              </Button>
-            </>
-          )}
+          <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 mb-8">
+            <p className="text-sm">
+              ✅ Abonnement mensuel activé<br/>
+              💳 Renouvellement automatique chaque mois<br/>
+              📧 Vous recevrez un email de confirmation
+            </p>
+          </div>
+          
+          <Button 
+            onClick={() => navigate(user?.role === "venue" ? "/venue" : user?.role === "musician" ? "/musician" : "/")}
+            className="w-full bg-primary hover:bg-primary/90 rounded-full py-6 font-heading text-lg font-semibold hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] transition-all"
+          >
+            Accéder à mon tableau de bord
+          </Button>
 
-          {status === "error" && (
-            <>
-              <div className="w-20 h-20 mx-auto rounded-full bg-destructive/20 flex items-center justify-center mb-6">
-                <AlertCircle className="w-10 h-10 text-destructive" />
-              </div>
-              <h1 className="font-heading font-bold text-2xl mb-3">
-                Une erreur est survenue
-              </h1>
-              <p className="text-muted-foreground mb-8">
-                Nous n'avons pas pu confirmer votre paiement. Veuillez réessayer ou contacter le support.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button 
-                  onClick={() => navigate("/venue")}
-                  variant="outline"
-                  className="border-white/20 rounded-full px-6"
-                >
-                  Retour au Dashboard
-                </Button>
-                <Button 
-                  onClick={() => navigate("/pricing")}
-                  className="bg-primary hover:bg-primary/90 rounded-full px-6"
-                >
-                  Réessayer
-                </Button>
-              </div>
-            </>
-          )}
+          <p className="text-muted-foreground text-sm mt-6">
+            Besoin d'aide ? Contactez notre support à support@jamconnexion.com
+          </p>
         </div>
       </main>
     </div>

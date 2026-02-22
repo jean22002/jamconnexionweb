@@ -37,24 +37,33 @@ export default function PaymentSuccess() {
             <Check className="w-12 h-12 text-green-400" />
           </div>
           
-          <h1 className="font-heading font-bold text-4xl mb-4">
-            Paiement réussi ! 🎉
+          <h1 className="font-heading font-bold text-4xl mb-4 text-green-400">
+            Paiement accepté ! ✅
           </h1>
           
           <p className="text-muted-foreground text-lg mb-2">
-            Merci pour votre abonnement à Jam Connexion.
+            Votre abonnement à Jam Connexion a été activé avec succès.
           </p>
           
           <p className="text-muted-foreground mb-8">
-            Votre accès est maintenant actif. Vous pouvez profiter de toutes les fonctionnalités de la plateforme.
+            Profitez dès maintenant de toutes les fonctionnalités de la plateforme.
           </p>
 
-          <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 mb-8">
-            <p className="text-sm">
-              ✅ Abonnement mensuel activé<br/>
-              💳 Renouvellement automatique chaque mois<br/>
-              📧 Vous recevrez un email de confirmation
-            </p>
+          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-5 mb-8">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-green-400">
+                <Check className="w-5 h-5" />
+                <span className="font-semibold">Abonnement mensuel activé</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Check className="w-5 h-5" />
+                <span>Renouvellement automatique chaque mois</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Check className="w-5 h-5" />
+                <span>Confirmation envoyée par email</span>
+              </div>
+            </div>
           </div>
           
           <Button 

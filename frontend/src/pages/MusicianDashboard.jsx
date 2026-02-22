@@ -316,7 +316,7 @@ export default function MusicianDashboard() {
   
   // Geolocation states
   const [geoEnabled, setGeoEnabled] = useState(true);
-  const [followUser, setFollowUser] = useState(true);
+  const [followUser, setFollowUser] = useState(false); // Désactivé par défaut pour permettre navigation libre
   
   // Bands
   const [bands, setBands] = useState([]);

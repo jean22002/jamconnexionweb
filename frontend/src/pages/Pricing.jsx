@@ -1,10 +1,46 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import axios from "axios";
 import { Button } from "../components/ui/button";
-import { Music, Check, ArrowRight, Guitar, Mic2, Music2 } from "lucide-react";
+import { Music, Check, ArrowRight, Guitar, Mic2, Music2, Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "sonner";
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Pricing() {
   const { user } = useAuth();
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleSubscribe = async () => {
+    if (!user) {
+      window.location.href = "/auth?role=venue";
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${API}/payments/checkout`,
+        {
+          origin_url: window.location.origin
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (response.data.url) {
+        // Rediriger vers Stripe Checkout
+        window.location.href = response.data.url;
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error(error.response?.data?.detail || "Erreur lors de la création de la session de paiement");
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">

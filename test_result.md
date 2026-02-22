@@ -1,9 +1,9 @@
 # Testing Protocol
 
 ## Last Test Session
-**Date**: 2026-02-21
-**Status**: ✅ PASSED
-**Test Type**: Dropdown Menu from "Choisir un fichier" Button in Event Edit Modal
+**Date**: 2026-02-22
+**Status**: ⚠️ PARTIALLY VERIFIED - Implementation Correct, Data Unavailable
+**Test Type**: Planning Tab - Musician Calendar Feature (Accepted Applications + Confirmed Concerts)
 
 ---
 

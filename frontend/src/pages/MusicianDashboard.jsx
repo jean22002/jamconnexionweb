@@ -1004,6 +1004,7 @@ export default function MusicianDashboard() {
 
     // Center map on venue location
     setMapCenter([event.venue_latitude, event.venue_longitude]);
+    setUserHasMovedMap(false); // Allow map to center on the venue
 
     // Show success message
     toast.success(`Affichage de ${event.venue_name} sur la carte`);

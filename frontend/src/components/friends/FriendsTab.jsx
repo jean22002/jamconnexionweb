@@ -1,0 +1,141 @@
+import { Button } from "../ui/button";
+import { Users, User, Eye, UserMinus, Ban } from "lucide-react";
+import LazyImage from "../LazyImage";
+
+function FriendCard({ friend, onViewProfile, onRemove, onBlock }) {
+  return (
+    <div className="card-venue p-5">
+      <div className="flex items-start gap-4 mb-3">
+        {friend.profile_image ? (
+          <LazyImage 
+            src={friend.profile_image} 
+            alt={friend.pseudo} 
+            className="w-14 h-14 rounded-full object-cover" 
+          />
+        ) : (
+          <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center">
+            <User className="w-7 h-7 text-primary" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <h3 className="font-heading font-semibold truncate">{friend.pseudo || friend.friend_name}</h3>
+          {friend.city && <p className="text-sm text-muted-foreground truncate">{friend.city}</p>}
+          <div className="flex flex-wrap gap-1 mt-1">
+            {friend.instruments?.slice(0, 2).map((inst, i) => (
+              <span key={i} className="px-2 py-0.5 bg-primary/20 text-primary text-xs rounded-full">{inst}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+      
+      {/* Actions */}
+      <div className="flex gap-2">
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="flex-1 rounded-full border-white/20 gap-2 hover:bg-white/5"
+          onClick={() => onViewProfile(friend)}
+        >
+          <Eye className="w-4 h-4" />
+          Voir
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="rounded-full border-red-500/30 text-red-500 hover:bg-red-500/10 hover:border-red-500/50"
+          onClick={() => onRemove(friend.friend_id)}
+        >
+          <UserMinus className="w-4 h-4" />
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="rounded-full border-orange-500/30 text-orange-500 hover:bg-orange-500/10 hover:border-orange-500/50"
+          onClick={() => onBlock(friend.friend_id)}
+        >
+          <Ban className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function BlockedUserCard({ blocked, onUnblock }) {
+  return (
+    <div className="card-venue p-5 border-2 border-red-500/20">
+      <div className="flex items-center gap-4 mb-3">
+        {blocked.profile_image ? (
+          <LazyImage 
+            src={blocked.profile_image} 
+            alt={blocked.pseudo} 
+            className="w-12 h-12 rounded-full object-cover grayscale" 
+          />
+        ) : (
+          <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+            <Ban className="w-6 h-6 text-red-500" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <h4 className="font-semibold text-sm truncate">{blocked.pseudo || blocked.name}</h4>
+          <p className="text-xs text-red-500">Bloqué</p>
+        </div>
+      </div>
+      <Button 
+        variant="outline" 
+        size="sm"
+        className="w-full rounded-full border-green-500/30 text-green-500 hover:bg-green-500/10"
+        onClick={() => onUnblock(blocked.user_id)}
+      >
+        Débloquer
+      </Button>
+    </div>
+  );
+}
+
+export default function FriendsTab({ 
+  friends, 
+  blockedUsers,
+  onViewProfile,
+  onRemoveFriend, 
+  onBlockUser,
+  onUnblockUser 
+}) {
+  return (
+    <div>
+      {friends.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+          <p>Vous n'avez pas encore d'amis</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {friends.map((friend) => (
+            <FriendCard 
+              key={friend.friend_id} 
+              friend={friend}
+              onViewProfile={onViewProfile}
+              onRemove={onRemoveFriend}
+              onBlock={onBlockUser}
+            />
+          ))}
+        </div>
+      )}
+      
+      {/* Section Utilisateurs bloqués */}
+      {blockedUsers.length > 0 && (
+        <div className="mt-8">
+          <h3 className="font-heading font-semibold text-lg mb-4">Utilisateurs bloqués ({blockedUsers.length})</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {blockedUsers.map((blocked) => (
+              <BlockedUserCard 
+                key={blocked.user_id} 
+                blocked={blocked}
+                onUnblock={onUnblockUser}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -3298,11 +3298,29 @@ export default function MusicianDashboard() {
                     <Input 
                       placeholder="Rechercher une ville..." 
                       value={searchCity} 
-                      onChange={(e) => setSearchCity(e.target.value)} 
+                      onChange={(e) => setSearchCity(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleSearchCity();
+                        }
+                      }}
                       className="pl-9 h-10 bg-black/20 border-white/10" 
-                      data-testid="search-city" 
+                      data-testid="search-city"
+                      disabled={searchingCity}
                     />
                   </div>
+                  <Button
+                    onClick={handleSearchCity}
+                    disabled={!searchCity.trim() || searchingCity}
+                    variant="outline"
+                    className="h-10 px-4 border-white/20"
+                  >
+                    {searchingCity ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Search className="w-4 h-4" />
+                    )}
+                  </Button>
                 </div>
               </div>
 

@@ -204,9 +204,9 @@ export default function CandidaturesTab({
             </SelectContent>
           </Select>
         </div>
-      </div>
+          </div>
 
-      <div className="flex gap-3 mb-6">
+          <div className="flex gap-3 mb-6">
         <Button 
           onClick={onSearch}
           disabled={loadingCandidatures}

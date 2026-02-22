@@ -3,10 +3,8 @@ import { useState } from "react";
 import { Button } from "../components/ui/button";
 import { Music, AlertCircle, CreditCard, Home, Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
-import { toast } from "sonner";
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/cNi4gydxb38YgscglHafS01";
 
 export default function PaymentCancel() {
   const navigate = useNavigate();
@@ -25,34 +23,10 @@ export default function PaymentCancel() {
     );
   }
 
-  const handleRetryPayment = async () => {
+  const handleRetryPayment = () => {
     setIsProcessing(true);
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        navigate("/auth");
-        return;
-      }
-
-      const response = await axios.post(
-        `${API}/payments/checkout`,
-        {
-          origin_url: window.location.origin
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-
-      if (response.data.url) {
-        // Rediriger vers Stripe Checkout
-        window.location.href = response.data.url;
-      }
-    } catch (error) {
-      console.error("Payment error:", error);
-      toast.error(error.response?.data?.detail || "Erreur lors de la création de la session de paiement");
-      setIsProcessing(false);
-    }
+    // Redirection directe vers le lien de paiement Stripe
+    window.location.href = STRIPE_PAYMENT_LINK;
   };
 
   const handleBackToDashboard = () => {

@@ -770,6 +770,9 @@ export default function MusicianDashboard() {
     if (activeTab === "my-applications") {
       fetchMyApplications();
     }
+    if (activeTab === "planning") {
+      fetchCalendarEvents();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]); // FIXED: Don't add fetchMyApplications as dependency
 

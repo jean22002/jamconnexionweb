@@ -231,10 +231,10 @@ export default function CandidaturesTab({
         >
           Réinitialiser
         </Button>
-      </div>
+          </div>
 
-      {/* Results */}
-      {loadingCandidatures ? (
+          {/* Results */}
+          {loadingCandidatures ? (
         <div className="text-center py-12">
           <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-primary" />
           <p className="text-muted-foreground">Recherche en cours...</p>

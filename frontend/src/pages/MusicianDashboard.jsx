@@ -1054,6 +1054,28 @@ export default function MusicianDashboard() {
     setShowEventModal(true);
   };
 
+  // Fetch calendar events
+  const fetchCalendarEvents = async () => {
+    setLoadingCalendar(true);
+    try {
+      const response = await axios.get(`${API}/musician/calendar-events`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCalendarEvents(response.data.events || []);
+      setEventsByDate(response.data.eventsByDate || {});
+    } catch (error) {
+      console.error("Error fetching calendar events:", error);
+      toast.error("Erreur lors du chargement du planning");
+    } finally {
+      setLoadingCalendar(false);
+    }
+  };
+
+  const handleDateClick = (dateStr) => {
+    setSelectedDate(dateStr);
+    setShowEventModal(true);
+  };
+
   const handleChangePassword = async () => {
     // Validation
     if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {

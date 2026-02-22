@@ -4824,7 +4824,11 @@ export default function VenueDashboard() {
                 ) : (
                   <div className="space-y-4">
                     {planningSlots.map((slot) => (
-                      <div key={slot.id} className="p-5 border border-white/10 rounded-xl hover:border-primary/30 transition-all">
+                      <div 
+                        key={slot.id} 
+                        className="p-5 border border-white/10 rounded-xl hover:border-primary/30 transition-all cursor-pointer"
+                        onClick={() => handleSlotCardClick(slot)}
+                      >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
@@ -4875,7 +4879,8 @@ export default function VenueDashboard() {
                           </div>
                           
                           <Button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation(); // Empêcher le click de se propager à la carte
                               setViewingApplications(slot.id);
                               fetchApplications(slot.id);
                             }}

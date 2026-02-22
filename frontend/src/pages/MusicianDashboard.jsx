@@ -38,6 +38,8 @@ import SocialLinks from "../components/SocialLinks";
 import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 import { MUSIC_STYLES_LIST } from "../data/music-styles";
 import DashboardNotification from "../components/DashboardNotification";
+import CandidaturesTab from "../components/candidatures/CandidaturesTab";
+import VenuesTab from "../components/venues/VenuesTab";
 
 // Options pour les groupes
 const BAND_TYPES = [

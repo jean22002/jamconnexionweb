@@ -3738,6 +3738,17 @@ export default function MusicianDashboard() {
             />
           </TabsContent>
 
+
+          <TabsContent value="venues">
+            <VenuesTab
+              venues={venues}
+              subscriptions={subscriptions}
+              onSubscribe={handleSubscribe}
+              onUnsubscribe={handleUnsubscribe}
+            />
+          </TabsContent>
+
+
           <TabsContent value="friends">
             <FriendsTab
               friends={friends}

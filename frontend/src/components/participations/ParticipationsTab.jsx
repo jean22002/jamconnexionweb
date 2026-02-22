@@ -1,6 +1,6 @@
 import { Button } from "../ui/button";
 import { MapPin, CalendarIcon, Check } from "lucide-react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 function ParticipationCard({ participation }) {
   const handleAddToCalendar = () => {

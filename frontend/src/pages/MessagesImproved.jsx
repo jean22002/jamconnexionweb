@@ -210,14 +210,26 @@ export default function MessagesImproved() {
     }
 
     try {
+      // Fetch friends list first
+      const friendsRes = await axios.get(`${API}/musicians/friends`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const friendUserIds = new Set(friendsRes.data.map(f => f.user_id));
+
       // Search musicians and venues
       const [musiciansRes, venuesRes] = await Promise.all([
         axios.get(`${API}/musicians`),
         axios.get(`${API}/venues`)
       ]);
 
+      // Filter: Only friends + matching query
       const musicians = musiciansRes.data
-        .filter(m => m.user_id !== user.id && m.pseudo.toLowerCase().includes(query.toLowerCase()))
+        .filter(m => 
+          m.user_id !== user.id && 
+          friendUserIds.has(m.user_id) && 
+          m.pseudo.toLowerCase().includes(query.toLowerCase())
+        )
         .map(m => ({ 
           ...m, 
           type: 'musician', 
@@ -229,8 +241,13 @@ export default function MessagesImproved() {
             : ""
         }));
 
+      // Filter: Only friends + matching query
       const venues = venuesRes.data
-        .filter(v => v.user_id !== user.id && v.name.toLowerCase().includes(query.toLowerCase()))
+        .filter(v => 
+          v.user_id !== user.id && 
+          friendUserIds.has(v.user_id) && 
+          v.name.toLowerCase().includes(query.toLowerCase())
+        )
         .map(v => ({ 
           ...v, 
           type: 'venue',

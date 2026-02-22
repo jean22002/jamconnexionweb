@@ -645,3 +645,93 @@ async def delete_application(app_id: str, current_user: dict = Depends(get_curre
     await db.applications.delete_one({"id": app_id})
     
     return {"message": "Application deleted"}
+
+
+
+@router.get("/musician/calendar-events")
+async def get_musician_calendar_events(current_user: dict = Depends(get_current_user)):
+    """Get all calendar events for a musician (accepted applications + confirmed concerts)"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can view their calendar")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        return {"events": [], "eventsByDate": {}}
+    
+    events = []
+    events_by_date = {}
+    
+    # 1. Get accepted applications (candidatures acceptées)
+    accepted_apps = await db.applications.find({
+        "musician_id": musician["id"],
+        "status": "accepted"
+    }, {"_id": 0}).to_list(1000)
+    
+    for app in accepted_apps:
+        # Get slot details
+        slot = await db.planning_slots.find_one({"id": app["planning_slot_id"]}, {"_id": 0})
+        if not slot:
+            continue
+            
+        # Get venue details
+        venue = await db.venues.find_one({"id": slot.get("venue_id")}, {"_id": 0})
+        if not venue:
+            continue
+        
+        date = slot.get("date")
+        if not date:
+            continue
+            
+        event = {
+            "type": "accepted_application",
+            "date": date,
+            "time": slot.get("time") or slot.get("start_time"),
+            "venue_name": venue.get("name"),
+            "venue_city": venue.get("city"),
+            "venue_department": venue.get("department"),
+            "band_name": app.get("band_name"),
+            "title": f"Concert - {venue.get('name')}",
+            "description": slot.get("description"),
+            "slot_id": slot.get("id"),
+            "application_id": app.get("id")
+        }
+        events.append(event)
+        
+        # Add to events_by_date for calendar coloring
+        if date not in events_by_date:
+            events_by_date[date] = []
+        events_by_date[date].append(event)
+    
+    # 2. Get confirmed concerts from musician's concerts list
+    concerts = musician.get("concerts", [])
+    for concert in concerts:
+        date = concert.get("date")
+        if not date:
+            continue
+            
+        event = {
+            "type": "confirmed_concert",
+            "date": date,
+            "time": concert.get("time"),
+            "venue_name": concert.get("venue_name"),
+            "venue_city": concert.get("city"),
+            "venue_department": concert.get("department"),
+            "title": f"Concert - {concert.get('venue_name', 'Lieu non spécifié')}",
+            "description": concert.get("description"),
+            "concert_id": concert.get("id")
+        }
+        events.append(event)
+        
+        # Add to events_by_date
+        if date not in events_by_date:
+            events_by_date[date] = []
+        events_by_date[date].append(event)
+    
+    # Sort events by date
+    events.sort(key=lambda x: x["date"])
+    
+    return {
+        "events": events,
+        "eventsByDate": events_by_date
+    }
+

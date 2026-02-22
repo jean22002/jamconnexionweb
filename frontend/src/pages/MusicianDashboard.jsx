@@ -147,56 +147,6 @@ function MusicianCard({ musician, onSendFriendRequest, onCancelRequest, sentRequ
   );
 }
 
-function VenueCard({ venue, onSubscribe, onUnsubscribe, subscriptions }) {
-  const isSubscribed = subscriptions?.some(sub => sub.venue_id === venue.id);
-
-  return (
-    <div className="card-venue p-5">
-      <Link to={`/venue/${venue.id}`}>
-        {venue.profile_image && (
-          <LazyImage 
-            src={venue.profile_image} 
-            alt={venue.name} 
-            className="w-full h-32 object-cover rounded-lg mb-3 hover:opacity-90 transition" 
-          />
-        )}
-        <h3 className="font-heading font-semibold hover:text-primary transition">{venue.name}</h3>
-        <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-          <MapPin className="w-3 h-3" />
-          {venue.city}
-          {venue.department && ` (${venue.department})`}
-        </p>
-        {venue.music_styles?.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
-            {venue.music_styles.slice(0, 3).map((style, i) => (
-              <span key={i} className="px-2 py-0.5 bg-secondary/20 text-secondary text-xs rounded-full">{style}</span>
-            ))}
-          </div>
-        )}
-      </Link>
-      <div className="mt-4">
-        {isSubscribed ? (
-          <Button 
-            onClick={() => onUnsubscribe(venue.id)} 
-            variant="outline" 
-            className="w-full rounded-full border-red-500/50 text-red-500 hover:bg-red-500/10"
-          >
-            <X className="w-4 h-4 mr-2" /> Se déconnecter
-          </Button>
-        ) : (
-          <Button 
-            onClick={() => onSubscribe(venue.id)} 
-            variant="default" 
-            className="w-full rounded-full bg-primary hover:bg-primary/90"
-          >
-            <Heart className="w-4 h-4 mr-2" /> Se connecter
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // Custom guitar icon for venues
 const venueIcon = L.divIcon({
   className: 'venue-guitar-marker',

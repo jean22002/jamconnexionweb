@@ -4411,7 +4411,7 @@ export default function MusicianDashboard() {
 
             {/* Dialog détails du groupe (conservé en dehors du composant) */}
             <Dialog open={showBandDetailsDialog} onOpenChange={setShowBandDetailsDialog}>
-                  {/* Localisation */}
+              <DialogContent className="glassmorphism border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
                   <div className="space-y-2">
                     <Label>Département</Label>
                     <Select 

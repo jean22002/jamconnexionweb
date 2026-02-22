@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Label } from './ui/label';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Switch } from './ui/switch';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 export default function OnlineStatusSettings() {
   const {

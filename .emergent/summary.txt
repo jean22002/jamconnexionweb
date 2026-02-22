@@ -1,74 +1,38 @@
 <analysis>**original_problem_statement:**
-L'utilisateur a initialement demandé un système de comptabilité complet pour les établissements, incluant la gestion des transactions (paiements d'événements), le filtrage, la mise à jour des statuts, et la gestion de pièces jointes (factures).
-
-Au cours de la session, les demandes suivantes ont été ajoutées :
-1.  **Correction de Bugs :**
-    *   Les chiffres de la comptabilité ne s'affichaient pas en environnement de déploiement.
-    *   Les notifications push envoyées par les établissements n'étaient pas reçues par les utilisateurs.
-    *   Les notifications se répétaient à chaque changement d'onglet ou rafraîchissement de page.
-    *   La liste des notifications et le compteur ne se mettaient pas à jour en temps réel.
-2.  **Nouvelles Fonctionnalités :**
-    *   Remplacer le champ styles musicaux par un champ texte Qui anime le karaoké dans le formulaire de création de Karaoké.
-    *   Supprimer le bouton Explorer la carte de la page d'accueil pour les utilisateurs non connectés.
-    *   Implémenter une fenêtre de chat (popup style Facebook) qui s'ouvre automatiquement à la réception d'un nouveau message.
-    *   Ajouter un compteur de messages non lus à côté de l'icône de messagerie dans l'en-tête.
-3.  **Améliorations :**
-    *   Permettre l'envoi de messages directement depuis la nouvelle fenêtre de chat popup.
+L'utilisateur a demandé une série d'améliorations et de corrections de bugs pour son application de mise en relation entre établissements, musiciens et mélomanes. Les demandes principales de cette session étaient :
+- Améliorer le bouton d'upload de facture pour offrir les options Prendre une photo et Choisir un fichier, et ce, à deux endroits différents de l'interface.
+- Corriger de multiples bugs liés à l'affichage et à l'interaction avec le calendrier/planning des événements (ouverture des modales, affichage des titres, couleurs, clics sur les événements passés).
+- Implémenter un système de filtrage et d'affichage géographique avancé (par région/département) pour les groupes de musique.
+- Corriger plusieurs bugs critiques, notamment un popup de messagerie intempestif à la connexion, le système de notification de musiciens à proximité qui ne fonctionnait pas, et limiter la recherche dans la messagerie aux amis uniquement.
+- La dernière demande, en cours, est de refactoriser le  avant d'y implémenter la même vue géographique pour l'onglet Candidatures.
 
 **User's preferred language**: Français
 
 **what currently exists?**
-L'application dispose d'un système de comptabilité fonctionnel, bien qu'un bug persiste lors de la création de nouveaux événements. Un système de notifications push a été largement amélioré et corrigé. Une nouvelle fonctionnalité de chat popup, inspirée de Facebook, a été ajoutée pour les nouveaux messages, incluant un compteur de messages non lus dans l'en-tête de l'application pour tous les types d'utilisateurs. Le formulaire de création de karaoké et la page d'accueil ont été modifiés selon les demandes de l'utilisateur.
+L'application est un portail web fonctionnel avec des tableaux de bord distincts pour les établissements, les musiciens et les mélomanes. Elle inclut un système de comptabilité avec upload et visualisation de factures, un calendrier de planification d'événements, une messagerie instantanée, et un système de recherche et de filtrage géographique avancé pour les établissements et les groupes. Tous les bugs signalés par l'utilisateur au cours de la session ont été corrigés.
 
 **Last working item**:
--   **Last item agent was working:** Finaliser la fonctionnalité de la fenêtre de chat popup. L'agent travaillait sur deux points : 1) Corriger la fonctionnalité d'envoi de message qui ne fonctionnait pas depuis la popup. 2) Supprimer un bouton de test temporaire qui avait été ajouté pour le débogage.
+-   **Last item agent was working:** L'agent a commencé un refactoring majeur du fichier  à la demande explicite de l'utilisateur. L'objectif est de décomposer ce composant monolithique en sous-composants plus petits (, , etc.) et en hooks personnalisés, avant d'implémenter une nouvelle fonctionnalité dans l'onglet des candidatures. L'agent a créé la structure de dossiers nécessaire pour ce refactoring.
 -   **Status:** IN PROGRESS
 -   **Agent Testing Done:** N
--   **Which testing method agent to use?** Frontend testing agent. Le test doit valider le flux complet : un utilisateur reçoit un message, la popup s'ouvre, il répond depuis la popup, le message est bien envoyé et reçu par l'autre utilisateur, et le bouton de test a disparu.
+-   **Which testing method agent to use?** Frontend testing agent. Une fois le refactoring terminé, l'agent devra effectuer un test de non-régression complet sur le  pour s'assurer que toutes les fonctionnalités (onglets candidatures, lieux, établissements) fonctionnent comme avant.
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1:** (P0) La fonctionnalité d'envoi de message depuis la  est cassée.
--   **Issue 2:** (P1) Les données de comptabilité (, ) ne sont pas sauvegardées lors de la création de nouveaux événements.
-
-**Issues Detail:**
--   **Issue 1: Envoi de message impossible depuis la ChatPopup**
-    -   **Attempted fixes:** L'agent a identifié que le backend () requiert un champ  qui n'était pas envoyé par la popup. L'agent a écrit le code pour ajouter un  par défaut, mais la session s'est terminée avant le test et le redémarrage des services.
-    -   **Next debug checklist:**
-        1.  Vérifier que le fichier  inclut bien le  dans la charge utile de l'appel API .
-        2.  Redémarrer le service frontend.
-        3.  Tester l'envoi de message entre deux utilisateurs via la popup.
-        4.  Supprimer le bouton de test de  et les logs de débogage.
-    -   **Why fix this issue and what will be achieved with the fix?** Cela rendra la nouvelle fonctionnalité de chat popup pleinement utilisable et interactive.
-    -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** Frontend
-    -   **Blocked on other issue:** None
-
--   **Issue 2: Les données de comptabilité ne sont pas enregistrées à la création d'événement**
-    -   **Attempted fixes:** L'agent a ajouté les champs manquants (, , etc.) au modèle Pydantic  dans . Cependant, les tests avec  ont montré que les champs étaient toujours  dans la base de données après création. L'agent a été interrompu par une autre demande utilisateur avant de pouvoir poursuivre le débogage.
-    -   **Next debug checklist:**
-        1.  Inspecter la route de création de concert dans .
-        2.  Ajouter un  juste avant l'appel  pour vérifier le dictionnaire de données envoyé à MongoDB.
-        3.   exclut les valeurs  par défaut. Le problème vient probablement de là. La solution est potentiellement d'utiliser  si des valeurs  sont attendues, ou de s'assurer que le frontend envoie des valeurs par défaut.
-    -   **Why fix this issue and what will be achieved with the fix?** C'est un bug critique qui empêche la fonctionnalité de comptabilité de fonctionner pour tous les nouveaux événements créés.
-    -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** Backend
-    -   **Blocked on other issue:** None
+-   Aucun. Le travail en cours est une tâche de fond (refactoring) suivie d'une nouvelle fonctionnalité.
 
 **In progress Task List**:
--   **Task 1: Finaliser la fonctionnalité Chat Popup (P0)**
-    -   **Where to resume:** Appliquer et tester le correctif pour l'envoi de messages et supprimer le code de test.
-    -   **What will be achieved with this?** Une expérience de messagerie en temps réel, fluide et complète.
+-   **Task 1: (P0) Refactoriser  et implémenter une vue géographique pour les candidatures.**
+    -   **Where to resume:** L'agent vient de créer la structure de répertoires : , ,  et . La prochaine étape consiste à créer les fichiers (, , etc.) et à y déplacer le code correspondant depuis .
+    -   **What will be achieved with this?** Améliorer considérablement la maintenabilité du code en découpant un fichier de plusieurs milliers de lignes. Ensuite, ajouter une vue géographique et un tri par date à l'onglet Candidatures pour le rendre plus intuitif et puissant pour les musiciens.
     -   **Status:** IN PROGRESS
     -   **Should Test frontend/backend/both after fix?** Frontend
-    -   **Blocked on something:** Issue 1
+    -   **Blocked on something:** Non.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    -   (P1) **Comptabilité - Formulaires de Création:** Ajouter les champs  et  aux formulaires de *création* des événements **Karaoke** et **Spectacle** dans .
-    -   (P2) **Test de bout en bout:** Utiliser le  pour valider le système de signalement (Phase 1) et le système de comptabilité maintenant que des corrections majeures ont été apportées.
+    -   (P1) **Implémenter la vue géographique dans  :** Une fois le refactoring terminé et validé, implémenter la vue par onglets (Tous / France / Par Région / Par Département) et le tri par date pour les candidatures.
+    -   (P2) **Test de bout en bout :** Utiliser le  pour une validation complète du système de comptabilité dans , qui a subi des modifications majeures.
 -   **Future Tasks:**
     -   Améliorer le tableau de bord analytique (graphiques avancés, export CSV/PDF).
     -   Mettre en place un journal d'audit pour les actions des administrateurs.
@@ -76,83 +40,67 @@ L'application dispose d'un système de comptabilité fonctionnel, bien qu'un bug
     -   Ajouter des notifications en temps réel pour les administrateurs (WebSockets).
 
 **Completed work in this session**
--   **Fonctionnalité de Suppression de Facture :** Testée et validée de bout en bout.
--   **Correction Bug Comptabilité en Déploiement :** Diagnostiqué et expliqué le problème de données manquantes entre les environnements de preview et de production. Création de données de test en production pour valider.
--   **Modification Formulaire Karaoké :** Remplacé le champ Styles musicaux par Qui anime le karaoké.
--   **Nettoyage Page d'Accueil :** Suppression du bouton Explorer la carte.
--   **Système de Notifications (Révisions Majeures) :**
-    -   Correction des notifications répétitives via .
-    -   Correction des notifications push non envoyées depuis le tableau de bord Établissement.
-    -   Correction de multiples erreurs d'API (404/405) en alignant les appels frontend avec les définitions backend.
-    -   Implémentation de la mise à jour en temps réel du compteur et de la liste des notifications.
--   **Nouvelle Fonctionnalité : Chat Popup :** Création d'une popup de style Facebook pour les nouveaux messages.
--   **Nouvelle Fonctionnalité : Compteur de Messages Non Lus :** Ajout d'un badge sur l'icône de messagerie dans l'en-tête.
-
-**Earlier issues found/mentioned but not fixed**
--   **Issue 1: Données de comptabilité non sauvegardées lors de la création d'événements.**
-    -   **Debug checklist:** Voir Issues Detail - Issue 2. Le problème se situe dans la route de création d'événement dans .
-    -   **Why to solve this issue and what will be achieved with this?** C'est un bloqueur pour la fonctionnalité de comptabilité pour tous les nouveaux événements.
-    -   **Should Test frontend/backend/both after fix:** Backend
-    -   **Is recurring issue?** Y
-
-**Known issue recurrence from previous fork**
--   Aucun.
+-   **Système d'upload de factures :** Finalisation complète. Le trombone et le bouton dans la modale ouvrent un menu déroulant avec Prendre une photo et Choisir un fichier.
+-   **Visualisation des factures :** L'icône œil ouvre désormais la facture dans un nouvel onglet au lieu de la télécharger silencieusement.
+-   **Formulaires d'événements :** Ajout de la méthode de paiement Promotion du groupe, qui désactive et met à zéro le champ du montant.
+-   **Correction de bugs multiples :**
+    -   Suppression du popup de chat test meolonane à chaque connexion.
+    -   Réparation des notifications de musiciens à proximité en sauvegardant leurs coordonnées GPS.
+    -   Activation du clic sur les cartes et le planning pour les événements Karaoké/Spectacle.
+    -   Affichage correct des titres et des couleurs des événements dans le planning.
+    -   Possibilité de cliquer sur les événements passés dans le planning.
+    -   Correction du comptage des groupes par région.
+-   **Filtres géographiques :** Implémentation d'un système de filtrage et d'une vue visuelle par cartes (régions/départements) pour les groupes dans le .
+-   **Messagerie :** La recherche d'utilisateurs est maintenant limitée aux amis uniquement.
+-   **Carte (Dashboard Musicien) :** Correction du recentrage automatique au dézoom et du bouton de centrage.
+-   **Refactoring :** Initialisation du refactoring de  en créant la nouvelle arborescence de fichiers.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Mise à jour de l'UI en temps réel :** Utilisation de  pour découpler les composants et déclencher des mises à jour (compteurs, listes) sans recharger la page.
--   **Persistance de l'état côté client :** Utilisation de  pour mémoriser les notifications déjà affichées et éviter les répétitions.
--   **Débogage multi-environnement :** Distinction et gestion des bases de données séparées entre  et .
--   **Débogage d'API :** Correction systématique des incohérences entre les appels frontend (URL, méthode HTTP, payload) et les définitions des endpoints backend.
+-   **Refactoring de composants monolithiques :** La stratégie actuelle est de décomposer les composants React de très grande taille en sous-composants logiques et en hooks personnalisés pour améliorer la lisibilité et la maintenance.
+-   **Logique de filtrage avancée :** Utilisation de  et de données statiques () pour créer des filtres géographiques en cascade (Région -> Département -> Ville).
+-   **Gestion d'événements complexes :** Résolution de problèmes de clics non propagés dans des composants imbriqués (ex: ) en utilisant  et en déclenchant des clics par programmation sur des inputs cachés.
 
 **key DB schema**
--   **karaokes**: Ajout du champ .
--   **concerts, karaokes, shows**: Les champs  et  existent dans le modèle mais ne sont pas correctement sauvegardés depuis les routes de création.
-
-**changes in tech stack**
--   Aucun.
+-   **users:** Les champs  et  sont maintenant sauvegardés pour les musiciens lors de la mise à jour de leur profil, ce qui est essentiel pour les fonctionnalités de proximité.
 
 **All files of reference**
--   : Interface de la nouvelle popup de chat.
--   : Logique centrale pour la réception des notifications et le déclenchement des popups de chat.
--   : Contient le bug critique de sauvegarde des données de comptabilité.
--   : Contient la logique backend corrigée pour l'envoi de notifications push.
--   : Monolithe principal, modifié pour intégrer le compteur de messages non lus.
+-   : Le fichier principal à refactoriser.
+-   : Sert de modèle pour la nouvelle vue géographique des candidatures (la section Groupes contient une implémentation quasi identique).
+-   : Fichier de données géographiques qui a été corrigé et qui est crucial pour les filtres.
 
 **Areas that need refactoring**:
--   ** (+ de 6000 lignes) :** La dette technique augmente. Il est urgent de le décomposer en sous-composants.
--   **Duplication de code :** La logique pour récupérer le nombre de messages non lus est dupliquée dans , , et . Elle devrait être extraite dans un hook personnalisé (ex: ).
+-   ** :** Le refactoring est en cours, comme demandé par l'utilisateur. C'est la tâche prioritaire.
+-   ** (> 6000 lignes) :** Reste un monolithe. Le précédent résumé a identifié des composants potentiels à extraire (, , ). C'est une dette technique importante à garder à l'esprit.
 
 **key api endpoints**
--   : Envoi de messages. Nécessite un  et un .
--   : Marque toutes les notifications comme lues (méthode corrigée de  à ).
--   : Récupère le nombre de notifications non lues (URL corrigée).
--   , , : Envoient désormais réellement des notifications push.
+-   : Utilisé pour récupérer la liste d'amis afin de filtrer les résultats de recherche dans la messagerie.
+-   : Modifié implicitement pour accepter et sauvegarder la  et la .
 
 **Critical Info for New Agent**
--   **Bug Critique Backend :** La priorité après la tâche en cours est de corriger le bug dans  qui empêche la sauvegarde des données de comptabilité lors de la création d'événements. C'est un bloqueur majeur pour une fonctionnalité clé.
--   **Finalisation du Chat Popup :** La tâche immédiate est de corriger l'envoi de messages depuis la popup et de nettoyer le code de test. Le bug vient probablement d'un champ  manquant dans la charge utile de l'API.
--   **Monolithes Frontend :** Les fichiers  sont très grands et fragiles. Toute modification doit être faite avec une extrême prudence. Le refactoring est recommandé.
+-   **Priorité absolue :** Ne pas commencer l'implémentation de la nouvelle fonctionnalité avant d'avoir terminé et testé le refactoring de . L'utilisateur a explicitement validé cette approche.
+-   Utiliser l'implémentation de la vue géographique des Groupes dans  comme plan directeur pour la nouvelle vue des Candidatures. La logique et la structure des composants sont directement réutilisables.
+-   Les fichiers  et  sont extrêmement volumineux. Procéder avec une grande prudence. Le refactoring est une étape essentielle pour la santé du projet à long terme.
 
 **documents and test reports created in this job**
--   Aucun.
+-   Le fichier  a été mis à jour par le testing agent à plusieurs reprises.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **:** Demande de corriger l'envoi de messages depuis la popup et de supprimer le bouton de test. (En cours)
-2.  **:** Demande d'ajouter un compteur de messages non lus. (Terminé)
-3.  **:** Confirmation que la popup de test fonctionne, demande à ce qu'elle soit disponible pour tous les profils. (Fait partie de la tâche en cours)
-4.  **:** Demande de créer la popup de chat. (En cours)
-5.  **:** Signalement du manque de mise à jour en temps réel des notifications. (Terminé)
-6.  **:** Signalement d'erreurs dans la console liées aux notifications. (Terminé)
-7.  **:** Signalement que les notifications push n'étaient pas envoyées. (Terminé)
-8.  **:** Signalement des notifications répétitives. (Terminé)
-9.  **:** Demande de supprimer un bouton de la page d'accueil. (Terminé)
-10. **:** Demande de modifier le formulaire de karaoké. (Terminé)
+1.  ****: L'utilisateur approuve explicitement le plan de refactoring pour . (EN COURS)
+2.  ****: Demande de nouvelle fonctionnalité pour l'onglet Candidatures. (EN ATTENTE - Bloquée par le refactoring)
+3.  ****: Signale un bug sur la carte. (TERMINÉ)
+4.  ****: Demande de limiter la recherche de la messagerie aux amis. (TERMINÉ)
+5.  ****: Signale un bug de comptage des groupes par région. (TERMINÉ)
+6.  ****: Insiste sur une copie exacte de l'affichage géographique. (TERMINÉ)
+7.  ****: Demande la vue visuelle par cartes pour les groupes. (TERMINÉ)
+8.  ****: Demande les filtres géographiques pour les groupes. (TERMINÉ)
+9.  ****: Demande de rendre les événements passés cliquables. (TERMINÉ)
+10. ****: Demande de corriger les couleurs des événements. (TERMINÉ)
 
 **Project Health Check:**
--   **Broken:** La création d'événements avec des données de comptabilité est cassée.
+-   **Broken:** Aucune fonctionnalité n'est actuellement cassée. Le travail en cours est une tâche de fond approuvée par l'utilisateur.
 -   **Mocked:** Non.
 
 **3rd Party Integrations**
@@ -165,16 +113,14 @@ L'application dispose d'un système de comptabilité fonctionnel, bien qu'un bug
 -   
 
 **Testing status**
--   **Testing agent used after significant changes:** NO
+-   **Testing agent used after significant changes:** YES
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** None
--   **Known regressions:** La création d'événements avec données comptables ne fonctionne pas.
+-   **Known regressions:** None
 
 **Credentials to test flow:**
--   **Role:** Établissement (Venue)
--   **Email:** 
--   **Password:** 
+-   **Role:** Établissement (Venue) | **Email:**  | **Password:** 
+-   **Role:** Musicien (Musician) | **Email:**  | **Password:** 
 
 **What agent forgot to execute**
--   L'agent n'a pas pu résoudre complètement le bug backend de sauvegarde des données de comptabilité avant d'être redirigé vers une autre tâche par l'utilisateur.
--   La suppression du bouton de test pour la popup de chat et le test final de la correction de l'envoi de messages sont les dernières actions qui n'ont pas été achevées.</analysis>
+-   Rien. L'agent suit le plan convenu avec l'utilisateur : refactoring d'abord, nouvelle fonctionnalité ensuite.</analysis>

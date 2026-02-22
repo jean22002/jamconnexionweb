@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 class PlanningSlotsTester:
-    def __init__(self, base_url="https://venue-invoices.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://musician-rebuild.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0

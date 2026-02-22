@@ -18,7 +18,7 @@ Test the dropdown menu functionality from the "Choisir un fichier" button in the
 5. No console errors occur
 
 ### Test Credentials
-- URL: https://venue-invoices.preview.emergentagent.com
+- URL: https://musician-rebuild.preview.emergentagent.com
 - Email: bar@gmail.com
 - Password: test
 
@@ -239,7 +239,7 @@ Test the "Choisir un fichier" button inside the event edit modal (e.g., "Modifie
 This test is different from the previous "Choisir un fichier" test which focused on the dropdown menu from the paperclip icon in the transaction table. This test focuses specifically on the file upload button **inside the modal** that appears when viewing/editing event details.
 
 ### Test Credentials
-- URL: https://venue-invoices.preview.emergentagent.com
+- URL: https://musician-rebuild.preview.emergentagent.com
 - Email: bar@gmail.com
 - Password: test
 
@@ -366,7 +366,7 @@ This test is different from the previous "Choisir un fichier" test which focused
 - Method: Playwright `page.on('filechooser', handler)`
 - Result: Event triggered successfully
 - File chooser properties: `is_multiple: False`
-- Page URL: `https://venue-invoices.preview.emergentagent.com/venue`
+- Page URL: `https://musician-rebuild.preview.emergentagent.com/venue`
 
 ### Differences from Previous Test
 
@@ -409,7 +409,7 @@ The implementation correctly:
 Test the "Choisir un fichier" option from the paperclip dropdown menu in Comptabilité tab to verify that clicking this option correctly opens the file picker dialog without errors.
 
 ### Test Credentials
-- URL: https://venue-invoices.preview.emergentagent.com
+- URL: https://musician-rebuild.preview.emergentagent.com
 - Email: bar@gmail.com
 - Password: test
 
@@ -545,7 +545,7 @@ The implementation correctly:
 Verify that clicking the Eye icon (FileText icon) next to transactions with invoices in the Comptabilité tab successfully downloads the invoice file.
 
 ### Test Credentials
-- URL: https://venue-invoices.preview.emergentagent.com
+- URL: https://musician-rebuild.preview.emergentagent.com
 - Email: bar@gmail.com
 - Password: test
 
@@ -632,13 +632,13 @@ async def download_invoice(
 ### Test Evidence
 
 **Network Monitoring:**
-- Request URL: `https://venue-invoices.preview.emergentagent.com/api/invoices/concert-test-0_9ad105ca.png`
+- Request URL: `https://musician-rebuild.preview.emergentagent.com/api/invoices/concert-test-0_9ad105ca.png`
 - Request Method: GET
 - Response Status: 200 OK
 - Response Type: blob (binary data)
 
 **Download Mechanism:**
-- Blob URL created: `blob:https://venue-invoices.preview.emergentagent.com/bcc727b7-ee1c-4d18-bb25-762a72ee4eda`
+- Blob URL created: `blob:https://musician-rebuild.preview.emergentagent.com/bcc727b7-ee1c-4d18-bb25-762a72ee4eda`
 - Download triggered via programmatic link click
 - File downloaded with correct filename from response
 
@@ -680,7 +680,7 @@ Test the new "Promotion du groupe" payment method option in the event creation m
 5. No console errors occur
 
 ### Test Credentials
-- URL: https://venue-invoices.preview.emergentagent.com
+- URL: https://musician-rebuild.preview.emergentagent.com
 - Email: bar@gmail.com
 - Password: test
 
@@ -830,7 +830,7 @@ The implementation correctly:
 Verify that the invoice upload feature with paperclip (trombone) icon in the Comptabilité tab works correctly, displaying a dropdown menu with "Prendre une photo" and "Choisir un fichier" options.
 
 ### Test Credentials
-- URL: https://venue-invoices.preview.emergentagent.com
+- URL: https://musician-rebuild.preview.emergentagent.com
 - Email: bar@gmail.com
 - Password: test
 

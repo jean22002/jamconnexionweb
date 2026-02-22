@@ -6,7 +6,7 @@ from datetime import datetime
 
 def test_venue_concerts_endpoint():
     """Test the GET /api/venues/me/concerts endpoint specifically"""
-    base_url = "https://venue-invoices.preview.emergentagent.com/api"
+    base_url = "https://musician-rebuild.preview.emergentagent.com/api"
     
     try:
         print("\n🔍 TESTING GET /api/venues/me/concerts ENDPOINT")

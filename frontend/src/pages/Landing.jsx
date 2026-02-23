@@ -59,6 +59,13 @@ export default function Landing() {
             </Link>
             
             <div className="flex items-center gap-1 sm:gap-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-muted-foreground hover:text-white text-xs sm:text-base px-2 sm:px-4"
+              >
+                clown
+              </Button>
               <Link to="/faq" className="hidden xs:block">
                 <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white text-xs sm:text-base px-2 sm:px-4">
                   FAQ

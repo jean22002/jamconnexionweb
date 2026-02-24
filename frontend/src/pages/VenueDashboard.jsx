@@ -254,6 +254,19 @@ export default function VenueDashboard() {
 
   const daysUntilRenewal = getDaysUntilRenewal();
   const showRenewalReminder = user?.subscription_status === "active" && daysUntilRenewal !== null && daysUntilRenewal <= 5 && daysUntilRenewal > 0;
+  
+  // Check if subscription is expired
+  const isSubscriptionExpired = user?.subscription_status === "expired" || 
+                                 user?.subscription_status === "cancelled" || 
+                                 (user?.subscription_status === "active" && daysUntilRenewal !== null && daysUntilRenewal < 0);
+
+  // Block tabs if subscription expired (except profile)
+  const canAccessTab = (tabValue) => {
+    if (isSubscriptionExpired && tabValue !== 'profile') {
+      return false;
+    }
+    return true;
+  };
 
   const [jamForm, setJamForm] = useState({
     date: "", start_time: "", end_time: "", music_styles: [],
@@ -2335,20 +2348,21 @@ export default function VenueDashboard() {
         )}
 
         {/* Subscription Card - Masqué si abonnement actif */}
-        {user?.subscription_status !== "active" && (
+        {(user?.subscription_status !== "active" || isSubscriptionExpired) && (
           <div className="glassmorphism rounded-2xl p-6 mb-8 neon-border">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h3 className="font-heading font-semibold text-lg mb-1">
-                  {user?.subscription_status === "trial" ? "Période d'essai" : "Abonnez-vous"}
+                  {isSubscriptionExpired ? "Votre abonnement a expiré" : 
+                   user?.subscription_status === "trial" ? "Période d'essai" : "Abonnez-vous"}
                 </h3>
-                <p className="text-muted-foreground text-sm">12,99€/mois pour être visible</p>
+                <p className="text-muted-foreground text-sm">
+                  {isSubscriptionExpired ? "Réabonnez-vous pour continuer à utiliser toutes les fonctionnalités" : "12,99€/mois pour être visible"}
+                </p>
               </div>
-              {user?.subscription_status !== "trial" && (
-                <Button onClick={handleSubscribe} className="bg-primary hover:bg-primary/90 rounded-full px-6 gap-2" data-testid="subscribe-btn">
-                  <CreditCard className="w-4 h-4" /> S'abonner
-                </Button>
-              )}
+              <Button onClick={handleSubscribe} className="bg-primary hover:bg-primary/90 rounded-full px-6 gap-2" data-testid="subscribe-btn">
+                <CreditCard className="w-4 h-4" /> {isSubscriptionExpired ? "Se réabonner" : "S'abonner"}
+              </Button>
             </div>
           </div>
         )}

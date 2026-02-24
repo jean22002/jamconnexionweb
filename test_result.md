@@ -2878,3 +2878,456 @@ const [searchingCity, setSearchingCity] = useState(false);
 ---
 
 
+
+
+## Latest Test: Stripe Payment Flow - /payment/success Page - 2026-02-24
+
+### Test Objective
+Test the complete Stripe payment flow to verify if the `/payment/success` page displays correctly after payment, including:
+1. Navigation to the application
+2. Login functionality
+3. "S'abonner" button click and redirect to Stripe
+4. Direct access to `/payment/success` page
+5. Verification of all page elements
+6. Dashboard return button functionality
+
+### Test Credentials (Requested)
+- **URL**: https://xzbxhqrohcygpxkmojwu.preview.emergentagent.com
+- **Email**: bar@gmail.com
+- **Password**: test
+
+### Test Environment: ❌ **PREVIEW UNAVAILABLE - AGENT SLEEPING**
+- **Status**: ❌ CRITICAL - Preview shows "Preview Unavailable!!!" message
+- **Message**: "Our Agent is resting after inactivity. Visit app.emergent.sh and restart the app to wake it up and restore your preview."
+- **Impact**: Unable to perform live UI testing
+- **All URLs tested**: Both root URL and /payment/success show the same unavailable message
+
+### Test Results: ⚠️ **UNABLE TO TEST - ENVIRONMENT UNAVAILABLE + POTENTIAL CODE ISSUE IDENTIFIED**
+
+#### Test Status Summary
+- ❌ **Live UI Testing**: BLOCKED - Preview environment completely unavailable
+- ✅ **Code Implementation Review**: COMPLETED - Components exist and are structured correctly
+- ❌ **Critical Issue Found**: Payment success page protected by role-based authentication that may block Stripe redirects
+
+---
+
+### CRITICAL ISSUE IDENTIFIED: Protected Route Problem
+
+**File: `/app/frontend/src/App.js` (lines 162-167)**
+
+```javascript
+<Route 
+  path="/payment/success" 
+  element={
+    <ProtectedRoute allowedRole="venue">
+      <PaymentSuccess />
+    </ProtectedRoute>
+  } 
+/>
+```
+
+**Problem:**
+The `/payment/success` route is wrapped in a `ProtectedRoute` with `allowedRole="venue"`, which means:
+1. ✅ User MUST be logged in
+2. ✅ User MUST have role "venue"
+3. ❌ **CRITICAL**: If session is lost during Stripe redirect, user is redirected to `/auth` instead of seeing success page
+4. ❌ **CRITICAL**: User never sees "Paiement accepté !" message
+
+**ProtectedRoute Behavior (App.js, lines 55-75):**
+```javascript
+const ProtectedRoute = ({ children, allowedRole }) => {
+  const { user, loading } = useAuth();
+  
+  if (!user) {
+    return <Navigate to="/auth" replace />;  // ❌ Redirects away from success page
+  }
+  
+  if (allowedRole && user.role !== allowedRole) {
+    return <Navigate to={user.role === "..." ? "/..." : "/"} replace />;
+  }
+  
+  return children;
+};
+```
+
+**Impact:**
+When Stripe redirects to `/payment/success`:
+- If browser session cookie is maintained → ✅ Page works
+- If session is lost or expired → ❌ User redirected to `/auth`, never sees success page
+- Result: Inconsistent user experience
+
+---
+
+### CODE IMPLEMENTATION REVIEW
+
+#### ✅ PaymentSuccess Component (`/app/frontend/src/pages/PaymentSuccess.jsx`)
+
+**Structure Verified:**
+1. ✅ **Import statements** (lines 1-5):
+   - React hooks (useEffect)
+   - React Router (Link, useNavigate)
+   - UI components (Button)
+   - Icons (Music, Check)
+   - Auth context (useAuth)
+
+2. ✅ **Page Layout** (lines 19-81):
+   - Header with "Jam Connexion" branding
+   - Main content area with glassmorphism card
+   - Responsive padding and centering
+
+3. ✅ **Success Indicators** (lines 36-42):
+   ```javascript
+   <div className="w-24 h-24 mx-auto rounded-full bg-green-500/20 flex items-center justify-center mb-6 animate-pulse">
+     <Check className="w-12 h-12 text-green-400" />
+   </div>
+   
+   <h1 className="font-heading font-bold text-4xl mb-4 text-green-400">
+     Paiement accepté ! ✅
+   </h1>
+   ```
+   - ✅ Green check icon with pulse animation
+   - ✅ Title "Paiement accepté ! ✅" with green color
+   - ✅ Proper styling and accessibility
+
+4. ✅ **Confirmation Message** (lines 44-50):
+   - "Votre abonnement à Jam Connexion a été activé avec succès."
+   - "Profitez dès maintenant de toutes les fonctionnalités de la plateforme."
+
+5. ✅ **Subscription Details Box** (lines 52-67):
+   ```javascript
+   <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-5 mb-8">
+     <div className="space-y-2">
+       <div className="flex items-center gap-2 text-green-400">
+         <Check className="w-5 h-5" />
+         <span className="font-semibold">Abonnement mensuel activé</span>
+       </div>
+       // ... more features
+     </div>
+   </div>
+   ```
+   - ✅ "Abonnement mensuel activé"
+   - ✅ "Renouvellement automatique chaque mois"
+   - ✅ "Confirmation envoyée par email"
+   - ✅ All with check icons
+
+6. ✅ **Dashboard Button** (lines 69-74):
+   ```javascript
+   <Button 
+     onClick={() => navigate(user?.role === "venue" ? "/venue" : user?.role === "musician" ? "/musician" : "/")}
+     className="w-full bg-primary hover:bg-primary/90 rounded-full py-6 font-heading text-lg font-semibold hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] transition-all"
+   >
+     Accéder à mon tableau de bord
+   </Button>
+   ```
+   - ✅ Text: "Accéder à mon tableau de bord"
+   - ✅ Navigates based on user role (venue/musician)
+   - ✅ Full-width, primary color, proper styling
+
+7. ✅ **Support Contact** (line 76-78):
+   - "Besoin d'aide ? Contactez notre support à support@jamconnexion.com"
+
+8. ✅ **User Refresh Logic** (lines 11-16):
+   ```javascript
+   useEffect(() => {
+     if (refreshUser) {
+       refreshUser();  // Refreshes user data after subscription
+     }
+   }, [refreshUser]);
+   ```
+
+---
+
+#### ✅ Subscription Button Implementation (`/app/frontend/src/pages/VenueDashboard.jsx`)
+
+**Location: Lines 2323-2340**
+
+```javascript
+{/* Subscription Card */}
+{user?.subscription_status !== "active" && (
+  <div className="glassmorphism rounded-2xl p-6 mb-8 neon-border">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div>
+        <h3 className="font-heading font-semibold text-lg mb-1">
+          {user?.subscription_status === "trial" ? "Période d'essai" : "Abonnez-vous"}
+        </h3>
+        <p className="text-muted-foreground text-sm">12,99€/mois pour être visible</p>
+      </div>
+      {user?.subscription_status !== "trial" && (
+        <Button onClick={handleSubscribe} className="bg-primary hover:bg-primary/90 rounded-full px-6 gap-2" data-testid="subscribe-btn">
+          <CreditCard className="w-4 h-4" /> S'abonner
+        </Button>
+      )}
+    </div>
+  </div>
+)}
+```
+
+**Subscribe Handler (lines 720-722):**
+```javascript
+const handleSubscribe = () => {
+  window.location.href = STRIPE_PAYMENT_LINK;  // Redirects to Stripe
+};
+```
+
+**Stripe Payment Link (line 52):**
+```javascript
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/test_6oUcN67JN7NE7pR7mR6c001";
+```
+
+**Verification:**
+- ✅ Button has `data-testid="subscribe-btn"` for testing
+- ✅ Button only shows when `subscription_status !== "active"` and not in trial
+- ✅ Redirects to Stripe test payment link
+- ✅ Uses CreditCard icon with "S'abonner" text
+
+---
+
+#### ✅ Payment Cancel Page (`/app/frontend/src/pages/PaymentCancel.jsx`)
+
+**Also properly implemented with:**
+- ✅ "Paiement annulé" message
+- ✅ "Réessayer le paiement" button → redirects to Stripe
+- ✅ "Retour au tableau de bord" button → navigates based on role
+- ✅ Same Stripe payment link
+- ✅ Also wrapped in `ProtectedRoute allowedRole="venue"`
+
+---
+
+### Test Limitations
+
+**What Could NOT Be Tested (Due to Environment Unavailable):**
+1. ❌ Live application navigation
+2. ❌ Login functionality
+3. ❌ "S'abonner" button click
+4. ❌ Stripe redirect behavior
+5. ❌ Success page rendering in browser
+6. ❌ Dashboard button navigation
+7. ❌ Session persistence through Stripe flow
+8. ❌ Role-based redirect behavior
+9. ❌ Visual appearance of success page
+10. ❌ User experience of complete payment flow
+
+**What WAS Verified (Via Code Review):**
+1. ✅ All components exist and are properly structured
+2. ✅ PaymentSuccess page has all required elements
+3. ✅ Subscribe button properly configured
+4. ✅ Stripe payment link configured
+5. ✅ Routing setup in App.js
+6. ✅ Component styling and layout
+7. ✅ Navigation logic for dashboard button
+8. ✅ User refresh logic
+9. ❌ **IDENTIFIED**: Protected route may block access after Stripe redirect
+
+---
+
+### Playwright Test Results
+
+**Test Execution:**
+- Date: 2026-02-24
+- Test Script: Comprehensive flow test with login, subscribe, and success page verification
+- Screenshots Captured: 5 images (all showing "Preview Unavailable")
+
+**Test Output:**
+```
+❌ CRITICAL: Preview is unavailable - agent might be sleeping
+❌ Could not find login button
+❌ Subscribe button not found - user might already have active subscription
+❌ Could not find 'Paiement accepté' title (on /payment/success)
+❌ Dashboard button not found (on /payment/success)
+❌ Page shows 'Preview Unavailable'
+```
+
+**Console Logs:**
+- 404 errors for root URL and /payment/success
+- Google Analytics and tracking errors (expected, not critical)
+- No application-specific errors (app not loaded)
+
+---
+
+### Root Cause Analysis
+
+#### Issue 1: ❌ Preview Environment Unavailable (CRITICAL)
+**Problem:** Agent is sleeping, preview not accessible
+**Impact:** Cannot perform any live testing
+**Resolution:** User needs to visit app.emergent.sh and restart the app
+
+#### Issue 2: ⚠️ Protected Route on Payment Success Page (ARCHITECTURAL)
+**Problem:** `/payment/success` requires authenticated session with venue role
+**Impact:** If Stripe redirect loses session, user never sees success page
+**Risk Level:** HIGH - Inconsistent user experience
+
+**Recommended Fix:**
+```javascript
+// Option 1: Remove ProtectedRoute (Recommended)
+<Route 
+  path="/payment/success" 
+  element={<PaymentSuccess />}  // No protection
+/>
+
+// Option 2: Add session token to Stripe return URL
+// Configure Stripe Payment Link success_url with:
+// https://xzbxhqrohcygpxkmojwu.preview.emergentagent.com/payment/success?session_id={CHECKOUT_SESSION_ID}
+// Then verify session_id in component
+```
+
+**Why This Matters:**
+When users complete payment on Stripe and are redirected back:
+- Their browser session cookie may or may not persist
+- If session is lost → ProtectedRoute redirects to `/auth`
+- User never sees "Paiement accepté !" message
+- User doesn't know payment succeeded
+- Poor user experience and potential support issues
+
+---
+
+### Expected Behavior (When Environment Available)
+
+**Complete User Flow:**
+
+1. **User visits app** ✅ (Code ready)
+   - Loads homepage or dashboard
+
+2. **User logs in with bar@gmail.com / test** ✅ (Code ready)
+   - Credentials authenticated
+   - Redirected to venue dashboard
+
+3. **User sees subscription card** ✅ (Code ready)
+   - Only visible if `subscription_status !== "active"`
+   - Shows "Abonnez-vous" heading
+   - Shows "12,99€/mois pour être visible"
+   - Button: "S'abonner" with CreditCard icon
+
+4. **User clicks "S'abonner" button** ✅ (Code ready)
+   - `handleSubscribe()` called
+   - Redirects to: `https://buy.stripe.com/test_6oUcN67JN7NE7pR7mR6c001`
+   - Browser navigates to Stripe checkout page
+
+5. **User completes payment on Stripe** ⚠️ (External, cannot test)
+   - Enters payment information
+   - Completes test payment
+   - Stripe processes payment
+
+6. **Stripe redirects to success page** ⚠️ (POTENTIAL ISSUE)
+   - Stripe redirects to `/payment/success`
+   - **IF SESSION MAINTAINED**: Success page displays ✅
+   - **IF SESSION LOST**: Redirected to `/auth` ❌
+
+7. **Success page displays (if session maintained)** ✅ (Code ready)
+   - Green animated check icon
+   - Title: "Paiement accepté ! ✅"
+   - Message: "Votre abonnement à Jam Connexion a été activé avec succès."
+   - Details box with:
+     - "Abonnement mensuel activé"
+     - "Renouvellement automatique chaque mois"
+     - "Confirmation envoyée par email"
+   - Button: "Accéder à mon tableau de bord"
+
+8. **User clicks dashboard button** ✅ (Code ready)
+   - Navigates to `/venue` (for venue role)
+   - User sees their dashboard
+
+---
+
+### Conclusion
+
+❌ **LIVE TESTING: BLOCKED**
+- Preview environment unavailable (agent sleeping)
+- Cannot verify actual payment flow
+- Cannot test Stripe redirect behavior
+- Cannot verify session persistence
+
+✅ **CODE REVIEW: IMPLEMENTATION CORRECT**
+- All components properly structured
+- All required UI elements present
+- Subscribe button properly configured
+- Success page has all expected content
+- Navigation logic implemented
+- No syntax errors or missing imports
+
+⚠️ **CRITICAL ISSUE: PROTECTED ROUTE PROBLEM**
+- `/payment/success` wrapped in ProtectedRoute
+- May block users if session lost during Stripe redirect
+- Inconsistent user experience risk
+- Requires architectural fix
+
+---
+
+### Recommendations for Main Agent
+
+#### IMMEDIATE ACTIONS:
+
+1. **Fix Protected Route Issue** (HIGH PRIORITY)
+   - Remove `ProtectedRoute` wrapper from `/payment/success`
+   - OR implement session token verification via Stripe redirect URL
+   - This ensures users always see success page after payment
+
+2. **Wake Up Preview Environment**
+   - Visit app.emergent.sh
+   - Restart the app at URL: https://xzbxhqrohcygpxkmojwu.preview.emergentagent.com
+   - Verify preview loads correctly
+
+3. **Manual Testing Required** (After environment fix)
+   - Test complete payment flow with real user
+   - Verify Stripe redirect maintains session
+   - Confirm success page displays after payment
+   - Test dashboard button navigation
+   - Verify subscription status updates
+
+#### OPTIONAL ENHANCEMENTS:
+
+1. **Session Management**
+   - Implement longer session timeout for payment flows
+   - Add session token to Stripe success URL
+   - Verify payment status via Stripe webhook instead of relying on redirect
+
+2. **Error Handling**
+   - Add fallback if user lands on success page without valid payment
+   - Show error message if subscription not found
+   - Add "Contact Support" option if issues occur
+
+3. **Testing**
+   - Add Playwright tests for success page (when environment available)
+   - Test with expired sessions
+   - Test with different user roles
+   - Test cancel flow as well
+
+---
+
+### File References
+
+**Frontend Files:**
+- `/app/frontend/src/pages/PaymentSuccess.jsx` - Success page component (84 lines)
+- `/app/frontend/src/pages/PaymentCancel.jsx` - Cancel page component (120 lines)
+- `/app/frontend/src/pages/VenueDashboard.jsx` - Subscribe button (lines 720-722, 2323-2340)
+- `/app/frontend/src/App.js` - Routing configuration (lines 162-176)
+
+**Environment:**
+- `/app/frontend/.env` - REACT_APP_BACKEND_URL configured
+
+**Stripe Configuration:**
+- Test Payment Link: `https://buy.stripe.com/test_6oUcN67JN7NE7pR7mR6c001`
+- Used in: VenueDashboard.jsx, PaymentCancel.jsx
+
+---
+
+### Screenshots Captured
+
+1. `00_preview_unavailable.png` - Initial page showing "Preview Unavailable!!!"
+2. `01_initial_page.png` - Same unavailable message
+3. `05_no_subscribe_button.png` - Cannot find subscribe button (page not loaded)
+4. `07_payment_success_page.png` - /payment/success also shows unavailable message
+5. `09_final_state.png` - Final state still unavailable
+
+**All screenshots show:** Dark page with Emergent logo, robot icon, "Preview Unavailable!!!" message, and "Contact Support" / "Open Emergent" buttons.
+
+---
+
+### Test Status: ⚠️ INCOMPLETE - REQUIRES ENVIRONMENT FIX + CODE FIX
+
+**Next Steps:**
+1. ❗ CRITICAL: Remove ProtectedRoute from /payment/success route
+2. Wake up preview environment
+3. Retry testing with live application
+4. Verify complete payment flow works
+5. Confirm session persistence through Stripe redirect
+

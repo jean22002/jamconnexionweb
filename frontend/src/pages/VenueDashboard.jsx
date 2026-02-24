@@ -2445,33 +2445,116 @@ export default function VenueDashboard() {
         )}
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={(newTab) => {
+          // Si abonnement expiré, autoriser seulement l'onglet profil
+          if (isSubscriptionExpired && newTab !== 'profile') {
+            toast.error("Accès limité - Veuillez renouveler votre abonnement pour accéder à cette section");
+            return;
+          }
+          setActiveTab(newTab);
+        }} className="w-full">
           <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 mb-6 gap-1 scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-transparent min-h-[44px] items-center">
             <TabsTrigger value="profile" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Profil</TabsTrigger>
-            <TabsTrigger value="jams" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Bœufs</TabsTrigger>
-            <TabsTrigger value="concerts" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Concerts</TabsTrigger>
-            <TabsTrigger value="karaoke" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Karaoké</TabsTrigger>
-            <TabsTrigger value="spectacle" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Spectacle</TabsTrigger>
-            <TabsTrigger value="planning" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Planning</TabsTrigger>
-            <TabsTrigger value="candidatures" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
-              Candidatures
+            <TabsTrigger 
+              value="jams" 
+              disabled={isSubscriptionExpired}
+              className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              Bœufs {isSubscriptionExpired && '🔒'}
             </TabsTrigger>
-            <TabsTrigger value="jacks" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
+            <TabsTrigger 
+              value="concerts" 
+              disabled={isSubscriptionExpired}
+              className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              Concerts {isSubscriptionExpired && '🔒'}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="karaoke" 
+              disabled={isSubscriptionExpired}
+              className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              Karaoké {isSubscriptionExpired && '🔒'}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="spectacle" 
+              disabled={isSubscriptionExpired}
+              className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              Spectacle {isSubscriptionExpired && '🔒'}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="planning" 
+              disabled={isSubscriptionExpired}
+              className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              Planning {isSubscriptionExpired && '🔒'}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="candidatures" 
+              disabled={isSubscriptionExpired}
+              className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              Candidatures {isSubscriptionExpired && '🔒'}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="jacks" 
+              disabled={isSubscriptionExpired}
+              className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
               <Plug className="w-4 h-4 inline mr-1" />
-              Jacks
+              Jacks {isSubscriptionExpired && '🔒'}
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
+            <TabsTrigger 
+              value="notifications" 
+              disabled={isSubscriptionExpired}
+              className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
               <Bell className="w-4 h-4 inline mr-1" />
-              Notifications
+              Notifications {isSubscriptionExpired && '🔒'}
             </TabsTrigger>
-            <TabsTrigger value="history" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Historique</TabsTrigger>
-            <TabsTrigger value="accounting" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
-              💰 Comptabilité
+            <TabsTrigger 
+              value="history" 
+              disabled={isSubscriptionExpired}
+              className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              Historique {isSubscriptionExpired && '🔒'}
             </TabsTrigger>
-            <TabsTrigger value="reviews" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Avis</TabsTrigger>
-            <TabsTrigger value="bands" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Groupes</TabsTrigger>
-            <TabsTrigger value="gallery" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Galerie</TabsTrigger>
-            <TabsTrigger value="settings" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Paramètres</TabsTrigger>
+            <TabsTrigger 
+              value="accounting" 
+              disabled={isSubscriptionExpired}
+              className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              💰 Comptabilité {isSubscriptionExpired && '🔒'}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="reviews" 
+              disabled={isSubscriptionExpired}
+              className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              Avis {isSubscriptionExpired && '🔒'}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="bands" 
+              disabled={isSubscriptionExpired}
+              className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              Groupes {isSubscriptionExpired && '🔒'}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="gallery" 
+              disabled={isSubscriptionExpired}
+              className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              Galerie {isSubscriptionExpired && '🔒'}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="settings" 
+              disabled={isSubscriptionExpired}
+              className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              Paramètres {isSubscriptionExpired && '🔒'}
+            </TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}

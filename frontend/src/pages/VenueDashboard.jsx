@@ -2308,7 +2308,7 @@ export default function VenueDashboard() {
           <p className="text-muted-foreground">Gérez votre établissement et vos événements</p>
         </div>
 
-        {/* Profile Completion Alert */}
+        {/* Profile Completion Alert - Masqué si profil complet */}
         {!isProfileComplete() && (
           <div className="glassmorphism border-2 border-yellow-500/50 rounded-2xl p-4 mb-6">
             <div className="flex items-start gap-3">
@@ -2320,7 +2320,7 @@ export default function VenueDashboard() {
                   Complétez votre profil
                 </p>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Merci de bien remplir tous les champs de votre profil (nom, adresse, ville, téléphone, description) afin de pouvoir commencer à créer des événements et être visible par les musiciens.
+                  Merci de renseigner au minimum le nom et la localisation de votre établissement pour commencer.
                 </p>
                 <Button 
                   onClick={() => setActiveTab('profile')} 
@@ -2334,7 +2334,7 @@ export default function VenueDashboard() {
           </div>
         )}
 
-        {/* Subscription Card */}
+        {/* Subscription Card - Masqué si abonnement actif */}
         {user?.subscription_status !== "active" && (
           <div className="glassmorphism rounded-2xl p-6 mb-8 neon-border">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -2353,8 +2353,8 @@ export default function VenueDashboard() {
           </div>
         )}
 
-        {/* Trial Banner */}
-        {subscriptionStatus === "trial" && trialDaysLeft !== null && (
+        {/* Trial Banner - Masqué si abonnement actif */}
+        {subscriptionStatus === "trial" && trialDaysLeft !== null && user?.subscription_status !== "active" && (
           <div className="glassmorphism border-2 border-secondary/50 rounded-2xl p-4 mb-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
@@ -2380,6 +2380,26 @@ export default function VenueDashboard() {
                   S'abonner maintenant
                 </Link>
               </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Renewal Reminder Banner - 5 jours avant échéance si abonnement actif */}
+        {showRenewalReminder && (
+          <div className="glassmorphism border-2 border-blue-500/50 rounded-2xl p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5 text-blue-400" />
+              </div>
+              <div className="flex-1">
+                <p className="font-heading font-semibold text-lg mb-1">
+                  Renouvellement de votre abonnement
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Votre abonnement sera renouvelé automatiquement dans {daysUntilRenewal} jour{daysUntilRenewal > 1 ? "s" : ""} pour 12,99€.
+                  {daysUntilRenewal === 1 && " C'est demain !"}
+                </p>
+              </div>
             </div>
           </div>
         )}

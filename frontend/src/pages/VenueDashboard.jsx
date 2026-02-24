@@ -234,12 +234,26 @@ export default function VenueDashboard() {
     allow_messages_from: "everyone" // "everyone" or "connected_only"
   });
 
-  // Check if profile is complete
+  // Check if profile is complete (name + location minimum)
   const isProfileComplete = () => {
     if (!profile) return false;
-    const requiredFields = ['name', 'address', 'city', 'postal_code', 'description', 'phone'];
-    return requiredFields.every(field => profile[field] && profile[field].trim() !== '');
+    // Minimum requis : nom + localisation (adresse OU ville)
+    return profile.name && profile.name.trim() !== '' && 
+           ((profile.address && profile.address.trim() !== '') || (profile.city && profile.city.trim() !== ''));
   };
+
+  // Calculate days until subscription renewal
+  const getDaysUntilRenewal = () => {
+    if (!user?.subscription_end_date) return null;
+    const endDate = new Date(user.subscription_end_date);
+    const today = new Date();
+    const diffTime = endDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const daysUntilRenewal = getDaysUntilRenewal();
+  const showRenewalReminder = user?.subscription_status === "active" && daysUntilRenewal !== null && daysUntilRenewal <= 5 && daysUntilRenewal > 0;
 
   const [jamForm, setJamForm] = useState({
     date: "", start_time: "", end_time: "", music_styles: [],

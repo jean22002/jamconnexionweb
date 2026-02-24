@@ -2398,7 +2398,7 @@ export default function VenueDashboard() {
           </div>
         )}
 
-        {/* Renewal Reminder Banner - 5 jours avant échéance si abonnement actif */}
+        {/* Renewal Reminder Banner - Compte à rebours 5 jours avant échéance */}
         {showRenewalReminder && (
           <div className="glassmorphism border-2 border-blue-500/50 rounded-2xl p-4 mb-6">
             <div className="flex items-start gap-3">
@@ -2406,13 +2406,39 @@ export default function VenueDashboard() {
                 <Clock className="w-5 h-5 text-blue-400" />
               </div>
               <div className="flex-1">
-                <p className="font-heading font-semibold text-lg mb-1">
-                  Renouvellement de votre abonnement
+                <p className="font-heading font-semibold text-xl mb-1">
+                  ⏰ Renouvellement dans {daysUntilRenewal} jour{daysUntilRenewal > 1 ? "s" : ""}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Votre abonnement sera renouvelé automatiquement dans {daysUntilRenewal} jour{daysUntilRenewal > 1 ? "s" : ""} pour 12,99€.
+                  Votre abonnement sera renouvelé automatiquement pour 12,99€.
                   {daysUntilRenewal === 1 && " C'est demain !"}
                 </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Expired Subscription Alert - Bloque l'accès aux onglets */}
+        {isSubscriptionExpired && (
+          <div className="glassmorphism border-2 border-red-500/50 rounded-2xl p-5 mb-6">
+            <div className="flex items-start gap-3">
+              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-6 h-6 text-red-400" />
+              </div>
+              <div className="flex-1">
+                <p className="font-heading font-semibold text-xl mb-2">
+                  ⚠️ Accès limité - Abonnement expiré
+                </p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Votre abonnement a expiré. Vous ne pouvez plus accéder aux fonctionnalités de gestion d'événements. 
+                  Réabonnez-vous pour retrouver l'accès complet à votre dashboard.
+                </p>
+                <Button 
+                  onClick={handleSubscribe} 
+                  className="bg-red-500 hover:bg-red-600 rounded-full px-6 gap-2"
+                >
+                  <CreditCard className="w-4 h-4" /> Se réabonner maintenant
+                </Button>
               </div>
             </div>
           </div>

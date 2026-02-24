@@ -67,10 +67,16 @@ export default function PaymentSuccess() {
           </div>
           
           <Button 
-            onClick={() => navigate(user?.role === "venue" ? "/venue" : user?.role === "musician" ? "/musician" : "/")}
+            onClick={() => {
+              if (!user) {
+                navigate("/auth");
+              } else {
+                navigate(user.role === "venue" ? "/venue" : user.role === "musician" ? "/musician" : "/");
+              }
+            }}
             className="w-full bg-primary hover:bg-primary/90 rounded-full py-6 font-heading text-lg font-semibold hover:shadow-[0_0_30px_rgba(217,70,239,0.6)] transition-all"
           >
-            Accéder à mon tableau de bord
+            {user ? "Accéder à mon tableau de bord" : "Se connecter pour continuer"}
           </Button>
 
           <p className="text-muted-foreground text-sm mt-6">

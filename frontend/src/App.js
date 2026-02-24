@@ -160,19 +160,11 @@ function App() {
           />
           <Route 
             path="/payment/success" 
-            element={
-              <ProtectedRoute allowedRole="venue">
-                <PaymentSuccess />
-              </ProtectedRoute>
-            } 
+            element={<PaymentSuccess />} 
           />
           <Route 
             path="/payment/cancel" 
-            element={
-              <ProtectedRoute allowedRole="venue">
-                <PaymentCancel />
-              </ProtectedRoute>
-            } 
+            element={<PaymentCancel />} 
           />
           <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
           <Route path="/messages-improved" element={<ProtectedRoute><MessagesImproved /></ProtectedRoute>} />

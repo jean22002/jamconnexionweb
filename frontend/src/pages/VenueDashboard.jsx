@@ -749,6 +749,48 @@ export default function VenueDashboard() {
     window.location.href = STRIPE_PAYMENT_LINK;
   };
 
+  // Cancel subscription renewal
+  const handleCancelRenewal = async () => {
+    if (!window.confirm("Êtes-vous sûr de vouloir annuler le renouvellement automatique ? Votre abonnement restera actif jusqu'à la fin de la période payée.")) {
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${API}/payments/cancel-renewal`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        toast.success(response.data.message);
+        await refreshUser(); // Rafraîchir les données utilisateur
+      }
+    } catch (error) {
+      console.error("Error cancelling renewal:", error);
+      toast.error(error.response?.data?.detail || "Erreur lors de l'annulation du renouvellement");
+    }
+  };
+
+  // Reactivate subscription renewal
+  const handleReactivateRenewal = async () => {
+    try {
+      const response = await axios.post(
+        `${API}/payments/reactivate-renewal`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        toast.success(response.data.message);
+        await refreshUser(); // Rafraîchir les données utilisateur
+      }
+    } catch (error) {
+      console.error("Error reactivating renewal:", error);
+      toast.error(error.response?.data?.detail || "Erreur lors de la réactivation du renouvellement");
+    }
+  };
+
   // Broadcast Notifications
   const fetchNearbyMusiciansCount = async () => {
     try {

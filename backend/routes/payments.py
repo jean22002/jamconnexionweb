@@ -218,6 +218,23 @@ async def reactivate_subscription_renewal(current_user: dict = Depends(get_curre
             "success": True,
             "message": "Le renouvellement automatique a été réactivé.",
             "next_billing_date": datetime.fromtimestamp(subscription.current_period_end, tz=timezone.utc).isoformat()
+        }
+    
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error in reactivate_renewal: {str(e)}")
+        return {
+            "success": False,
+            "message": f"Erreur Stripe: {str(e)}"
+        }
+    except HTTPException:
+        # Re-raise HTTPException for proper FastAPI handling (404, 403)
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error in reactivate_renewal: {str(e)}")
+        return {
+            "success": False,
+            "message": "Erreur interne du serveur"
+        }
 
 
 @router.post("/simulate-successful-payment")

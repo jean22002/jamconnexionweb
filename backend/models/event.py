@@ -20,10 +20,10 @@ class JamEvent(BaseModel):
 class JamEventResponse(BaseModel):
     id: str
     venue_id: str
-    venue_name: str
+    venue_name: str = ""  # Default for older records
     date: str
-    start_time: str
-    end_time: str
+    start_time: str = ""  # Default for older records
+    end_time: str = ""  # Default for older records
     music_styles: List[str] = []
     rules: Optional[str] = None
     has_instruments: bool = False

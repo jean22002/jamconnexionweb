@@ -164,11 +164,17 @@ async def cancel_subscription_renewal(current_user: dict = Depends(get_current_u
         }
     
     except stripe.error.StripeError as e:
-        logger.error(f"Stripe error: {str(e)}")
-        raise HTTPException(status_code=400, detail=f"Erreur Stripe: {str(e)}")
+        logger.error(f"Stripe error in cancel_renewal: {str(e)}")
+        return {
+            "success": False,
+            "message": f"Erreur Stripe: {str(e)}"
+        }
     except Exception as e:
         logger.error(f"Unexpected error in cancel_renewal: {str(e)}")
-        raise HTTPException(status_code=500, detail="Erreur interne du serveur")
+        return {
+            "success": False,
+            "message": "Erreur interne du serveur"
+        }
 
 @router.post("/reactivate-renewal")
 async def reactivate_subscription_renewal(current_user: dict = Depends(get_current_user)):
@@ -188,7 +194,10 @@ async def reactivate_subscription_renewal(current_user: dict = Depends(get_curre
         stripe_subscription_id = user.get("stripe_subscription_id")
         
         if not stripe_subscription_id:
-            raise HTTPException(status_code=400, detail="Aucun abonnement actif trouvé")
+            return {
+                "success": False,
+                "message": "Aucun abonnement actif trouvé"
+            }
         
         # Réactiver le renouvellement dans Stripe
         subscription = stripe.Subscription.modify(
@@ -212,8 +221,14 @@ async def reactivate_subscription_renewal(current_user: dict = Depends(get_curre
         }
     
     except stripe.error.StripeError as e:
-        logger.error(f"Stripe error: {str(e)}")
-        raise HTTPException(status_code=400, detail=f"Erreur Stripe: {str(e)}")
+        logger.error(f"Stripe error in reactivate_renewal: {str(e)}")
+        return {
+            "success": False,
+            "message": f"Erreur Stripe: {str(e)}"
+        }
     except Exception as e:
         logger.error(f"Unexpected error in reactivate_renewal: {str(e)}")
-        raise HTTPException(status_code=500, detail="Erreur interne du serveur")
+        return {
+            "success": False,
+            "message": "Erreur interne du serveur"
+        }

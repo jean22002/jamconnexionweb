@@ -218,6 +218,46 @@ async def reactivate_subscription_renewal(current_user: dict = Depends(get_curre
             "success": True,
             "message": "Le renouvellement automatique a été réactivé.",
             "next_billing_date": datetime.fromtimestamp(subscription.current_period_end, tz=timezone.utc).isoformat()
+
+
+@router.post("/simulate-successful-payment")
+async def simulate_successful_payment(current_user: dict = Depends(get_current_user)):
+    """
+    Endpoint temporaire pour simuler un paiement réussi et activer l'abonnement
+    À UTILISER UNIQUEMENT POUR LES TESTS QUAND LE WEBHOOK NE FONCTIONNE PAS
+    """
+    try:
+        # Calculer la date de fin d'abonnement (1 mois à partir de maintenant)
+        from dateutil.relativedelta import relativedelta
+        end_date = datetime.now(timezone.utc) + relativedelta(months=1)
+        
+        # Mise à jour du statut d'abonnement
+        await db.users.update_one(
+            {"id": current_user["id"]},
+            {"$set": {
+                "subscription_status": "active",
+                "has_active_subscription": True,
+                "subscription_started": datetime.now(timezone.utc).isoformat(),
+                "subscription_end_date": end_date.isoformat(),
+                "subscription_cancel_at_period_end": False,
+                "trial_end": None,
+                "trial_days_left": None
+            }}
+        )
+        
+        logger.info(f"Simulated successful payment for user {current_user['id']}")
+        
+        return {
+            "success": True,
+            "message": "Abonnement activé avec succès",
+            "subscription_status": "active",
+            "subscription_end_date": end_date.isoformat()
+        }
+    
+    except Exception as e:
+        logger.error(f"Error simulating payment: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur lors de la simulation du paiement")
+
         }
     
     except stripe.error.StripeError as e:

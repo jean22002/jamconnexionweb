@@ -2390,7 +2390,7 @@ export default function VenueDashboard() {
         )}
 
         {/* Subscription Card - Masqué si abonnement actif */}
-        {(user?.subscription_status !== "active" || isSubscriptionExpired) && (
+        {(!user?.subscription_status || user?.subscription_status === "trial" || isSubscriptionExpired) && (
           <div className="glassmorphism rounded-2xl p-6 mb-8 neon-border">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
@@ -2409,8 +2409,8 @@ export default function VenueDashboard() {
           </div>
         )}
 
-        {/* Trial Banner - Masqué si abonnement actif */}
-        {subscriptionStatus === "trial" && trialDaysLeft !== null && user?.subscription_status !== "active" && (
+        {/* Trial Banner - Masqué si abonnement actif OU si subscription_status est null/undefined */}
+        {user?.subscription_status === "trial" && trialDaysLeft !== null && trialDaysLeft > 0 && (
           <div className="glassmorphism border-2 border-secondary/50 rounded-2xl p-4 mb-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">

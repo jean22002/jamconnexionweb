@@ -56,14 +56,35 @@ async def stripe_webhook(request: Request):
             user_id = session.get('client_reference_id') or session.get('metadata', {}).get('user_id')
             
             if user_id:
+                # Get subscription details from Stripe
+                subscription_id = session.get('subscription')
+                
+                update_data = {
+                    "subscription_status": "active",
+                    "has_active_subscription": True,
+                    "subscription_started": datetime.now(timezone.utc).isoformat(),
+                    "trial_end": None,  # Clear trial status
+                    "trial_days_left": None  # Clear trial days
+                }
+                
+                # If subscription ID exists, store it and get end date
+                if subscription_id:
+                    try:
+                        subscription = stripe.Subscription.retrieve(subscription_id)
+                        update_data["stripe_subscription_id"] = subscription_id
+                        update_data["stripe_customer_id"] = subscription.customer
+                        update_data["subscription_end_date"] = datetime.fromtimestamp(
+                            subscription.current_period_end, tz=timezone.utc
+                        ).isoformat()
+                        update_data["subscription_cancel_at_period_end"] = subscription.cancel_at_period_end
+                        logger.info(f"Retrieved subscription details: {subscription_id}")
+                    except Exception as e:
+                        logger.error(f"Error retrieving subscription: {e}")
+                
                 # Update user subscription status
                 await db.users.update_one(
                     {"id": user_id},
-                    {"$set": {
-                        "subscription_status": "active",
-                        "has_active_subscription": True,
-                        "subscription_started": datetime.now(timezone.utc).isoformat()
-                    }}
+                    {"$set": update_data}
                 )
                 
                 # Update transaction status
@@ -75,7 +96,7 @@ async def stripe_webhook(request: Request):
                         "completed_at": datetime.now(timezone.utc).isoformat()
                     }}
                 )
-                logger.info(f"Subscription activated for user {user_id}")
+                logger.info(f"Subscription activated for user {user_id} with status: active")
         
         elif event.type == 'customer.subscription.deleted':
             # Handle subscription cancellation

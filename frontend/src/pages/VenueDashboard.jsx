@@ -2441,21 +2441,62 @@ export default function VenueDashboard() {
         )}
 
         {/* Renewal Reminder Banner - Compte à rebours 5 jours avant échéance */}
-        {showRenewalReminder && (
+        {showRenewalReminder && !user?.subscription_cancel_at_period_end && (
           <div className="glassmorphism border-2 border-blue-500/50 rounded-2xl p-4 mb-6">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                <Clock className="w-5 h-5 text-blue-400" />
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3 flex-1">
+                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                  <Clock className="w-5 h-5 text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-heading font-semibold text-xl mb-1">
+                    ⏰ Renouvellement dans {daysUntilRenewal} jour{daysUntilRenewal > 1 ? "s" : ""}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Votre abonnement sera renouvelé automatiquement pour 12,99€.
+                    {daysUntilRenewal === 1 && " C'est demain !"}
+                  </p>
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="font-heading font-semibold text-xl mb-1">
-                  ⏰ Renouvellement dans {daysUntilRenewal} jour{daysUntilRenewal > 1 ? "s" : ""}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Votre abonnement sera renouvelé automatiquement pour 12,99€.
-                  {daysUntilRenewal === 1 && " C'est demain !"}
-                </p>
+              <Button 
+                onClick={handleCancelRenewal}
+                variant="outline" 
+                size="sm"
+                className="border-red-500/50 text-red-400 hover:bg-red-500/10 rounded-full whitespace-nowrap"
+              >
+                Annuler le renouvellement
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Cancelled Subscription Banner - Annulation prévue */}
+        {user?.subscription_cancel_at_period_end && user?.subscription_status === "active" && daysUntilRenewal !== null && daysUntilRenewal > 0 && (
+          <div className="glassmorphism border-2 border-orange-500/50 rounded-2xl p-4 mb-6">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3 flex-1">
+                <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="w-5 h-5 text-orange-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-heading font-semibold text-xl mb-1">
+                    ⚠️ Annulation prévue dans {daysUntilRenewal} jour{daysUntilRenewal > 1 ? "s" : ""}
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Vous avez annulé le renouvellement automatique. Votre abonnement restera actif jusqu'à la fin de la période payée.
+                  </p>
+                  <p className="text-xs text-orange-400">
+                    💡 Vous pouvez changer d'avis et réactiver le renouvellement avant la fin de la période.
+                  </p>
+                </div>
               </div>
+              <Button 
+                onClick={handleReactivateRenewal}
+                size="sm"
+                className="bg-primary hover:bg-primary/90 rounded-full whitespace-nowrap"
+              >
+                Réactiver
+              </Button>
             </div>
           </div>
         )}

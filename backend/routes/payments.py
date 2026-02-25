@@ -118,3 +118,102 @@ async def get_payment_status(session_id: str, request: Request, current_user: di
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail="Erreur interne du serveur")
+
+
+@router.post("/cancel-renewal")
+async def cancel_subscription_renewal(current_user: dict = Depends(get_current_user)):
+    """
+    Annule le renouvellement automatique de l'abonnement.
+    L'abonnement reste actif jusqu'à la fin de la période payée.
+    """
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venue accounts can manage subscriptions")
+    
+    try:
+        # Récupérer le stripe_subscription_id de l'utilisateur
+        user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        
+        stripe_subscription_id = user.get("stripe_subscription_id")
+        
+        if not stripe_subscription_id:
+            raise HTTPException(status_code=400, detail="Aucun abonnement actif trouvé")
+        
+        # Annuler le renouvellement dans Stripe (à la fin de la période)
+        subscription = stripe.Subscription.modify(
+            stripe_subscription_id,
+            cancel_at_period_end=True
+        )
+        
+        # Mettre à jour l'utilisateur dans la BD
+        await db.users.update_one(
+            {"id": current_user["id"]},
+            {"$set": {
+                "subscription_cancel_at_period_end": True,
+                "subscription_cancelled_at": datetime.now(timezone.utc).isoformat(),
+                "subscription_end_date": datetime.fromtimestamp(subscription.current_period_end, tz=timezone.utc).isoformat()
+            }}
+        )
+        
+        return {
+            "success": True,
+            "message": "Le renouvellement automatique a été annulé. Votre abonnement restera actif jusqu'à la fin de la période.",
+            "end_date": datetime.fromtimestamp(subscription.current_period_end, tz=timezone.utc).isoformat()
+        }
+    
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Erreur Stripe: {str(e)}")
+    except Exception as e:
+        logger.error(f"Unexpected error in cancel_renewal: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur interne du serveur")
+
+@router.post("/reactivate-renewal")
+async def reactivate_subscription_renewal(current_user: dict = Depends(get_current_user)):
+    """
+    Réactive le renouvellement automatique de l'abonnement.
+    """
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venue accounts can manage subscriptions")
+    
+    try:
+        # Récupérer le stripe_subscription_id de l'utilisateur
+        user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        
+        stripe_subscription_id = user.get("stripe_subscription_id")
+        
+        if not stripe_subscription_id:
+            raise HTTPException(status_code=400, detail="Aucun abonnement actif trouvé")
+        
+        # Réactiver le renouvellement dans Stripe
+        subscription = stripe.Subscription.modify(
+            stripe_subscription_id,
+            cancel_at_period_end=False
+        )
+        
+        # Mettre à jour l'utilisateur dans la BD
+        await db.users.update_one(
+            {"id": current_user["id"]},
+            {"$set": {
+                "subscription_cancel_at_period_end": False,
+                "subscription_reactivated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        return {
+            "success": True,
+            "message": "Le renouvellement automatique a été réactivé.",
+            "next_billing_date": datetime.fromtimestamp(subscription.current_period_end, tz=timezone.utc).isoformat()
+        }
+    
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Erreur Stripe: {str(e)}")
+    except Exception as e:
+        logger.error(f"Unexpected error in reactivate_renewal: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur interne du serveur")

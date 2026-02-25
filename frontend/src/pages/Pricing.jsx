@@ -4,7 +4,7 @@ import { Button } from "../components/ui/button";
 import { Music, Check, ArrowRight, Guitar, Mic2, Music2, Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/test_6oUcN67JN7NE7pR7mR6c001";
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/aFa6oG9gV4d20te2uRafS02";
 
 export default function Pricing() {
   const { user } = useAuth();

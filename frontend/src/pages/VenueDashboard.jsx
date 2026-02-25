@@ -49,7 +49,7 @@ import { useNotifications } from "../hooks/useNotifications";
 import DashboardNotification from "../components/DashboardNotification";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/test_6oUcN67JN7NE7pR7mR6c001";
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/aFa6oG9gV4d20te2uRafS02";
 
 // Liste des instruments de base pour les bœufs
 const INSTRUMENTS_BASE = [

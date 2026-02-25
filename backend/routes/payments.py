@@ -226,6 +226,9 @@ async def reactivate_subscription_renewal(current_user: dict = Depends(get_curre
             "success": False,
             "message": f"Erreur Stripe: {str(e)}"
         }
+    except HTTPException:
+        # Re-raise HTTPException for proper FastAPI handling (404, 403)
+        raise
     except Exception as e:
         logger.error(f"Unexpected error in reactivate_renewal: {str(e)}")
         return {

@@ -50,8 +50,9 @@ class SubscriptionTestSuite:
             
             if response.status_code == 200:
                 data = response.json()
-                if "access_token" in data:
-                    self.jwt_token = data["access_token"]
+                # Check for both 'token' and 'access_token' fields
+                if "token" in data or "access_token" in data:
+                    self.jwt_token = data.get("token") or data.get("access_token")
                     self.user_data = data.get("user", {})
                     
                     # Verify user role is venue
@@ -62,7 +63,7 @@ class SubscriptionTestSuite:
                         self.log_result("Authentication", False, f"User role is '{self.user_data.get('role')}' but should be 'venue'")
                         return False
                 else:
-                    self.log_result("Authentication", False, "No access_token in response")
+                    self.log_result("Authentication", False, f"No token in response: {data.keys()}")
                     return False
             else:
                 self.log_result("Authentication", False, f"HTTP {response.status_code}: {response.text}")

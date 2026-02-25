@@ -1,9 +1,15 @@
 # Testing Protocol
 
 ## Last Test Session
-**Date**: 2026-02-22
-**Status**: ✅ CODE REVIEW VERIFIED - Bug Fix Correctly Implemented
-**Test Type**: Établissements Tab - Empty Content Bug Fix
+**Date**: 2026-02-25
+**Status**: 🔄 TESTING IN PROGRESS
+**Test Type**: Subscription Management System - Full Feature Test
+
+## Incorporate User Feedback
+- Tester tous les scénarios d'abonnement (actif, expirant, expiré, annulé)
+- Valider l'affichage conditionnel des bannières
+- Tester le blocage des onglets quand abonnement expiré
+- Tester les endpoints d'annulation et de réactivation
 
 ---
 

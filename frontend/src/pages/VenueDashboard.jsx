@@ -2390,7 +2390,7 @@ export default function VenueDashboard() {
         )}
 
         {/* Subscription Card - Masqué si abonnement actif */}
-        {(!user?.subscription_status || user?.subscription_status === "trial" || isSubscriptionExpired) && (
+        {(!user?.subscription_status || user?.subscription_status !== "active" || isSubscriptionExpired) && (
           <div className="glassmorphism rounded-2xl p-6 mb-8 neon-border">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>

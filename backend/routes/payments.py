@@ -274,21 +274,3 @@ async def simulate_successful_payment(current_user: dict = Depends(get_current_u
     except Exception as e:
         logger.error(f"Error simulating payment: {str(e)}")
         raise HTTPException(status_code=500, detail="Erreur lors de la simulation du paiement")
-
-        }
-    
-    except stripe.error.StripeError as e:
-        logger.error(f"Stripe error in reactivate_renewal: {str(e)}")
-        return {
-            "success": False,
-            "message": f"Erreur Stripe: {str(e)}"
-        }
-    except HTTPException:
-        # Re-raise HTTPException for proper FastAPI handling (404, 403)
-        raise
-    except Exception as e:
-        logger.error(f"Unexpected error in reactivate_renewal: {str(e)}")
-        return {
-            "success": False,
-            "message": "Erreur interne du serveur"
-        }

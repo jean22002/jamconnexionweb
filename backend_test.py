@@ -239,7 +239,8 @@ class SubscriptionTestSuite:
                 return True
                 
             data = response.json()
-            musician_token = data.get("access_token")
+            # Check for both 'token' and 'access_token' fields
+            musician_token = data.get("token") or data.get("access_token")
             
             if not musician_token:
                 self.log_result("Musician Role Access", True, 

@@ -145,8 +145,25 @@ async def list_musicians(instrument: Optional[str] = None, style: Optional[str] 
     
     musicians = await db.musicians.find(query, {"_id": 0}).to_list(100)
     
-    # Optimisation: Récupérer tous les compteurs d'amis en une seule requête
+    # Import de la fonction is_user_online
+    from routes.online_status import is_user_online
+    
+    # Optimisation: Récupérer tous les users et filtrer ceux qui sont en ligne
     user_ids = [m["user_id"] for m in musicians]
+    
+    if user_ids:
+        users = await db.users.find({"id": {"$in": user_ids}}, {"_id": 0}).to_list(None)
+        users_map = {u["id"]: u for u in users}
+        
+        # Filtrer uniquement les musiciens dont l'utilisateur est en ligne
+        online_musicians = []
+        for m in musicians:
+            user = users_map.get(m["user_id"])
+            if user and await is_user_online(user):
+                online_musicians.append(m)
+        
+        musicians = online_musicians
+        user_ids = [m["user_id"] for m in musicians]
     
     if user_ids:
         # Agrégation pour compter les amis de tous les musiciens en une requête

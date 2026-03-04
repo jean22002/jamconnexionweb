@@ -170,13 +170,28 @@ async def list_venues(city: Optional[str] = None, style: Optional[str] = None):
     if not venues:
         return []
     
+    # Import de la fonction is_user_online
+    from routes.online_status import is_user_online
+    
     # Optimisation: Récupérer tous les utilisateurs en une seule requête
     user_ids = [v["user_id"] for v in venues]
     users = await db.users.find(
         {"id": {"$in": user_ids}},
-        {"_id": 0, "id": 1, "subscription_status": 1}
+        {"_id": 0}
     ).to_list(None)
     users_map = {u["id"]: u for u in users}
+    
+    # Filtrer uniquement les venues dont l'utilisateur est en ligne
+    online_venues = []
+    for v in venues:
+        user = users_map.get(v["user_id"])
+        if user and await is_user_online(user):
+            online_venues.append(v)
+    
+    venues = online_venues
+    
+    if not venues:
+        return []
     
     # Optimisation: Compter tous les abonnés en une seule agrégation
     venue_ids = [v["id"] for v in venues]

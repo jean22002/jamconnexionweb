@@ -6,7 +6,7 @@ import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
 export default function PWAPrompt() {
   const { user } = useAuth(); // Récupérer l'utilisateur connecté
-  const { isOnline: userOnlineStatus } = useOnlineStatus(); // Statut en ligne contrôlé par l'utilisateur
+  const { isOnline: userOnlineStatus, mode: onlineMode } = useOnlineStatus(); // Statut en ligne contrôlé par l'utilisateur
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine); // Connexion internet
@@ -166,7 +166,7 @@ export default function PWAPrompt() {
       )}
 
       {/* Indicateur en ligne (petit, discret) - UNIQUEMENT pour utilisateurs connectés */}
-      {user && userOnlineStatus && showOfflineBanner === false && (
+      {user && onlineMode !== 'disabled' && userOnlineStatus && showOfflineBanner === false && (
         <div className="fixed bottom-20 right-4 z-40">
           <div className="bg-green-500/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-lg flex items-center gap-2 animate-fade-in">
             <Wifi className="w-3 h-3 text-white" />

@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useBadgeAutoCheck } from "../hooks/useBadgeAutoCheck";
+import { useOnlineStatus } from "../hooks/useOnlineStatus";
 import SocialLinks from "../components/SocialLinks";
 import { StarRating } from "../components/StarRating";
 import { toast } from "sonner";
@@ -67,6 +68,9 @@ const INSTRUMENTS_BASE = [
 export default function VenueDashboard() {
   const { user, token, logout, refreshUser } = useAuth();
   const { triggerBadgeCheck } = useBadgeAutoCheck();
+  
+  // Hook pour le statut en ligne
+  const { mode: onlineMode, isOnline, manualStatus, toggleManualStatus, updateMode } = useOnlineStatus();
   
   // Hook pour les notifications push
   useNotifications(token, user);
@@ -2088,6 +2092,88 @@ export default function VenueDashboard() {
                   <Users className="w-4 h-4" />
                   <span className="text-sm">{profile.subscribers_count} abonnés</span>
                 </div>
+              )}
+              
+              {/* Online Status Toggle - Cliquable */}
+              {onlineMode !== 'disabled' && (
+                <button
+                  onClick={async () => {
+                    if (onlineMode === 'manual') {
+                      try {
+                        await toggleManualStatus();
+                        toast.success(manualStatus ? 'Vous êtes maintenant hors ligne' : 'Vous êtes maintenant en ligne');
+                      } catch (err) {
+                        toast.error('Erreur lors du changement de statut');
+                      }
+                    } else {
+                      // Si en mode auto, basculer vers manuel
+                      try {
+                        await updateMode('manual');
+                        toast.success('Mode manuel activé. Cliquez à nouveau pour changer votre statut.');
+                      } catch (err) {
+                        toast.error('Erreur lors du changement de mode');
+                      }
+                    }
+                  }}
+                  className="flex items-center gap-2 px-3 py-1 rounded-full bg-muted/50 hover:bg-muted/70 transition-all cursor-pointer"
+                  title={onlineMode === 'manual' ? 'Cliquez pour changer votre statut' : 'Cliquez pour activer le mode manuel'}
+                >
+                  {isOnline ? (
+                    <>
+                      <span className="relative flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                      </span>
+                      <span className="text-sm font-medium text-green-600 dark:text-green-400">En ligne</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="h-3 w-3 rounded-full bg-gray-500"></span>
+                      <span className="text-sm font-medium text-muted-foreground">Hors ligne</span>
+                    </>
+                  )}
+                </button>
+              )}
+              
+              {/* Online Status Toggle - Cliquable */}
+              {onlineMode !== 'disabled' && (
+                <button
+                  onClick={async () => {
+                    if (onlineMode === 'manual') {
+                      try {
+                        await toggleManualStatus();
+                        toast.success(manualStatus ? 'Vous êtes maintenant hors ligne' : 'Vous êtes maintenant en ligne');
+                      } catch (err) {
+                        toast.error('Erreur lors du changement de statut');
+                      }
+                    } else {
+                      // Si en mode auto, basculer vers manuel
+                      try {
+                        await updateMode('manual');
+                        toast.success('Mode manuel activé. Cliquez à nouveau pour changer votre statut.');
+                      } catch (err) {
+                        toast.error('Erreur lors du changement de mode');
+                      }
+                    }
+                  }}
+                  className="flex items-center gap-2 px-3 py-1 rounded-full bg-muted/50 hover:bg-muted/70 transition-all cursor-pointer"
+                  title={onlineMode === 'manual' ? 'Cliquez pour changer votre statut' : 'Cliquez pour activer le mode manuel'}
+                >
+                  {isOnline ? (
+                    <>
+                      <span className="relative flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                      </span>
+                      <span className="text-sm font-medium text-green-600 dark:text-green-400">En ligne</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="h-3 w-3 rounded-full bg-gray-500"></span>
+                      <span className="text-sm font-medium text-muted-foreground">Hors ligne</span>
+                    </>
+                  )}
+                </button>
               )}
               
               {/* Notifications */}

@@ -181,14 +181,23 @@ async def list_venues(city: Optional[str] = None, style: Optional[str] = None):
     ).to_list(None)
     users_map = {u["id"]: u for u in users}
     
-    # Filtrer uniquement les venues dont l'utilisateur est en ligne
-    online_venues = []
+    # Filtrer UNIQUEMENT ceux qui sont EXPLICITEMENT hors ligne (mode disabled OU manual+offline)
+    visible_venues = []
     for v in venues:
         user = users_map.get(v["user_id"])
-        if user and await is_user_online(user):
-            online_venues.append(v)
+        if user:
+            mode = user.get("online_status_mode", "auto")
+            # Masquer SEULEMENT si :
+            # 1. Mode disabled (utilisateur a choisi d'être invisible)
+            # 2. Mode manual ET manual_status = False (utilisateur a choisi hors ligne)
+            if mode == "disabled":
+                continue  # Masquer cet établissement
+            if mode == "manual" and not user.get("manual_online_status", False):
+                continue  # Masquer cet établissement
+            # Sinon, afficher (mode auto ou mode manual avec status=true)
+        visible_venues.append(v)
     
-    venues = online_venues
+    venues = visible_venues
     
     if not venues:
         return []

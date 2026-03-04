@@ -148,21 +148,30 @@ async def list_musicians(instrument: Optional[str] = None, style: Optional[str] 
     # Import de la fonction is_user_online
     from routes.online_status import is_user_online
     
-    # Optimisation: Récupérer tous les users et filtrer ceux qui sont en ligne
+    # Optimisation: Récupérer tous les users
     user_ids = [m["user_id"] for m in musicians]
     
     if user_ids:
         users = await db.users.find({"id": {"$in": user_ids}}, {"_id": 0}).to_list(None)
         users_map = {u["id"]: u for u in users}
         
-        # Filtrer uniquement les musiciens dont l'utilisateur est en ligne
-        online_musicians = []
+        # Filtrer UNIQUEMENT ceux qui sont EXPLICITEMENT hors ligne
+        visible_musicians = []
         for m in musicians:
             user = users_map.get(m["user_id"])
-            if user and await is_user_online(user):
-                online_musicians.append(m)
+            if user:
+                mode = user.get("online_status_mode", "auto")
+                # Masquer SEULEMENT si :
+                # 1. Mode disabled (utilisateur a choisi d'être invisible)
+                # 2. Mode manual ET manual_status = False (utilisateur a choisi hors ligne)
+                if mode == "disabled":
+                    continue  # Masquer ce musicien
+                if mode == "manual" and not user.get("manual_online_status", False):
+                    continue  # Masquer ce musicien
+                # Sinon, afficher (mode auto ou mode manual avec status=true)
+            visible_musicians.append(m)
         
-        musicians = online_musicians
+        musicians = visible_musicians
         user_ids = [m["user_id"] for m in musicians]
     
     if user_ids:

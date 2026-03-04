@@ -51,11 +51,26 @@ async def stripe_webhook(request: Request):
     try:
         if event.type == 'checkout.session.completed':
             session = event.data.object
+            logger.info(f"Processing checkout.session.completed: {session.id}")
             
-            # Extract user info from metadata
+            # Try to get user_id from client_reference_id or metadata
             user_id = session.get('client_reference_id') or session.get('metadata', {}).get('user_id')
             
+            # If no user_id, try to find user by email (for payment links)
+            customer_email = session.get('customer_details', {}).get('email') or session.get('customer_email')
+            
+            user = None
             if user_id:
+                user = await db.users.find_one({"id": user_id}, {"_id": 0})
+                logger.info(f"Found user by ID: {user_id}")
+            elif customer_email:
+                user = await db.users.find_one({"email": customer_email}, {"_id": 0})
+                if user:
+                    logger.info(f"Found user by email: {customer_email}")
+                else:
+                    logger.warning(f"No user found with email: {customer_email}")
+            
+            if user:
                 # Get subscription details from Stripe
                 subscription_id = session.get('subscription')
                 
@@ -82,10 +97,23 @@ async def stripe_webhook(request: Request):
                         logger.error(f"Error retrieving subscription: {e}")
                 
                 # Update user subscription status
-                await db.users.update_one(
-                    {"id": user_id},
+                result = await db.users.update_one(
+                    {"id": user["id"]},
                     {"$set": update_data}
                 )
+                logger.info(f"Subscription activated for user {user['id']} (email: {user['email']}), matched: {result.matched_count}, modified: {result.modified_count}")
+                
+                # Update venue subscription status if user is a venue
+                if user.get("role") == "venue":
+                    await db.venues.update_one(
+                        {"user_id": user["id"]},
+                        {"$set": {
+                            "subscription_status": "active",
+                            "trial_end": None,
+                            "trial_days_left": None
+                        }}
+                    )
+                    logger.info(f"Updated venue subscription for user {user['id']}")
                 
                 # Update transaction status
                 await db.payment_transactions.update_one(
@@ -96,7 +124,8 @@ async def stripe_webhook(request: Request):
                         "completed_at": datetime.now(timezone.utc).isoformat()
                     }}
                 )
-                logger.info(f"Subscription activated for user {user_id} with status: active")
+            else:
+                logger.error(f"Could not find user for checkout session {session.id}. Email: {customer_email}, ID: {user_id}")
         
         elif event.type == 'customer.subscription.deleted':
             # Handle subscription cancellation

@@ -2705,11 +2705,11 @@ export default function VenueDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Nom</Label>
-                    <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" data-testid="venue-name" />
+                    <Input value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" data-testid="venue-name" />
                   </div>
                   <div className="space-y-2">
                     <Label>Téléphone</Label>
-                    <Input value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
+                    <Input value={formData.phone} onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
                   </div>
                 </div>
 
@@ -2768,7 +2768,7 @@ export default function VenueDashboard() {
 
                 <div className="space-y-2">
                   <Label>Description</Label>
-                  <Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} disabled={!editing} rows={3} className="bg-black/20 border-white/10 disabled:opacity-70" />
+                  <Textarea value={formData.description} onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value })} disabled={!editing} rows={3} className="bg-black/20 border-white/10 disabled:opacity-70" />
                 </div>
 
                 <div className="space-y-4">
@@ -2778,7 +2778,7 @@ export default function VenueDashboard() {
                     <Input 
                       placeholder="Adresse" 
                       value={formData.address || ''} 
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })} 
+                      onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value })} 
                       disabled={!editing} 
                       className="bg-black/20 border-white/10 disabled:opacity-70" 
                     />
@@ -2813,21 +2813,21 @@ export default function VenueDashboard() {
                     <Input 
                       placeholder="Code postal" 
                       value={formData.postal_code || ''} 
-                      onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })} 
+                      onChange={(e) => setFormData(prev => ({ ...prev, postal_code: e.target.value })} 
                       disabled={!editing} 
                       className="bg-black/20 border-white/10 disabled:opacity-70" 
                     />
                     <Input 
                       placeholder="Département (ex: 75)" 
                       value={formData.department || ''} 
-                      onChange={(e) => setFormData({ ...formData, department: e.target.value })} 
+                      onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value })} 
                       disabled={!editing} 
                       className="bg-black/20 border-white/10 disabled:opacity-70" 
                     />
                     <Input 
                       placeholder="Région (ex: Île-de-France)" 
                       value={formData.region || ''} 
-                      onChange={(e) => setFormData({ ...formData, region: e.target.value })} 
+                      onChange={(e) => setFormData(prev => ({ ...prev, region: e.target.value })} 
                       disabled={!editing} 
                       className="bg-black/20 border-white/10 disabled:opacity-70" 
                     />
@@ -2837,9 +2837,9 @@ export default function VenueDashboard() {
                 <div className="space-y-4">
                   <Label className="flex items-center gap-2"><Globe className="w-4 h-4 text-primary" /> Liens</Label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input placeholder="Site web (https://...)" value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
-                    <Input placeholder="Facebook (https://facebook.com/...)" value={formData.facebook} onChange={(e) => setFormData({ ...formData, facebook: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
-                    <Input placeholder="Instagram (https://instagram.com/...)" value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
+                    <Input placeholder="Site web (https://...)" value={formData.website} onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
+                    <Input placeholder="Facebook (https://facebook.com/...)" value={formData.facebook} onChange={(e) => setFormData(prev => ({ ...prev, facebook: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
+                    <Input placeholder="Instagram (https://instagram.com/...)" value={formData.instagram} onChange={(e) => setFormData(prev => ({ ...prev, instagram: e.target.value })} disabled={!editing} className="bg-black/20 border-white/10 disabled:opacity-70" />
                   </div>
 
                   {/* Aperçu des liens */}
@@ -2901,7 +2901,7 @@ export default function VenueDashboard() {
                       <Label className="mb-2 block">Taille de la scène</Label>
                       <Select 
                         value={formData.stage_size || ""} 
-                        onValueChange={(value) => setFormData({ ...formData, stage_size: value })}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, stage_size: value })}
                         disabled={!editing}
                       >
                         <SelectTrigger className="bg-black/20 border-white/10">
@@ -2932,7 +2932,7 @@ export default function VenueDashboard() {
                             <Input 
                               placeholder="Ex: Yamaha MG16XU, Behringer X32..."
                               value={formData.pa_mixer_name}
-                              onChange={(e) => setFormData({ ...formData, pa_mixer_name: e.target.value })}
+                              onChange={(e) => setFormData(prev => ({ ...prev, pa_mixer_name: e.target.value })}
                               className="bg-black/20 border-white/10"
                             />
                           </div>
@@ -2942,7 +2942,7 @@ export default function VenueDashboard() {
                             <Input 
                               placeholder="Ex: JBL EON615, RCF ART 735-A..."
                               value={formData.pa_speakers_name}
-                              onChange={(e) => setFormData({ ...formData, pa_speakers_name: e.target.value })}
+                              onChange={(e) => setFormData(prev => ({ ...prev, pa_speakers_name: e.target.value })}
                               className="bg-black/20 border-white/10"
                             />
                           </div>
@@ -2952,7 +2952,7 @@ export default function VenueDashboard() {
                             <Input 
                               placeholder="Ex: 2000W, 3kW..."
                               value={formData.pa_power}
-                              onChange={(e) => setFormData({ ...formData, pa_power: e.target.value })}
+                              onChange={(e) => setFormData(prev => ({ ...prev, pa_power: e.target.value })}
                               className="bg-black/20 border-white/10"
                             />
                           </div>
@@ -2989,10 +2989,10 @@ export default function VenueDashboard() {
                             <input
                               type="checkbox"
                               checked={formData.has_auto_light}
-                              onChange={(e) => setFormData({ ...formData, has_auto_light: e.target.checked })}
+                              onChange={(e) => setFormData(prev => ({ ...prev, has_auto_light: e.target.checked })}
                               className="rounded"
                             />
-                            <Label className="cursor-pointer" onClick={() => setFormData({ ...formData, has_auto_light: !formData.has_auto_light })}>
+                            <Label className="cursor-pointer" onClick={() => setFormData(prev => ({ ...prev, has_auto_light: !formData.has_auto_light })}>
                               Auto light (jeux de lumière automatiques)
                             </Label>
                           </div>
@@ -3001,10 +3001,10 @@ export default function VenueDashboard() {
                             <input
                               type="checkbox"
                               checked={formData.has_light_table}
-                              onChange={(e) => setFormData({ ...formData, has_light_table: e.target.checked })}
+                              onChange={(e) => setFormData(prev => ({ ...prev, has_light_table: e.target.checked })}
                               className="rounded"
                             />
-                            <Label className="cursor-pointer" onClick={() => setFormData({ ...formData, has_light_table: !formData.has_light_table })}>
+                            <Label className="cursor-pointer" onClick={() => setFormData(prev => ({ ...prev, has_light_table: !formData.has_light_table })}>
                               Table light (console d'éclairage)
                             </Label>
                           </div>
@@ -3053,7 +3053,7 @@ export default function VenueDashboard() {
                     <Select 
                       onValueChange={(value) => {
                         if (value && !formData.music_styles.includes(value)) {
-                          setFormData({ ...formData, music_styles: [...formData.music_styles, value] });
+                          setFormData(prev => ({ ...prev, music_styles: [...formData.music_styles, value] });
                         }
                       }}
                     >

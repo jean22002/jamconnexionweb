@@ -11,6 +11,15 @@ export default function PWAPrompt() {
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine); // Connexion internet
   const [showOfflineBanner, setShowOfflineBanner] = useState(false);
+  
+  // Debug: Log userOnlineStatus changes
+  useEffect(() => {
+    console.log('[PWAPrompt] Online status changed:', {
+      userOnlineStatus,
+      onlineMode,
+      user: user?.email
+    });
+  }, [userOnlineStatus, onlineMode, user]);
 
   useEffect(() => {
     // Écouter l'événement beforeinstallprompt
@@ -165,8 +174,8 @@ export default function PWAPrompt() {
         </div>
       )}
 
-      {/* Indicateur en ligne (petit, discret) - UNIQUEMENT pour utilisateurs connectés */}
-      {user && onlineMode !== 'disabled' && userOnlineStatus && showOfflineBanner === false && (
+      {/* Indicateur en ligne (petit, discret) - UNIQUEMENT pour utilisateurs connectés ET en ligne */}
+      {user && onlineMode !== 'disabled' && userOnlineStatus === true && showOfflineBanner === false && (
         <div className="fixed bottom-20 right-4 z-40">
           <div className="bg-green-500/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-lg flex items-center gap-2 animate-fade-in">
             <Wifi className="w-3 h-3 text-white" />

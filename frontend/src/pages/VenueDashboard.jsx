@@ -1367,32 +1367,11 @@ export default function VenueDashboard() {
     return bookedDates.includes(dateStr);
   };
 
-  // Fonction pour ouvrir l'édition d'un créneau depuis l'onglet Candidatures
+  // Fonction pour ouvrir les candidatures d'un créneau depuis l'onglet Candidatures
   const handleSlotCardClick = (slot) => {
-    console.log('📝 Édition du créneau:', slot);
-    setEditingPlanningSlotId(slot.id);
-    setPlanningForm({
-      date: slot.date,
-      time: slot.time || '',
-      title: slot.title || '',
-      music_styles: slot.music_styles || [],
-      description: slot.description || '',
-      expectedBandStyle: slot.expected_band_style || '',
-      expectedAttendance: slot.expected_attendance || '',
-      payment: slot.payment || '',
-      artist_categories: slot.artist_categories || [],
-      num_bands_needed: slot.num_bands_needed || 1,
-      application_type: slot.application_type || 'bands',
-      has_catering: slot.has_catering || false,
-      catering_drinks: slot.catering_drinks || 0,
-      catering_respect: slot.catering_respect || false,
-      catering_tbd: slot.catering_tbd || false,
-      has_accommodation: slot.has_accommodation || false,
-      accommodation_capacity: slot.accommodation_capacity || 0,
-      accommodation_tbd: slot.accommodation_tbd || false
-    });
-    setSelectedDate(new Date(slot.date));
-    setShowPlanningModal(true);
+    console.log('👥 Affichage des candidatures pour le créneau:', slot);
+    setViewingApplications(slot.id);
+    fetchApplications(slot.id);
   };
 
   const handleDateClick = async (date) => {

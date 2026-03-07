@@ -3053,7 +3053,7 @@ export default function VenueDashboard() {
                     <Select 
                       onValueChange={(value) => {
                         if (value && !formData.music_styles.includes(value)) {
-                          setFormData(prev => ({ ...prev, music_styles: [...formData.music_styles, value] });
+                          setFormData(prev => ({ ...prev, music_styles: [...formData.music_styles, value] }));
                         }
                       }}
                     >

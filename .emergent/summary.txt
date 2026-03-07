@@ -1,71 +1,108 @@
 <analysis>**original_problem_statement:**
-L'utilisateur a demandé une série d'améliorations et de corrections de bugs pour son application. Au cours de cette session, les principales requêtes ont été :
--   Refactoriser en profondeur le composant monolithique  en extrayant chaque onglet dans son propre fichier.
--   Implémenter une vue géographique (filtrage par région/département) pour l'onglet Candidatures.
--   Ajouter une vue géographique similaire pour l'onglet Groupes dans le profil musicien.
--   Créer une nouvelle fonctionnalité : un planning/calendrier dans le profil musicien pour afficher les candidatures acceptées et les concerts confirmés.
--   Ajouter un bouton Voir sur la carte dans les événements du calendrier pour localiser l'établissement.
--   Corriger plusieurs bugs signalés au fil de l'eau :
-    -   Les informations ne s'affichaient pas sur les cartes de Mes Candidatures.
-    -   La carte se recentrait automatiquement lors du zoom/dézoom.
-    -   La fonction de recherche (loupe) sur la carte ne fonctionnait pas.
-    -   L'onglet Établissements était vide.
-    -   Le filtrage par région/département ne fonctionne pas pour les candidatures (bug en cours de résolution).
+L'utilisateur a initialement signalé une série de bugs et de demandes de fonctionnalités. Au cours de cette session, les demandes suivantes ont été ajoutées :
+- **PRODUCT REQUIREMENTS:**
+    1.  **Correction de bugs :**
+        -   Le statut En ligne / Hors ligne n'est pas synchronisé entre le header et un bouton flottant en bas à droite.
+        -   Les images de profil et de couverture ne sont pas sauvegardées lors de la modification du profil de l'établissement.
+        -   Après un paiement Stripe réussi, les bannières d'abonnement restent visibles sur le dashboard en production.
+        -   Cliquer sur le bouton Candidatures sur une carte de créneau ne fait rien.
+        -   Accéder à l'onglet Planning ouvre directement la modale de création de créneau.
+        -   Cliquer sur une carte de créneau ouvre la modale d'édition au lieu d'afficher les candidatures.
+        -   Les établissements n'apparaissent plus sur la carte (bug introduit par l'agent et corrigé par la suite).
+        -   Des erreurs 404 sur des images de profil qui n'existent pas dans la base de données.
+    2.  **Nouvelles fonctionnalités :**
+        -   Ajouter un bouton cliquable dans le header du  pour basculer rapidement le statut En ligne / Hors ligne.
+        -   La mise hors ligne doit rendre l'utilisateur non géolocalisable et invisible pour les autres.
 
 **User's preferred language**: Français
 
 **what currently exists?**
-L'application est un portail web fonctionnel avec des tableaux de bord pour les établissements et les musiciens. Le  a été en grande partie refactorisé : les onglets Candidatures, Établissements (Venues), Groupes (Bands), Mes Candidatures, Participations, Musiciens, et Amis (Friends) ont été extraits dans des composants React dédiés. De nouvelles fonctionnalités, comme un calendrier pour les musiciens et un filtrage géographique avancé pour plusieurs onglets, ont été ajoutées et testées. La plupart des bugs signalés par l'utilisateur au cours de la session ont été corrigés, à l'exception du dernier.
+L'application dispose d'une logique de gestion d'abonnement Stripe qui a été déboguée en production grâce à la configuration correcte des webhooks et à des scripts d'activation manuelle. Le webhook Stripe a été amélioré pour retrouver les utilisateurs par email. Une nouvelle fonctionnalité de statut En ligne/Hors ligne a été ajoutée avec un bouton de basculement dans le header du . Les endpoints backend ( et ) ont été modifiés pour filtrer les résultats en fonction de ce statut. La cause première du bug de sauvegarde des images a été identifiée comme une condition de concurrence (race condition) dans React. Cependant, la tentative de correction a complètement cassé le fichier principal du frontend.
 
 **Last working item**:
--   **Last item agent was working:** L'agent investiguait un bug signalé par l'utilisateur : dans l'onglet Candidatures, les filtres par Région et Département affichent 0 candidature même lorsque des candidatures existent dans la vue Tous. L'agent a commencé par examiner le code du composant  pour comprendre la logique de filtrage.
--   **Status:** IN PROGRESS
--   **Agent Testing Done:** N
--   **Which testing method agent to use?** Frontend testing agent. Après la correction, l'agent devra vérifier que les candidatures sont correctement filtrées et comptabilisées dans les onglets Tous, Par Région et Par Département.
+-   **Last item agent was working:** L'agent tentait de corriger de multiples erreurs de syntaxe dans le fichier . Ces erreurs ont été introduites par l'agent lui-même en utilisant une commande  défectueuse pour tenter de résoudre une condition de concurrence (race condition) dans les mises à jour de l'état React (). Les tentatives de correction manuelles et via Unstaged changes after reset:
+M	frontend/.env ont échoué.
+-   **Status:** BLOCKED
+-   **Agent Testing Done:** N (Le frontend ne compile plus)
+-   **Which testing method agent to use?** frontend testing agent. Une fois les erreurs de syntaxe corrigées, il faudra lancer l'agent de test frontend pour valider que le formulaire de modification du profil, y compris l'upload d'images, fonctionne correctement.
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: (P0) Le filtrage géographique des candidatures est défectueux.**
-    -   **Description:** Dans , les vues Par Région et Par Département ne montrent aucune candidature, alors que la vue Tous en affiche.
-    -   **Attempted fixes:** L'agent a seulement inspecté le fichier  pour examiner le code. Aucune modification n'a encore été apportée.
+-   **Issue 1: (P0) Le frontend est entièrement cassé à cause d'erreurs de syntaxe.**
+    -   **Description:** Le fichier  contient de multiples erreurs de syntaxe (parenthèses manquantes) après une tentative de remplacement automatique par l'agent. L'application affiche un écran blanc et ne peut pas être utilisée.
+    -   **Attempted fixes:** L'agent a tenté de corriger les erreurs une par une, mais chaque tentative a échoué ou a révélé d'autres erreurs.
     -   **Next debug checklist:**
-        1.  Analyser la logique de filtrage dans , en particulier la manière dont  est calculé lorsque les onglets region ou department sont actifs.
-        2.  Vérifier via des logs ou en inspectant l'état du composant que les objets  contiennent bien les données géographiques nécessaires (ex: , ).
-        3.  Si les données sont absentes, inspecter la réponse de l'API .
-        4.  Si l'API ne renvoie pas les données, modifier le backend dans  pour s'assurer que les informations de région et de département du  associé sont bien incluses dans la réponse.
-    -   **Why fix this issue and what will be achieved with the fix?** Cette fonctionnalité de filtrage est un ajout récent et important pour l'utilisateur. Sa correction est nécessaire pour rendre l'onglet Candidatures pleinement fonctionnel.
+        1.  Identifier toutes les occurrences de  dans  qui ont une syntaxe incorrecte.
+        2.  Corriger manuellement chaque ligne en s'assurant que toutes les parenthèses sont correctement fermées. Exemple : .
+        3.  Exécuter un linting sur le fichier pour confirmer qu'il n'y a plus d'erreurs de syntaxe.
+        4.  Démarrer l'application et vérifier qu'elle se charge sans erreur de compilation.
+    -   **Why fix this issue and what will be achieved with the fix?** C'est un bloqueur critique. L'application est actuellement inutilisable. La résolution de ce problème est la priorité absolue pour continuer tout autre développement.
     -   **Status:** IN PROGRESS
     -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** Both. Frontend pour valider l'affichage, et potentiellement Backend si l'API doit être modifiée.
+    -   **Should Test frontend/backend/both after fix?** frontend
+    -   **Blocked on other issue:** None (This is the main blocker)
+
+-   **Issue 2: (P1) Le statut En ligne n'est pas synchronisé sur toute l'interface.**
+    -   **Description:** Lorsque l'utilisateur passe en Hors ligne via le bouton du header, un bouton flottant en bas à droite reste sur En ligne.
+    -   **Attempted fixes:** L'agent a identifié que le composant  utilise  au lieu du hook personnalisé . La correction a été interrompue par le bug critique (Issue 1).
+    -   **Next debug checklist:**
+        1.  Modifier .
+        2.  Importer et utiliser le hook .
+        3.  Conditionner l'affichage et le texte du bouton flottant sur l'état retourné par le hook.
+    -   **Why fix this issue and what will be achieved with the fix?** Pour éviter la confusion de l'utilisateur et avoir une interface cohérente.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** frontend
+    -   **Blocked on other issue:** Issue 1
+
+-   **Issue 3: (P1) Les clics sur les cartes de créneau et les onglets ont un comportement incorrect.**
+    -   **Description:** (1) Cliquer sur l'onglet Planning ouvre directement une modale. (2) Cliquer sur le bouton Candidatures d'une carte ne fait rien. (3) Cliquer sur la carte elle-même ouvre la modale d'édition au lieu des candidatures.
+    -   **Attempted fixes:** L'agent a vérifié que  était présent, mais n'a pas poursuivi le débogage.
+    -   **Next debug checklist:**
+        1.  Inspecter les  dans  qui dépendent de  pour trouver pourquoi la modale de planning s'ouvre.
+        2.  Revoir la logique de  pour s'assurer que cliquer sur la carte ouvre la vue des candidatures, et non la modale d'édition.
+    -   **Why fix this issue and what will be achieved with the fix?** Pour restaurer la navigation principale du tableau de bord de l'établissement.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** frontend
+    -   **Blocked on other issue:** Issue 1
 
 **In progress Task List**:
--   Aucune.
+-   **Task 1: (P0) Résoudre la condition de concurrence (race condition) de l'upload d'images.**
+    -   **Where to resume:** Le problème est le même que l'Issue 1. Une fois les erreurs de syntaxe corrigées, il faudra s'assurer que TOUS les appels à  dans  utilisent la forme fonctionnelle : .
+    -   **What will be achieved with this?** Les utilisateurs pourront enfin sauvegarder leurs images de profil et de couverture.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** frontend
+    -   **Blocked on something:** C'est la cause de l'Issue 1.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    -   (P1) **Poursuivre le refactoring de :** L'utilisateur a demandé si un refactoring supplémentaire était nécessaire. Le fichier  fait encore ~4000 lignes et contient toute la logique de gestion d'état et de fetch de données. La prochaine étape serait d'extraire cette logique dans des hooks personnalisés (ex: , , ) pour alléger le composant principal.
+    -   (P1) **Poursuivre le refactoring de :** Le fichier est volumineux. La logique métier (états, ) pourrait être extraite dans des hooks personnalisés.
 -   **Future Tasks:**
-    -   Améliorer le tableau de bord analytique (graphiques avancés, export CSV/PDF).
-    -   Mettre en place un journal d'audit pour les actions des administrateurs.
-    -   Rendre les seuils d'auto-modération configurables.
-    -   Ajouter des notifications en temps réel pour les administrateurs (WebSockets).
+    -   Améliorer le tableau de bord analytique (graphiques, exports).
+    -   Mettre en place un journal d'audit pour les administrateurs.
+    -   Rendre les seuils de modération configurables.
+    -   Ajouter des notifications en temps réel via WebSockets.
 
 **Completed work in this session**
--   **Refactoring majeur de :**
-    -   Extraction des onglets en composants dédiés: , , , , , , .
--   **Nouvelle fonctionnalité : Calendrier Musicien:**
-    -   Ajout d'un onglet Planning affichant les événements confirmés via un nouveau endpoint .
-    -   Implémentation d'un bouton Voir sur la carte dans la modale d'événement pour centrer la carte sur la localisation.
--   **Nouvelle fonctionnalité : Filtres pour Groupes:**
-    -   Ajout du système de filtrage géographique (Tous / France / Région / Département) à l'onglet Groupes.
--   **Corrections de bugs multiples :**
-    -   **Cartes de candidatures vides:** Corrigé en enrichissant les données de l'endpoint  dans .
-    -   **Recentrage automatique de la carte:** Corrigé en ajoutant un état  pour empêcher le recentrage lors de l'exploration manuelle.
-    -   **Recherche sur la carte (loupe) inactive:** Implémentation de la fonction de géocodage et de centrage .
-    -   **Onglet Établissements vide:** Corrigé en réinsérant le  manquant dans .
+-   **Logique d'abonnement en production (Débogage)**
+    -   Guidage de l'utilisateur pour configurer correctement l'URL et les événements du webhook Stripe.
+    -   Fourniture de scripts JS à exécuter dans la console du navigateur pour diagnostiquer les problèmes de token et activer manuellement l'abonnement après un paiement.
+-   **Amélioration du Webhook Stripe**
+    -   Modification de  pour retrouver l'utilisateur par son email (et non plus seulement son ID), ce qui fiabilise l'activation après un paiement via un lien direct.
+-   **Fonctionnalité En ligne/Hors ligne**
+    -   Création d'un hook  pour gérer l'état et l'appel API.
+    -   Ajout d'un bouton de basculement cliquable dans le header de .
+    -   Mise à jour des endpoints backend (, ) pour filtrer les utilisateurs hors ligne des résultats de recherche.
+-   **Diagnostic de bug**
+    -   Le  a correctement identifié la cause du bug de sauvegarde d'images comme étant une race condition React.
 
 **Earlier issues found/mentioned but not fixed**
--   Aucun.
+-   **Issue 1: Erreur de validation Pydantic dans **
+    -   **Debug checklist:** Les logs ont montré une erreur de validation pour  dans  (ligne 269), à cause des champs  et  manquants.
+    -   **Why to solve this issue and what will be achieved with this?** Assurer la cohérence des données et la stabilité de l'API des événements.
+    -   **Should Test frontend/backend/both after fix:** backend
+    -   **Is recurring issue?** N
 
 **Known issue recurrence from previous fork**
 -   Aucun.
@@ -74,77 +111,69 @@ L'application est un portail web fonctionnel avec des tableaux de bord pour les 
 
 
 **Key Technical Concepts**
--   **Refactoring par extraction de composants:** La stratégie principale a été de décomposer un composant monolithique () en composants plus petits et spécialisés pour chaque onglet, améliorant ainsi la maintenabilité.
--   **Enrichissement des données côté API:** Le bug des cartes de candidatures vides a été résolu en modifiant l'API backend pour agréger les informations de plusieurs collections (, , ) avant de les envoyer au client.
--   **Gestion d'état pour l'interaction UI:** Le bug de recentrage de la carte a été résolu en utilisant un état () pour conditionner le comportement de la carte en fonction des actions de l'utilisateur.
+-   **Race Condition React:** La cause du bug des images, où des  non fonctionnels () écrasent des mises à jour asynchrones précédentes. La solution est d'utiliser la forme fonctionnelle .
+-   **Débogage en Production via Console Navigateur:** L'agent a utilisé avec succès des scripts  fournis à l'utilisateur pour diagnostiquer des problèmes (token invalide, statut d'abonnement) et déclencher des actions (activation manuelle) directement sur l'environnement de production.
+-   **Fiabilisation de Webhook:** Le webhook Stripe a été rendu plus robuste en utilisant l'email du client comme fallback lorsque l' n'est pas disponible dans la charge utile de l'événement.
+-   **Dangers de l'automatisation sans test:** L'utilisation d'une commande  pour un remplacement massif a cassé l'application, soulignant la nécessité de vérifier les modifications, même celles qui semblent simples.
 
 **key DB schema**
--   **applications:** Lie un musicien à un .
--   **planning_slots:** Contient les détails d'un événement, y compris le .
--   **venues:** Contient les détails d'un établissement, y compris , ,  et . Ces deux derniers champs sont cruciaux pour le bug actuel.
+-   **users:** Contient  (boolean), , .
+-   **venues:** Contient , , .
 
 **changes in tech stack**
 -   Aucune.
 
 **All files of reference**
--   : Le composant principal, source de la plupart des refactorings et des corrections.
--   : Le fichier contenant le bug de filtrage actuellement à l'étude.
--   : Fichier backend contenant la logique API pour les candidatures et le calendrier.
--   : Peut servir de référence pour une implémentation fonctionnelle du filtrage géographique.
-
-**Areas that need refactoring**:
--   **:** Bien que de nombreux onglets aient été extraits, le fichier reste volumineux (~4000 lignes). Il contient encore toute la logique métier (états, , fonctions de fetch) qui pourrait être extraite dans des hooks personnalisés pour achever le refactoring et clarifier le code.
--   **:** Non modifié dans cette session, mais reste un composant monolithique de plus de 6000 lignes identifié comme une dette technique majeure.
+-    (CASSÉ - PRIORITÉ ABSOLUE)
+-    (Nouveau hook créé pour le statut en ligne)
+-    (À modifier pour corriger le bug de synchronisation du statut)
+-    (Logique de webhook améliorée)
+-    (Filtrage par statut en ligne ajouté)
+-    (Filtrage par statut en ligne ajouté)
 
 **key api endpoints**
--   : Récupère les candidatures d'un musicien. Endpoint central pour le bug actuel.
--   : Nouvel endpoint pour le calendrier du musicien.
+-   : Change le statut de l'utilisateur.
+-   : Gère les événements Stripe (paiement, annulation).
+-   : Liste les musiciens (filtre maintenant les hors-ligne).
+-   : Liste les établissements (filtre maintenant les hors-ligne).
+-   : Endpoint pour l'upload des images.
 
 **Critical Info for New Agent**
--   La priorité absolue est de corriger le bug de filtrage dans . Les filtres par région et département ne fonctionnent pas.
--   L'implémentation du filtrage géographique dans  ou dans  (session précédente) peut servir de modèle pour corriger le bug.
--   Après la résolution du bug, l'utilisateur est favorable à la poursuite du refactoring de  pour extraire la logique (états, fonctions) dans des hooks personnalisés.
--   L'utilisateur  (mdp: ) possède des données de test (candidatures) qui sont utiles pour reproduire les problèmes.
+-   **PRIORITÉ ABSOLUE : RÉPARER LE FRONTEND.** Le fichier  est rempli d'erreurs de syntaxe et l'application ne compile pas. Vous devez corriger manuellement toutes les parenthèses manquantes dans les appels à  avant de pouvoir faire quoi que ce soit d'autre.
+-   **Cause du bug :** Les erreurs de syntaxe ont été introduites en essayant de corriger une race condition. Après avoir réparé la syntaxe, assurez-vous que tous les  utilisent bien la forme fonctionnelle  pour résoudre le bug de sauvegarde des images.
+-   **Débogage en production :** L'utilisateur est réactif pour exécuter des scripts dans la console de son navigateur sur son domaine de production. C'est un outil puissant pour diagnostiquer les problèmes que vous ne pouvez pas reproduire (ex: token expiré, état de la base de données de prod).
 
 **documents and test reports created in this job**
--    a été mis à jour à plusieurs reprises par le .
+-   Aucun nouveau document significatif.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  ****: Signale que les cartes de candidatures sont vides. (CORRIGÉ)
-2.  ****: Demande la création d'un calendrier pour le musicien. (TERMINÉ)
-3.  ****: Demande un bouton Voir sur la carte dans le calendrier. (TERMINÉ)
-4.  ****: Demande un filtrage géographique pour les groupes. (TERMINÉ)
-5.  ****: Demande de poursuivre le refactoring. (TERMINÉ pour cette phase)
-6.  ****: Signale le bug de recentrage automatique de la carte. (CORRIGÉ)
-7.  ****: Demande si un refactoring supplémentaire est nécessaire. (EN ATTENTE)
-8.  ****: Signale le bug de la recherche sur la carte. (CORRIGÉ)
-9.  ****: Signale que l'onglet Établissements est vide. (CORRIGÉ)
-10. ****: Signale le bug de filtrage des candidatures. (EN COURS)
+10. ****: Signale le bug de synchronisation du statut en ligne. (NON RÉSOLU)
+9.  ****: Signale un bug critique introduit par l'agent (depuis résolu).
+8.  ****: Signale deux bugs de navigation dans le dashboard. (NON RÉSOLU)
+7.  ****: Clarifie le bug de clic sur la carte de créneau. (NON RÉSOLU)
+6.  ****: Signale le bug critique de sauvegarde des images. (NON RÉSOLU, A CAUSÉ LE CRASH)
+5.  ****: Répète le bug de synchronisation.
+4.  ** (avec screenshot d'écran blanc)**: Signale que l'application est cassée après la tentative de fix de l'agent.
+3.  ****: Demande à l'agent de poursuivre ses tentatives de réparation.
+2.  ** (avec screenshot d'erreur de token)**: Fournit le résultat d'un script console (token invalide).
+1.  ** (avec screenshot du dashboard réparé)**: Confirme que le problème d'abonnement en production a été résolu manuellement. C'était avant la série de bugs actuelle.
 
 **Project Health Check:**
--   **Broken:** La fonctionnalité de filtrage géographique pour les candidatures est cassée.
--   **Mocked:** Aucune.
+-   **Broken:** Le frontend est inutilisable en raison d'erreurs de syntaxe critiques dans un fichier majeur.
 
 **3rd Party Integrations**
--   
--   
--   , 
--   
--    (remplacé par  dans un fix)
--   
--   
--   
+-   **Stripe:** Intégration via liens de paiement directs et webhooks. L'URL du webhook et les secrets sont configurés en production, mais l'URL a dû être corrigée manuellement par l'utilisateur sur conseil de l'agent.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES
--   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** None
--   **Known regressions:** Aucun autre que le bug en cours.
+-   **Testing agent used after significant changes:** NO
+-   **Troubleshoot agent used after agent stuck in loop:** YES (a correctement identifié la race condition, mais l'agent a mal appliqué la correction).
+-   **Test files created:** Aucun.
+-   **Known regressions:** La navigation dans le dashboard (onglets, clics sur les cartes) et la sauvegarde des images sont cassées. Le frontend ne compile pas.
 
 **Credentials to test flow:**
--   **Role:** Musicien (avec candidatures) | **Email:**  | **Password:** 
 -   **Role:** Établissement (Venue) | **Email:**  | **Password:** 
--   **Role:** Musicien (par défaut) | **Email:**  | **Password:** 
+-   **Role:** Musicien (avec candidatures) | **Email:**  | **Password:** 
 
 **What agent forgot to execute**
--   Rien. L'agent suivait le plan et les requêtes de l'utilisateur. Le travail a été interrompu pendant la résolution d'un bug.</analysis>
+-   L'agent a oublié de vérifier la sortie de sa commande  avant de continuer, ce qui a conduit à la propagation d'erreurs de syntaxe et au crash complet du frontend.
+-   L'agent n'a pas traité de manière définitive le bug de validation Pydantic dans  mentionné dans le handover précédent.</analysis>

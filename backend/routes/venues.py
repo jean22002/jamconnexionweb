@@ -600,7 +600,7 @@ async def get_venue_active_events(venue_id: str):
 
 
 
-@router.get("/me/past-events")
+@router.get("/venues/me/past-events")
 async def get_my_past_events(authorization: str = Header(None)):
     """Récupère tous les événements passés de l'établissement avec données financières"""
     try:
@@ -653,7 +653,7 @@ async def get_my_past_events(authorization: str = Header(None)):
         logger.error(f"Error fetching past events: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/me/profitability-stats")
+@router.get("/venues/me/profitability-stats")
 async def get_profitability_stats(authorization: str = Header(None)):
     """Statistiques de rentabilité pour l'établissement"""
     try:

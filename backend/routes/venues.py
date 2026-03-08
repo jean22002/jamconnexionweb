@@ -598,6 +598,117 @@ async def get_venue_active_events(venue_id: str):
     return all_events
 
 
+
+
+@router.get("/me/past-events")
+async def get_my_past_events(authorization: str = Header(None)):
+    """Récupère tous les événements passés de l'établissement avec données financières"""
+    try:
+        user = await get_current_user(authorization)
+        if user["role"] != "venue":
+            raise HTTPException(status_code=403, detail="Accès réservé aux établissements")
+        
+        venue_id = user["id"]
+        today = datetime.now().strftime("%Y-%m-%d")
+        
+        # Récupérer tous les types d'événements passés
+        concerts = await db.concerts.find({
+            "venue_id": venue_id,
+            "date": {"$lt": today}
+        }, {"_id": 0}).sort("date", -1).to_list(100)
+        
+        jams = await db.jams.find({
+            "venue_id": venue_id,
+            "date": {"$lt": today}
+        }, {"_id": 0}).sort("date", -1).to_list(100)
+        
+        karaokes = await db.karaokes.find({
+            "venue_id": venue_id,
+            "date": {"$lt": today}
+        }, {"_id": 0}).sort("date", -1).to_list(100)
+        
+        spectacles = await db.spectacles.find({
+            "venue_id": venue_id,
+            "date": {"$lt": today}
+        }, {"_id": 0}).sort("date", -1).to_list(100)
+        
+        # Ajouter le type d'événement
+        for c in concerts:
+            c["event_type"] = "concert"
+        for j in jams:
+            j["event_type"] = "jam"
+        for k in karaokes:
+            k["event_type"] = "karaoke"
+        for s in spectacles:
+            s["event_type"] = "spectacle"
+        
+        # Combiner et trier par date
+        all_events = concerts + jams + karaokes + spectacles
+        all_events.sort(key=lambda x: x["date"], reverse=True)
+        
+        return all_events
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching past events: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/me/profitability-stats")
+async def get_profitability_stats(authorization: str = Header(None)):
+    """Statistiques de rentabilité pour l'établissement"""
+    try:
+        user = await get_current_user(authorization)
+        if user["role"] != "venue":
+            raise HTTPException(status_code=403, detail="Accès réservé aux établissements")
+        
+        venue_id = user["id"]
+        today = datetime.now().strftime("%Y-%m-%d")
+        
+        # Agrégation pour calculer les totaux
+        pipeline = [
+            {"$match": {"venue_id": venue_id, "date": {"$lt": today}}},
+            {"$group": {
+                "_id": None,
+                "total_revenue": {"$sum": {"$ifNull": ["$total_revenue", "$bar_revenue", 0]}},
+                "total_expenses": {"$sum": {"$ifNull": ["$expenses", 0]}},
+                "total_profit": {"$sum": {"$ifNull": ["$net_profit", 0]}},
+                "event_count": {"$sum": 1}
+            }}
+        ]
+        
+        concerts_stats = await db.concerts.aggregate(pipeline).to_list(1)
+        jams_stats = await db.jams.aggregate(pipeline).to_list(1)
+        karaokes_stats = await db.karaokes.aggregate(pipeline).to_list(1)
+        spectacles_stats = await db.spectacles.aggregate(pipeline).to_list(1)
+        
+        def get_stats(stats_list):
+            if stats_list:
+                return stats_list[0]
+            return {"total_revenue": 0, "total_expenses": 0, "total_profit": 0, "event_count": 0}
+        
+        concerts = get_stats(concerts_stats)
+        jams = get_stats(jams_stats)
+        karaokes = get_stats(karaokes_stats)
+        spectacles = get_stats(spectacles_stats)
+        
+        return {
+            "concerts": concerts,
+            "jams": jams,
+            "karaokes": karaokes,
+            "spectacles": spectacles,
+            "total": {
+                "revenue": concerts["total_revenue"] + jams["total_revenue"] + karaokes["total_revenue"] + spectacles["total_revenue"],
+                "expenses": concerts["total_expenses"] + jams["total_expenses"] + karaokes["total_expenses"] + spectacles["total_expenses"],
+                "profit": concerts["total_profit"] + jams["total_profit"] + karaokes["total_profit"] + spectacles["total_profit"],
+                "events": concerts["event_count"] + jams["event_count"] + karaokes["event_count"] + spectacles["event_count"]
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching profitability stats: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/venues/{venue_id}/bands-played")
 async def get_bands_played(venue_id: str):
     """Get list of bands that have played at this venue"""

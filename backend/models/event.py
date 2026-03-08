@@ -262,3 +262,27 @@ class PlanningSlotResponse(BaseModel):
     accommodation_tbd: bool = False
     created_at: str
 
+# Modèle pour les candidatures de concerts
+class ConcertApplication(BaseModel):
+    concert_id: str
+    band_name: str
+    band_members: List[str] = []
+    contact_email: str
+    contact_phone: Optional[str] = None
+    message: Optional[str] = None
+
+
+class ConcertApplicationResponse(BaseModel):
+    id: str
+    concert_id: str
+    band_name: str
+    band_members: List[str] = []
+    contact_email: str
+    contact_phone: Optional[str] = None
+    message: Optional[str] = None
+    status: str = "pending"
+    created_at: str
+
+    status: str = "pending"  # pending, accepted, rejected
+
+

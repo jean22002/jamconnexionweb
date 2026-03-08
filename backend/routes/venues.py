@@ -632,15 +632,37 @@ async def get_my_past_events(authorization: str = Header(None)):
             "date": {"$lt": today}
         }, {"_id": 0}).sort("date", -1).to_list(100)
         
-        # Ajouter le type d'événement
-        for c in concerts:
-            c["event_type"] = "concert"
-        for j in jams:
-            j["event_type"] = "jam"
-        for k in karaokes:
-            k["event_type"] = "karaoke"
-        for s in spectacles:
-            s["event_type"] = "spectacle"
+        # Transformer les données pour correspondre au format attendu par le frontend
+        def format_event(event, event_type):
+            # Calculer revenue et profit selon le type
+            if event_type == "concert":
+                revenue = event.get("total_revenue", 0)
+                expenses = event.get("expenses", 0) + event.get("artist_payment", 0)
+                profit = event.get("net_profit", 0)
+            elif event_type in ["jam", "karaoke"]:
+                revenue = event.get("bar_revenue", 0)
+                expenses = event.get("expenses", 0) + event.get("host_payment", 0)
+                profit = event.get("net_profit", 0)
+            else:  # spectacle
+                revenue = event.get("total_revenue", 0)
+                expenses = event.get("expenses", 0) + event.get("artist_payment", 0)
+                profit = event.get("net_profit", 0)
+            
+            # Créer l'objet profitability
+            event["profitability"] = {
+                "revenue": revenue,
+                "expenses": expenses,
+                "profit": profit,
+                "notes": ""
+            }
+            event["type"] = event_type
+            return event
+        
+        # Ajouter le type d'événement et formater
+        concerts = [format_event(c, "concert") for c in concerts]
+        jams = [format_event(j, "jam") for j in jams]
+        karaokes = [format_event(k, "karaoke") for k in karaokes]
+        spectacles = [format_event(s, "spectacle") for s in spectacles]
         
         # Combiner et trier par date
         all_events = concerts + jams + karaokes + spectacles

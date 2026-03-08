@@ -673,6 +673,13 @@ async def get_profitability_stats(authorization: str = Header(None)):
                 "total_expenses": {"$sum": {"$ifNull": ["$expenses", 0]}},
                 "total_profit": {"$sum": {"$ifNull": ["$net_profit", 0]}},
                 "event_count": {"$sum": 1}
+            }},
+            {"$project": {
+                "_id": 0,
+                "total_revenue": 1,
+                "total_expenses": 1,
+                "total_profit": 1,
+                "event_count": 1
             }}
         ]
         

@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 class ConcertDateTester:
-    def __init__(self, base_url="https://venue-debug.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://production-db-fix.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.venue_token = None
         self.venue_user = None

@@ -243,7 +243,7 @@ async def get_venue_jams(venue_id: str):
                 "as": "participants_data"
             }
         },
-        # 3. Extraire le count (ou 0 si pas de participants)
+        # 3. Extraire le count (ou 0 si pas de participants) et ajouter les champs manquants
         {
             "$addFields": {
                 "participants_count": {
@@ -251,7 +251,10 @@ async def get_venue_jams(venue_id: str):
                         {"$arrayElemAt": ["$participants_data.count", 0]},
                         0
                     ]
-                }
+                },
+                "venue_name": {"$ifNull": ["$venue_name", ""]},
+                "start_time": {"$ifNull": ["$start_time", ""]},
+                "end_time": {"$ifNull": ["$end_time", ""]}
             }
         },
         # 4. Retirer _id et les champs temporaires
@@ -412,7 +415,7 @@ async def list_concerts(venue_id: Optional[str] = None):
                 "as": "participants_data"
             }
         },
-        # 3. Extraire le count
+        # 3. Extraire le count et ajouter les champs manquants
         {
             "$addFields": {
                 "participants_count": {
@@ -420,7 +423,9 @@ async def list_concerts(venue_id: Optional[str] = None):
                         {"$arrayElemAt": ["$participants_data.count", 0]},
                         0
                     ]
-                }
+                },
+                "venue_name": {"$ifNull": ["$venue_name", ""]},
+                "start_time": {"$ifNull": ["$start_time", ""]}
             }
         },
         # 4. Retirer _id et champs temporaires
@@ -467,7 +472,7 @@ async def get_venue_concerts(venue_id: str):
                 "as": "participants_data"
             }
         },
-        # 3. Extraire le count
+        # 3. Extraire le count et ajouter les champs manquants
         {
             "$addFields": {
                 "participants_count": {
@@ -475,7 +480,9 @@ async def get_venue_concerts(venue_id: str):
                         {"$arrayElemAt": ["$participants_data.count", 0]},
                         0
                     ]
-                }
+                },
+                "venue_name": {"$ifNull": ["$venue_name", ""]},
+                "start_time": {"$ifNull": ["$start_time", ""]}
             }
         },
         # 4. Retirer _id et champs temporaires

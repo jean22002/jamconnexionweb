@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 class StripePaymentTester:
-    def __init__(self, base_url="https://production-db-fix.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://jam-atlas-restore.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
@@ -89,7 +89,7 @@ class StripePaymentTester:
         try:
             headers = {'Authorization': f'Bearer {self.venue_token}'}
             checkout_data = {
-                "origin_url": "https://production-db-fix.preview.emergentagent.com"
+                "origin_url": "https://jam-atlas-restore.preview.emergentagent.com"
             }
             
             response = requests.post(f"{self.base_url}/payments/checkout", json=checkout_data, headers=headers, timeout=15)
@@ -178,7 +178,7 @@ class StripePaymentTester:
         try:
             headers = {'Authorization': f'Bearer {self.musician_token}'}
             checkout_data = {
-                "origin_url": "https://production-db-fix.preview.emergentagent.com"
+                "origin_url": "https://jam-atlas-restore.preview.emergentagent.com"
             }
             
             response = requests.post(f"{self.base_url}/payments/checkout", json=checkout_data, headers=headers, timeout=10)
@@ -199,7 +199,7 @@ class StripePaymentTester:
         """TEST 4 - Sécurité: Utilisateur non authentifié rejeté (401)"""
         try:
             checkout_data = {
-                "origin_url": "https://production-db-fix.preview.emergentagent.com"
+                "origin_url": "https://jam-atlas-restore.preview.emergentagent.com"
             }
             
             response = requests.post(f"{self.base_url}/payments/checkout", json=checkout_data, timeout=10)

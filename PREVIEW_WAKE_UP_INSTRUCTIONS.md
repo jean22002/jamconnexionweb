@@ -26,8 +26,8 @@ C'est simplement que l'agent Emergent s'est mis en veille après une période d'
 
 ### Étape 4 : Vérifier l'accès
 Après 15 minutes, essayez d'accéder à votre preview :
-- URL principale : https://production-db-fix.preview.emergentagent.com/
-- URL alternative : https://production-db-fix.preview.emergentagent.com/
+- URL principale : https://jam-atlas-restore.preview.emergentagent.com/
+- URL alternative : https://jam-atlas-restore.preview.emergentagent.com/
 
 ---
 

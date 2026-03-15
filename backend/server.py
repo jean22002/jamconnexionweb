@@ -17,6 +17,10 @@ UPLOADS_DIR.mkdir(exist_ok=True)
 
 load_dotenv(ROOT_DIR / '.env')
 
+# Setup logging FIRST
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 # MongoDB connection - Use production URL if ENVIRONMENT is production
 environment = os.environ.get('ENVIRONMENT', 'development')
 if environment == 'production':
@@ -51,10 +55,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 # Create main API router
 api_router = APIRouter(prefix="/api")

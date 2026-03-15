@@ -17,8 +17,15 @@ UPLOADS_DIR.mkdir(exist_ok=True)
 
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+# MongoDB connection - Use production URL if ENVIRONMENT is production
+environment = os.environ.get('ENVIRONMENT', 'development')
+if environment == 'production':
+    mongo_url = os.environ.get('MONGO_URL_PRODUCTION', os.environ['MONGO_URL'])
+    logger.info(f"🌍 Using PRODUCTION MongoDB: {mongo_url.split('@')[1] if '@' in mongo_url else 'Atlas'}")
+else:
+    mongo_url = os.environ['MONGO_URL']
+    logger.info(f"💻 Using DEVELOPMENT MongoDB: localhost:27017")
+
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 

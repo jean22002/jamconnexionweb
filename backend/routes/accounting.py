@@ -11,30 +11,15 @@ from uuid import uuid4
 
 router = APIRouter()
 
-# MongoDB
-from motor.motor_asyncio import AsyncIOMotorClient
-MONGO_URL = os.environ.get('MONGO_URL')
-DB_NAME = os.environ.get('DB_NAME', 'jamconnexion')
-client = AsyncIOMotorClient(MONGO_URL)
-db = client[DB_NAME]
+# MongoDB - sera injecté par set_db()
+db = None
 
-# JWT
-import jwt
-JWT_SECRET = os.environ.get('JWT_SECRET', 'default_secret')
-JWT_ALGORITHM = "HS256"
+def set_db(database):
+    global db
+    db = database
 
-async def get_current_user(authorization: str = None):
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Missing authorization")
-    try:
-        token = authorization.replace("Bearer ", "")
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        user = await db.users.find_one({"id": payload["user_id"]}, {"_id": 0})
-        if not user:
-            raise HTTPException(status_code=401, detail="User not found")
-        return user
-    except:
-        raise HTTPException(status_code=401, detail="Invalid token")
+# Import utilities
+from utils import get_current_user
 
 
 @router.post("/upload-invoice")

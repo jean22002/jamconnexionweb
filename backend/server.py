@@ -83,6 +83,7 @@ import routes.friends as friends
 import routes.reports as reports
 import routes.analytics as analytics
 import routes.online_status as online_status
+import routes.accounting as accounting
 
 # Include routers with basic functionality
 api_router.include_router(auth_router)
@@ -107,6 +108,7 @@ badges.set_db(db)
 push_notifications.set_db(db)
 reports.set_db(db)
 analytics.set_db(db)
+accounting.set_db(db)
 
 # Include domain-specific routers
 api_router.include_router(melomanes.router)
@@ -121,6 +123,7 @@ api_router.include_router(friends.router)
 api_router.include_router(reports.router)
 api_router.include_router(analytics.router)
 api_router.include_router(online_status.router)
+api_router.include_router(accounting.router, prefix="/accounting", tags=["Accounting"])
 
 # Geocoding utility endpoint
 @api_router.post("/geocode")

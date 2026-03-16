@@ -209,7 +209,7 @@ Test the complex subscription management banner logic in VenueDashboard.jsx (lin
 - Tab locking functionality when subscription expired (lines 264-269, 2531-2550)
 
 ### Test Credentials Used
-- **URL**: https://jam-atlas-restore.preview.emergentagent.com
+- **URL**: https://mongo-migration-20.preview.emergentagent.com
 - **Email**: bar@gmail.com
 - **Password**: test  
 - **Role**: venue (verified)
@@ -540,7 +540,7 @@ Test the new subscription management endpoints for venue establishments:
   - **Recommendation**: Fix exception handling to preserve 400 status
 
 ### Test Environment Details
-- **Backend URL**: https://jam-atlas-restore.preview.emergentagent.com/api
+- **Backend URL**: https://mongo-migration-20.preview.emergentagent.com/api
 - **Test Account**: bar@gmail.com (venue role, no active subscription)
 - **Alternative Test**: musician@gmail.com (for role validation)
 - **Test Method**: Automated Python test suite + manual curl verification
@@ -592,12 +592,12 @@ Verify that the critical bug fix for the "Établissements" tab has been correctl
 - **Solution**: Added the missing TabsContent with VenuesTab component and proper props
 
 ### Test Credentials (Requested)
-- **URL**: https://jam-atlas-restore.preview.emergentagent.com/login
+- **URL**: https://mongo-migration-20.preview.emergentagent.com/login
 - **Email**: musician@gmail.com
 - **Password**: test
 
 ### Test Environment: ⚠️ Authentication Flow Issues (Not Related to Bug Fix)
-- **URL**: https://jam-atlas-restore.preview.emergentagent.com
+- **URL**: https://mongo-migration-20.preview.emergentagent.com
 - **Status**: Environment accessible but authentication flow has issues in automated testing
 - **Note**: This is a test environment limitation, not related to the bug fix being verified
 
@@ -814,14 +814,14 @@ Test the new **"Voir sur la carte" (View on Map)** button feature added to the P
 - **Frontend**: New function `handleShowEventOnMap(event)` and button with MapPin icon in event modal
 
 ### Test Credentials (Requested)
-- **URL**: https://jam-atlas-restore.preview.emergentagent.com/login
+- **URL**: https://mongo-migration-20.preview.emergentagent.com/login
 - **Email**: test@gmail.com
 - **Password**: test
 - **Expected**: Account with accepted applications containing GPS coordinates
 
 ### Test Environment: ❌ **BOTH URLs UNAVAILABLE FOR PROPER TESTING**
-- **Requested URL**: https://jam-atlas-restore.preview.emergentagent.com - **Status: "Preview Unavailable!!!" (Agent sleeping)**
-- **Alternative URL**: https://jam-atlas-restore.preview.emergentagent.com - **Status: Authentication/Access Issues**
+- **Requested URL**: https://mongo-migration-20.preview.emergentagent.com - **Status: "Preview Unavailable!!!" (Agent sleeping)**
+- **Alternative URL**: https://mongo-migration-20.preview.emergentagent.com - **Status: Authentication/Access Issues**
 - **Test Account**: musician@gmail.com / test - **Status: Cannot properly login or has no event data**
 
 ### Test Results: ⚠️ **IMPLEMENTATION VERIFIED VIA CODE REVIEW - UNABLE TO TEST WITH ACTUAL DATA**
@@ -1107,8 +1107,8 @@ const handleShowEventOnMap = (event) => {
 **Why Full UI Testing Was Blocked:**
 
 1. **Environment Unavailability:**
-   - ❌ Requested URL: https://jam-atlas-restore.preview.emergentagent.com completely down
-   - ❌ Alternative URL: https://jam-atlas-restore.preview.emergentagent.com has auth issues
+   - ❌ Requested URL: https://mongo-migration-20.preview.emergentagent.com completely down
+   - ❌ Alternative URL: https://mongo-migration-20.preview.emergentagent.com has auth issues
    - ❌ Cannot access musician dashboard with valid credentials
 
 2. **Data Unavailability:**
@@ -1188,7 +1188,7 @@ const handleShowEventOnMap = (event) => {
 - ✅ **No bugs or issues found** in code
 
 **The feature WILL work correctly when:**
-1. Test environment (https://jam-atlas-restore.preview.emergentagent.com) is available
+1. Test environment (https://mongo-migration-20.preview.emergentagent.com) is available
 2. Account with accepted applications or confirmed concerts is used
 3. Venues in database have `latitude` and `longitude` fields populated
 4. User can properly authenticate and access musician dashboard
@@ -1237,14 +1237,14 @@ Test the new **Planning for Musicians** feature which displays:
 - Multiple events on same day display correctly
 
 ### Test Credentials (Requested)
-- **URL**: https://jam-atlas-restore.preview.emergentagent.com/login
+- **URL**: https://mongo-migration-20.preview.emergentagent.com/login
 - **Email**: test@gmail.com
 - **Password**: test
 - **Expected**: 6 applications with accepted ones
 
 ### Test Environment: ❌ **ORIGINAL URL UNAVAILABLE**
-- **Requested URL**: https://jam-atlas-restore.preview.emergentagent.com - **Status: "Preview Unavailable!!!" (Agent sleeping)**
-- **Alternative URL**: https://jam-atlas-restore.preview.emergentagent.com - ✅ Available
+- **Requested URL**: https://mongo-migration-20.preview.emergentagent.com - **Status: "Preview Unavailable!!!" (Agent sleeping)**
+- **Alternative URL**: https://mongo-migration-20.preview.emergentagent.com - ✅ Available
 - **Test Account**: musician@gmail.com / test
 
 ### Test Results: ⚠️ **IMPLEMENTATION VERIFIED - NO EVENT DATA TO TEST**
@@ -1394,7 +1394,7 @@ async def get_musician_calendar_events(current_user: dict = Depends(get_current_
 ### Test Limitations
 
 **Why Modal Could Not Be Fully Tested:**
-1. ❌ **Original URL unavailable**: https://jam-atlas-restore.preview.emergentagent.com is down (agent sleeping)
+1. ❌ **Original URL unavailable**: https://mongo-migration-20.preview.emergentagent.com is down (agent sleeping)
 2. ❌ **Test account has no events**: musician@gmail.com has:
    - 0 accepted applications
    - 0 confirmed concerts
@@ -1470,7 +1470,7 @@ async def get_musician_calendar_events(current_user: dict = Depends(get_current_
 - ✅ **No errors or bugs found**
 
 **The feature WILL work correctly when:**
-1. Testing environment https://jam-atlas-restore.preview.emergentagent.com is available
+1. Testing environment https://mongo-migration-20.preview.emergentagent.com is available
 2. Account with actual accepted applications/confirmed concerts is used (e.g., test@gmail.com with 6 applications)
 3. Database contains valid event data
 
@@ -1501,7 +1501,7 @@ Verify that the new geographical view feature in the Candidatures tab is fully f
 - Back button functionality
 
 ### Test Credentials
-- URL: https://jam-atlas-restore.preview.emergentagent.com
+- URL: https://mongo-migration-20.preview.emergentagent.com
 - Email: musician@gmail.com
 - Password: test
 
@@ -1649,7 +1649,7 @@ Verify that the refactoring of MusicianDashboard.jsx (extracting VenuesTab.jsx a
 2. **CandidaturesTab.jsx** - Extracted "Candidatures" tab functionality
 
 ### Test Credentials
-- URL: https://jam-atlas-restore.preview.emergentagent.com
+- URL: https://mongo-migration-20.preview.emergentagent.com
 - Email: musician@gmail.com
 - Password: test
 
@@ -1832,7 +1832,7 @@ Test the dropdown menu functionality from the "Choisir un fichier" button in the
 5. No console errors occur
 
 ### Test Credentials
-- URL: https://jam-atlas-restore.preview.emergentagent.com
+- URL: https://mongo-migration-20.preview.emergentagent.com
 - Email: bar@gmail.com
 - Password: test
 
@@ -2053,7 +2053,7 @@ Test the "Choisir un fichier" button inside the event edit modal (e.g., "Modifie
 This test is different from the previous "Choisir un fichier" test which focused on the dropdown menu from the paperclip icon in the transaction table. This test focuses specifically on the file upload button **inside the modal** that appears when viewing/editing event details.
 
 ### Test Credentials
-- URL: https://jam-atlas-restore.preview.emergentagent.com
+- URL: https://mongo-migration-20.preview.emergentagent.com
 - Email: bar@gmail.com
 - Password: test
 
@@ -2180,7 +2180,7 @@ This test is different from the previous "Choisir un fichier" test which focused
 - Method: Playwright `page.on('filechooser', handler)`
 - Result: Event triggered successfully
 - File chooser properties: `is_multiple: False`
-- Page URL: `https://jam-atlas-restore.preview.emergentagent.com/venue`
+- Page URL: `https://mongo-migration-20.preview.emergentagent.com/venue`
 
 ### Differences from Previous Test
 
@@ -2223,7 +2223,7 @@ The implementation correctly:
 Test the "Choisir un fichier" option from the paperclip dropdown menu in Comptabilité tab to verify that clicking this option correctly opens the file picker dialog without errors.
 
 ### Test Credentials
-- URL: https://jam-atlas-restore.preview.emergentagent.com
+- URL: https://mongo-migration-20.preview.emergentagent.com
 - Email: bar@gmail.com
 - Password: test
 
@@ -2359,7 +2359,7 @@ The implementation correctly:
 Verify that clicking the Eye icon (FileText icon) next to transactions with invoices in the Comptabilité tab successfully downloads the invoice file.
 
 ### Test Credentials
-- URL: https://jam-atlas-restore.preview.emergentagent.com
+- URL: https://mongo-migration-20.preview.emergentagent.com
 - Email: bar@gmail.com
 - Password: test
 
@@ -2446,13 +2446,13 @@ async def download_invoice(
 ### Test Evidence
 
 **Network Monitoring:**
-- Request URL: `https://jam-atlas-restore.preview.emergentagent.com/api/invoices/concert-test-0_9ad105ca.png`
+- Request URL: `https://mongo-migration-20.preview.emergentagent.com/api/invoices/concert-test-0_9ad105ca.png`
 - Request Method: GET
 - Response Status: 200 OK
 - Response Type: blob (binary data)
 
 **Download Mechanism:**
-- Blob URL created: `blob:https://jam-atlas-restore.preview.emergentagent.com/bcc727b7-ee1c-4d18-bb25-762a72ee4eda`
+- Blob URL created: `blob:https://mongo-migration-20.preview.emergentagent.com/bcc727b7-ee1c-4d18-bb25-762a72ee4eda`
 - Download triggered via programmatic link click
 - File downloaded with correct filename from response
 
@@ -2494,7 +2494,7 @@ Test the new "Promotion du groupe" payment method option in the event creation m
 5. No console errors occur
 
 ### Test Credentials
-- URL: https://jam-atlas-restore.preview.emergentagent.com
+- URL: https://mongo-migration-20.preview.emergentagent.com
 - Email: bar@gmail.com
 - Password: test
 
@@ -2644,7 +2644,7 @@ The implementation correctly:
 Verify that the invoice upload feature with paperclip (trombone) icon in the Comptabilité tab works correctly, displaying a dropdown menu with "Prendre une photo" and "Choisir un fichier" options.
 
 ### Test Credentials
-- URL: https://jam-atlas-restore.preview.emergentagent.com
+- URL: https://mongo-migration-20.preview.emergentagent.com
 - Email: bar@gmail.com
 - Password: test
 
@@ -2854,8 +2854,8 @@ Verify that the bug fix for "Mes Candidatures" tab is working correctly. The fix
 - Falls back to placeholders if data is missing
 
 ### Test Environment
-- **URL Attempted:** https://jam-atlas-restore.preview.emergentagent.com (UNAVAILABLE - Preview down)
-- **URL Used:** https://jam-atlas-restore.preview.emergentagent.com
+- **URL Attempted:** https://mongo-migration-20.preview.emergentagent.com (UNAVAILABLE - Preview down)
+- **URL Used:** https://mongo-migration-20.preview.emergentagent.com
 - **Credentials:** musician@gmail.com / test
 
 ### Test Results: ⚠️ UNABLE TO VERIFY WITH ACTUAL DATA
@@ -2916,7 +2916,7 @@ async def get_my_applications(current_user: dict = Depends(get_current_user)):
 ❌ **Cannot verify bug fix in practice** because:
 1. The musician@gmail.com account has NO applications in the database
 2. Without application data, cannot confirm that real venue info is displayed instead of placeholders
-3. The original URL (https://jam-atlas-restore.preview.emergentagent.com) is unavailable
+3. The original URL (https://mongo-migration-20.preview.emergentagent.com) is unavailable
 
 ### Conclusion
 ✅ **CODE IMPLEMENTATION IS CORRECT**
@@ -2927,13 +2927,13 @@ async def get_my_applications(current_user: dict = Depends(get_current_user)):
 ⚠️ **UNABLE TO TEST WITH REAL DATA**
 - Need test account with actual applications
 - OR need to create test applications in the database
-- OR test on the production URL mentioned in review request (https://jam-atlas-restore.preview.emergentagent.com) when available
+- OR test on the production URL mentioned in review request (https://mongo-migration-20.preview.emergentagent.com) when available
 
 ### Recommendation
 To properly verify this bug fix:
 1. Create test applications for musician@gmail.com account
 2. OR test with a different account that has applications
-3. OR wait for https://jam-atlas-restore.preview.emergentagent.com to be available
+3. OR wait for https://mongo-migration-20.preview.emergentagent.com to be available
 4. Manual testing recommended with actual application data
 
 ---
@@ -2952,21 +2952,21 @@ Verify the bug fix for "Mes Candidatures" tab where application cards were showi
 - ✅ Status badges displayed (Acceptée, Refusée, En attente)
 
 ### Test Environment Requested
-- **URL:** https://jam-atlas-restore.preview.emergentagent.com/login
+- **URL:** https://mongo-migration-20.preview.emergentagent.com/login
 - **Credentials:** test@gmail.com / test
 - **Expected:** 6 application cards with real data
 
 ### Test Results: ⚠️ ENVIRONMENT UNAVAILABLE - CODE REVIEW COMPLETED
 
 #### 1. Primary Test URL Status: ❌ UNAVAILABLE
-**URL:** https://jam-atlas-restore.preview.emergentagent.com
+**URL:** https://mongo-migration-20.preview.emergentagent.com
 **Status:** "Preview Unavailable!!!" - Agent is sleeping/inactive
 **Error Message:** "Our Agent is resting after inactivity. Visit app.emergent.sh and restart the app to wake it up and restore your preview."
 
 **Conclusion:** Cannot test on the requested URL as the preview environment is down.
 
 #### 2. Alternative Environment Test: ⚠️ TECHNICAL LIMITATIONS
-**URL:** https://jam-atlas-restore.preview.emergentagent.com
+**URL:** https://mongo-migration-20.preview.emergentagent.com
 **Status:** Available but has different login flow (modal-based instead of /login route)
 **Issues:** 
 - Login modal automation has technical challenges
@@ -3125,19 +3125,19 @@ async def get_my_applications(current_user: dict = Depends(get_current_user)):
 - ✅ **Logic is sound and follows best practices**
 
 **The bug fix WILL work correctly** when tested with:
-1. A working environment (https://jam-atlas-restore.preview.emergentagent.com when available)
+1. A working environment (https://mongo-migration-20.preview.emergentagent.com when available)
 2. An account with actual applications (test@gmail.com with 6 applications as mentioned)
 3. Real venue and planning slot data in the database
 
 ### Screenshots Captured
-1. `01_login_page.png` - https://jam-atlas-restore.preview.emergentagent.com showing "Preview Unavailable" error
+1. `01_login_page.png` - https://mongo-migration-20.preview.emergentagent.com showing "Preview Unavailable" error
 2. `error_state.png` - Confirmation of environment unavailability
 
 ### Recommendation for Main Agent
 
 **ACTION REQUIRED:**
 1. ✅ **Code Implementation:** Verified correct - no changes needed
-2. ⚠️ **Testing Environment:** https://jam-atlas-restore.preview.emergentagent.com is currently down
+2. ⚠️ **Testing Environment:** https://mongo-migration-20.preview.emergentagent.com is currently down
 3. 📋 **Next Steps:**
    - Wake up/restart the mielo.preview.emergentagent.com environment
    - OR provide alternative test account with applications on the working environment
@@ -3168,7 +3168,7 @@ Test the new **city search functionality** with the search icon (loupe) button i
 - **API Integration**: OpenStreetMap Nominatim API with France country filter
 
 ### Test Credentials
-- **URL**: https://jam-atlas-restore.preview.emergentagent.com
+- **URL**: https://mongo-migration-20.preview.emergentagent.com
 - **Email**: musician@gmail.com
 - **Password**: test
 
@@ -3464,7 +3464,7 @@ Test the complete Stripe payment flow to verify if the `/payment/success` page d
 6. Dashboard return button functionality
 
 ### Test Credentials (Requested)
-- **URL**: https://jam-atlas-restore.preview.emergentagent.com
+- **URL**: https://mongo-migration-20.preview.emergentagent.com
 - **Email**: bar@gmail.com
 - **Password**: test
 
@@ -3738,7 +3738,7 @@ const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/test_6oUcN67JN7NE7pR7mR6c001
 
 // Option 2: Add session token to Stripe return URL
 // Configure Stripe Payment Link success_url with:
-// https://jam-atlas-restore.preview.emergentagent.com/payment/success?session_id={CHECKOUT_SESSION_ID}
+// https://mongo-migration-20.preview.emergentagent.com/payment/success?session_id={CHECKOUT_SESSION_ID}
 // Then verify session_id in component
 ```
 
@@ -3835,7 +3835,7 @@ When users complete payment on Stripe and are redirected back:
 
 2. **Wake Up Preview Environment**
    - Visit app.emergent.sh
-   - Restart the app at URL: https://jam-atlas-restore.preview.emergentagent.com
+   - Restart the app at URL: https://mongo-migration-20.preview.emergentagent.com
    - Verify preview loads correctly
 
 3. **Manual Testing Required** (After environment fix)
@@ -3922,7 +3922,7 @@ Tester le bouton de statut "En ligne" / "Hors ligne" dans le header du VenueDash
 - Vérifier les appels API
 
 ### Test Credentials Used
-- **URL**: https://jam-atlas-restore.preview.emergentagent.com
+- **URL**: https://mongo-migration-20.preview.emergentagent.com
 - **Email**: bar@gmail.com
 - **Password**: test  
 - **Role**: venue (verified)

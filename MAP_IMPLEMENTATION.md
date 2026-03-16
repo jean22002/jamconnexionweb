@@ -284,7 +284,7 @@ if (navigator.share) {
 ## 📱 Test de la Carte
 
 ### Sur Desktop
-1. Aller sur `https://jam-atlas-restore.preview.emergentagent.com`
+1. Aller sur `https://mongo-migration-20.preview.emergentagent.com`
 2. Cliquer sur "Explorer la carte" (4ème bouton)
 3. La carte s'affiche avec 36 établissements
 4. Cliquer sur un marqueur → popup avec infos

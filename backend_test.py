@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 # Get backend URL from frontend environment
-BACKEND_URL = "https://jam-atlas-restore.preview.emergentagent.com/api"
+BACKEND_URL = "https://mongo-migration-20.preview.emergentagent.com/api"
 
 # Test credentials
 TEST_EMAIL = "bar@gmail.com"

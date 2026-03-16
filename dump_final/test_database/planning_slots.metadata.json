@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"7b111a9165c24cb38e5e658396b40c65","collectionName":"planning_slots","type":"collection"}

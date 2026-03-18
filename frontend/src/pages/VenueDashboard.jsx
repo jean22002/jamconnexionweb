@@ -72,6 +72,11 @@ export default function VenueDashboard() {
   // Hook pour le statut en ligne
   const { mode: onlineMode, isOnline, manualStatus, toggleManualStatus, updateMode } = useOnlineStatus();
   
+  // DEBUG: Log des changements de statut
+  useEffect(() => {
+    console.log('🔄 Online Status Changed:', { isOnline, manualStatus, onlineMode });
+  }, [isOnline, manualStatus, onlineMode]);
+  
   // Hook pour les notifications push
   useNotifications(token, user);
   const navigate = useNavigate();
@@ -2199,7 +2204,9 @@ export default function VenueDashboard() {
                     if (onlineMode === 'manual') {
                       try {
                         const newStatusValue = !manualStatus;
+                        console.log('🎯 Avant toggle - manualStatus:', manualStatus, '→ Nouveau:', newStatusValue);
                         await toggleManualStatus();
+                        console.log('✅ Après toggle - isOnline devrait être:', newStatusValue);
                         toast.success(newStatusValue ? 'Vous êtes maintenant en ligne' : 'Vous êtes maintenant hors ligne');
                       } catch (err) {
                         toast.error('Erreur lors du changement de statut');

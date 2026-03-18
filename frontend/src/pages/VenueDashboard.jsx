@@ -66,7 +66,28 @@ const INSTRUMENTS_BASE = [
   "Ampli basse"
 ];
 
+/**
+ * =============================================================================
+ * VENUE DASHBOARD - COMPOSANT PRINCIPAL
+ * =============================================================================
+ * 
+ * Tableau de bord complet pour la gestion d'un établissement (bar, salle de concert, etc.)
+ * 
+ * SECTIONS PRINCIPALES:
+ * - États & Configuration (lignes ~69-308)
+ * - Fonctions Fetch (lignes ~310-900)
+ * - Handlers & Actions (lignes ~606-1924)
+ * - Rendu JSX: Header + Bannières + 13 Onglets (lignes ~2153-7927)
+ * 
+ * DOCUMENTATION COMPLÈTE: /app/frontend/src/features/venue-dashboard/README.md
+ * 
+ * ⚠️ ATTENTION: Fichier monolithique de ~7900 lignes. Refactoring nécessaire.
+ * =============================================================================
+ */
 export default function VenueDashboard() {
+  // ============================================================================
+  // CONTEXTES & HOOKS EXTERNES
+  // ============================================================================
   const { user, token, logout, refreshUser } = useAuth();
   const { triggerBadgeCheck } = useBadgeAutoCheck();
   
@@ -76,6 +97,10 @@ export default function VenueDashboard() {
   // Hook pour les notifications push
   useNotifications(token, user);
   const navigate = useNavigate();
+
+  // ============================================================================
+  // ÉTATS - PROFIL & GÉNÉRAL
+  // ============================================================================
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -92,10 +117,16 @@ export default function VenueDashboard() {
     localStorage.setItem('venue_activeTab', activeTab);
   }, [activeTab]);
   
+  // ============================================================================
+  // ÉTATS - ABONNEMENT
+  // ============================================================================
   // Subscription state
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
   const [trialDaysLeft, setTrialDaysLeft] = useState(null);
   
+  // ============================================================================
+  // ÉTATS - ÉVÉNEMENTS (Jams, Concerts, Karaoke, Spectacles, Planning)
+  // ============================================================================
   // Events
   const [jams, setJams] = useState([]);
   const [concerts, setConcerts] = useState([]);

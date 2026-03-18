@@ -2425,10 +2425,6 @@ export default function VenueDashboard() {
                   <div className="flex flex-col gap-4 mt-6">
                     {/* Status */}
                     <div className="flex flex-col gap-3 pb-4 border-b border-white/10">
-                      <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${status.color}`}>
-                        <StatusIcon className="w-5 h-5" />
-                        <span className="font-medium">{status.label}</span>
-                      </div>
                       {profile && (
                         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
                           <Users className="w-5 h-5" />

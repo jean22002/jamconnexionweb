@@ -1382,9 +1382,26 @@ export default function VenueDashboard() {
     fetchApplications(slot.id);
   };
 
-  const handleDateClick = async (date) => {
+  const handleDateClick = async (eventOrDate) => {
+    console.log('📅 handleDateClick called with:', eventOrDate);
+    
+    // Cas 1 : On a reçu un événement complet (objet avec type, data, date)
+    if (eventOrDate && typeof eventOrDate === 'object' && eventOrDate.type && eventOrDate.data) {
+      const { type, data } = eventOrDate;
+      
+      console.log(`✅ Événement direct reçu : ${type}`);
+      
+      // Ouvrir directement la modale avec l'événement
+      setSelectedEvent(data);
+      setSelectedEventType(type);
+      setIsEditingEvent(false);
+      setShowEventDetailsModal(true);
+      return;
+    }
+    
+    // Cas 2 : On a reçu juste une date (string ou Date) - comportement ancien pour compatibilité
     // S'assurer que date est un objet Date
-    const dateObj = date instanceof Date ? date : new Date(date);
+    const dateObj = eventOrDate instanceof Date ? eventOrDate : new Date(eventOrDate);
     
     // Format date sans conversion UTC
     const year = dateObj.getFullYear();

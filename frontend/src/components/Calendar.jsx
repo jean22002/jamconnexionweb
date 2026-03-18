@@ -210,7 +210,27 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
         onClick={() => {
           // Permettre le click sur les dates avec événements (même passées)
           if (!isPast || isBookedByEvent || isSlotComplete || hasAcceptedApplications || isOpenSlot || hasApplied) {
-            onDateClick(dateStr);
+            // Collecter l'événement spécifique pour le passer
+            let eventData = null;
+            
+            if (hasApplied && planningSlot) {
+              eventData = { type: 'application', data: planningSlot, date: dateStr };
+            } else if (isSlotComplete || hasAcceptedApplications || isOpenSlot) {
+              eventData = { type: 'slot', data: planningSlot, date: dateStr };
+            } else if (eventType === 'concert' && concert) {
+              eventData = { type: 'concert', data: concert, date: dateStr };
+            } else if (eventType === 'jam' && jam) {
+              eventData = { type: 'jam', data: jam, date: dateStr };
+            } else if (eventType === 'karaoke') {
+              const karaoke = karaokes.find(k => k.date === dateStr);
+              if (karaoke) eventData = { type: 'karaoke', data: karaoke, date: dateStr };
+            } else if (eventType === 'spectacle') {
+              const spectacle = spectacles.find(s => s.date === dateStr);
+              if (spectacle) eventData = { type: 'spectacle', data: spectacle, date: dateStr };
+            }
+            
+            // Passer l'événement complet OU juste la date si pas d'événement
+            onDateClick(eventData || dateStr);
           }
         }}
         disabled={isPast && !isBookedByEvent && !isSlotComplete && !hasAcceptedApplications && !isOpenSlot && !hasApplied}

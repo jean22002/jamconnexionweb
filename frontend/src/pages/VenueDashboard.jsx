@@ -7132,7 +7132,15 @@ export default function VenueDashboard() {
           <DialogContent className="glassmorphism border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="font-heading">
-                {isEditingEvent ? 'Modifier' : 'Détails'} {selectedEventType === 'concert' ? 'du Concert' : 'du Bœuf'}
+                {isEditingEvent ? 'Modifier' : 'Détails'} {
+                  selectedEventType === 'concert' ? 'du Concert' : 
+                  selectedEventType === 'jam' ? 'du Bœuf' :
+                  selectedEventType === 'karaoke' ? 'du Karaoké' :
+                  selectedEventType === 'spectacle' ? 'du Spectacle' :
+                  selectedEventType === 'slot' ? 'du Créneau' :
+                  selectedEventType === 'application' ? 'de la Candidature' :
+                  'de l\'événement'
+                }
               </DialogTitle>
             </DialogHeader>
 

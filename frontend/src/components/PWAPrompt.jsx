@@ -173,16 +173,6 @@ export default function PWAPrompt() {
           </div>
         </div>
       )}
-
-      {/* Indicateur en ligne (petit, discret) - UNIQUEMENT pour utilisateurs connectés ET en ligne */}
-      {user && onlineMode !== 'disabled' && userOnlineStatus === true && showOfflineBanner === false && (
-        <div className="fixed bottom-20 right-4 z-40">
-          <div className="bg-green-500/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-lg flex items-center gap-2 animate-fade-in">
-            <Wifi className="w-3 h-3 text-white" />
-            <span className="text-xs text-white font-medium">En ligne</span>
-          </div>
-        </div>
-      )}
     </>
   );
 }

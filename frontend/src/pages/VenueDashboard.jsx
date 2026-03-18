@@ -2065,16 +2065,6 @@ export default function VenueDashboard() {
     setForm({ ...form, [field]: form[field].filter(item => item !== value) });
   };
 
-  const getSubscriptionStatus = () => {
-    if (user?.subscription_status === "active") return { label: "Actif", color: "text-green-400", icon: Check };
-    if (user?.subscription_status === "trial") {
-      const trialEnd = user?.trial_end ? new Date(user.trial_end) : null;
-      const daysLeft = trialEnd ? Math.ceil((trialEnd - new Date()) / (1000 * 60 * 60 * 24)) : 0;
-      return { label: `Essai (${daysLeft}j)`, color: "text-secondary", icon: Clock };
-    }
-    return { label: "Inactif", color: "text-destructive", icon: AlertCircle };
-  };
-
   const downloadAllInvoices = async () => {
     try {
       toast.loading("Préparation du téléchargement...");
@@ -2156,9 +2146,6 @@ export default function VenueDashboard() {
     }
   };
 
-  const status = getSubscriptionStatus();
-  const StatusIcon = status.icon;
-
   if (loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   }
@@ -2181,10 +2168,6 @@ export default function VenueDashboard() {
             
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-4">
-              <div className={`flex items-center gap-2 px-3 py-1 rounded-full bg-muted/50 ${status.color}`}>
-                <StatusIcon className="w-4 h-4" />
-                <span className="text-sm font-medium">{status.label}</span>
-              </div>
               {profile && (
                 <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-muted/50 text-muted-foreground">
                   <Users className="w-4 h-4" />

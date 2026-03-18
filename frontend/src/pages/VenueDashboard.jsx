@@ -48,6 +48,7 @@ import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 import { MUSIC_STYLES_LIST } from "../data/music-styles";
 import { useNotifications } from "../hooks/useNotifications";
 import DashboardNotification from "../components/DashboardNotification";
+import ConcertForm from "../features/venue-dashboard/components/tabs/ConcertForm";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/aFa6oG9gV4d20te2uRafS02";

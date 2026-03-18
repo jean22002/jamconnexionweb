@@ -4695,6 +4695,8 @@ export default function VenueDashboard() {
                           className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white"
                         >
                           <option value="1">1 groupe</option>
+                          <option value="1">Duo</option>
+                          <option value="1">Trio</option>
                           <option value="2">2 groupes</option>
                           <option value="3">3 groupes ou plus</option>
                         </select>

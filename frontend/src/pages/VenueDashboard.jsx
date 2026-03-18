@@ -454,19 +454,27 @@ export default function VenueDashboard() {
       setBookedDates(bookedDatesArray);
       
       // Construire l'objet des événements par date avec leur type
+      // NOTE: Si plusieurs événements le même jour, on stocke un array
       const eventsMap = {};
-      jams.forEach(jam => {
-        eventsMap[jam.date] = 'jam'; // Mauve pour les bœufs
-      });
-      concerts.forEach(concert => {
-        eventsMap[concert.date] = 'concert'; // Vert pour les concerts
-      });
-      karaokes.forEach(karaoke => {
-        eventsMap[karaoke.date] = 'karaoke'; // Couleur pour karaoké
-      });
-      spectacles.forEach(spectacle => {
-        eventsMap[spectacle.date] = 'spectacle'; // Couleur pour spectacle
-      });
+      
+      // Fonction helper pour ajouter un événement
+      const addEvent = (date, type) => {
+        if (!eventsMap[date]) {
+          eventsMap[date] = type;
+        } else if (typeof eventsMap[date] === 'string') {
+          // Convertir en array si un deuxième événement existe
+          eventsMap[date] = [eventsMap[date], type];
+        } else {
+          // Ajouter à l'array existant
+          eventsMap[date].push(type);
+        }
+      };
+      
+      jams.forEach(jam => addEvent(jam.date, 'jam'));
+      concerts.forEach(concert => addEvent(concert.date, 'concert'));
+      karaokes.forEach(karaoke => addEvent(karaoke.date, 'karaoke'));
+      spectacles.forEach(spectacle => addEvent(spectacle.date, 'spectacle'));
+      
       setEventsByDate(eventsMap);
     } catch (error) {
       console.error("Error fetching events:", error);
@@ -1385,7 +1393,15 @@ export default function VenueDashboard() {
     const dateStr = `${year}-${month}-${day}`;
     
     // Vérifier s'il y a un événement à cette date
-    const eventType = eventsByDate[dateStr];
+    let eventType = eventsByDate[dateStr];
+    
+    // Si eventType est un array, on a plusieurs événements le même jour
+    // Pour l'instant, on prend le premier de la liste
+    // TODO: Afficher un menu pour choisir quel événement voir
+    if (Array.isArray(eventType)) {
+      eventType = eventType[0];
+      console.warn(`⚠️ Plusieurs événements le ${dateStr}:`, eventsByDate[dateStr]);
+    }
     
     if (eventType) {
       // Il y a un événement (concert, jam, karaoké ou spectacle), on l'affiche

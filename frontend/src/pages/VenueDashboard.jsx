@@ -1396,11 +1396,10 @@ export default function VenueDashboard() {
     let eventType = eventsByDate[dateStr];
     
     // Si eventType est un array, on a plusieurs événements le même jour
-    // Pour l'instant, on prend le premier de la liste
-    // TODO: Afficher un menu pour choisir quel événement voir
+    // On prend le DERNIER de la liste (le plus récemment ajouté)
     if (Array.isArray(eventType)) {
-      eventType = eventType[0];
-      console.warn(`⚠️ Plusieurs événements le ${dateStr}:`, eventsByDate[dateStr]);
+      eventType = eventType[eventType.length - 1]; // Dernier élément
+      console.warn(`⚠️ Plusieurs événements le ${dateStr}:`, eventsByDate[dateStr], '→ Affichage du dernier:', eventType);
     }
     
     if (eventType) {

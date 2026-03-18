@@ -108,6 +108,25 @@ async def update_venue_profile(data: VenueProfile, current_user: dict = Depends(
     return VenueProfileResponse(**updated)
 
 
+@router.put("/venues/me/reviews-visibility")
+async def toggle_reviews_visibility(show_reviews: bool, current_user: dict = Depends(get_current_user)):
+    """Toggle the visibility of reviews for a venue"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venue accounts can modify review visibility")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Update the show_reviews field
+    await db.venues.update_one(
+        {"user_id": current_user["id"]},
+        {"$set": {"show_reviews": show_reviews}}
+    )
+    
+    return {"message": "Reviews visibility updated", "show_reviews": show_reviews}
+
+
 @router.get("/venues/me", response_model=VenueProfileResponse)
 async def get_my_venue(current_user: dict = Depends(get_current_user)):
     # Permettre aux venues ET aux admins d'accéder

@@ -952,18 +952,18 @@ export default function VenueDashboard() {
 
   const toggleReviewsVisibility = async () => {
     try {
+      const newShowReviews = !showReviews;
       await axios.put(
-        `${API}/venues/me/reviews-visibility?show_reviews=${!showReviews}`,
+        `${API}/venues/me/reviews-visibility?show_reviews=${newShowReviews}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setShowReviews(!showReviews);
-      toast.success(showReviews ? "Avis masqués" : "Avis affichés publiquement");
-      // Ne pas appeler fetchProfile() pour éviter d'écraser formData en mode édition
-      if (!editing) {
-        fetchProfile();
-      }
+      setShowReviews(newShowReviews);
+      // Mettre à jour le profil local pour maintenir la synchronisation
+      setProfile({ ...profile, show_reviews: newShowReviews });
+      toast.success(newShowReviews ? "Avis affichés publiquement" : "Avis masqués");
     } catch (error) {
+      console.error("Error toggling reviews visibility:", error);
       toast.error("Erreur lors de la modification");
     }
   };

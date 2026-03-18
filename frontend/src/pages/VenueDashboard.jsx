@@ -5801,7 +5801,14 @@ export default function VenueDashboard() {
                             )}
                           </div>
 
-                          <Button className="w-full" size="sm">
+                          <Button 
+                            className="w-full" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedBand(band);
+                              setShowMessageDialog(true);
+                            }}
+                          >
                             Contacter le groupe
                           </Button>
                         </div>
@@ -5847,7 +5854,14 @@ export default function VenueDashboard() {
                               </div>
                             )}
 
-                            <Button className="w-full" size="sm">
+                            <Button 
+                              className="w-full" 
+                              size="sm"
+                              onClick={() => {
+                                setSelectedBand(band);
+                                setShowMessageDialog(true);
+                              }}
+                            >
                               Contacter le groupe
                             </Button>
                           </div>
@@ -8002,6 +8016,56 @@ export default function VenueDashboard() {
                 </div>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Modale de message au groupe */}
+        <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
+          <DialogContent className="glassmorphism border-white/10 max-w-md">
+            <DialogHeader>
+              <DialogTitle className="font-heading">
+                Contacter {selectedBand?.name}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label>Sujet</Label>
+                <Input
+                  value={messageForm.subject}
+                  onChange={(e) => setMessageForm({ ...messageForm, subject: e.target.value })}
+                  placeholder="Ex: Proposition de concert"
+                  className="bg-black/20 border-white/10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Message</Label>
+                <Textarea
+                  value={messageForm.content}
+                  onChange={(e) => setMessageForm({ ...messageForm, content: e.target.value })}
+                  placeholder="Votre message..."
+                  className="bg-black/20 border-white/10 min-h-[150px]"
+                  rows={6}
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  onClick={sendMessageToBand}
+                  className="flex-1"
+                >
+                  Envoyer 📧
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowMessageDialog(false);
+                    setMessageForm({ subject: "", content: "" });
+                  }}
+                  variant="outline"
+                  className="flex-1 border-white/20"
+                >
+                  Annuler
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </main>

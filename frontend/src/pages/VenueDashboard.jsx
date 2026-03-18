@@ -1708,6 +1708,21 @@ export default function VenueDashboard() {
     }
   };
 
+  // ⚠️ VALIDATION: Vérifier qu'il n'y a pas déjà un événement à cette date
+  const checkEventConflict = (date) => {
+    const existingJam = jams.find(j => j.date === date);
+    const existingConcert = concerts.find(c => c.date === date);
+    const existingKaraoke = karaokes.find(k => k.date === date);
+    const existingSpectacle = spectacles.find(s => s.date === date);
+    
+    if (existingJam) return { conflict: true, type: 'Bœuf musical' };
+    if (existingConcert) return { conflict: true, type: 'Concert' };
+    if (existingKaraoke) return { conflict: true, type: 'Karaoké' };
+    if (existingSpectacle) return { conflict: true, type: 'Spectacle' };
+    
+    return { conflict: false };
+  };
+
   // Fetch applications for a specific slot
   const fetchApplications = async (slotId) => {
     try {
@@ -1728,6 +1743,13 @@ export default function VenueDashboard() {
   // Create Jam
   const createJam = async () => {
     try {
+      // ⚠️ Vérifier les conflits de date
+      const conflict = checkEventConflict(jamForm.date);
+      if (conflict.conflict) {
+        toast.error(`❌ Impossible : Un événement "${conflict.type}" existe déjà le ${new Date(jamForm.date).toLocaleDateString('fr-FR')} !`);
+        return;
+      }
+      
       await axios.post(`${API}/jams`, jamForm, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Boeuf musical créé!");
       
@@ -1767,6 +1789,13 @@ export default function VenueDashboard() {
   // Create Concert
   const createConcert = async () => {
     try {
+      // ⚠️ Vérifier les conflits de date
+      const conflict = checkEventConflict(concertForm.date);
+      if (conflict.conflict) {
+        toast.error(`❌ Impossible : Un événement "${conflict.type}" existe déjà le ${new Date(concertForm.date).toLocaleDateString('fr-FR')} !`);
+        return;
+      }
+      
       await axios.post(`${API}/concerts`, concertForm, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Concert créé!");
       
@@ -1790,6 +1819,13 @@ export default function VenueDashboard() {
   // Create Karaoke
   const createKaraoke = async () => {
     try {
+      // ⚠️ Vérifier les conflits de date
+      const conflict = checkEventConflict(karaokeForm.date);
+      if (conflict.conflict) {
+        toast.error(`❌ Impossible : Un événement "${conflict.type}" existe déjà le ${new Date(karaokeForm.date).toLocaleDateString('fr-FR')} !`);
+        return;
+      }
+      
       await axios.post(`${API}/karaoke`, karaokeForm, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Soirée karaoké créée!");
       
@@ -1812,6 +1848,13 @@ export default function VenueDashboard() {
   // Create Spectacle
   const createSpectacle = async () => {
     try {
+      // ⚠️ Vérifier les conflits de date
+      const conflict = checkEventConflict(spectacleForm.date);
+      if (conflict.conflict) {
+        toast.error(`❌ Impossible : Un événement "${conflict.type}" existe déjà le ${new Date(spectacleForm.date).toLocaleDateString('fr-FR')} !`);
+        return;
+      }
+      
       await axios.post(`${API}/spectacle`, spectacleForm, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("Spectacle créé!");
       

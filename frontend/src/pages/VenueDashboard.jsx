@@ -1390,12 +1390,16 @@ export default function VenueDashboard() {
       const { type, data } = eventOrDate;
       
       console.log(`✅ Événement direct reçu : ${type}`);
+      console.log('🎯 Data de l\'événement:', data);
       
       // Ouvrir directement la modale avec l'événement
+      console.log('🔄 Setting selectedEvent to:', data);
+      console.log('🔄 Setting selectedEventType to:', type);
       setSelectedEvent(data);
       setSelectedEventType(type);
       setIsEditingEvent(false);
       setShowEventDetailsModal(true);
+      console.log('✅ Modale devrait s\'ouvrir avec:', { type, event: data });
       return;
     }
     

@@ -1396,10 +1396,50 @@ export default function VenueDashboard() {
     let eventType = eventsByDate[dateStr];
     
     // Si eventType est un array, on a plusieurs événements le même jour
-    // On prend le DERNIER de la liste (le plus récemment ajouté)
     if (Array.isArray(eventType)) {
-      eventType = eventType[eventType.length - 1]; // Dernier élément
-      console.warn(`⚠️ Plusieurs événements le ${dateStr}:`, eventsByDate[dateStr], '→ Affichage du dernier:', eventType);
+      console.warn(`⚠️ Plusieurs événements le ${dateStr}:`, eventsByDate[dateStr]);
+      
+      // Collecter tous les événements du jour
+      const eventsOfDay = [];
+      
+      eventType.forEach(type => {
+        if (type === 'jam') {
+          const event = jams.find(j => j.date === dateStr);
+          if (event) eventsOfDay.push({ ...event, type: 'jam', label: 'Bœuf' });
+        } else if (type === 'concert') {
+          const event = concerts.find(c => c.date === dateStr);
+          if (event) eventsOfDay.push({ ...event, type: 'concert', label: 'Concert' });
+        } else if (type === 'karaoke') {
+          const event = karaokes.find(k => k.date === dateStr);
+          if (event) eventsOfDay.push({ ...event, type: 'karaoke', label: 'Karaoké' });
+        } else if (type === 'spectacle') {
+          const event = spectacles.find(s => s.date === dateStr);
+          if (event) eventsOfDay.push({ ...event, type: 'spectacle', label: 'Spectacle' });
+        }
+      });
+      
+      // Si plusieurs événements, afficher un menu de sélection
+      if (eventsOfDay.length > 1) {
+        // TODO: Afficher une modale de sélection
+        // Pour l'instant, on prend le premier karaoké s'il existe, sinon le premier
+        const karaokeEvent = eventsOfDay.find(e => e.type === 'karaoke');
+        if (karaokeEvent) {
+          setSelectedEvent(karaokeEvent);
+          setSelectedEventType(karaokeEvent.type);
+          setIsEditingEvent(false);
+          setShowEventDetailsModal(true);
+          return;
+        }
+      }
+      
+      // Sinon, prendre le premier événement
+      if (eventsOfDay.length > 0) {
+        setSelectedEvent(eventsOfDay[0]);
+        setSelectedEventType(eventsOfDay[0].type);
+        setIsEditingEvent(false);
+        setShowEventDetailsModal(true);
+        return;
+      }
     }
     
     if (eventType) {

@@ -2198,8 +2198,9 @@ export default function VenueDashboard() {
                   onClick={async () => {
                     if (onlineMode === 'manual') {
                       try {
+                        const newStatusValue = !manualStatus;
                         await toggleManualStatus();
-                        toast.success(manualStatus ? 'Vous êtes maintenant hors ligne' : 'Vous êtes maintenant en ligne');
+                        toast.success(newStatusValue ? 'Vous êtes maintenant en ligne' : 'Vous êtes maintenant hors ligne');
                       } catch (err) {
                         toast.error('Erreur lors du changement de statut');
                       }

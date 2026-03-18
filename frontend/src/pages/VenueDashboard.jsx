@@ -198,6 +198,10 @@ export default function VenueDashboard() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedEventType, setSelectedEventType] = useState(null); // 'concert', 'jam', or 'planning'
   const [isEditingEvent, setIsEditingEvent] = useState(false);
+
+  // Event selection modal (for multiple events on same day)
+  const [showEventSelectionModal, setShowEventSelectionModal] = useState(false);
+  const [multipleEventsOfDay, setMultipleEventsOfDay] = useState([]);
   
   // Reviews
   const [reviews, setReviews] = useState([]);
@@ -1473,16 +1477,10 @@ export default function VenueDashboard() {
       
       // Si plusieurs événements, afficher un menu de sélection
       if (eventsOfDay.length > 1) {
-        // TODO: Afficher une modale de sélection
-        // Pour l'instant, on prend le premier karaoké s'il existe, sinon le premier
-        const karaokeEvent = eventsOfDay.find(e => e.type === 'karaoke');
-        if (karaokeEvent) {
-          setSelectedEvent(karaokeEvent);
-          setSelectedEventType(karaokeEvent.type);
-          setIsEditingEvent(false);
-          setShowEventDetailsModal(true);
-          return;
-        }
+        console.log(`📋 ${eventsOfDay.length} événements trouvés, affichage modale de sélection`);
+        setMultipleEventsOfDay(eventsOfDay);
+        setShowEventSelectionModal(true);
+        return;
       }
       
       // Sinon, prendre le premier événement
@@ -7129,6 +7127,58 @@ export default function VenueDashboard() {
           </TabsContent>
 
         </Tabs>
+
+        {/* Modale de sélection d'événements multiples */}
+        <Dialog open={showEventSelectionModal} onOpenChange={setShowEventSelectionModal}>
+          <DialogContent className="glassmorphism border-white/10 max-w-md">
+            <DialogHeader>
+              <DialogTitle className="font-heading">
+                Plusieurs événements ce jour
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 mt-4">
+              <p className="text-sm text-muted-foreground">
+                Plusieurs événements sont prévus à cette date. Sélectionnez celui que vous souhaitez consulter :
+              </p>
+              <div className="space-y-2">
+                {multipleEventsOfDay.map((event, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedEvent(event);
+                      setSelectedEventType(event.type);
+                      setIsEditingEvent(false);
+                      setShowEventSelectionModal(false);
+                      setShowEventDetailsModal(true);
+                    }}
+                    className="w-full p-4 rounded-xl border-2 border-white/10 hover:border-primary/50 bg-black/20 hover:bg-primary/10 transition-all text-left group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-lg group-hover:text-primary transition-colors">
+                          {event.label}
+                        </p>
+                        {event.title && (
+                          <p className="text-sm text-muted-foreground mt-1">{event.title}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {event.start_time && `${event.start_time}`}
+                          {event.end_time && ` - ${event.end_time}`}
+                        </p>
+                      </div>
+                      <div className="text-3xl">
+                        {event.type === 'concert' && '🎸'}
+                        {event.type === 'jam' && '🎵'}
+                        {event.type === 'karaoke' && '🎤'}
+                        {event.type === 'spectacle' && '🎭'}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Modale d'affichage/édition d'événement */}
         <Dialog open={showEventDetailsModal} onOpenChange={(open) => {

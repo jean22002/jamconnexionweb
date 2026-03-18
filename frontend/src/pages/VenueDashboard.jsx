@@ -70,12 +70,7 @@ export default function VenueDashboard() {
   const { triggerBadgeCheck } = useBadgeAutoCheck();
   
   // Hook pour le statut en ligne
-  const { mode: onlineMode, isOnline, manualStatus, toggleManualStatus, updateMode } = useOnlineStatus();
-  
-  // DEBUG: Log des changements de statut
-  useEffect(() => {
-    console.log('🔄 Online Status Changed:', { isOnline, manualStatus, onlineMode });
-  }, [isOnline, manualStatus, onlineMode]);
+  // Hook useOnlineStatus supprimé (bouton "Actif" retiré)
   
   // Hook pour les notifications push
   useNotifications(token, user);
@@ -2197,49 +2192,7 @@ export default function VenueDashboard() {
                 </div>
               )}
               
-              {/* Online Status Toggle - Cliquable */}
-              {onlineMode !== 'disabled' && (
-                <button
-                  onClick={async () => {
-                    if (onlineMode === 'manual') {
-                      try {
-                        const newStatusValue = !manualStatus;
-                        console.log('🎯 Avant toggle - manualStatus:', manualStatus, '→ Nouveau:', newStatusValue);
-                        await toggleManualStatus();
-                        console.log('✅ Après toggle - isOnline devrait être:', newStatusValue);
-                        toast.success(newStatusValue ? 'Vous êtes maintenant en ligne' : 'Vous êtes maintenant hors ligne');
-                      } catch (err) {
-                        toast.error('Erreur lors du changement de statut');
-                      }
-                    } else {
-                      // Si en mode auto, basculer vers manuel
-                      try {
-                        await updateMode('manual');
-                        toast.success('Mode manuel activé. Cliquez à nouveau pour changer votre statut.');
-                      } catch (err) {
-                        toast.error('Erreur lors du changement de mode');
-                      }
-                    }
-                  }}
-                  className="flex items-center gap-2 px-3 py-1 rounded-full bg-muted/50 hover:bg-muted/70 transition-all cursor-pointer"
-                  title={onlineMode === 'manual' ? 'Cliquez pour changer votre statut' : 'Cliquez pour activer le mode manuel'}
-                >
-                  {isOnline ? (
-                    <>
-                      <span className="relative flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                      </span>
-                      <span className="text-sm font-medium text-green-600 dark:text-green-400">En ligne</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="h-3 w-3 rounded-full bg-gray-500"></span>
-                      <span className="text-sm font-medium text-muted-foreground">Hors ligne</span>
-                    </>
-                  )}
-                </button>
-              )}
+              {/* Bouton Actif/Hors ligne SUPPRIMÉ (bug d'affichage) */}
               
               {/* Notifications */}
               <Dialog open={showNotificationsDialog} onOpenChange={(open) => {

@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException, Depends, Header
+from fastapi import APIRouter, HTTPException, Depends, Header, Request
 from datetime import datetime, timezone
 from typing import List
 import uuid
 
 from models import MessageCreate, MessageResponse
+from middleware.rate_limit import limiter
 
 router = APIRouter(prefix="/messages", tags=["Messages"])
 
@@ -20,7 +21,8 @@ async def get_current_user_local(authorization: str = Header(None)):
     return await get_current_user(authorization, db)
 
 @router.post("", response_model=MessageResponse)
-async def send_message(data: MessageCreate, current_user: dict = Depends(get_current_user_local)):
+@limiter.limit("20/minute")
+async def send_message(request: Request, data: MessageCreate, current_user: dict = Depends(get_current_user_local)):
     """Send a message to another user"""
     # Get recipient info
     recipient = await db.users.find_one({"id": data.recipient_id}, {"_id": 0})

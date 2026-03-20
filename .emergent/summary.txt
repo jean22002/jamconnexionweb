@@ -1,155 +1,162 @@
 <analysis>**original_problem_statement:**
-L'utilisateur a signalé que son site de production, accessible via son domaine personnalisé , est complètement en panne, avec des erreurs de connexion (5xx, 520). Bien que l'URL de prévisualisation fonctionne parfaitement, le site de production ne fonctionne pas.
+L'utilisateur a initialement demandé une série de corrections de bugs et de petites modifications d'interface utilisateur. Cela comprenait la suppression d'un badge de statut, la correction d'un bouton de contact, l'ajout d'options à un formulaire et la correction d'une bascule de visibilité des avis.
 
-La cause principale identifiée est une divergence de base de données : l'environnement de prévisualisation utilise une base de données MongoDB locale qui contient toutes les données utilisateur (290 utilisateurs), tandis que le déploiement de production est lié à un cluster MongoDB Atlas qui a été découvert comme étant vide ou inexistant.
-
-L'objectif principal est de rendre le site  fonctionnel en migrant les données de la base de données locale vers le cluster MongoDB Atlas de production. L'utilisateur a depuis créé un nouveau cluster gratuit sur MongoDB Atlas et a configuré l'accès réseau. La tâche en cours est de transférer le backup de la base de données locale à l'utilisateur pour qu'il puisse effectuer la restauration.
+Après avoir résolu ces problèmes, l'utilisateur s'est inquiété de la capacité de l'application à supporter une charge de 1000 utilisateurs simultanés. La demande a alors pivoté vers une tâche majeure d'optimisation des performances.
 
 **PRODUCT REQUIREMENTS:**
-*   Réparer le site de production sur .
-*   Migrer les données utilisateur de l'environnement local vers le cluster MongoDB Atlas de production.
-*   Résoudre les bugs en attente une fois la production restaurée (disparition de contacts, refactoring).
+1.  **Audit de Performance (Terminé) :**
+    *   Identifier les endpoints et les requêtes MongoDB lents.
+    *   Lister les index manquants.
+    *   Vérifier la gestion des connexions à la base de données.
+    *   Identifier les routes nécessitant une limitation de débit (rate limiting).
+    *   Définir une stratégie de mise en cache via les en-têtes HTTP.
+2.  **Implémentation de la Phase 1 d'Optimisation (En cours) :**
+    *   Implémenter le connection pooling pour MongoDB afin de réutiliser les connexions.
+    *   Créer les index de base de données nécessaires (géolocalisation, recherche, filtres).
+    *   Ajouter des en-têtes  pour les ressources statiques et les API publiques.
+    *   Mettre en place un rate limiting sur les endpoints sensibles (authentification, formulaires).
+3.  **Validation Post-Modification :**
+    *   Fournir la liste des fichiers modifiés, des index créés et des configurations appliquées.
+    *   Effectuer un test de charge simple pour comparer les performances avant et après les optimisations (temps de réponse, nombre de requêtes DB, etc.).
 
 **User's preferred language**: Français
 
 **what currently exists?**
-L'application est fonctionnelle dans l'environnement de prévisualisation car elle est connectée à une base de données MongoDB locale qui contient toutes les données (290 utilisateurs). L'environnement de production, lié au domaine , est en panne. Il pointe vers un nouveau cluster MongoDB Atlas qui est actuellement vide.
-
-Un backup complet de la base de données locale a été créé et encodé en base64 dans le fichier . L'agent précédent a commencé à transmettre ce fichier en plusieurs parties à l'utilisateur car un téléchargement direct n'est pas possible. L'utilisateur a créé et configuré avec succès un nouveau cluster MongoDB Atlas () et a créé un utilisateur () avec un mot de passe.
+L'application full-stack (React, FastAPI, MongoDB) est fonctionnelle. Tous les bugs signalés par l'utilisateur au cours de cette session ont été corrigés. L'agent a terminé un audit de performance complet, dont les résultats sont documentés dans . Cet audit a confirmé que des optimisations sont nécessaires, notamment au niveau de la connexion à la base de données, de l'indexation et de la mise en cache. Le travail d'implémentation de ces optimisations a commencé.
 
 **Last working item**:
-- **Last item agent was working:** L'agent était en train d'envoyer le contenu du fichier de backup base64 () à l'utilisateur en plusieurs morceaux, pour lui permettre de le reconstituer sur sa machine locale et de procéder à la migration manuelle.
-- **Status:** BLOCKED
+- **Last item agent was working:** L'agent a commencé la première étape d'implémentation de la Phase 1 d'optimisation des performances. Après avoir obtenu la validation de l'utilisateur sur le plan d'audit, il a modifié le fichier  pour commencer à intégrer le connection pooling pour MongoDB, afin de cesser de créer une nouvelle connexion à la base de données pour chaque requête API.
+- **Status:** IN PROGRESS
 - **Agent Testing Done:** N
-- **Which testing method agent to use?** N/A. La tâche est bloquée sur une action manuelle de l'utilisateur. Une fois la migration effectuée par l'utilisateur, le prochain agent devra tester les endpoints de l'API de production avec  pour vérifier que la connexion et l'accès aux données fonctionnent.
+- **Which testing method agent to use?** backend testing agent. L'utilisateur a également explicitement demandé un test de charge simple pour mesurer l'amélioration des performances après les modifications.
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-- **Issue 1: (P0) Le site de production () est en panne**
-    - **Description:** Le site de production est totalement non fonctionnel. Les appels API échouent avec des erreurs 500/520 car le backend ne peut pas se connecter à une base de données contenant les données utilisateur. Le backend de production pointe vers un cluster MongoDB Atlas qui est vide, alors que toutes les données sont sur une instance MongoDB locale utilisée par l'environnement de prévisualisation.
-    - **Attempted fixes:**
-        - Multiples redéploiements qui ont échoué car ils ne résolvaient pas le problème des données.
-        - L'agent a tenté de se connecter à Atlas mais a été bloqué par les restrictions IP de la plateforme.
-        - L'utilisateur a créé un nouveau cluster Atlas et ouvert l'accès IP (). La connexion depuis l'agent a encore échoué, probablement à cause des politiques réseau sortantes de la plateforme Emergent.
-        - La solution actuelle est une migration manuelle par l'utilisateur. Un backup a été créé, mais le transfert du fichier est en cours et difficile.
-    - **Next debug checklist:**
-        1.  Aider l'utilisateur à obtenir le fichier de backup complet (). La méthode la plus fiable est de continuer à afficher le contenu par morceaux.
-        2.  S'assurer que l'utilisateur reconstitue correctement le fichier sur sa machine.
-        3.  Fournir la commande  exacte que l'utilisateur doit exécuter sur son ordinateur pour importer les données dans son cluster Atlas.
-        4.  Une fois que l'utilisateur confirme que la migration est terminée, vérifier que  est fonctionnel en testant l'API de connexion.
-    - **Why fix this issue and what will be achieved with the fix?** C'est un bloqueur critique. Le site de production de l'utilisateur est inutilisable. La résolution de ce problème restaurera l'application pour les vrais utilisateurs sur son domaine personnalisé.
-    - **Status:** BLOCKED
-    - **Is recurring issue?** Y (tout le fork actuel a été consacré à ce problème).
-    - **Should Test frontend/backend/both after fix?** both
-    - **Blocked on other issue:** None (This is the main blocker).
+- N/A
 
 **In progress Task List**:
-- **Task 1: (P0) Finaliser la migration manuelle des données vers MongoDB Atlas**
-    - **Where to resume:** L'agent doit continuer à fournir les parties restantes du fichier . La première partie (jusqu'à la ligne 500) a été envoyée. Il faut envoyer la suite.
-    - **What will be achieved with this?** La base de données de production sur Atlas sera peuplée avec les données de l'environnement local, ce qui devrait rendre le site  entièrement fonctionnel.
-    - **Status:** IN PROGRESS
-    - **Should Test frontend/backend/both after fix?** both
-    - **Blocked on something:** L'utilisateur doit copier, reconstituer, et restaurer le backup manuellement.
+- **Task 1: (P0) Implémenter la Phase 1 d'Optimisation des Performances**
+  - **Where to resume:** Le fichier  a été modifié pour commencer l'implémentation du connection pooling. La prochaine étape consiste à finaliser cette intégration, s'assurer que l'application utilise bien le pool de connexions, puis passer à la création des index MongoDB.
+  - **What will be achieved with this?** L'application sera plus performante, plus stable sous charge et plus scalable. Cela réduira considérablement le temps de réponse et la charge sur la base de données, préparant l'application à accueillir un plus grand nombre d'utilisateurs.
+  - **Status:** IN PROGRESS
+  - **Should Test frontend/backend/both after fix?** backend
+  - **Blocked on something:** Non
 
 **Upcoming and Future Tasks**
-*   **Upcoming Tasks:**
-    *   (P1) Une fois la production stable, enquêter sur la disparition des contacts les jack.
-    *   (P1) Terminer le refactoring de  en intégrant les hooks déjà créés.
+*   **Upcoming Tasks (Partie de la Phase 1):**
+    *   (P0) Créer les index MongoDB nécessaires pour la géolocalisation, la recherche et les filtres fréquents dans les collections , , , etc.
+    *   (P0) Ajouter les en-têtes de cache () via un middleware FastAPI pour les ressources statiques et les routes d'API publiques.
+    *   (P0) Mettre en place une limitation de débit (rate limiting) sur les endpoints d'authentification, les formulaires de création et les API de recherche.
+    *   (P1) Réaliser un test de charge simple pour valider et quantifier les améliorations de performance.
 *   **Future Tasks:**
     *   Améliorer le tableau de bord analytique.
-    *   Mettre en place un journal d'audit.
+    *   Mettre en place un journal d'audit des actions des utilisateurs.
     *   Rendre les seuils de modération configurables.
-    *   Ajouter des notifications en temps réel (WebSockets).
+    *   Implémenter des notifications en temps réel avec des WebSockets.
     *   Résoudre l'avertissement du CDN Tailwind en production.
+    *   **Refactoring du code** (et non juste documentaire) de  et .
 
 **Completed work in this session**
-- Diagnostic de la cause racine du problème de production : divergence entre la base de données locale (avec données) et la base de données de production Atlas (vide).
-- Guidage de l'utilisateur pour la création d'un nouveau cluster MongoDB Atlas gratuit.
-- Guidage pour la création d'un utilisateur de base de données et la configuration des règles d'accès réseau (IP allowlist) sur Atlas.
-- Création d'un backup complet de la base de données locale.
-- Conversion du backup en base64 pour permettre son transfert via le chat.
+- **Bug Fix :** Correction du bouton Afficher publiquement les avis dans  en restaurant l'endpoint manquant dans  et en corrigeant la logique de mise à jour de l'état dans le frontend.
+- **Bug Fix :** Réparation du bouton Contacter le groupe en ajoutant la logique  et en implémentant la modale de messagerie correspondante dans .
+- **Feature :** Ajout des options Duo et Trio dans un menu déroulant du formulaire de planification.
+- **Bug Fix (P0) :** Suppression du badge ✓ Actif du header (desktop et mobile) dans .
+- **Feature (P2) :** Implémentation d'une modale pour permettre la sélection entre plusieurs événements ayant lieu le même jour dans le calendrier.
+- **Refactoring Documentaire :** Création de plus de 2800 lignes de documentation détaillée pour  et , incluant des README d'architecture, des guides de navigation et des diagrammes de flux, stockés dans .
+- **Tests E2E :** Validation réussie des fonctionnalités du  et de la nouvelle modale de sélection d'événements via le testing agent.
+- **Audit de Performance :** Réalisation d'un audit complet des performances de l'application, avec un rapport détaillé enregistré dans .
 
 **Earlier issues found/mentioned but not fixed**
-- Le problème de la disparition des contacts les jack est en attente, bloqué par le problème de production.
+- N/A
 
 **Known issue recurrence from previous fork**
-- None.
+- N/A
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Divergence d'environnement :** Le problème central est la différence fondamentale entre l'environnement de prévisualisation (qui utilise une base de données locale) et l'environnement de production (qui utilise MongoDB Atlas).
-- **Migration de base de données :** La solution est une migration manuelle utilisant  (effectué par l'agent en interne) et  (à effectuer par l'utilisateur).
-- **Configuration MongoDB Atlas :** L'utilisateur a été guidé pour créer un cluster, un utilisateur, et configurer les règles d'accès réseau (IP allowlist).
-- **Encodage Base64 :** Utilisé comme solution de contournement pour transférer un fichier binaire () à travers une interface textuelle.
+- **Stack :** React (frontend), FastAPI (backend), MongoDB (base de données).
+- **Performance Backend :** L'agent est en train d'implémenter des concepts clés pour la scalabilité :
+    - **Connection Pooling :** Réutilisation des connexions MongoDB pour réduire la latence.
+    - **Database Indexing :** Accélération des requêtes de recherche, de tri et de filtre.
+    - **Caching Headers :** Utilisation de  pour réduire la charge serveur en demandant au client/CDN de mettre en cache les réponses.
+    - **Rate Limiting :** Protection de l'application contre les abus et les attaques par déni de service.
+- **Refactoring Documentaire :** Une stratégie utilisée pour améliorer la maintenabilité de composants très volumineux sans risquer d'introduire des régressions par une modification du code.
 
 **key DB schema**
-- Pas de changement de schéma. La tâche consiste à migrer les données existantes d'une instance à l'autre.
+- **venues:** , ,  (GeoJSON), 
+- **events:** , , Fri Mar 20 11:23:22 UTC 2026, 
+- **musicians:** , , 
+- **bands:** , , 
+- **Note:** Aucun changement de schéma, mais la tâche en cours implique l'ajout d'**index** sur ces collections (ex: index géospatial sur , index sur ).
 
 **changes in tech stack**
-- None.
+- Aucune. L'optimisation se concentre sur l'amélioration de l'utilisation de la stack existante.
 
 **All files of reference**
-- : Le backup de la base de données encodé en base64, que l'utilisateur doit récupérer.
-- : Un guide créé pour l'utilisateur, expliquant la procédure de migration.
-- : Contient la variable  qui est la source du problème car elle diffère entre les environnements.
+- : **Fichier le plus important.** Contient l'audit de performance et le plan détaillé pour la tâche en cours.
+- : Point d'entrée du backend, où le connection pooling est en cours d'implémentation.
+- : Le répertoire contenant toute la logique des API qui sera affectée par les optimisations.
+- : Fichier principal où la plupart des corrections de bugs de cette session ont eu lieu.
+- : Le nouveau répertoire contenant toute la documentation de refactoring.
 
 **Areas that need refactoring**:
-- : Le refactoring est toujours en attente de la résolution des problèmes de production.
+- **CRITIQUE :**  (~8000 lignes) et  (~4000 lignes) nécessitent toujours un **refactoring de code** (découpage en composants plus petits et extraction de hooks), malgré le refactoring documentaire déjà effectué.
 
 **key api endpoints**
-- Tous les endpoints API sur  (ex: ) échouent actuellement.
+- : Endpoint qui a été restauré dans .
+- : Un des endpoints cibles pour le rate limiting.
 
 **Critical Info for New Agent**
-*   **PRIORITÉ ABSOLUE :** Aider l'utilisateur à terminer la migration de la base de données. Le site de production  est complètement HORS SERVICE jusqu'à ce que cela soit fait.
-*   **NE PAS FAIRE :**
-    *   N'essayez PAS de corriger le code. Le code est fonctionnel.
-    *   Ne redéployez PAS. Cela a déjà échoué plus de 10 fois et ne résoudra rien.
-    *   N'essayez PAS de vous connecter à MongoDB Atlas depuis l'environnement de l'agent. C'est bloqué par la plateforme.
-    *   Ne suggérez PAS d'utiliser l'URL de prévisualisation comme solution permanente. L'utilisateur veut que son domaine personnalisé fonctionne.
-*   **PLAN D'ACTION IMMÉDIAT :**
-    1.  Reprenez là où l'agent précédent s'est arrêté : continuez à fournir les morceaux du fichier . Affichez le contenu par tranches de 500 ou 1000 lignes pour que l'utilisateur puisse tout copier.
-    2.  Rappelez à l'utilisateur la commande pour décoder le fichier base64 et la commande  pour importer les données dans son cluster Atlas.
-    3.  Une fois que l'utilisateur confirme que la migration est terminée, testez la connexion à l'API sur .
+- **La priorité absolue est la performance.** Ne vous écartez pas du plan d'optimisation.
+- **Suivez le plan défini dans  à la lettre.** L'utilisateur a demandé une approche très méthodique et mesurable.
+- Vous reprenez au tout début de la phase d'implémentation : la mise en place du connection pooling pour MongoDB. Votre première tâche est de finaliser et vérifier cette étape.
+- Ne vous laissez pas distraire par les recommandations de ChatGPT mentionnées par l'utilisateur ; elles concernaient une stack technique différente. Le plan actuel, validé par l'utilisateur, est le bon.
+- **Des mesures de performance avant/après sont requises à la fin.** Gardez cela à l'esprit pendant que vous implémentez les changements.
 
 **documents and test reports created in this job**
-- 
-- 
+- **/app/AUDIT_AVANT_OPTIMISATION.md**
+- **/app/OPTIMISATION_PERFORMANCE.md**
+- **/app/frontend/src/features/venue-dashboard/INDEX.md**
+- **/app/frontend/src/features/venue-dashboard/README.md**
+- **/app/frontend/src/features/venue-dashboard/NAVIGATION_GUIDE.md**
+- **/app/frontend/src/features/venue-dashboard/FLOW_DIAGRAMS.md**
+- **/app/frontend/src/features/musician-dashboard/INDEX.md**
+- **/app/frontend/src/features/musician-dashboard/README.md**
+- **/app/frontend/src/features/musician-dashboard/NAVIGATION_GUIDE.md**
+- **/app/frontend/src/features/musician-dashboard/FLOW_DIAGRAMS.md**
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **Utilisateur :** demande comment retrouver son projet sur GitHub.
-2.  **Agent :** explique comment utiliser la fonction Save to GitHub.
-3.  **Utilisateur :** envoie une capture d'écran montrant sa confusion.
-4.  **Agent :** clarifie qu'il faut d'abord finir la migration MongoDB.
-5.  **Utilisateur :** demande où trouver son MongoDB.
-6.  **Agent :** guide l'utilisateur sur le site de MongoDB Atlas.
-7.  **Utilisateur :** envoie des captures d'écran montrant qu'il n'a pas de cluster.
-8.  **Agent :** guide l'utilisateur pour créer un nouveau cluster gratuit.
-9.  **Utilisateur :** envoie des captures d'écran du processus de création.
-10. **Agent :** guide l'utilisateur pour finaliser la création, créer un utilisateur et autoriser l'accès IP.
-11. **Utilisateur :** (dernier) demande comment télécharger le backup, après que les tentatives de migration directe par l'agent ont échoué.
+1.  **Utilisateur :**  - Valide le plan d'audit et autorise le début de l'implémentation de la Phase 1. (COMPLÉTÉ)
+2.  **Utilisateur :** Demande un plan d'exécution précis et mesurable pour la Phase 1 (audit avant, actions pendant, mesures après). (COMPLÉTÉ, l'audit a été fait)
+3.  **Utilisateur :** Valide le plan de performance proposé par l'agent (basé sur la stack réelle) après que l'agent ait invalidé celui de ChatGPT. (COMPLÉTÉ)
+4.  **Utilisateur :** Partage une recommandation de ChatGPT pour une stack technique incorrecte (Next.js/Vercel/Supabase). (COMPLÉTÉ, l'agent a corrigé)
+5.  **Utilisateur :** Demande si l'application est conçue pour supporter 1000 utilisateurs. (COMPLÉTÉ, a déclenché la tâche d'optimisation)
+6.  **Utilisateur :** Signale que le bouton Contacter groupe ne fonctionne pas. (COMPLÉTÉ, bug corrigé)
+7.  **Utilisateur :** Demande d'ajouter trio et duo à un formulaire. (COMPLÉTÉ)
+8.  **Utilisateur :** Signale que le bouton afficher publiquement les avis ne fonctionne plus. (COMPLÉTÉ, bug corrigé)
+9.  **Utilisateur :** Demande de créer des tests E2E pour MusicianDashboard. (COMPLÉTÉ)
+10. **Utilisateur :** Demande de faire le refactoring (documentaire) de MusicianDashboard.jsx. (COMPLÉTÉ)
 
 **Project Health Check:**
-- **Broken:** L'environnement de production lié à  est totalement en panne.
-- **Mocked:** N/A.
-- L'environnement de prévisualisation est fonctionnel.
+- **Broken:** Aucun.
+- **Mocked:** Aucun.
 
 **3rd Party Integrations**
-- **MongoDB Atlas:** Le service de base de données de production. C'est la source principale du problème. L'utilisateur a créé un nouveau cluster et de nouveaux identifiants.
+- **MongoDB Atlas:** Base de données de production.
+- **Stripe:** Intégration pour les paiements.
+- **Resend:** Intégration pour l'envoi d'e-mails.
 
 **Testing status**
-- **Testing agent used after significant changes:** NO
-- **Troubleshoot agent used after agent stuck in loop:** YES (a aidé à diagnostiquer le problème de fond).
-- **Test files created:** None
-- **Known regressions:** L'ensemble de l'application en production est une régression.
+- **Testing agent used after significant changes:** YES (pour les fonctionnalités et ).
+- **Troubleshoot agent used after agent stuck in loop:** NO
+- **Test files created:** Non.
+- **Known regressions:** Aucune.
 
 **Credentials to test flow:**
-*   **Application:**  /  (ne fonctionnera en production qu'après la migration).
-*   **MongoDB Atlas (pour la commande ):**
-    *   **Username:** 
-    *   **Password:** 
-    *   **URI de restauration:** 
+- **Venue:**  / 
+- **Musician:**  / 
 
 **What agent forgot to execute**
-L'agent a correctement identifié la cause première mais a eu beaucoup de mal à trouver une solution viable pour le transfert de fichier, ce qui a entraîné une très longue conversation et de la frustration pour l'utilisateur. La méthode de transfert par base64 en plusieurs parties n'a pas été menée à son terme.</analysis>
+- Rien. L'agent a suivi méthodiquement les demandes de l'utilisateur, a corrigé tous les bugs signalés, a effectué les tâches demandées, puis a pivoté vers la nouvelle priorité majeure (performance) comme demandé.</analysis>

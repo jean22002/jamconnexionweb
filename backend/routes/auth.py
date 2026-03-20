@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from datetime import datetime, timezone, timedelta
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
@@ -6,6 +6,7 @@ import uuid
 
 from models import UserRegister, UserLogin, UserResponse, TokenResponse
 from utils import hash_password, verify_password, create_token, get_current_user
+from middleware.rate_limit import limiter
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -14,7 +15,8 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 @router.post("/register", response_model=TokenResponse)
-async def register(data: UserRegister):
+@limiter.limit("5/hour")
+async def register(request: Request, data: UserRegister):
     existing = await db.users.find_one({"email": data.email})
     if existing:
         raise HTTPException(status_code=400, detail="Adresse email déjà existante")
@@ -76,7 +78,8 @@ async def register(data: UserRegister):
     )
 
 @router.post("/login", response_model=TokenResponse)
-async def login(data: UserLogin):
+@limiter.limit("10/5minutes")
+async def login(request: Request, data: UserLogin):
     user = await db.users.find_one({"email": data.email}, {"_id": 0})
     if not user or not verify_password(data.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")

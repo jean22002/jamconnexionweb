@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException, Depends, File, UploadFile
+from fastapi import APIRouter, HTTPException, Depends, File, UploadFile, Request
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 
 from utils import get_current_user, save_upload_file
+from middleware.rate_limit import limiter
 
 router = APIRouter(prefix="/upload", tags=["Uploads"])
 
@@ -14,7 +15,9 @@ db = client[os.environ['DB_NAME']]
 logger = logging.getLogger(__name__)
 
 @router.post("/image")
+@limiter.limit("20/hour")
 async def upload_image(
+    request: Request,
     file: UploadFile = File(...),
     folder: str = "profiles",
     current_user: dict = Depends(get_current_user)

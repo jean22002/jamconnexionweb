@@ -8,6 +8,11 @@ import logging
 from pathlib import Path
 import stripe
 
+# Import performance optimization middlewares
+from middleware.cache_headers import CacheHeadersMiddleware
+from middleware.rate_limit import limiter, rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+
 # Import utility functions
 from utils import geocode_city
 
@@ -30,8 +35,20 @@ else:
     mongo_url = os.environ['MONGO_URL']
     logger.info(f"💻 Using DEVELOPMENT MongoDB: localhost:27017")
 
-client = AsyncIOMotorClient(mongo_url)
+# MongoDB Connection with Optimized Pooling
+client = AsyncIOMotorClient(
+    mongo_url,
+    maxPoolSize=100,           # Maximum 100 concurrent connections
+    minPoolSize=10,            # Keep 10 connections always open
+    maxIdleTimeMS=45000,       # Close idle connections after 45s
+    serverSelectionTimeoutMS=5000,  # Timeout for server selection
+    connectTimeoutMS=10000,    # Connection timeout
+    socketTimeoutMS=45000,     # Socket timeout
+    retryWrites=True,          # Retry failed writes
+    retryReads=True            # Retry failed reads
+)
 db = client[os.environ['DB_NAME']]
+logger.info(f"✅ MongoDB Connection Pool configured: maxPoolSize=100, minPoolSize=10")
 
 # Stripe configuration
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
@@ -47,14 +64,25 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# CORS Configuration
+# Add rate limiter state to app
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+
+# PERFORMANCE OPTIMIZATION MIDDLEWARES (Order matters!)
+# 1. CORS Configuration (Must be first for headers to work)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Cache-Control", "CDN-Cache-Control", "Retry-After"]
 )
+
+# 2. Cache Headers Middleware - Adds Cache-Control headers
+app.add_middleware(CacheHeadersMiddleware)
+
+logger.info("✅ Performance middlewares configured: Cache Headers, Rate Limiting")
 
 # Create main API router
 api_router = APIRouter(prefix="/api")

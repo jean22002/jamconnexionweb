@@ -110,6 +110,7 @@ import routes.push_notifications as push_notifications
 import routes.friends as friends
 import routes.reports as reports
 import routes.analytics as analytics
+import routes.audit as audit  # NEW: Audit logging
 import routes.online_status as online_status
 import routes.accounting as accounting
 
@@ -136,6 +137,7 @@ badges.set_db(db)
 push_notifications.set_db(db)
 reports.set_db(db)
 analytics.set_db(db)
+audit.set_db(db)  # NEW: Audit logging
 accounting.set_db(db)
 
 # Include domain-specific routers
@@ -150,6 +152,7 @@ api_router.include_router(push_notifications.router)
 api_router.include_router(friends.router)
 api_router.include_router(reports.router)
 api_router.include_router(analytics.router)
+api_router.include_router(audit.router)  # NEW: Audit logging
 api_router.include_router(online_status.router)
 api_router.include_router(accounting.router, prefix="/accounting", tags=["Accounting"])
 

@@ -148,6 +148,45 @@ async def get_analytics_overview(
         resolution_rate = (resolved_reports / total_reports * 100) if total_reports > 0 else 0
         
         # Utilisateurs suspendus
+        suspended_users = await db.users.count_documents({"status": "suspended"})
+        
+        # === NOUVELLES MÉTRIQUES (Option B) ===
+        
+        # Taux de conversion (users avec profil complet vs total users)
+        musicians_with_profile = await db.musicians.count_documents({})
+        venues_with_profile = await db.venues.count_documents({})
+        profiles_created = musicians_with_profile + venues_with_profile
+        conversion_rate = (profiles_created / total_users * 100) if total_users > 0 else 0
+        
+        # Taux d'engagement (utilisateurs actifs / total users)
+        engagement_rate = (active_users / total_users * 100) if total_users > 0 else 0
+        
+        # Moyenne d'événements par venue
+        avg_events_per_venue = (total_events / venues_with_profile) if venues_with_profile > 0 else 0
+        
+        # Moyenne de participations par musicien
+        avg_participations_per_musician = (total_participations / musicians_count) if musicians_count > 0 else 0
+        
+        # Top 5 styles musicaux
+        top_music_styles = await db.musicians.aggregate([
+            {"$unwind": "$music_styles"},
+            {"$group": {"_id": "$music_styles", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 5}
+        ]).to_list(5)
+        
+        # Top 5 villes les plus actives
+        top_cities = await db.venues.aggregate([
+            {"$group": {"_id": "$city", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 5}
+        ]).to_list(5)
+        
+        # Répartition des abonnements venues
+        trial_venues = await db.venues.count_documents({"subscription_status": "trial"})
+        active_subscriptions = await db.venues.count_documents({"subscription_status": "active"})
+        expired_subscriptions = await db.venues.count_documents({"subscription_status": "expired"})
+        cancelled_subscriptions = await db.venues.count_documents({"subscription_status": "cancelled"})
         suspended_users = await db.users.count_documents({"is_suspended": True})
         permanently_banned = await db.users.count_documents({"is_permanently_banned": True})
         
@@ -163,7 +202,9 @@ async def get_analytics_overview(
                     "musicians": musicians_count,
                     "venues": venues_count,
                     "melomanes": melomanes_count
-                }
+                },
+                "engagement_rate": round(engagement_rate, 2),
+                "conversion_rate": round(conversion_rate, 2)
             },
             "events": {
                 "total": total_events,
@@ -172,7 +213,9 @@ async def get_analytics_overview(
                     "total": total_participations,
                     "new": new_participations
                 },
-                "by_type": [{"type": item["_id"], "count": item["count"]} for item in events_by_type]
+                "by_type": [{"type": item["_id"], "count": item["count"]} for item in events_by_type],
+                "avg_per_venue": round(avg_events_per_venue, 2),
+                "avg_participations_per_musician": round(avg_participations_per_musician, 2)
             },
             "social": {
                 "friendships": {
@@ -201,6 +244,16 @@ async def get_analytics_overview(
                 },
                 "suspended_users": suspended_users,
                 "permanently_banned": permanently_banned
+            },
+            "insights": {
+                "top_music_styles": [{"style": item["_id"], "count": item["count"]} for item in top_music_styles],
+                "top_cities": [{"city": item["_id"], "count": item["count"]} for item in top_cities],
+                "subscriptions": {
+                    "trial": trial_venues,
+                    "active": active_subscriptions,
+                    "expired": expired_subscriptions,
+                    "cancelled": cancelled_subscriptions
+                }
             }
         }
         

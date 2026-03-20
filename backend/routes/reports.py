@@ -1,7 +1,7 @@
 """
 Reports router - Handles profile reporting for inappropriate behavior
 """
-from fastapi import APIRouter, HTTPException, Depends, Header
+from fastapi import APIRouter, HTTPException, Depends, Header, Request
 from typing import List
 import uuid
 from datetime import datetime, timezone
@@ -10,6 +10,7 @@ import os
 import logging
 
 from models.report import ReportCreate, ReportResponse
+from routes.audit import log_action  # Import audit logging
 
 logger = logging.getLogger(__name__)
 
@@ -524,6 +525,7 @@ async def update_report_status(
 @router.post("/admin/suspend-user/{user_id}")
 async def suspend_user(
     user_id: str,
+    request: Request,
     duration_days: int = 7,
     reason: str = None,
     admin_user: dict = Depends(get_admin_user)
@@ -554,6 +556,23 @@ async def suspend_user(
                 "suspended_until": suspended_until.isoformat(),
                 "suspension_reason": reason or "Violation du règlement"
             }}
+        )
+        
+        # Audit log: User suspended
+        await log_action(
+            user_id=admin_user["id"],
+            user_role=admin_user["role"],
+            action="suspend_user",
+            resource_type="user_moderation",
+            resource_id=user_id,
+            details={
+                "target_user": user_id,
+                "target_email": user.get("email"),
+                "duration_days": duration_days,
+                "reason": reason or "Violation du règlement"
+            },
+            request=request,
+            status="success"
         )
         
         logger.info(f"User {user_id} suspended by admin {admin_user['id']} until {suspended_until}")

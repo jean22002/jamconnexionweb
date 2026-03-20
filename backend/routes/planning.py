@@ -1,7 +1,7 @@
 """
 Planning router - Handles planning slots and concert applications
 """
-from fastapi import APIRouter, HTTPException, Depends, Header
+from fastapi import APIRouter, HTTPException, Depends, Header, Request
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
@@ -13,6 +13,7 @@ from models import (
     PlanningSlot, PlanningSlotResponse,
     ConcertApplication, ConcertApplicationResponse
 )
+from routes.audit import log_action  # Import audit logging
 
 router = APIRouter()
 db = None
@@ -336,7 +337,7 @@ async def apply_to_slot(slot_id: str, current_user: dict = Depends(get_current_u
             "application_received",
             "Nouvelle candidature",
             f"{band_name} a postulé pour le {slot['date']}",
-            f"/venue"
+            "/venue"
         )
     
     return {"message": "Candidature envoyée avec succès", "application_id": app_id}
@@ -402,7 +403,7 @@ async def create_application(data: ConcertApplication, current_user: dict = Depe
             "application_received",
             "Nouvelle candidature",
             f"{data.band_name} a postulé pour le {slot['date']}",
-            f"/venue"
+            "/venue"
         )
     
     return ConcertApplicationResponse(**app_doc)
@@ -460,7 +461,7 @@ async def get_slot_applications(slot_id: str, current_user: dict = Depends(get_c
 
 
 @router.post("/applications/{app_id}/accept")
-async def accept_application(app_id: str, current_user: dict = Depends(get_current_user)):
+async def accept_application(app_id: str, request: Request, current_user: dict = Depends(get_current_user)):
     """Accept an application (venue only)"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can accept applications")
@@ -479,6 +480,22 @@ async def accept_application(app_id: str, current_user: dict = Depends(get_curre
     
     # Update application status
     await db.applications.update_one({"id": app_id}, {"$set": {"status": "accepted"}})
+    
+    # Audit log: Application accepted
+    await log_action(
+        user_id=current_user["id"],
+        user_role=current_user["role"],
+        action="accept_application",
+        resource_type="concert_application",
+        resource_id=app_id,
+        details={
+            "slot_date": slot.get("date"),
+            "musician_id": app.get("musician_id"),
+            "band_name": app.get("band_name")
+        },
+        request=request,
+        status="success"
+    )
     
     # Count accepted applications for this slot
     accepted_count = await db.applications.count_documents({
@@ -534,7 +551,7 @@ async def accept_application(app_id: str, current_user: dict = Depends(get_curre
 
 
 @router.post("/applications/{app_id}/reject")
-async def reject_application(app_id: str, current_user: dict = Depends(get_current_user)):
+async def reject_application(app_id: str, request: Request, current_user: dict = Depends(get_current_user)):
     """Reject an application (venue only)"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can reject applications")
@@ -552,6 +569,22 @@ async def reject_application(app_id: str, current_user: dict = Depends(get_curre
         raise HTTPException(status_code=403, detail="Not authorized")
     
     await db.applications.update_one({"id": app_id}, {"$set": {"status": "rejected"}})
+    
+    # Audit log: Application rejected
+    await log_action(
+        user_id=current_user["id"],
+        user_role=current_user["role"],
+        action="reject_application",
+        resource_type="concert_application",
+        resource_id=app_id,
+        details={
+            "slot_date": slot.get("date"),
+            "musician_id": app.get("musician_id"),
+            "band_name": app.get("band_name")
+        },
+        request=request,
+        status="success"
+    )
     
     # Notify musician
     musician = await db.musicians.find_one({"id": app["musician_id"]}, {"_id": 0})

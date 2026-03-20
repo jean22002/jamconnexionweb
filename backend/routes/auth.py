@@ -7,6 +7,7 @@ import uuid
 from models import UserRegister, UserLogin, UserResponse, TokenResponse
 from utils import hash_password, verify_password, create_token, get_current_user
 from middleware.rate_limit import limiter
+from routes.audit import log_action  # Import audit logging
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -46,6 +47,18 @@ async def register(request: Request, data: UserRegister):
     
     await db.users.insert_one(user_doc)
     
+    # Audit log: User registration
+    await log_action(
+        user_id=user_id,
+        user_role=data.role,
+        action="register",
+        resource_type="user",
+        resource_id=user_id,
+        details={"email": data.email, "name": data.name},
+        request=request,
+        status="success"
+    )
+    
     # Créer automatiquement le profil correspondant au rôle
     if data.role == "musician":
         musician_profile = {
@@ -81,8 +94,29 @@ async def register(request: Request, data: UserRegister):
 @limiter.limit("10/5minutes")
 async def login(request: Request, data: UserLogin):
     user = await db.users.find_one({"email": data.email}, {"_id": 0})
+    
     if not user or not verify_password(data.password, user["password"]):
+        # Audit log: Failed login attempt
+        await log_action(
+            user_id=data.email,  # Use email as identifier for failed attempts
+            user_role="unknown",
+            action="login",
+            resource_type="auth",
+            details={"email": data.email, "reason": "invalid_credentials"},
+            request=request,
+            status="failed"
+        )
         raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Audit log: Successful login
+    await log_action(
+        user_id=user["id"],
+        user_role=user["role"],
+        action="login",
+        resource_type="auth",
+        request=request,
+        status="success"
+    )
     
     token = create_token(user["id"], user["email"], user["role"])
     

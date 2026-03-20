@@ -1,7 +1,7 @@
 """
 Events router - Handles all event types (jams, concerts, karaoke, spectacles) and participations
 """
-from fastapi import APIRouter, HTTPException, Depends, Header, UploadFile, File, Query, Body
+from fastapi import APIRouter, HTTPException, Depends, Header, UploadFile, File, Query, Body, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from typing import List, Optional
 import uuid
@@ -20,6 +20,7 @@ from models import (
     KaraokeEvent, KaraokeEventResponse,
     SpectacleEvent, SpectacleEventResponse
 )
+from routes.audit import log_action  # Import audit logging
 
 router = APIRouter()
 db = None
@@ -88,7 +89,7 @@ async def notify_venue_subscribers(venue_id: str, event_type: str, title: str, m
 # ============= JAM EVENTS (Boeuf musical) =============
 
 @router.post("/jams", response_model=JamEventResponse)
-async def create_jam_event(data: JamEvent, current_user: dict = Depends(get_current_user)):
+async def create_jam_event(data: JamEvent, request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can create jam events")
     
@@ -120,6 +121,18 @@ async def create_jam_event(data: JamEvent, current_user: dict = Depends(get_curr
     }
     
     await db.jams.insert_one(jam_doc)
+    
+    # Audit log: Jam event created
+    await log_action(
+        user_id=current_user["id"],
+        user_role=current_user["role"],
+        action="create",
+        resource_type="jam_event",
+        resource_id=jam_id,
+        details={"date": data.date, "venue_name": venue["name"]},
+        request=request,
+        status="success"
+    )
     
     # Notify subscribers
     await notify_venue_subscribers(
@@ -273,7 +286,7 @@ async def get_venue_jams(venue_id: str):
 
 
 @router.delete("/jams/{jam_id}")
-async def delete_jam_event(jam_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_jam_event(jam_id: str, request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can delete jam events")
     
@@ -281,9 +294,24 @@ async def delete_jam_event(jam_id: str, current_user: dict = Depends(get_current
     if not venue:
         raise HTTPException(status_code=404, detail="Venue profile not found")
     
+    # Get jam before deleting for audit log
+    jam = await db.jams.find_one({"id": jam_id, "venue_id": venue["id"]}, {"_id": 0})
+    
     result = await db.jams.delete_one({"id": jam_id, "venue_id": venue["id"]})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Jam event not found")
+    
+    # Audit log: Jam event deleted
+    await log_action(
+        user_id=current_user["id"],
+        user_role=current_user["role"],
+        action="delete",
+        resource_type="jam_event",
+        resource_id=jam_id,
+        details={"date": jam.get("date") if jam else None, "venue_name": venue["name"]},
+        request=request,
+        status="success"
+    )
     
     return {"message": "Jam event deleted"}
 

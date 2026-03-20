@@ -1,7 +1,7 @@
 """
 Venues router - Handles venue profiles and subscriptions
 """
-from fastapi import APIRouter, HTTPException, Depends, Header, UploadFile, File
+from fastapi import APIRouter, HTTPException, Depends, Header, UploadFile, File, Query
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
@@ -177,14 +177,45 @@ async def get_my_venue(current_user: dict = Depends(get_current_user)):
 
 
 @router.get("/venues", response_model=List[VenueProfileResponse])
-async def list_venues(city: Optional[str] = None, style: Optional[str] = None):
+async def list_venues(
+    city: Optional[str] = None,
+    style: Optional[str] = None,
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(50, ge=1, le=100, description="Items per page (max 100)")
+):
+    """Get venues with pagination and filters"""
     query = {}
     if city:
         query["city"] = {"$regex": city, "$options": "i"}
     if style:
         query["music_styles"] = {"$in": [style]}
     
-    venues = await db.venues.find(query, {"_id": 0}).to_list(100)
+    # Calculate pagination
+    skip = (page - 1) * limit
+    
+    # Projection: only load necessary fields for list view
+    projection = {
+        "_id": 0,
+        "id": 1,
+        "user_id": 1,
+        "name": 1,
+        "city": 1,
+        "department": 1,
+        "postal_code": 1,
+        "profile_image": 1,
+        "cover_image": 1,
+        "description": 1,
+        "music_styles": 1,
+        "address": 1,
+        "location": 1,
+        "created_at": 1,
+        "phone": 1,
+        "email": 1,
+        "website": 1
+    }
+    
+    # Get paginated venues
+    venues = await db.venues.find(query, projection).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
     if not venues:
         return []
@@ -196,7 +227,7 @@ async def list_venues(city: Optional[str] = None, style: Optional[str] = None):
     user_ids = [v["user_id"] for v in venues]
     users = await db.users.find(
         {"id": {"$in": user_ids}},
-        {"_id": 0}
+        {"_id": 0, "id": 1, "online_status_mode": 1, "manual_online_status": 1, "subscription_status": 1}
     ).to_list(None)
     users_map = {u["id"]: u for u in users}
     

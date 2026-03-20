@@ -46,6 +46,11 @@ import ParticipationsTab from "../components/participations/ParticipationsTab";
 import MusiciansTab from "../components/musicians/MusiciansTab";
 import FriendsTab from "../components/friends/FriendsTab";
 import Calendar from "../components/Calendar";
+// NEW: Import custom hooks for refactored logic
+import { 
+  useMusicianProfile, 
+  useMusicianApplications 
+} from "../features/musician-dashboard/hooks";
 
 // Options pour les groupes
 const BAND_TYPES = [
@@ -197,7 +202,26 @@ export default function MusicianDashboard() {
   };
   const [mapCenter, setMapCenter] = useState([46.603354, 1.888334]);
   const [userHasMovedMap, setUserHasMovedMap] = useState(false); // Track if user manually moved the map
-  const [profile, setProfile] = useState(null);
+  
+  // ============================================================================
+  // CUSTOM HOOKS - REFACTORED LOGIC
+  // ============================================================================
+  const profileHook = useMusicianProfile(token);
+  const applicationsHook = useMusicianApplications(token);
+  
+  // Extract values from hooks
+  const {
+    profile: profileFromHook,
+    setProfile: setProfileFromHook,
+    loading: loadingProfile,
+    saveProfile: saveProfileFromHook,
+    uploadImage: uploadImageFromHook,
+  } = profileHook;
+  
+  // Use hook values with original names for backward compatibility
+  const profile = profileFromHook;
+  const setProfile = setProfileFromHook;
+  
   const [editingProfile, setEditingProfile] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);

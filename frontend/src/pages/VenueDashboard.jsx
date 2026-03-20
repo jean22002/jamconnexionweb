@@ -49,6 +49,12 @@ import { MUSIC_STYLES_LIST } from "../data/music-styles";
 import { useNotifications } from "../hooks/useNotifications";
 import DashboardNotification from "../components/DashboardNotification";
 import ConcertForm from "../features/venue-dashboard/components/tabs/ConcertForm";
+// NEW: Import custom hooks for refactored logic
+import { 
+  useVenueProfile, 
+  useVenueEvents, 
+  useVenuePlanning 
+} from "../features/venue-dashboard/hooks";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/aFa6oG9gV4d20te2uRafS02";
@@ -99,12 +105,57 @@ export default function VenueDashboard() {
   const navigate = useNavigate();
 
   // ============================================================================
-  // ÉTATS - PROFIL & GÉNÉRAL
+  // CUSTOM HOOKS - REFACTORED LOGIC
   // ============================================================================
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [editing, setEditing] = useState(false);
+  // Use custom hooks for profile, events, and planning management
+  const profileHook = useVenueProfile(token);
+  const eventsHook = useVenueEvents(token);
+  const planningHook = useVenuePlanning(token);
+  
+  // Extract values from hooks for easier access
+  // Note: Keep original state names for backward compatibility
+  const {
+    profile: profileFromHook,
+    setProfile: setProfileFromHook,
+    loading: loadingFromHook,
+    saving: savingFromHook,
+    editing: editingFromHook,
+    setEditing: setEditingFromHook,
+    saveProfile: saveProfileFromHook,
+    uploadImage: uploadImageFromHook,
+  } = profileHook;
+  
+  const {
+    jams: jamsFromHook,
+    concerts: concertsFromHook,
+    karaokes: karaokesFromHook,
+    spectacles: spectaclesFromHook,
+    setJams: setJamsFromHook,
+    setConcerts: setConcertsFromHook,
+    setKaraokes: setKaraokesFromHook,
+    setSpectacles: setSpectaclesFromHook,
+    loadingEvents: loadingEventsFromHook,
+    fetchAllEvents,
+  } = eventsHook;
+  
+  const {
+    planningSlots: planningSlotsFromHook,
+    setPlanningSlots: setPlanningSlotsFromHook,
+    applications: applicationsFromHook,
+    fetchPlanningSlots: fetchPlanningSlotsFromHook,
+    fetchApplications: fetchApplicationsFromHook,
+  } = planningHook;
+
+  // ============================================================================
+  // ÉTATS - PROFIL & GÉNÉRAL (Using hooks where possible)
+  // ============================================================================
+  // Use hook values with original names for backward compatibility
+  const profile = profileFromHook;
+  const setProfile = setProfileFromHook;
+  const loading = loadingFromHook;
+  const saving = savingFromHook;
+  const editing = editingFromHook;
+  const setEditing = setEditingFromHook;
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
     // Restaurer le dernier onglet depuis localStorage
@@ -125,15 +176,23 @@ export default function VenueDashboard() {
   const [trialDaysLeft, setTrialDaysLeft] = useState(null);
   
   // ============================================================================
-  // ÉTATS - ÉVÉNEMENTS (Jams, Concerts, Karaoke, Spectacles, Planning)
+  // ÉTATS - ÉVÉNEMENTS (Using hooks where possible)
   // ============================================================================
-  // Events
-  const [jams, setJams] = useState([]);
-  const [concerts, setConcerts] = useState([]);
-  const [karaokes, setKaraokes] = useState([]);
-  const [spectacles, setSpectacles] = useState([]);
-  const [planningSlots, setPlanningSlots] = useState([]);
-  const [applications, setApplications] = useState({});
+  // Use hook values with original names
+  const jams = jamsFromHook;
+  const setJams = setJamsFromHook;
+  const concerts = concertsFromHook;
+  const setConcerts = setConcertsFromHook;
+  const karaokes = karaokesFromHook;
+  const setKaraokes = setKaraokesFromHook;
+  const spectacles = spectaclesFromHook;
+  const setSpectacles = setSpectaclesFromHook;
+  
+  // Planning from hooks
+  const planningSlots = planningSlotsFromHook;
+  const setPlanningSlots = setPlanningSlotsFromHook;
+  const applications = applicationsFromHook;
+  
   const [musicians, setMusicians] = useState([]);
   
   // Dialogs

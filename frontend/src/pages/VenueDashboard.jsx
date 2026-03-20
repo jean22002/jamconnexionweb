@@ -475,8 +475,6 @@ export default function VenueDashboard() {
         console.log('⚠️ fetchProfile: Profile not found (404), enabling edit mode');
         setEditing(true);
       }
-    } finally {
-      setLoading(false);
     }
   }, [token, navigate]); // FIXED: Removed 'editing' from dependencies to prevent loop
 

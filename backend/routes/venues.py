@@ -962,7 +962,15 @@ async def notify_subscribers(
     message: dict,
     current_user: dict = Depends(get_current_user)
 ):
-    """Send notification to venue subscribers (Jacks)"""
+    """
+    Send notification to venue subscribers (Jacks)
+    
+    ⚠️ IMPORTANT: Usage responsable requis
+    - N'abusez pas des notifications à des fins commerciales
+    - Un usage excessif peut saturer vos abonnés
+    - Privilégiez des messages pertinents et utiles
+    - Limitez la fréquence d'envoi (max recommandé: 2-3 par semaine)
+    """
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can send notifications")
     
@@ -1038,7 +1046,15 @@ async def broadcast_notification(
     message: dict,
     current_user: dict = Depends(get_current_user)
 ):
-    """Send notification to nearby musicians"""
+    """
+    Send notification to nearby musicians
+    
+    ⚠️ IMPORTANT: Usage responsable requis
+    - N'abusez pas des notifications à des fins commerciales
+    - Un usage excessif peut saturer les utilisateurs
+    - Privilégiez des messages pertinents pour des opportunités réelles
+    - Limitez la fréquence d'envoi (max recommandé: 1-2 par semaine)
+    """
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can send notifications")
     

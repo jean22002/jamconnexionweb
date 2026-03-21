@@ -1337,7 +1337,11 @@ async def get_temporary_location_status(current_user: dict = Depends(get_current
 @router.post("/musicians/me/subscribe-pro")
 async def create_pro_subscription(current_user: dict = Depends(get_current_user)):
     """
-    Create Stripe Checkout session for Musicien PRO subscription (9.99€/month)
+    Create Stripe Checkout session for Musicien PRO subscription
+    - FREE TRIAL: 2 months (60 days)
+    - Then: 9.99€/month with automatic renewal
+    - Cancelable anytime before anniversary date
+    
     Returns checkout URL for frontend redirect
     """
     if current_user["role"] != "musician":
@@ -1377,7 +1381,7 @@ async def create_pro_subscription(current_user: dict = Depends(get_current_user)
                 {"$set": {"stripe_customer_id": stripe_customer_id}}
             )
         
-        # Create Checkout Session
+        # Create Checkout Session with 2 MONTHS FREE TRIAL
         frontend_url = os.environ.get("FRONTEND_URL", "https://perf-optimize-15.preview.emergentagent.com")
         
         checkout_session = stripe.checkout.Session.create(
@@ -1388,7 +1392,7 @@ async def create_pro_subscription(current_user: dict = Depends(get_current_user)
                     'currency': 'eur',
                     'product_data': {
                         'name': 'Musicien PRO',
-                        'description': 'Abonnement mensuel - Badge PRO, Analytics, Comptabilité',
+                        'description': '2 MOIS GRATUITS puis 9,99€/mois - Annulable à tout moment',
                         'images': ['https://jamconnexion.com/images/pro-badge.png'],
                     },
                     'unit_amount': 999,  # 9.99€ in cents
@@ -1399,6 +1403,13 @@ async def create_pro_subscription(current_user: dict = Depends(get_current_user)
                 'quantity': 1,
             }],
             mode='subscription',
+            subscription_data={
+                'trial_period_days': 60,  # 2 MONTHS FREE TRIAL
+                'metadata': {
+                    'trial_duration': '2_months',
+                    'user_id': current_user["id"]
+                }
+            },
             success_url=f'{frontend_url}/musician-dashboard?subscription=success&session_id={{CHECKOUT_SESSION_ID}}',
             cancel_url=f'{frontend_url}/musician-dashboard?subscription=canceled',
             metadata={
@@ -1410,7 +1421,9 @@ async def create_pro_subscription(current_user: dict = Depends(get_current_user)
         
         return {
             "checkout_url": checkout_session.url,
-            "session_id": checkout_session.id
+            "session_id": checkout_session.id,
+            "trial_days": 60,
+            "trial_info": "2 mois gratuits - Premier paiement le " + (datetime.now(timezone.utc) + timedelta(days=60)).strftime("%d/%m/%Y")
         }
     
     except Exception as e:
@@ -1420,7 +1433,7 @@ async def create_pro_subscription(current_user: dict = Depends(get_current_user)
 
 @router.get("/musicians/me/subscription-status")
 async def get_subscription_status(current_user: dict = Depends(get_current_user)):
-    """Get current subscription status"""
+    """Get current subscription status with trial information"""
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can access subscription")
     
@@ -1428,11 +1441,31 @@ async def get_subscription_status(current_user: dict = Depends(get_current_user)
     if not musician:
         raise HTTPException(status_code=404, detail="Musician profile not found")
     
+    # Check if in trial period
+    subscription_started = musician.get("subscription_started")
+    in_trial = False
+    trial_ends = None
+    days_remaining = None
+    
+    if subscription_started and musician.get("subscription_tier") == "pro":
+        started_dt = datetime.fromisoformat(subscription_started)
+        trial_end_dt = started_dt + timedelta(days=60)  # 2 months = 60 days
+        now = datetime.now(timezone.utc)
+        
+        if now < trial_end_dt:
+            in_trial = True
+            trial_ends = trial_end_dt.isoformat()
+            days_remaining = (trial_end_dt - now).days
+    
     return {
         "tier": musician.get("subscription_tier", "free"),
         "status": musician.get("subscription_status", "inactive"),
-        "started": musician.get("subscription_started"),
+        "started": subscription_started,
         "expires": musician.get("subscription_expires"),
+        "in_trial": in_trial,
+        "trial_ends": trial_ends,
+        "trial_days_remaining": days_remaining,
+        "first_payment_date": trial_ends if in_trial else None,
         "features": {
             "accounting": musician.get("subscription_tier") == "pro",
             "analytics": musician.get("subscription_tier") == "pro",

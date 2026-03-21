@@ -1327,3 +1327,322 @@ async def get_temporary_location_status(current_user: dict = Depends(get_current
         "profile_latitude": musician.get("latitude"),
         "profile_longitude": musician.get("longitude")
     }
+
+
+
+# ============================================================================
+# MUSICIEN PRO SUBSCRIPTION
+# ============================================================================
+
+@router.post("/musicians/me/subscribe-pro")
+async def create_pro_subscription(current_user: dict = Depends(get_current_user)):
+    """
+    Create Stripe Checkout session for Musicien PRO subscription (9.99€/month)
+    Returns checkout URL for frontend redirect
+    """
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can subscribe to PRO")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Check if already PRO
+    if musician.get("subscription_tier") == "pro" and musician.get("subscription_status") == "active":
+        raise HTTPException(status_code=400, detail="Already subscribed to PRO")
+    
+    import stripe
+    stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+    
+    try:
+        # Get or create Stripe customer
+        stripe_customer_id = musician.get("stripe_customer_id")
+        
+        if not stripe_customer_id:
+            # Create new customer
+            customer = stripe.Customer.create(
+                email=current_user["email"],
+                name=musician.get("pseudo"),
+                metadata={
+                    "user_id": current_user["id"],
+                    "musician_id": musician["id"],
+                    "type": "musician_pro"
+                }
+            )
+            stripe_customer_id = customer.id
+            
+            # Save customer ID
+            await db.musicians.update_one(
+                {"user_id": current_user["id"]},
+                {"$set": {"stripe_customer_id": stripe_customer_id}}
+            )
+        
+        # Create Checkout Session
+        frontend_url = os.environ.get("FRONTEND_URL", "https://perf-optimize-15.preview.emergentagent.com")
+        
+        checkout_session = stripe.checkout.Session.create(
+            customer=stripe_customer_id,
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'eur',
+                    'product_data': {
+                        'name': 'Musicien PRO',
+                        'description': 'Abonnement mensuel - Badge PRO, Analytics, Comptabilité',
+                        'images': ['https://jamconnexion.com/images/pro-badge.png'],
+                    },
+                    'unit_amount': 999,  # 9.99€ in cents
+                    'recurring': {
+                        'interval': 'month',
+                    },
+                },
+                'quantity': 1,
+            }],
+            mode='subscription',
+            success_url=f'{frontend_url}/musician-dashboard?subscription=success&session_id={{CHECKOUT_SESSION_ID}}',
+            cancel_url=f'{frontend_url}/musician-dashboard?subscription=canceled',
+            metadata={
+                "user_id": current_user["id"],
+                "musician_id": musician["id"],
+                "subscription_type": "musician_pro"
+            }
+        )
+        
+        return {
+            "checkout_url": checkout_session.url,
+            "session_id": checkout_session.id
+        }
+    
+    except Exception as e:
+        logger.error(f"Error creating subscription: {e}")
+        raise HTTPException(status_code=500, detail=f"Error creating subscription: {str(e)}")
+
+
+@router.get("/musicians/me/subscription-status")
+async def get_subscription_status(current_user: dict = Depends(get_current_user)):
+    """Get current subscription status"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can access subscription")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    return {
+        "tier": musician.get("subscription_tier", "free"),
+        "status": musician.get("subscription_status", "inactive"),
+        "started": musician.get("subscription_started"),
+        "expires": musician.get("subscription_expires"),
+        "features": {
+            "accounting": musician.get("subscription_tier") == "pro",
+            "analytics": musician.get("subscription_tier") == "pro",
+            "badge": musician.get("subscription_tier") == "pro",
+            "priority": musician.get("subscription_tier") == "pro"
+        }
+    }
+
+
+@router.post("/musicians/me/cancel-subscription")
+async def cancel_pro_subscription(current_user: dict = Depends(get_current_user)):
+    """Cancel PRO subscription (will remain active until end of period)"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can cancel subscription")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    stripe_subscription_id = musician.get("stripe_subscription_id")
+    if not stripe_subscription_id:
+        raise HTTPException(status_code=400, detail="No active subscription found")
+    
+    import stripe
+    stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+    
+    try:
+        # Cancel at period end (user keeps access until then)
+        subscription = stripe.Subscription.modify(
+            stripe_subscription_id,
+            cancel_at_period_end=True
+        )
+        
+        await db.musicians.update_one(
+            {"user_id": current_user["id"]},
+            {"$set": {"subscription_status": "canceled"}}
+        )
+        
+        return {
+            "message": "Subscription canceled",
+            "access_until": subscription.current_period_end
+        }
+    
+    except Exception as e:
+        logger.error(f"Error canceling subscription: {e}")
+        raise HTTPException(status_code=500, detail=f"Error canceling subscription: {str(e)}")
+
+
+# ============================================================================
+# MUSICIEN PRO - COMPTABILITÉ
+# ============================================================================
+
+@router.get("/musicians/me/accounting/summary")
+async def get_accounting_summary(
+    year: int = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get accounting summary (PRO feature)
+    Returns: total revenues, expenses, concerts count, payment pending
+    """
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can access accounting")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Check PRO subscription
+    if musician.get("subscription_tier") != "pro":
+        raise HTTPException(status_code=403, detail="PRO subscription required for accounting features")
+    
+    # Get current year if not specified
+    if not year:
+        year = datetime.now(timezone.utc).year
+    
+    concerts = musician.get("concerts", [])
+    
+    # Filter by year
+    year_concerts = [c for c in concerts if c.get("date", "").startswith(str(year))]
+    
+    # Calculate totals
+    total_revenues = sum(c.get("cachet", 0) for c in year_concerts if c.get("cachet"))
+    paid_revenues = sum(c.get("cachet", 0) for c in year_concerts if c.get("payment_status") == "paid")
+    pending_revenues = sum(c.get("cachet", 0) for c in year_concerts if c.get("payment_status") == "pending")
+    
+    concerts_count = len(year_concerts)
+    paid_count = len([c for c in year_concerts if c.get("payment_status") == "paid"])
+    pending_count = len([c for c in year_concerts if c.get("payment_status") == "pending"])
+    
+    return {
+        "year": year,
+        "total_revenues": round(total_revenues, 2),
+        "paid_revenues": round(paid_revenues, 2),
+        "pending_revenues": round(pending_revenues, 2),
+        "concerts_count": concerts_count,
+        "paid_count": paid_count,
+        "pending_count": pending_count,
+        "average_cachet": round(total_revenues / concerts_count, 2) if concerts_count > 0 else 0
+    }
+
+
+@router.get("/musicians/me/accounting/concerts")
+async def get_accounting_concerts(
+    year: int = None,
+    region: str = None,
+    formation_type: str = None,
+    payment_status: str = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get detailed concerts list with filters (PRO feature)
+    """
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can access accounting")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Check PRO subscription
+    if musician.get("subscription_tier") != "pro":
+        raise HTTPException(status_code=403, detail="PRO subscription required")
+    
+    concerts = musician.get("concerts", [])
+    
+    # Apply filters
+    if year:
+        concerts = [c for c in concerts if c.get("date", "").startswith(str(year))]
+    
+    if region:
+        concerts = [c for c in concerts if c.get("region", "").lower() == region.lower()]
+    
+    if formation_type:
+        concerts = [c for c in concerts if c.get("formation_type") == formation_type]
+    
+    if payment_status:
+        concerts = [c for c in concerts if c.get("payment_status") == payment_status]
+    
+    # Sort by date descending
+    concerts.sort(key=lambda x: x.get("date", ""), reverse=True)
+    
+    return concerts
+
+
+@router.post("/musicians/me/accounting/export")
+async def export_accounting_data(
+    year: int,
+    format: str = "csv",  # "csv" or "pdf"
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Export accounting data (PRO feature)
+    Returns: download URL
+    """
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can export accounting")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Check PRO subscription
+    if musician.get("subscription_tier") != "pro":
+        raise HTTPException(status_code=403, detail="PRO subscription required")
+    
+    concerts = musician.get("concerts", [])
+    year_concerts = [c for c in concerts if c.get("date", "").startswith(str(year))]
+    
+    if format == "csv":
+        # Generate CSV
+        import csv
+        import io
+        
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Header
+        writer.writerow([
+            "Date", "Établissement", "Ville", "Région", "Formation", 
+            "Cachet (€)", "Statut Paiement", "Date Paiement", "Facture N°", "Notes"
+        ])
+        
+        # Data
+        for concert in year_concerts:
+            writer.writerow([
+                concert.get("date", ""),
+                concert.get("venue_name", ""),
+                concert.get("city", ""),
+                concert.get("region", ""),
+                concert.get("formation_type", ""),
+                concert.get("cachet", ""),
+                concert.get("payment_status", ""),
+                concert.get("payment_date", ""),
+                concert.get("invoice_number", ""),
+                concert.get("notes", "")
+            ])
+        
+        csv_content = output.getvalue()
+        
+        # For now, return as inline data (could upload to S3 for production)
+        import base64
+        csv_base64 = base64.b64encode(csv_content.encode()).decode()
+        
+        return {
+            "format": "csv",
+            "filename": f"comptabilite_{year}_{musician.get('pseudo', 'musicien')}.csv",
+            "data": csv_base64,
+            "download_url": f"data:text/csv;base64,{csv_base64}"
+        }
+    
+    else:
+        raise HTTPException(status_code=400, detail="Only CSV format supported for now")

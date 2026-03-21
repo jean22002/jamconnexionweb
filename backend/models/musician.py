@@ -43,6 +43,17 @@ class MusicianConcert(BaseModel):
     venue_name: Optional[str] = None
     city: str
     description: Optional[str] = None
+    # PRO: Comptabilité fields
+    cachet: Optional[float] = None  # Amount in euros
+    payment_status: str = "pending"  # "pending", "paid", "canceled"
+    payment_date: Optional[str] = None  # ISO date
+    invoice_url: Optional[str] = None  # URL to uploaded invoice
+    invoice_number: Optional[str] = None  # Invoice reference
+    formation_type: Optional[str] = None  # "solo", "duo", "groupe"
+    band_name: Optional[str] = None  # If groupe
+    region: Optional[str] = None
+    department: Optional[str] = None
+    notes: Optional[str] = None  # Private notes
 
 class MusicianProfile(BaseModel):
     pseudo: str
@@ -73,6 +84,13 @@ class MusicianProfile(BaseModel):
     temporary_longitude: Optional[float] = None
     temporary_city: Optional[str] = None
     temporary_location_expires: Optional[str] = None  # ISO datetime
+    # PRO Subscription
+    subscription_tier: str = "free"  # "free", "pro"
+    subscription_status: str = "inactive"  # "active", "inactive", "canceled", "past_due"
+    subscription_started: Optional[str] = None  # ISO datetime
+    subscription_expires: Optional[str] = None  # ISO datetime
+    stripe_customer_id: Optional[str] = None
+    stripe_subscription_id: Optional[str] = None
 
 class MusicianProfileResponse(BaseModel):
     id: str
@@ -109,6 +127,11 @@ class MusicianProfileResponse(BaseModel):
     temporary_location_expires: Optional[str] = None  # ISO datetime
     # Computed field for display
     display_location: Optional[str] = None  # "En déplacement à Paris" or just city
+    # PRO Subscription
+    subscription_tier: str = "free"  # "free", "pro"
+    subscription_status: str = "inactive"  # "active", "inactive", "canceled", "past_due"
+    subscription_started: Optional[str] = None  # ISO datetime
+    subscription_expires: Optional[str] = None  # ISO datetime
 
 class FriendRequest(BaseModel):
     to_user_id: str

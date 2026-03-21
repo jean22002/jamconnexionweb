@@ -99,6 +99,25 @@ async def update_musician_profile(data: MusicianProfile, current_user: dict = De
     update_data = data.model_dump()
     update_data["concerts"] = concerts_with_ids
     
+    # Auto-geocode if city and postal_code are provided but latitude/longitude are missing
+    if update_data.get("city") and update_data.get("postal_code"):
+        if not update_data.get("latitude") or not update_data.get("longitude") or update_data.get("latitude") == 0:
+            try:
+                from routes.geocode import geocode_address
+                geocode_result = await geocode_address(
+                    city=update_data["city"],
+                    postal_code=update_data["postal_code"]
+                )
+                if geocode_result:
+                    update_data["latitude"] = geocode_result["latitude"]
+                    update_data["longitude"] = geocode_result["longitude"]
+                    update_data["department"] = geocode_result.get("department") or update_data.get("department")
+                    update_data["region"] = geocode_result.get("region") or update_data.get("region")
+                    logger.info(f"Auto-geocoded musician {current_user['id']}: {update_data['city']} -> ({update_data['latitude']}, {update_data['longitude']})")
+            except Exception as geocode_error:
+                logger.warning(f"Geocoding failed for musician {current_user['id']}: {geocode_error}")
+                # Continue without geocoding - non-blocking
+    
     await db.musicians.update_one(
         {"user_id": current_user["id"]},
         {"$set": update_data}

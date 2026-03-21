@@ -986,6 +986,24 @@ async def notify_subscribers(
     if not notification_message:
         raise HTTPException(status_code=400, detail="Message is required")
     
+    # CHECK WEEKLY LIMIT (3 notifications per week)
+    from datetime import timedelta
+    one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    
+    # Count notifications sent in the last 7 days
+    notifications_sent_count = await db.notifications.count_documents({
+        "sender_id": current_user["id"],
+        "type": "broadcast",
+        "created_at": {"$gte": one_week_ago.isoformat()}
+    })
+    
+    WEEKLY_LIMIT = 3
+    if notifications_sent_count >= WEEKLY_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Limite hebdomadaire atteinte : vous avez déjà envoyé {notifications_sent_count} notifications cette semaine. Maximum autorisé : {WEEKLY_LIMIT}/semaine. Réessayez dans quelques jours."
+        )
+    
     # Get all subscribers
     subscriptions = await db.venue_subscriptions.find({"venue_id": venue_id}, {"_id": 0}).to_list(1000)
     
@@ -1041,6 +1059,55 @@ async def notify_subscribers(
     return {"recipients_count": notifications_created, "message": "Notifications sent successfully"}
 
 
+@router.get("/venues/me/notifications-quota")
+async def get_notifications_quota(current_user: dict = Depends(get_current_user)):
+    """
+    Get the remaining notification quota for the current week
+    Returns: remaining notifications and reset date
+    """
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can check notification quota")
+    
+    from datetime import timedelta
+    
+    # Calculate notifications sent in the last 7 days
+    one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    
+    notifications_sent_count = await db.notifications.count_documents({
+        "sender_id": current_user["id"],
+        "type": "broadcast",
+        "created_at": {"$gte": one_week_ago.isoformat()}
+    })
+    
+    WEEKLY_LIMIT = 3
+    remaining = max(0, WEEKLY_LIMIT - notifications_sent_count)
+    
+    # Find the oldest notification in the last 7 days to calculate reset date
+    oldest_notification = await db.notifications.find_one(
+        {
+            "sender_id": current_user["id"],
+            "type": "broadcast",
+            "created_at": {"$gte": one_week_ago.isoformat()}
+        },
+        {"_id": 0, "created_at": 1},
+        sort=[("created_at", 1)]
+    )
+    
+    # Calculate when the oldest notification will be out of the 7-day window
+    reset_date = None
+    if oldest_notification and notifications_sent_count >= WEEKLY_LIMIT:
+        oldest_date = datetime.fromisoformat(oldest_notification["created_at"])
+        reset_date = (oldest_date + timedelta(days=7)).isoformat()
+    
+    return {
+        "used": notifications_sent_count,
+        "remaining": remaining,
+        "total": WEEKLY_LIMIT,
+        "reset_date": reset_date,
+        "period": "7 days"
+    }
+
+
 @router.post("/venues/me/broadcast-notification")
 async def broadcast_notification(
     message: dict,
@@ -1068,6 +1135,24 @@ async def broadcast_notification(
     
     if not notification_message:
         raise HTTPException(status_code=400, detail="Message is required")
+    
+    # CHECK WEEKLY LIMIT (3 notifications per week)
+    from datetime import timedelta
+    one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    
+    # Count notifications sent in the last 7 days
+    notifications_sent_count = await db.notifications.count_documents({
+        "sender_id": current_user["id"],
+        "type": "broadcast",
+        "created_at": {"$gte": one_week_ago.isoformat()}
+    })
+    
+    WEEKLY_LIMIT = 3
+    if notifications_sent_count >= WEEKLY_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Limite hebdomadaire atteinte : vous avez déjà envoyé {notifications_sent_count} notifications cette semaine. Maximum autorisé : {WEEKLY_LIMIT}/semaine. Réessayez dans quelques jours."
+        )
     
     if not venue.get("latitude") or not venue.get("longitude"):
         raise HTTPException(status_code=400, detail="Venue location not set")

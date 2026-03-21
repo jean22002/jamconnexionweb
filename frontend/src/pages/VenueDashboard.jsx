@@ -211,6 +211,7 @@ export default function VenueDashboard() {
   const [subscribers, setSubscribers] = useState([]); // Liste des abonnés (Jacks)
   const [bandSuggestions, setBandSuggestions] = useState([]);
   const [showBandSuggestions, setShowBandSuggestions] = useState(false);
+  const [notificationsQuota, setNotificationsQuota] = useState({ used: 0, remaining: 3, total: 3 });
   
   // Planning calendar states
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -936,6 +937,17 @@ export default function VenueDashboard() {
     }
   };
 
+  const fetchNotificationsQuota = async () => {
+    try {
+      const response = await axios.get(`${API}/venues/me/notifications-quota`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotificationsQuota(response.data);
+    } catch (error) {
+      console.error("Error fetching notifications quota:", error);
+    }
+  };
+
   const sendBroadcastNotification = async () => {
     if (!broadcastMessage.trim()) {
       toast.error("Entrez un message");
@@ -969,8 +981,16 @@ export default function VenueDashboard() {
       toast.success(`Notification envoyée à ${response.data.recipients_count} ${targetText} ! 🎵`);
       setBroadcastMessage("");
       fetchBroadcastHistory();
+      fetchNotificationsQuota(); // Refresh quota after sending
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Erreur lors de l'envoi");
+      if (error.response?.status === 429) {
+        // Rate limit error
+        toast.error(error.response?.data?.detail || "Limite hebdomadaire atteinte", {
+          duration: 5000
+        });
+      } else {
+        toast.error(error.response?.data?.detail || "Erreur lors de l'envoi");
+      }
     } finally {
       setSendingBroadcast(false);
     }
@@ -981,6 +1001,7 @@ export default function VenueDashboard() {
       fetchNearbyMusiciansCount();
       fetchBroadcastHistory();
       fetchSubscribers(); // Rafraîchir les abonnés
+      fetchNotificationsQuota(); // Fetch quota when notifications tab is opened
     }
     if (activeTab === "jacks" && profile?.id) {
       fetchSubscribers(); // Rafraîchir les abonnés quand on ouvre l'onglet Jacks
@@ -5526,15 +5547,47 @@ export default function VenueDashboard() {
                     </div>
                   </div>
                   
+                  {/* Notifications Quota Counter */}
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/10 to-cyan-500/10 border border-primary/30 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-10 h-10 bg-primary/20 rounded-full">
+                        <Bell className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">Notifications cette semaine</p>
+                        <p className="text-xs text-muted-foreground">Limite: {notificationsQuota.total} par semaine</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-primary">{notificationsQuota.remaining}</p>
+                        <p className="text-xs text-muted-foreground">restante{notificationsQuota.remaining > 1 ? 's' : ''}</p>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        {[...Array(notificationsQuota.total)].map((_, i) => (
+                          <div 
+                            key={i} 
+                            className={`w-2 h-2 rounded-full ${i < notificationsQuota.used ? 'bg-primary' : 'bg-white/10'}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
                   <Button
                     onClick={sendBroadcastNotification}
-                    disabled={sendingBroadcast || !broadcastMessage.trim()}
+                    disabled={sendingBroadcast || !broadcastMessage.trim() || notificationsQuota.remaining === 0}
                     className="w-full bg-primary hover:bg-primary/90 rounded-full gap-2"
                   >
                     {sendingBroadcast ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
                         Envoi en cours...
+                      </>
+                    ) : notificationsQuota.remaining === 0 ? (
+                      <>
+                        <AlertCircle className="w-4 h-4" />
+                        Limite hebdomadaire atteinte
                       </>
                     ) : (
                       <>
@@ -5543,6 +5596,12 @@ export default function VenueDashboard() {
                       </>
                     )}
                   </Button>
+                  
+                  {notificationsQuota.remaining === 0 && notificationsQuota.reset_date && (
+                    <p className="text-xs text-center text-muted-foreground mt-2">
+                      Nouvelle notification disponible le {new Date(notificationsQuota.reset_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  )}
                 </div>
               </div>
 

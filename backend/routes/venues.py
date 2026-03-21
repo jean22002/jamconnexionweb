@@ -582,19 +582,36 @@ async def get_nearby_musicians_count(radius_km: float = 50, current_user: dict =
     if not venue.get("latitude") or not venue.get("longitude"):
         return {"count": 0, "message": "Venue location not set"}
     
-    # Get all musicians with location
-    musicians = await db.musicians.find({
-        "latitude": {"$exists": True},
-        "longitude": {"$exists": True}
-    }, {"_id": 0, "latitude": 1, "longitude": 1}).to_list(2000)
+    # Get all musicians with location (profile or temporary)
+    musicians = await db.musicians.find({}, {"_id": 0}).to_list(2000)
     
     # Count musicians within radius
     count = 0
     for musician in musicians:
-        if musician.get("latitude") and musician.get("longitude"):
+        # Use temporary location if active and not expired
+        musician_lat = None
+        musician_lon = None
+        
+        if musician.get("temporary_location_enabled"):
+            expires = musician.get("temporary_location_expires")
+            if expires:
+                try:
+                    expires_dt = datetime.fromisoformat(expires)
+                    if datetime.now(timezone.utc) <= expires_dt:
+                        musician_lat = musician.get("temporary_latitude")
+                        musician_lon = musician.get("temporary_longitude")
+                except:
+                    pass
+        
+        # Fallback to profile location
+        if not musician_lat or not musician_lon:
+            musician_lat = musician.get("latitude")
+            musician_lon = musician.get("longitude")
+        
+        if musician_lat and musician_lon:
             distance = haversine_distance(
                 venue["latitude"], venue["longitude"],
-                musician["latitude"], musician["longitude"]
+                musician_lat, musician_lon
             )
             if distance <= radius_km:
                 count += 1
@@ -1165,10 +1182,30 @@ async def broadcast_notification(
     nearby_musicians = []
     
     for musician in all_musicians:
-        if musician.get("latitude") and musician.get("longitude"):
+        # Use temporary location if active and not expired, otherwise use profile location
+        musician_lat = None
+        musician_lon = None
+        
+        # Check if temporary location is active
+        if musician.get("temporary_location_enabled"):
+            expires = musician.get("temporary_location_expires")
+            if expires:
+                expires_dt = datetime.fromisoformat(expires)
+                # Check if not expired
+                if datetime.now(timezone.utc) <= expires_dt:
+                    musician_lat = musician.get("temporary_latitude")
+                    musician_lon = musician.get("temporary_longitude")
+        
+        # Fallback to profile location if no valid temporary location
+        if not musician_lat or not musician_lon:
+            musician_lat = musician.get("latitude")
+            musician_lon = musician.get("longitude")
+        
+        # Calculate distance if coordinates are available
+        if musician_lat and musician_lon:
             distance = haversine_distance(
                 venue_lat, venue_lon,
-                musician["latitude"], musician["longitude"]
+                musician_lat, musician_lon
             )
             if distance <= radius:
                 nearby_musicians.append(musician)

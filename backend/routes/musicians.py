@@ -1176,3 +1176,154 @@ async def get_current_participation(current_user: dict = Depends(get_current_use
     result.sort(key=lambda x: x.get("event", {}).get("date", ""))
     
     return result
+
+
+
+# ============================================================================
+# TEMPORARY LOCATION - HYBRID GEOLOCATION SYSTEM
+# ============================================================================
+
+@router.post("/musicians/me/temporary-location")
+async def set_temporary_location(
+    data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Activate temporary location for 24 hours (hybrid geolocation system)
+    
+    Methods:
+    1. GPS: {"method": "gps", "latitude": 48.8566, "longitude": 2.3522}
+    2. Manual: {"method": "manual", "city": "Paris", "postal_code": "75001"}
+    """
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can set temporary location")
+    
+    method = data.get("method", "gps")
+    
+    # Calculate expiration (24 hours from now)
+    from datetime import timedelta
+    expires = datetime.now(timezone.utc) + timedelta(hours=24)
+    
+    update_data = {
+        "temporary_location_enabled": True,
+        "temporary_location_expires": expires.isoformat()
+    }
+    
+    if method == "gps":
+        # GPS coordinates provided
+        latitude = data.get("latitude")
+        longitude = data.get("longitude")
+        
+        if not latitude or not longitude:
+            raise HTTPException(status_code=400, detail="Latitude and longitude required for GPS method")
+        
+        update_data["temporary_latitude"] = latitude
+        update_data["temporary_longitude"] = longitude
+        
+        # Reverse geocode to get city name (optional, for display)
+        try:
+            # Simple reverse geocode - could be improved with actual API
+            update_data["temporary_city"] = f"GPS ({latitude:.4f}, {longitude:.4f})"
+        except Exception:
+            update_data["temporary_city"] = "Position GPS"
+    
+    elif method == "manual":
+        # Manual city input
+        city = data.get("city")
+        postal_code = data.get("postal_code")
+        
+        if not city:
+            raise HTTPException(status_code=400, detail="City required for manual method")
+        
+        # Geocode the city
+        try:
+            from server import geocode_address
+            result = await geocode_address({"city": city, "postal_code": postal_code})
+            
+            if result and result.get("latitude"):
+                update_data["temporary_latitude"] = result["latitude"]
+                update_data["temporary_longitude"] = result["longitude"]
+                update_data["temporary_city"] = city
+            else:
+                raise HTTPException(status_code=404, detail=f"Unable to geocode city: {city}")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Geocoding error: {str(e)}")
+    
+    else:
+        raise HTTPException(status_code=400, detail="Invalid method. Use 'gps' or 'manual'")
+    
+    # Update musician profile
+    await db.musicians.update_one(
+        {"user_id": current_user["id"]},
+        {"$set": update_data}
+    )
+    
+    return {
+        "message": "Temporary location activated",
+        "expires": expires.isoformat(),
+        "city": update_data.get("temporary_city"),
+        "method": method
+    }
+
+
+@router.delete("/musicians/me/temporary-location")
+async def disable_temporary_location(current_user: dict = Depends(get_current_user)):
+    """Disable temporary location (return to profile city)"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can disable temporary location")
+    
+    await db.musicians.update_one(
+        {"user_id": current_user["id"]},
+        {"$set": {
+            "temporary_location_enabled": False,
+            "temporary_latitude": None,
+            "temporary_longitude": None,
+            "temporary_city": None,
+            "temporary_location_expires": None
+        }}
+    )
+    
+    return {"message": "Temporary location disabled"}
+
+
+@router.get("/musicians/me/temporary-location")
+async def get_temporary_location_status(current_user: dict = Depends(get_current_user)):
+    """Get temporary location status"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can access this")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Check if expired
+    enabled = musician.get("temporary_location_enabled", False)
+    expires = musician.get("temporary_location_expires")
+    
+    if enabled and expires:
+        expires_dt = datetime.fromisoformat(expires)
+        if datetime.now(timezone.utc) > expires_dt:
+            # Expired - disable automatically
+            await db.musicians.update_one(
+                {"user_id": current_user["id"]},
+                {"$set": {
+                    "temporary_location_enabled": False,
+                    "temporary_latitude": None,
+                    "temporary_longitude": None,
+                    "temporary_city": None,
+                    "temporary_location_expires": None
+                }}
+            )
+            enabled = False
+            expires = None
+    
+    return {
+        "enabled": enabled,
+        "latitude": musician.get("temporary_latitude"),
+        "longitude": musician.get("temporary_longitude"),
+        "city": musician.get("temporary_city"),
+        "expires": expires,
+        "profile_city": musician.get("city"),
+        "profile_latitude": musician.get("latitude"),
+        "profile_longitude": musician.get("longitude")
+    }

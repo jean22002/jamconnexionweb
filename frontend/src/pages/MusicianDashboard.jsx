@@ -19,6 +19,7 @@ import { TimeSelect } from "../components/ui/time-select";
 import { MusicianImageUpload } from "../components/ui/image-upload";
 import OnlineStatusSelector from "../components/OnlineStatusSelector";
 import BackgroundSyncSettings from "../components/BackgroundSyncSettings";
+import LocationWidget from "../components/LocationWidget";
 // NEW: Import refactored utilities
 import { buildImageUrl } from "../utils/urlBuilder";
 import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
@@ -4163,6 +4164,9 @@ export default function MusicianDashboard() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Location Widget (Floating) */}
+      <LocationWidget token={token} />
     </div>
   );
 }

@@ -67,6 +67,12 @@ class MusicianProfile(BaseModel):
     bands: List[BandInfo] = []
     solo_profile: Optional[Dict[str, Any]] = None
     concerts: List[MusicianConcert] = []
+    # Temporary location (hybrid geolocation system)
+    temporary_location_enabled: bool = False
+    temporary_latitude: Optional[float] = None
+    temporary_longitude: Optional[float] = None
+    temporary_city: Optional[str] = None
+    temporary_location_expires: Optional[str] = None  # ISO datetime
 
 class MusicianProfileResponse(BaseModel):
     id: str
@@ -95,6 +101,14 @@ class MusicianProfileResponse(BaseModel):
     concerts: List[Dict[str, Any]] = []
     friends_count: int = 0
     created_at: str
+    # Temporary location (hybrid geolocation system)
+    temporary_location_enabled: bool = False
+    temporary_latitude: Optional[float] = None
+    temporary_longitude: Optional[float] = None
+    temporary_city: Optional[str] = None
+    temporary_location_expires: Optional[str] = None  # ISO datetime
+    # Computed field for display
+    display_location: Optional[str] = None  # "En déplacement à Paris" or just city
 
 class FriendRequest(BaseModel):
     to_user_id: str

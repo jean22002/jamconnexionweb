@@ -13,7 +13,7 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Get backend URL from frontend environment
-BACKEND_URL = "https://performance-audit-8.preview.emergentagent.com/api"
+BACKEND_URL = "https://perf-optimize-15.preview.emergentagent.com/api"
 
 # Test credentials
 TEST_EMAIL = "bar@gmail.com"
@@ -240,7 +240,7 @@ class PerformanceTestSuite:
         
         try:
             # Use base URL without /api for health endpoint
-            url = "https://performance-audit-8.preview.emergentagent.com/health"
+            url = "https://perf-optimize-15.preview.emergentagent.com/health"
             response = self.session.get(url, timeout=30)
             
             if response.status_code == 200:
@@ -344,7 +344,7 @@ class PerformanceTestSuite:
                 ("/venues", "GET"),
                 ("/musicians", "GET"),
                 ("/bands", "GET"),
-                ("/health", "GET", "https://performance-audit-8.preview.emergentagent.com")
+                ("/health", "GET", "https://perf-optimize-15.preview.emergentagent.com")
             ]
             
             results = []

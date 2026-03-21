@@ -5,7 +5,7 @@ Cache Headers Debug Test - Check why cache headers are being overridden
 
 import requests
 
-BACKEND_URL = "https://performance-audit-8.preview.emergentagent.com/api"
+BACKEND_URL = "https://perf-optimize-15.preview.emergentagent.com/api"
 
 def test_cache_headers():
     print("🔍 Testing Cache Headers - Debug Mode")
@@ -28,7 +28,7 @@ def test_cache_headers():
     
     # Test health endpoint
     print("\n3. Testing /health endpoint:")
-    response = requests.get("https://performance-audit-8.preview.emergentagent.com/health", timeout=30)
+    response = requests.get("https://perf-optimize-15.preview.emergentagent.com/health", timeout=30)
     cache_control = response.headers.get('Cache-Control', 'Not Set')
     print(f"   Status: {response.status_code}")
     print(f"   Cache-Control: {cache_control}")

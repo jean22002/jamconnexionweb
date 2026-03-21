@@ -1,7 +1,7 @@
 """
 Musicians router - Handles musician profiles, friends, and bands
 """
-from fastapi import APIRouter, HTTPException, Depends, Header
+from fastapi import APIRouter, HTTPException, Depends, Header, Query
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
@@ -134,7 +134,14 @@ async def get_my_musician_profile(current_user: dict = Depends(get_current_user)
 
 
 @router.get("/musicians", response_model=List[MusicianProfileResponse])
-async def list_musicians(instrument: Optional[str] = None, style: Optional[str] = None, city: Optional[str] = None):
+async def list_musicians(
+    instrument: Optional[str] = None, 
+    style: Optional[str] = None, 
+    city: Optional[str] = None,
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(50, ge=1, le=100, description="Items per page (max 100)")
+):
+    """Get musicians with pagination and filters"""
     query = {"pseudo": {"$exists": True, "$ne": ""}}  # Ne retourner que les musiciens avec un pseudo valide
     if instrument:
         query["instruments"] = {"$regex": instrument, "$options": "i"}
@@ -143,7 +150,32 @@ async def list_musicians(instrument: Optional[str] = None, style: Optional[str] 
     if city:
         query["city"] = {"$regex": city, "$options": "i"}
     
-    musicians = await db.musicians.find(query, {"_id": 0}).to_list(100)
+    # Calculate pagination
+    skip = (page - 1) * limit
+    
+    # Projection: only load necessary fields for list view
+    projection = {
+        "_id": 0,
+        "id": 1,
+        "user_id": 1,
+        "pseudo": 1,
+        "city": 1,
+        "department": 1,
+        "postal_code": 1,
+        "profile_image": 1,
+        "cover_image": 1,
+        "bio": 1,
+        "instruments": 1,
+        "music_styles": 1,
+        "experience_years": 1,
+        "available_for_gigs": 1,
+        "bands": 1,
+        "concerts": 1,
+        "created_at": 1
+    }
+    
+    # Get paginated musicians
+    musicians = await db.musicians.find(query, projection).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
     # Import de la fonction is_user_online
     from routes.online_status import is_user_online

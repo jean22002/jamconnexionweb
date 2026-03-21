@@ -75,7 +75,7 @@ GET /api/badges/user/{user_id}
 
 **Test effectué:**
 ```bash
-curl https://performance-audit-8.preview.emergentagent.com/api/badges/user/5fa323e1-ba06-4d52-b52e-923f4dab250c
+curl https://perf-optimize-15.preview.emergentagent.com/api/badges/user/5fa323e1-ba06-4d52-b52e-923f4dab250c
 ```
 
 **Résultat:**

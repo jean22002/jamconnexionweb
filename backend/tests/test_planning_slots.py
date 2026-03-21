@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 
 class PlanningSlotTester:
-    def __init__(self, base_url="https://performance-audit-8.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://perf-optimize-15.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.venue_token = None
         self.musician_token = None

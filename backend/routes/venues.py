@@ -956,43 +956,6 @@ async def get_concerts_profitability(current_user: dict = Depends(get_current_us
         "profitability_rate": round(profitability_rate, 2)
     }
 
-    today = datetime.now(timezone.utc).date().isoformat()
-    
-    past_concerts = await db.concerts.find({
-        "venue_id": venue_id,
-        "date": {"$lt": today}
-    }, {"_id": 0}).to_list(1000)
-    
-    # Extract unique band names
-    bands_played = set()
-    for concert in past_concerts:
-        for band in concert.get("bands", []):
-            band_name = band.get("name")
-            if band_name:
-                bands_played.add(band_name)
-    
-    return {"bands": sorted(list(bands_played)), "count": len(bands_played)}
-
-    subscriptions = await db.venue_subscriptions.find(
-        {"subscriber_id": current_user["id"]},
-        {"_id": 0}
-    ).to_list(1000)
-    
-    result = []
-    for sub in subscriptions:
-        venue = await db.venues.find_one({"id": sub["venue_id"]}, {"_id": 0})
-        if venue:
-            user = await db.users.find_one({"id": venue["user_id"]}, {"_id": 0})
-            subscribers_count = await db.venue_subscriptions.count_documents({"venue_id": venue["id"]})
-            venue_data = VenueProfileResponse(
-                **venue,
-                subscription_status=user.get("subscription_status") if user else None,
-                subscribers_count=subscribers_count
-            )
-            result.append(venue_data)
-    
-    return result
-
 
 @router.post("/venues/me/notify-subscribers")
 async def notify_subscribers(

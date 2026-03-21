@@ -5858,7 +5858,16 @@ export default function VenueDashboard() {
                             )}
                           </div>
 
-                          {/* Removed "Contacter le groupe" button - User request */}
+                          <Button 
+                            className="w-full" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedBand(band);
+                              setShowMessageDialog(true);
+                            }}
+                          >
+                            Contacter le groupe
+                          </Button>
                         </div>
                       ))}
                     </div>
@@ -5902,7 +5911,16 @@ export default function VenueDashboard() {
                               </div>
                             )}
 
-                            {/* Removed "Contacter le groupe" button - User request */}
+                            <Button 
+                              className="w-full" 
+                              size="sm"
+                              onClick={() => {
+                                setSelectedBand(band);
+                                setShowMessageDialog(true);
+                              }}
+                            >
+                              Contacter le groupe
+                            </Button>
                           </div>
                         ))}
                       </div>

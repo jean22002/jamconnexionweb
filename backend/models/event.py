@@ -213,7 +213,7 @@ class ApplicationResponse(BaseModel):
 
 # Modèle pour les créneaux de planning
 class PlanningSlot(BaseModel):
-    venue_id: str
+    venue_id: Optional[str] = None  # Optional in request, will be set from auth
     date: str
     time: Optional[str] = None
     title: Optional[str] = None

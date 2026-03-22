@@ -122,12 +122,16 @@ async def update_melomane_profile(
 # Get all melomanes (for map)
 @router.get("/", response_model=List[MelomaneResponse])
 async def get_all_melomanes():
-    # Optimisation: Projection pour ne récupérer que les champs nécessaires pour la carte
-    melomanes = await db.melomanes.find(
-        {},
-        {"_id": 0, "id": 1, "user_id": 1, "pseudo": 1, "city": 1, "latitude": 1, "longitude": 1, "favorite_genres": 1, "photo_url": 1}
-    ).limit(1000).to_list(1000)
-    return [MelomaneResponse(**m) for m in melomanes]
+    try:
+        # Fetch all melomanes with all fields
+        melomanes = await db.melomanes.find(
+            {},
+            {"_id": 0}
+        ).limit(1000).to_list(1000)
+        return [MelomaneResponse(**m) for m in melomanes]
+    except Exception as e:
+        logger.error(f"Error fetching melomanes: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching melomanes: {str(e)}")
 
 # Get melomane by ID
 @router.get("/{melomane_id}", response_model=MelomaneResponse)

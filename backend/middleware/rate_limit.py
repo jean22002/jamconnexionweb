@@ -16,14 +16,18 @@ TESTING_MODE = os.getenv("TESTING_MODE", "false").lower() == "true"
 
 # Create limiter instance with conditional limits
 if TESTING_MODE:
-    # In testing mode, disable rate limiting
-    limiter = Limiter(
-        key_func=get_remote_address,
-        default_limits=["10000/minute"],  # Very high limit
-        storage_uri="memory://",
-        strategy="fixed-window",
-        enabled=False  # Disable rate limiting in tests
-    )
+    # In testing mode, create a no-op limiter
+    class NoOpLimiter:
+        """No-op limiter for testing that doesn't actually limit anything"""
+        def limit(self, *args, **kwargs):
+            def decorator(func):
+                return func
+            return decorator
+        
+        def __call__(self, *args, **kwargs):
+            return self
+    
+    limiter = NoOpLimiter()
     print("⚠️  Rate limiting DISABLED for testing mode")
 else:
     # Production rate limiting

@@ -22,6 +22,7 @@ import BackgroundSyncSettings from "../components/BackgroundSyncSettings";
 import LocationWidget from "../components/LocationWidget";
 import ProSubscriptionCard from "../components/ProSubscriptionCard";
 import ProSubscriptionManager from "../components/ProSubscriptionManager";
+import AnalyticsTab from "../components/accounting/AnalyticsTab";
 // NEW: Import refactored utilities
 import { buildImageUrl } from "../utils/urlBuilder";
 import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
@@ -3311,9 +3312,14 @@ export default function MusicianDashboard() {
             <TabsTrigger value="map" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Carte</TabsTrigger>
             <TabsTrigger value="planning" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Planning</TabsTrigger>
             {subscriptionData.tier === 'pro' && (
-              <TabsTrigger value="accounting" className="rounded-full whitespace-nowrap flex-shrink-0 px-4 bg-gradient-to-r from-primary/20 to-cyan-500/20 border border-primary/30">
-                💼 Comptabilité
-              </TabsTrigger>
+              <>
+                <TabsTrigger value="accounting" className="rounded-full whitespace-nowrap flex-shrink-0 px-4 bg-gradient-to-r from-primary/20 to-cyan-500/20 border border-primary/30">
+                  💼 Comptabilité
+                </TabsTrigger>
+                <TabsTrigger value="analytics" className="rounded-full whitespace-nowrap flex-shrink-0 px-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30">
+                  📊 Analytics
+                </TabsTrigger>
+              </>
             )}
             <TabsTrigger value="candidatures" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Candidatures</TabsTrigger>
             <TabsTrigger value="my-applications" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Mes Candidatures</TabsTrigger>
@@ -3792,6 +3798,19 @@ export default function MusicianDashboard() {
           <TabsContent value="accounting">
             {subscriptionData.tier === 'pro' ? (
               <AccountingTab token={token} />
+            ) : (
+              <div className="glassmorphism rounded-2xl p-6">
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">Fonctionnalité réservée aux abonnés PRO</p>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Analytics Tab (PRO only) */}
+          <TabsContent value="analytics">
+            {subscriptionData.tier === 'pro' ? (
+              <AnalyticsTab token={token} />
             ) : (
               <div className="glassmorphism rounded-2xl p-6">
                 <div className="text-center py-12">

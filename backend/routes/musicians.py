@@ -2168,3 +2168,159 @@ async def delete_invoice(
     )
     
     return {"message": "Invoice deleted successfully"}
+
+
+# ============================================================================
+# ANALYTICS PRO
+# ============================================================================
+
+@router.get("/musicians/me/analytics")
+async def get_analytics(
+    year: int = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get advanced analytics for PRO musicians
+    Returns: revenue trends, performance metrics, comparisons
+    """
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can access analytics")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Check PRO subscription
+    if musician.get("subscription_tier") != "pro":
+        raise HTTPException(status_code=403, detail="PRO subscription required for analytics")
+    
+    if not year:
+        year = datetime.now(timezone.utc).year
+    
+    concerts = musician.get("concerts", [])
+    
+    # Filter concerts by year
+    year_concerts = [c for c in concerts if c.get("date", "").startswith(str(year))]
+    paid_concerts = [c for c in year_concerts if c.get("payment_status") == "paid"]
+    
+    # Calculate monthly revenue
+    monthly_revenue = {}
+    monthly_concerts = {}
+    for month in range(1, 13):
+        month_str = f"{year}-{month:02d}"
+        month_concerts_list = [c for c in paid_concerts if c.get("date", "").startswith(month_str)]
+        monthly_revenue[month] = sum(c.get("cachet", 0) for c in month_concerts_list if c.get("cachet"))
+        monthly_concerts[month] = len(month_concerts_list)
+    
+    # Calculate total revenue
+    total_revenue = sum(monthly_revenue.values())
+    total_concerts = len(paid_concerts)
+    
+    # Calculate average, min, max cachet
+    cachets = [c.get("cachet") for c in paid_concerts if c.get("cachet")]
+    avg_cachet = sum(cachets) / len(cachets) if cachets else 0
+    min_cachet = min(cachets) if cachets else 0
+    max_cachet = max(cachets) if cachets else 0
+    
+    # Top cities
+    city_stats = {}
+    for concert in paid_concerts:
+        city = concert.get("city")
+        if city:
+            if city not in city_stats:
+                city_stats[city] = {"count": 0, "revenue": 0}
+            city_stats[city]["count"] += 1
+            city_stats[city]["revenue"] += concert.get("cachet", 0)
+    
+    top_cities = sorted(
+        [{"city": k, "concerts": v["count"], "revenue": v["revenue"]} for k, v in city_stats.items()],
+        key=lambda x: x["revenue"],
+        reverse=True
+    )[:5]
+    
+    # Top venues
+    venue_stats = {}
+    for concert in paid_concerts:
+        venue = concert.get("venue_name")
+        if venue:
+            if venue not in venue_stats:
+                venue_stats[venue] = {"count": 0, "revenue": 0}
+            venue_stats[venue]["count"] += 1
+            venue_stats[venue]["revenue"] += concert.get("cachet", 0)
+    
+    top_venues = sorted(
+        [{"venue": k, "concerts": v["count"], "revenue": v["revenue"]} for k, v in venue_stats.items()],
+        key=lambda x: x["revenue"],
+        reverse=True
+    )[:5]
+    
+    # Calculate growth rate (compare with previous year)
+    previous_year = year - 1
+    previous_year_concerts = [c for c in concerts if c.get("date", "").startswith(str(previous_year))]
+    previous_paid = [c for c in previous_year_concerts if c.get("payment_status") == "paid"]
+    previous_revenue = sum(c.get("cachet", 0) for c in previous_paid if c.get("cachet"))
+    
+    growth_rate = 0
+    if previous_revenue > 0:
+        growth_rate = ((total_revenue - previous_revenue) / previous_revenue) * 100
+    
+    # Get average stats from other PRO musicians for comparison
+    all_pro_musicians = await db.musicians.find(
+        {
+            "subscription_tier": "pro",
+            "user_id": {"$ne": current_user["id"]}  # Exclude current user
+        },
+        {"_id": 0, "concerts": 1}
+    ).to_list(1000)
+    
+    # Calculate industry average
+    all_year_concerts = []
+    for m in all_pro_musicians:
+        m_concerts = [c for c in m.get("concerts", []) if c.get("date", "").startswith(str(year)) and c.get("payment_status") == "paid"]
+        all_year_concerts.extend(m_concerts)
+    
+    industry_avg_revenue = 0
+    industry_avg_concerts = 0
+    industry_avg_cachet = 0
+    
+    if all_year_concerts:
+        industry_revenues = [c.get("cachet", 0) for c in all_year_concerts if c.get("cachet")]
+        industry_avg_revenue = sum(industry_revenues) / len(all_pro_musicians) if all_pro_musicians else 0
+        industry_avg_concerts = len(all_year_concerts) / len(all_pro_musicians) if all_pro_musicians else 0
+        industry_avg_cachet = sum(industry_revenues) / len(industry_revenues) if industry_revenues else 0
+    
+    # Performance vs industry
+    revenue_vs_industry = ((total_revenue - industry_avg_revenue) / industry_avg_revenue * 100) if industry_avg_revenue > 0 else 0
+    concerts_vs_industry = ((total_concerts - industry_avg_concerts) / industry_avg_concerts * 100) if industry_avg_concerts > 0 else 0
+    cachet_vs_industry = ((avg_cachet - industry_avg_cachet) / industry_avg_cachet * 100) if industry_avg_cachet > 0 else 0
+    
+    return {
+        "year": year,
+        "summary": {
+            "total_revenue": round(total_revenue, 2),
+            "total_concerts": total_concerts,
+            "avg_cachet": round(avg_cachet, 2),
+            "min_cachet": round(min_cachet, 2),
+            "max_cachet": round(max_cachet, 2),
+            "growth_rate": round(growth_rate, 2)
+        },
+        "monthly_data": [
+            {
+                "month": month,
+                "month_name": datetime(year, month, 1).strftime("%b"),
+                "revenue": round(monthly_revenue[month], 2),
+                "concerts": monthly_concerts[month]
+            }
+            for month in range(1, 13)
+        ],
+        "top_cities": top_cities,
+        "top_venues": top_venues,
+        "industry_comparison": {
+            "avg_revenue": round(industry_avg_revenue, 2),
+            "avg_concerts": round(industry_avg_concerts, 2),
+            "avg_cachet": round(industry_avg_cachet, 2),
+            "revenue_vs_industry": round(revenue_vs_industry, 2),
+            "concerts_vs_industry": round(concerts_vs_industry, 2),
+            "cachet_vs_industry": round(cachet_vs_industry, 2)
+        }
+    }

@@ -478,27 +478,51 @@ const GusoAccountingTab = ({ token, gusoNumber, onGusoNumberUpdate }) => {
                           <p className="text-sm text-muted-foreground">📍 {concert.city}</p>
                         )}
                       </div>
-                      <button
-                        onClick={() => toggleConcertDeclaration(concert.id, concert.guso_declared)}
-                        className={`px-3 py-1 text-xs rounded-full border flex items-center gap-1 transition-all hover:scale-105 cursor-pointer ${
-                          concert.guso_declared
-                            ? 'bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30'
-                            : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/30'
-                        }`}
-                        title={concert.guso_declared ? 'Cliquer pour marquer comme à déclarer' : 'Cliquer pour marquer comme déclaré'}
+                      <Select
+                        value={concert.guso_declared ? "declared" : "pending"}
+                        onValueChange={(value) => {
+                          const newStatus = value === "declared";
+                          if (newStatus !== concert.guso_declared) {
+                            toggleConcertDeclaration(concert.id, concert.guso_declared);
+                          }
+                        }}
                       >
-                        {concert.guso_declared ? (
-                          <>
-                            <CheckCircle className="w-3 h-3" />
-                            Déclaré
-                          </>
-                        ) : (
-                          <>
-                            <Clock className="w-3 h-3" />
-                            À déclarer
-                          </>
-                        )}
-                      </button>
+                        <SelectTrigger className={`w-[140px] h-8 text-xs rounded-full border ${
+                          concert.guso_declared
+                            ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                            : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                        }`}>
+                          <SelectValue>
+                            <div className="flex items-center gap-1">
+                              {concert.guso_declared ? (
+                                <>
+                                  <CheckCircle className="w-3 h-3" />
+                                  Déclaré
+                                </>
+                              ) : (
+                                <>
+                                  <Clock className="w-3 h-3" />
+                                  À déclarer
+                                </>
+                              )}
+                            </div>
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="declared" className="cursor-pointer">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="w-4 h-4 text-green-400" />
+                              <span>Déclaré</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="pending" className="cursor-pointer">
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-yellow-400" />
+                              <span>À déclarer</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">

@@ -1339,8 +1339,8 @@ async def get_temporary_location_status(current_user: dict = Depends(get_current
 async def create_pro_subscription(current_user: dict = Depends(get_current_user)):
     """
     Create Stripe Checkout session for Musicien PRO subscription
-    - FREE TRIAL: 2 months (60 days)
-    - Then: 9.99€/month with automatic renewal
+    - FREE TRIAL: 7 days
+    - Then: 6.99€/month with automatic renewal
     - Cancelable anytime before anniversary date
     
     Returns checkout URL for frontend redirect
@@ -1393,10 +1393,10 @@ async def create_pro_subscription(current_user: dict = Depends(get_current_user)
                     'currency': 'eur',
                     'product_data': {
                         'name': 'Musicien PRO',
-                        'description': '2 MOIS GRATUITS puis 9,99€/mois - Annulable à tout moment',
+                        'description': '7 JOURS GRATUITS puis 6,99€/mois - Annulable à tout moment',
                         'images': ['https://jamconnexion.com/images/pro-badge.png'],
                     },
-                    'unit_amount': 999,  # 9.99€ in cents
+                    'unit_amount': 699,  # 6.99€ in cents
                     'recurring': {
                         'interval': 'month',
                     },
@@ -1405,9 +1405,9 @@ async def create_pro_subscription(current_user: dict = Depends(get_current_user)
             }],
             mode='subscription',
             subscription_data={
-                'trial_period_days': 60,  # 2 MONTHS FREE TRIAL
+                'trial_period_days': 7,  # 7 DAYS FREE TRIAL
                 'metadata': {
-                    'trial_duration': '2_months',
+                    'trial_duration': '7_days',
                     'user_id': current_user["id"]
                 }
             },
@@ -1423,8 +1423,8 @@ async def create_pro_subscription(current_user: dict = Depends(get_current_user)
         return {
             "checkout_url": checkout_session.url,
             "session_id": checkout_session.id,
-            "trial_days": 60,
-            "trial_info": "2 mois gratuits - Premier paiement le " + (datetime.now(timezone.utc) + timedelta(days=60)).strftime("%d/%m/%Y")
+            "trial_days": 7,
+            "trial_info": "7 jours gratuits - Premier paiement le " + (datetime.now(timezone.utc) + timedelta(days=7)).strftime("%d/%m/%Y")
         }
     
     except Exception as e:
@@ -1450,7 +1450,7 @@ async def get_subscription_status(current_user: dict = Depends(get_current_user)
     
     if subscription_started and musician.get("subscription_tier") == "pro":
         started_dt = datetime.fromisoformat(subscription_started)
-        trial_end_dt = started_dt + timedelta(days=60)  # 2 months = 60 days
+        trial_end_dt = started_dt + timedelta(days=7)  # 7 days trial
         now = datetime.now(timezone.utc)
         
         if now < trial_end_dt:

@@ -57,12 +57,12 @@ const ProSubscriptionCard = ({ token, currentTier, onSuccess }) => {
       {/* Pricing */}
       <div className="mb-8">
         <div className="flex items-baseline gap-2 mb-2">
-          <span className="text-5xl font-bold text-primary">2 mois</span>
+          <span className="text-5xl font-bold text-primary">7 jours</span>
           <span className="text-2xl font-semibold text-muted-foreground">GRATUITS</span>
         </div>
         <div className="flex items-baseline gap-2">
           <span className="text-xl text-muted-foreground">puis</span>
-          <span className="text-3xl font-bold">9,99€</span>
+          <span className="text-3xl font-bold">6,99€</span>
           <span className="text-lg text-muted-foreground">/mois</span>
         </div>
         <p className="text-sm text-muted-foreground mt-2">
@@ -135,7 +135,7 @@ const ProSubscriptionCard = ({ token, currentTier, onSuccess }) => {
       {/* Reassurance */}
       <div className="mt-6 p-4 bg-white/5 rounded-xl">
         <p className="text-sm text-center text-muted-foreground">
-          ✅ Aucun paiement avant 60 jours<br />
+          ✅ Aucun paiement avant 7 jours<br />
           ✅ Accès complet immédiat<br />
           ✅ Résiliable en 1 clic
         </p>

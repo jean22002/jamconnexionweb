@@ -731,7 +731,7 @@ export default function MusicianDashboard() {
     const sessionId = params.get('session_id');
     
     if (subscriptionStatus === 'success' && sessionId) {
-      toast.success('🎉 Bienvenue dans Musicien PRO ! Vous avez 2 mois gratuits.');
+      toast.success('🎉 Bienvenue dans Musicien PRO ! Vous avez 7 jours gratuits.');
       fetchSubscriptionStatus(); // Refresh subscription data
       fetchProfile(); // Refresh profile
       

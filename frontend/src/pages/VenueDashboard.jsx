@@ -55,6 +55,10 @@ import {
   useVenueEvents, 
   useVenuePlanning 
 } from "../features/venue-dashboard/hooks";
+// Refactored tabs
+import ReviewsTab from "../features/venue-dashboard/tabs/ReviewsTab";
+import GalleryTab from "../features/venue-dashboard/tabs/GalleryTab";
+import JacksTab from "../features/venue-dashboard/tabs/JacksTab";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/aFa6oG9gV4d20te2uRafS02";
@@ -5374,61 +5378,7 @@ export default function VenueDashboard() {
 
           {/* Jacks (Subscribers) Tab */}
           <TabsContent value="jacks">
-            <div className="glassmorphism rounded-2xl p-6">
-              <h2 className="font-heading font-semibold text-2xl mb-6 flex items-center gap-2">
-                <Plug className="w-6 h-6 text-primary" />
-                Jacks - Abonnés ({subscribers.length})
-              </h2>
-              
-              {subscribers.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Heart className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Vous n'avez pas encore d'abonnés</p>
-                  <p className="text-sm mt-2">Les musiciens qui se connectent à votre établissement apparaîtront ici</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {subscribers.map((subscriber) => (
-                    <div key={subscriber.id} className="card-venue p-5">
-                      <div className="flex items-start gap-4">
-                        {subscriber.profile_image ? (
-                          <LazyImage 
-                            src={subscriber.profile_image} 
-                            alt={subscriber.pseudo || "Abonné"} 
-                            className="w-16 h-16 rounded-full object-cover" 
-                          />
-                        ) : (
-                          <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
-                            <User className="w-8 h-8 text-primary" />
-                          </div>
-                        )}
-                        <div className="flex-1">
-                          <h3 className="font-heading font-semibold">{subscriber.pseudo}</h3>
-                          {subscriber.city && (
-                            <p className="text-sm text-muted-foreground flex items-center gap-1">
-                              <MapPin className="w-3 h-3" />
-                              {subscriber.city}
-                            </p>
-                          )}
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {subscriber.instruments?.slice(0, 2).map((inst, i) => (
-                              <span key={i} className="px-2 py-0.5 bg-primary/20 text-primary text-xs rounded-full">{inst}</span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-4">
-                        <Link to={subscriber.role === 'musician' ? `/musician/${subscriber.id}` : `/melomane/${subscriber.id}`}>
-                          <Button variant="outline" className="w-full rounded-full gap-2">
-                            <User className="w-4 h-4" /> Voir profil
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <JacksTab subscribers={subscribers} />
           </TabsContent>
 
           {/* Notifications Tab */}
@@ -5694,134 +5644,14 @@ export default function VenueDashboard() {
 
           {/* Reviews Tab */}
           <TabsContent value="reviews">
-            <div className="space-y-6">
-              {/* Rating Summary */}
-              <div className="glassmorphism rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="font-heading font-semibold text-xl mb-2">Gestion des avis</h2>
-                    {totalReviews > 0 && (
-                      <div className="flex items-center gap-4">
-                        <StarRating rating={averageRating} />
-                        <span className="text-muted-foreground">{totalReviews} avis</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Label htmlFor="show-reviews">Afficher publiquement</Label>
-                    <Switch
-                      id="show-reviews"
-                      checked={showReviews}
-                      onCheckedChange={toggleReviewsVisibility}
-                    />
-                  </div>
-                </div>
-
-                <p className="text-sm text-muted-foreground">
-                  {showReviews
-                    ? "Les avis sont visibles sur votre page publique"
-                    : "Les avis sont masqués de votre page publique"}
-                </p>
-              </div>
-
-              {/* Reviews List */}
-              {reviews.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground glassmorphism rounded-2xl">
-                  <Bell className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Aucun avis reçu pour le moment</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {reviews.map((review) => (
-                    <div key={review.id} className={`glassmorphism rounded-xl p-5 ${review.is_reported ? 'border-2 border-red-500/50' : ''}`}>
-                      {review.is_reported && (
-                        <div className="mb-3 px-3 py-2 bg-red-500/20 text-red-400 rounded-lg text-sm flex items-center gap-2">
-                          <AlertCircle className="w-4 h-4" />
-                          Avis signalé comme inapproprié
-                        </div>
-                      )}
-
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          {review.musician_image ? (
-                            <LazyImage 
-                              src={review.musician_image} 
-                              alt={review.musician_name} 
-                              className="w-10 h-10 rounded-full object-cover" 
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                              <User className="w-5 h-5 text-primary" />
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-semibold">{review.musician_name}</p>
-                            <StarRating rating={review.rating} size="w-4 h-4" showNumber={false} />
-                          </div>
-                        </div>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(review.created_at).toLocaleDateString('fr-FR')}
-                        </span>
-                      </div>
-
-                      {review.comment && (
-                        <p className="text-muted-foreground mb-3">{review.comment}</p>
-                      )}
-
-                      {review.venue_response ? (
-                        <div className="mt-4 pl-4 border-l-2 border-primary/30 bg-primary/5 p-3 rounded">
-                          <p className="text-sm font-semibold text-primary mb-1">Votre réponse</p>
-                          <p className="text-sm">{review.venue_response}</p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {new Date(review.venue_response_date).toLocaleDateString('fr-FR')}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="mt-4">
-                          {respondingTo === review.id ? (
-                            <div className="space-y-2">
-                              <Textarea
-                                value={responseText}
-                                onChange={(e) => setResponseText(e.target.value)}
-                                placeholder="Votre réponse..."
-                                className="bg-black/20 border-white/10"
-                                rows={3}
-                              />
-                              <div className="flex gap-2">
-                                <Button
-                                  onClick={() => respondToReview(review.id)}
-                                  className="flex-1 bg-primary hover:bg-primary/90 rounded-full"
-                                >
-                                  Publier
-                                </Button>
-                                <Button
-                                  onClick={() => {
-                                    setRespondingTo(null);
-                                    setResponseText("");
-                                  }}
-                                  variant="outline"
-                                  className="flex-1 rounded-full"
-                                >
-                                  Annuler
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            <Button
-                              onClick={() => setRespondingTo(review.id)}
-                              variant="outline"
-                              className="rounded-full"
-                            >
-                              Répondre à cet avis
-                            </Button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <ReviewsTab
+              reviews={reviews}
+              showReviews={showReviews}
+              toggleReviewsVisibility={toggleReviewsVisibility}
+              totalReviews={totalReviews}
+              averageRating={averageRating}
+              respondToReview={respondToReview}
+            />
           </TabsContent>
 
           {/* Bands Tab */}
@@ -6231,74 +6061,12 @@ export default function VenueDashboard() {
 
           {/* Gallery Tab */}
           <TabsContent value="gallery">
-            <div className="space-y-6">
-              <div className="glassmorphism rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="font-heading font-semibold text-xl">📸 Galerie Photos</h2>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {gallery.length}/20 photos
-                    </p>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => e.target.files[0] && uploadGalleryPhoto(e.target.files[0])}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      disabled={uploadingPhoto || gallery.length >= 20}
-                    />
-                    <Button 
-                      disabled={uploadingPhoto || gallery.length >= 20}
-                      className="bg-primary hover:bg-primary/90 rounded-full gap-2"
-                    >
-                      {uploadingPhoto ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Upload...
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="w-4 h-4" />
-                          Ajouter Photo
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-
-                {gallery.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground border-2 border-dashed border-white/10 rounded-xl">
-                    <Music className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Aucune photo dans la galerie</p>
-                    <p className="text-sm mt-2">Ajoutez des photos de vos soirées !</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {gallery.map((photo, index) => (
-                      <div key={index} className="relative group">
-                        <LazyImage 
-                          src={photo} 
-                          alt={`Photo ${index + 1}`} 
-                          className="w-full h-48 object-cover rounded-lg"
-                        />
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                          <Button
-                            onClick={() => deleteGalleryPhoto(photo)}
-                            variant="destructive"
-                            size="sm"
-                            className="rounded-full"
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Supprimer
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
+            <GalleryTab
+              gallery={gallery}
+              uploadingPhoto={uploadingPhoto}
+              uploadGalleryPhoto={uploadGalleryPhoto}
+              deleteGalleryPhoto={deleteGalleryPhoto}
+            />
           </TabsContent>
 
           {/* Invoices Tab */}

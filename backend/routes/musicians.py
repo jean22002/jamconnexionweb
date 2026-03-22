@@ -41,6 +41,35 @@ async def get_current_user(authorization: str = Header(None)):
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
 
+
+# ============= HELPER FUNCTIONS =============
+
+def calculate_concert_hours_official(concert: dict) -> float:
+    """
+    Calculate hours for a concert using OFFICIAL INTERMITTENCE LOGIC
+    
+    Rules (France Travail / ex-Pôle Emploi):
+    - Cachet isolé = 12 hours
+    - Cachet groupé = 8 hours
+    
+    Args:
+        concert: Concert dictionary with cachet_type field
+        
+    Returns:
+        Hours count (12, 8, or fallback to guso_hours if legacy data)
+    """
+    cachet_type = concert.get("cachet_type")
+    
+    if cachet_type == "isolé":
+        return 12.0
+    elif cachet_type == "groupé":
+        return 8.0
+    else:
+        # Legacy fallback for old data without cachet_type
+        return concert.get("guso_hours", 0)
+
+
+
 # ============= MUSICIAN PROFILES =============
 
 @router.post("/musicians", response_model=MusicianProfileResponse)
@@ -1833,8 +1862,26 @@ async def get_guso_summary(
         if c.get("is_guso") and c.get("date", "").startswith(str(year))
     ]
     
-    # Calculate totals
-    total_hours = sum(c.get("guso_hours", 0) for c in guso_concerts if c.get("guso_hours"))
+    # Calculate totals using OFFICIAL INTERMITTENCE LOGIC
+    # Hours are calculated ONLY from cachet_type, NOT from euros:
+    # - cachet isolé = 12 hours
+    # - cachet groupé = 8 hours
+    total_hours = 0
+    cachets_isoles_count = 0
+    cachets_groupes_count = 0
+    
+    for c in guso_concerts:
+        cachet_type = c.get("cachet_type")
+        if cachet_type == "isolé":
+            total_hours += 12
+            cachets_isoles_count += 1
+        elif cachet_type == "groupé":
+            total_hours += 8
+            cachets_groupes_count += 1
+        # If no cachet_type specified yet, fallback to old guso_hours (for legacy data)
+        elif c.get("guso_hours"):
+            total_hours += c.get("guso_hours", 0)
+    
     total_cachet = sum(c.get("cachet", 0) for c in guso_concerts if c.get("cachet"))
     declared_count = len([c for c in guso_concerts if c.get("guso_declared")])
     pending_count = len([c for c in guso_concerts if not c.get("guso_declared")])
@@ -1867,7 +1914,12 @@ async def get_guso_summary(
         "guso_number": musician.get("guso_number"),
         "is_guso_member": musician.get("is_guso_member", False),
         "manual_hours": musician.get(f"guso_manual_hours_{year}"),
-        "manual_cachet": musician.get(f"guso_manual_cachet_{year}")
+        "manual_cachet": musician.get(f"guso_manual_cachet_{year}"),
+        # Official intermittence breakdown
+        "cachets_isoles_count": cachets_isoles_count,
+        "cachets_groupes_count": cachets_groupes_count,
+        "hours_from_isoles": cachets_isoles_count * 12,
+        "hours_from_groupes": cachets_groupes_count * 8
     }
 
 
@@ -2066,18 +2118,22 @@ async def export_guso_csv(
     
     # Header
     writer.writerow([
-        "Date", "Établissement", "Ville", "Cachet (€)", "Heures GUSO", 
+        "Date", "Établissement", "Ville", "Type Cachet", "Heures France Travail", "Cachet (€)", 
         "Type Contrat", "Statut Paiement", "Déclaré GUSO", "Notes"
     ])
     
     # Data
     for concert in guso_concerts:
+        cachet_type = concert.get("cachet_type", "")
+        hours = calculate_concert_hours_official(concert)
+        
         writer.writerow([
             concert.get("date", ""),
             concert.get("venue_name", ""),
             concert.get("city", ""),
+            cachet_type.capitalize() if cachet_type else "Non spécifié",
+            hours,
             concert.get("cachet", ""),
-            concert.get("guso_hours", ""),
             concert.get("guso_contract_type", ""),
             concert.get("payment_status", ""),
             "Oui" if concert.get("guso_declared") else "Non",

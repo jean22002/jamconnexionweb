@@ -324,17 +324,27 @@ const GusoAccountingTab = ({ token, gusoNumber, onGusoNumberUpdate }) => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/10">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-4 border-t border-white/10">
                 <div>
                   <p className="text-xs text-muted-foreground">Concerts GUSO</p>
                   <p className="text-xl font-bold">{summary.concerts_count}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Déclarés</p>
+                  <p className="text-xs text-muted-foreground">Cachets isolés</p>
+                  <p className="text-xl font-bold text-blue-400">{summary.cachets_isoles_count || 0}</p>
+                  <p className="text-xs text-muted-foreground mt-1">= {(summary.cachets_isoles_count || 0) * 12}h</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Cachets groupés</p>
+                  <p className="text-xl font-bold text-purple-400">{summary.cachets_groupes_count || 0}</p>
+                  <p className="text-xs text-muted-foreground mt-1">= {(summary.cachets_groupes_count || 0) * 8}h</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Déclarés ✅</p>
                   <p className="text-xl font-bold text-green-400">{summary.declared_count}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">À déclarer</p>
+                  <p className="text-xs text-muted-foreground">À déclarer ⏳</p>
                   <p className="text-xl font-bold text-yellow-400">{summary.pending_count}</p>
                 </div>
               </div>
@@ -525,19 +535,40 @@ const GusoAccountingTab = ({ token, gusoNumber, onGusoNumberUpdate }) => {
                       </Select>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
-                      {concert.guso_hours && (
-                        <div>
-                          <p className="text-xs text-muted-foreground">Heures</p>
-                          <p className="font-semibold">{concert.guso_hours}h</p>
-                        </div>
-                      )}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                      {/* Type de cachet - LOGIQUE OFFICIELLE */}
+                      <div>
+                        <p className="text-xs text-muted-foreground">Type de cachet</p>
+                        <p className="font-semibold text-sm">
+                          {concert.cachet_type ? (
+                            <span className={concert.cachet_type === "isolé" ? "text-blue-400" : "text-purple-400"}>
+                              {concert.cachet_type === "isolé" ? "🎵 Isolé (12h)" : "🎸 Groupé (8h)"}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">Non spécifié</span>
+                          )}
+                        </p>
+                      </div>
+                      
+                      {/* Heures France Travail */}
+                      <div>
+                        <p className="text-xs text-muted-foreground">Heures retenues</p>
+                        <p className="font-semibold text-primary">
+                          {concert.cachet_type === "isolé" ? "12h" : 
+                           concert.cachet_type === "groupé" ? "8h" : 
+                           concert.guso_hours ? `${concert.guso_hours}h` : "0h"}
+                        </p>
+                      </div>
+                      
+                      {/* Cachet en euros */}
                       {concert.cachet && (
                         <div>
                           <p className="text-xs text-muted-foreground">Cachet</p>
                           <p className="font-semibold">{concert.cachet.toFixed(2)}€</p>
                         </div>
                       )}
+                      
+                      {/* Type de contrat */}
                       {concert.guso_contract_type && (
                         <div>
                           <p className="text-xs text-muted-foreground">Contrat</p>

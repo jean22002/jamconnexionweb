@@ -58,9 +58,11 @@ class MusicianConcert(BaseModel):
     notes: Optional[str] = None  # Private notes
     # GUSO specific fields
     is_guso: bool = False  # Si ce concert compte pour le GUSO
-    guso_hours: Optional[float] = None  # Nombre d'heures GUSO
+    guso_hours: Optional[float] = None  # DEPRECATED: Nombre d'heures GUSO (ne plus utiliser)
     guso_contract_type: Optional[str] = None  # "cdd_usage", "cachet", "other"
     guso_declared: bool = False  # Si déjà déclaré au GUSO
+    # OFFICIAL INTERMITTENCE LOGIC (France Travail)
+    cachet_type: Optional[str] = None  # "isolé" (12h) ou "groupé" (8h) - LOGIQUE OFFICIELLE
 
 class MusicianProfile(BaseModel):
     pseudo: str

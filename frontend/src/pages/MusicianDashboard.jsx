@@ -21,6 +21,7 @@ import OnlineStatusSelector from "../components/OnlineStatusSelector";
 import BackgroundSyncSettings from "../components/BackgroundSyncSettings";
 import LocationWidget from "../components/LocationWidget";
 import ProSubscriptionCard from "../components/ProSubscriptionCard";
+import ProSubscriptionManager from "../components/ProSubscriptionManager";
 // NEW: Import refactored utilities
 import { buildImageUrl } from "../utils/urlBuilder";
 import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
@@ -3279,6 +3280,15 @@ export default function MusicianDashboard() {
               ))}
             </div>
           </div>
+        )}
+
+        {/* PRO Subscription Manager (for PRO users) */}
+        {subscriptionData.tier === 'pro' && (
+          <ProSubscriptionManager 
+            token={token}
+            subscriptionData={subscriptionData}
+            onUpdate={fetchSubscriptionStatus}
+          />
         )}
 
         {/* PRO Subscription Card (only for free tier) */}

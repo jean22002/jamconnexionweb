@@ -1865,8 +1865,47 @@ async def get_guso_summary(
         "progress_percentage": round(progress_percentage, 2),
         "status": status,
         "guso_number": musician.get("guso_number"),
-        "is_guso_member": musician.get("is_guso_member", False)
+        "is_guso_member": musician.get("is_guso_member", False),
+        "manual_hours": musician.get(f"guso_manual_hours_{year}"),
+        "manual_cachet": musician.get(f"guso_manual_cachet_{year}")
     }
+
+
+@router.put("/musicians/me/guso/manual")
+async def update_guso_manual_values(
+    data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Update manual GUSO hours and cachet values (PRO feature)
+    """
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can update GUSO values")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Check PRO subscription
+    if musician.get("subscription_tier") != "pro":
+        raise HTTPException(status_code=403, detail="PRO subscription required")
+    
+    year = data.get("year", datetime.now(timezone.utc).year)
+    manual_hours = data.get("manual_hours")
+    manual_cachet = data.get("manual_cachet")
+    
+    # Update the musician document with year-specific manual values
+    await db.musicians.update_one(
+        {"user_id": current_user["id"]},
+        {
+            "$set": {
+                f"guso_manual_hours_{year}": manual_hours,
+                f"guso_manual_cachet_{year}": manual_cachet
+            }
+        }
+    )
+    
+    return {"success": True, "year": year, "manual_hours": manual_hours, "manual_cachet": manual_cachet}
 
 
 @router.get("/musicians/me/guso/concerts")

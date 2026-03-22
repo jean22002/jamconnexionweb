@@ -29,6 +29,11 @@ const GusoAccountingTab = ({ token, gusoNumber, onGusoNumberUpdate }) => {
   });
   const [showGusoDialog, setShowGusoDialog] = useState(false);
   const [tempGusoNumber, setTempGusoNumber] = useState(gusoNumber || '');
+  const [editMode, setEditMode] = useState(false);
+  const [manualValues, setManualValues] = useState({
+    hours: 0,
+    cachet: 0
+  });
 
   const fetchSummary = async () => {
     try {
@@ -114,6 +119,33 @@ const GusoAccountingTab = ({ token, gusoNumber, onGusoNumberUpdate }) => {
     }
   };
 
+  const saveManualValues = async () => {
+    try {
+      await axios.put(
+        `${API}/musicians/me/guso/manual`,
+        {
+          year: filters.year,
+          manual_hours: parseFloat(manualValues.hours) || 0,
+          manual_cachet: parseFloat(manualValues.cachet) || 0
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success('Valeurs manuelles enregistrées');
+      setEditMode(false);
+      fetchSummary();
+    } catch (error) {
+      toast.error('Erreur lors de l\'enregistrement');
+    }
+  };
+
+  const cancelEdit = () => {
+    setManualValues({
+      hours: summary?.manual_hours || summary?.total_hours || 0,
+      cachet: summary?.manual_cachet || summary?.total_cachet || 0
+    });
+    setEditMode(false);
+  };
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -123,6 +155,15 @@ const GusoAccountingTab = ({ token, gusoNumber, onGusoNumberUpdate }) => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
+
+  useEffect(() => {
+    if (summary) {
+      setManualValues({
+        hours: summary.manual_hours || summary.total_hours || 0,
+        cachet: summary.manual_cachet || summary.total_cachet || 0
+      });
+    }
+  }, [summary]);
 
   const getStatusBadge = (status) => {
     const config = {
@@ -237,16 +278,30 @@ const GusoAccountingTab = ({ token, gusoNumber, onGusoNumberUpdate }) => {
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-3xl font-bold text-primary">{summary.total_hours}h</span>
+                  <span className="text-3xl font-bold text-primary">
+                    {summary.manual_hours !== null && summary.manual_hours !== undefined 
+                      ? summary.manual_hours 
+                      : summary.total_hours}h
+                  </span>
                   <span className="text-muted-foreground">/ {summary.threshold}h</span>
                 </div>
-                <Progress value={summary.progress_percentage} className="h-3" />
+                <Progress value={
+                  ((summary.manual_hours !== null && summary.manual_hours !== undefined 
+                    ? summary.manual_hours 
+                    : summary.total_hours) / summary.threshold) * 100
+                } className="h-3" />
                 <p className="text-sm text-muted-foreground mt-2">
-                  {summary.hours_remaining > 0 ? (
-                    <>Encore <span className="font-semibold">{summary.hours_remaining}h</span> pour atteindre le seuil</>
-                  ) : (
-                    <span className="text-green-400 font-semibold">✅ Seuil atteint ! Vous êtes éligible</span>
-                  )}
+                  {(() => {
+                    const currentHours = summary.manual_hours !== null && summary.manual_hours !== undefined 
+                      ? summary.manual_hours 
+                      : summary.total_hours;
+                    const remaining = summary.threshold - currentHours;
+                    return remaining > 0 ? (
+                      <>Encore <span className="font-semibold">{remaining}h</span> pour atteindre le seuil</>
+                    ) : (
+                      <span className="text-green-400 font-semibold">✅ Seuil atteint ! Vous êtes éligible</span>
+                    );
+                  })()}
                 </p>
               </div>
 
@@ -272,24 +327,101 @@ const GusoAccountingTab = ({ token, gusoNumber, onGusoNumberUpdate }) => {
         {summary && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-gradient-to-br from-green-500/10 to-green-600/5 border border-green-500/20 rounded-xl p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-green-500/20 rounded-lg">
-                  <TrendingUp className="w-5 h-5 text-green-400" />
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-500/20 rounded-lg">
+                    <TrendingUp className="w-5 h-5 text-green-400" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">Cachets GUSO {filters.year}</p>
                 </div>
-                <p className="text-sm text-muted-foreground">Cachets GUSO {filters.year}</p>
+                {!editMode && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditMode(true)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
-              <p className="text-3xl font-bold text-green-400">{summary.total_cachet.toFixed(2)}€</p>
+              {editMode ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={manualValues.cachet}
+                    onChange={(e) => setManualValues({ ...manualValues, cachet: e.target.value })}
+                    className="text-2xl font-bold h-12"
+                  />
+                  <span className="text-2xl font-bold">€</span>
+                </div>
+              ) : (
+                <p className="text-3xl font-bold text-green-400">
+                  {(summary.manual_cachet !== null && summary.manual_cachet !== undefined 
+                    ? summary.manual_cachet 
+                    : summary.total_cachet).toFixed(2)}€
+                </p>
+              )}
             </div>
 
             <div className="bg-gradient-to-br from-primary/10 to-cyan-500/5 border border-primary/20 rounded-xl p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-primary/20 rounded-lg">
-                  <Clock className="w-5 h-5 text-primary" />
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/20 rounded-lg">
+                    <Clock className="w-5 h-5 text-primary" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">Heures totales</p>
                 </div>
-                <p className="text-sm text-muted-foreground">Heures totales</p>
+                {!editMode && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditMode(true)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
-              <p className="text-3xl font-bold text-primary">{summary.total_hours}h</p>
+              {editMode ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    step="1"
+                    value={manualValues.hours}
+                    onChange={(e) => setManualValues({ ...manualValues, hours: e.target.value })}
+                    className="text-2xl font-bold h-12"
+                  />
+                  <span className="text-2xl font-bold">h</span>
+                </div>
+              ) : (
+                <p className="text-3xl font-bold text-primary">
+                  {summary.manual_hours !== null && summary.manual_hours !== undefined 
+                    ? summary.manual_hours 
+                    : summary.total_hours}h
+                </p>
+              )}
             </div>
+          </div>
+        )}
+
+        {/* Edit Mode Actions */}
+        {editMode && (
+          <div className="flex gap-3 mt-4">
+            <Button
+              onClick={saveManualValues}
+              className="flex-1 bg-primary hover:bg-primary/90 rounded-full"
+            >
+              Enregistrer
+            </Button>
+            <Button
+              onClick={cancelEdit}
+              variant="outline"
+              className="flex-1 rounded-full"
+            >
+              Annuler
+            </Button>
           </div>
         )}
       </div>

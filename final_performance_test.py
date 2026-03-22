@@ -8,8 +8,8 @@ import requests
 import time
 import sys
 
-BACKEND_URL = "https://pro-features-beta.preview.emergentagent.com/api"
-BASE_URL = "https://pro-features-beta.preview.emergentagent.com"
+BACKEND_URL = "https://pro-subscription-3.preview.emergentagent.com/api"
+BASE_URL = "https://pro-subscription-3.preview.emergentagent.com"
 
 def test_review_requirements():
     """Test the exact scenarios from the review request"""

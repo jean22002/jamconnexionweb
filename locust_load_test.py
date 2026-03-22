@@ -204,13 +204,13 @@ if __name__ == "__main__":
     Usage:
     ------
     # Run with Web UI:
-    locust -f locust_load_test.py --host=https://pro-features-beta.preview.emergentagent.com
+    locust -f locust_load_test.py --host=https://pro-subscription-3.preview.emergentagent.com
     
     # Run headless with specific user count:
-    locust -f locust_load_test.py --host=https://pro-features-beta.preview.emergentagent.com --headless -u 100 -r 10 --run-time 2m
+    locust -f locust_load_test.py --host=https://pro-subscription-3.preview.emergentagent.com --headless -u 100 -r 10 --run-time 2m
     
     # High load test (1000 users):
-    locust -f locust_load_test.py --host=https://pro-features-beta.preview.emergentagent.com --headless -u 1000 -r 50 --run-time 3m --only-summary
+    locust -f locust_load_test.py --host=https://pro-subscription-3.preview.emergentagent.com --headless -u 1000 -r 50 --run-time 3m --only-summary
     
     Parameters:
     -----------

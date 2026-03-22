@@ -1383,7 +1383,7 @@ async def create_pro_subscription(current_user: dict = Depends(get_current_user)
             )
         
         # Create Checkout Session with 2 MONTHS FREE TRIAL
-        frontend_url = os.environ.get("FRONTEND_URL", "https://pro-features-beta.preview.emergentagent.com")
+        frontend_url = os.environ.get("FRONTEND_URL", "https://pro-subscription-3.preview.emergentagent.com")
         
         checkout_session = stripe.checkout.Session.create(
             customer=stripe_customer_id,
@@ -1978,6 +1978,54 @@ async def mark_concert_as_declared(
     )
     
     return {"message": "Concert marked as declared", "concert": concerts[concert_index]}
+
+
+
+@router.put("/musicians/me/concerts/{concert_id}/guso-declaration")
+async def update_concert_guso_declaration(
+    concert_id: str,
+    data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Update GUSO declaration status for a concert
+    Body: {"is_declared": true/false}
+    """
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can update concerts")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Get is_declared from body
+    is_declared = data.get("is_declared")
+    if is_declared is None:
+        raise HTTPException(status_code=400, detail="is_declared field is required")
+    
+    concerts = musician.get("concerts", [])
+    concert_index = next((i for i, c in enumerate(concerts) if c.get("id") == concert_id), None)
+    
+    if concert_index is None:
+        raise HTTPException(status_code=404, detail="Concert not found")
+    
+    if not concerts[concert_index].get("is_guso"):
+        raise HTTPException(status_code=400, detail="This concert is not marked as GUSO")
+    
+    # Update declaration status
+    concerts[concert_index]["guso_declared"] = bool(is_declared)
+    
+    # Save
+    await db.musicians.update_one(
+        {"user_id": current_user["id"]},
+        {"$set": {"concerts": concerts}}
+    )
+    
+    return {
+        "message": "Concert declaration status updated", 
+        "concert_id": concert_id,
+        "guso_declared": bool(is_declared)
+    }
 
 
 @router.get("/musicians/me/guso/export/csv")

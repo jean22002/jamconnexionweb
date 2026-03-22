@@ -722,7 +722,7 @@
 
 **Date de première conception** : [À compléter]  
 **Date de première mise en ligne** : [À compléter]  
-**URL de démonstration** : https://pro-features-beta.preview.emergentagent.com  
+**URL de démonstration** : https://pro-subscription-3.preview.emergentagent.com  
 **Version actuelle** : 2.0 (avec optimisations performance)
 
 **Créateur/Inventeur** : [VOTRE NOM COMPLET]  

@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 # Get backend URL from frontend environment
-BACKEND_URL = "https://pro-features-beta.preview.emergentagent.com/api"
+BACKEND_URL = "https://pro-subscription-3.preview.emergentagent.com/api"
 
 # Test credentials
 TEST_EMAIL = "bar@gmail.com"

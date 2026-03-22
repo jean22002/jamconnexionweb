@@ -1,178 +1,297 @@
 <analysis>**original_problem_statement:**
-Initialement, l'utilisateur a demandé diverses corrections de bugs et des ajustements d'interface utilisateur, qui ont évolué vers une optimisation majeure des performances. Par la suite, les demandes se sont concentrées sur la création d'un journal d'audit, la correction d'un bug de géolocalisation, l'implémentation d'un système de géolocalisation hybride, et enfin, la mise en place d'un modèle d'abonnement payant Musicien PRO avec une période d'essai gratuite de deux mois et renouvellement automatique.
+Initialement, le projet visait à finaliser l'abonnement Musicien PRO. Les demandes de l'utilisateur ont ensuite évolué pour inclure la modification de l'offre PRO, l'ajout d'un badge GUSO, la gestion de l'abonnement, l'implémentation de la comptabilité GUSO, le refactoring des dashboards, la correction des tests et la création de données de test.
+
+Les dernières demandes de l'utilisateur concernaient :
+1.  L'activation manuelle du statut PRO pour un compte de test.
+2.  La résolution des problèmes de connexion avec les comptes de test.
+3.  La résolution d'un bug critique d'inscription où les utilisateurs n'étaient pas sauvegardés en base de données.
+4.  L'ajout de la possibilité de modifier manuellement les heures et cachets GUSO.
+5.  La création de données de concerts fictives pour peupler la comptabilité.
+6.  La modification du statut de déclaration d'un concert (Déclaré/À déclarer) via un menu déroulant.
 
 **PRODUCT REQUIREMENTS:**
-1.  **Optimisation des Performances :** Améliorer la scalabilité et les temps de réponse via diverses techniques (cache, pagination, etc.).
-2.  **Refactoring du Frontend :** Extraire la logique des composants monolithiques dans des hooks et décomposer le JSX.
-3.  **Fonctionnalités :** Ajouter un journal d'audit, un système de géolocalisation hybride (statique + temps réel optionnel), et un système d'abonnement payant Musicien PRO.
-4.  **Monétisation :** Implémenter un abonnement Musicien PRO à 9,99€/mois avec renouvellement automatique et une période d'essai gratuite de 2 mois, en commençant par une fonctionnalité de comptabilité.
-5.  **Corrections de Bugs :** Résoudre les problèmes signalés, notamment un bug critique de géolocalisation qui empêchait de trouver des musiciens à proximité.
+1.  **Abonnement Musicien PRO :** Finaliser l'interface, ajuster le prix, et permettre l'annulation via Stripe.
+2.  **Fonctionnalités PRO :**
+    - **Badge PRO :** Afficher un badge sur les profils publics, conditionné par l'abonnement et un numéro GUSO.
+    - **Comptabilité Générale :** Permettre l'upload de factures.
+    - **Comptabilité GUSO :** Suivre les cachets/heures, permettre l'édition manuelle des totaux et la modification du statut de déclaration de chaque concert.
+    - **Analytics PRO :** Créer un tableau de bord de statistiques.
+3.  **Dette Technique :**
+    - **Tests Backend :** Augmenter le taux de réussite de la suite de tests.
+    - **Refactoring Frontend :** Décomposer  et .
+4.  **Fiabilité :**
+    - **Inscription :** Le processus d'inscription doit être fiable et sauvegarder les utilisateurs en base de données.
+    - **Authentification :** Les comptes de test créés via des scripts doivent pouvoir se connecter.
 
 **User's preferred language**: Français
 
 **what currently exists?**
-L'application full-stack (React, FastAPI, MongoDB) est fonctionnelle. Les optimisations de performance majeures (pagination, cache, indexation) sont terminées. Le système d'audit est en place. Le bug de géolocalisation des musiciens a été corrigé en implémentant un géocodage automatique à l'inscription/mise à jour du profil. L'infrastructure backend pour un système de géolocalisation hybride et pour l'abonnement Musicien PRO (via Stripe, avec une configuration pour 2 mois d'essai gratuit) est entièrement implémentée et fonctionnelle.
+L'application full-stack (React, FastAPI, MongoDB) est fonctionnelle. Le système d'abonnement PRO et ses fonctionnalités associées (badge, analytics, upload de factures) sont implémentés. Le refactoring des dashboards  et  a commencé, avec plusieurs onglets extraits dans des composants séparés. La comptabilité GUSO permet désormais l'édition manuelle des totaux (heures/cachets) et un menu déroulant a été ajouté pour changer le statut de chaque concert, bien que cette dernière fonctionnalité soit actuellement boguée. Un bug critique d'inscription a été résolu, et il est désormais confirmé que les utilisateurs sont correctement enregistrés en base. Le statut PRO est automatiquement activé pour tout nouvel utilisateur musicien à des fins de test.
 
 **Last working item**:
-- **Last item agent was working:** Début de l'implémentation du frontend pour la fonctionnalité d'abonnement Musicien PRO. L'agent venait de créer le fichier pour le composant React qui affichera l'offre d'abonnement.
+- **Last item agent was working:** Correction d'un bug sur le menu déroulant de déclaration de concert dans l'onglet de comptabilité GUSO (). L'utilisateur a signalé que la modification du statut échouait avec une erreur réseau.
 - **Status:** IN PROGRESS
 - **Agent Testing Done:** N
-- **Which testing method agent to use?** frontend testing agent
-- **User Testing Done:** N
+- **Which testing method agent to use?** backend testing agent
+- **User Testing Done:** Y (User found the bug)
 
 **All Pending/In progress Issue list**:
-- **Issue 1:** La suite de tests principale du backend a un faible taux de réussite (38%).
-  - **Debug checklist:** Exécuter ============================= test session starts ==============================
-platform linux -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0
-rootdir: /app
-plugins: locust-2.43.3, anyio-4.12.0
-collected 0 items
+- **Issue 1:** Le menu déroulant pour changer le statut d'un concert (Déclaré / À déclarer) ne fonctionne pas. (P0)
+- **Issue 2:** La suite de tests principale du backend () a un faible taux de réussite (42.0%). (P1)
+- **Issue 3:** Les scripts Python utilisés pour créer/modifier des utilisateurs de test échouent ou sont peu fiables en raison d'un problème de hashing de mot de passe (). (P2)
 
-============================ no tests ran in 0.15s ============================= pour identifier les tests qui échouent. Analyser les erreurs, qui semblent être liées à des attributs manquants dans l'objet de test (ex: ), suggérant que le contexte de test n'est pas correctement initialisé ou est devenu obsolète après des modifications.
-  - **Why fix this issue and what will be achieved with the fix?** Assurer la non-régression et la stabilité de l'application. Un taux de réussite élevé est crucial pour valider que les nouvelles fonctionnalités ne cassent pas l'existant.
-  - **Status:** NOT STARTED
+**Issues Detail:**
+- **Issue 1:**
+  - **Attempted fixes:** L'agent a implémenté le menu déroulant sur le frontend, mais a oublié de créer l'endpoint backend correspondant, ce qui cause une erreur 404.
+  - **Next debug checklist:**
+    1.  Ouvrir .
+    2.  Créer un nouvel endpoint , par exemple .
+    3.  Cet endpoint doit accepter un body JSON contenant le nouvel état, ex: .
+    4.  Implémenter la logique pour trouver le musicien par , puis trouver le concert spécifique dans son tableau  et mettre à jour le champ .
+    5.  Sauvegarder la modification dans la base de données.
+    6.  Redémarrer le service backend.
+  - **Why fix this issue and what will be achieved with the fix?** Pour rendre la fonctionnalité de comptabilité GUSO entièrement opérationnelle, comme demandé par l'utilisateur.
+  - **Status:** IN PROGRESS
   - **Is recurring issue?** N
   - **Should Test frontend/backend/both after fix?** backend
 
-**In progress Task List**:
-- **Task 1: (P0) Finaliser l'implémentation Frontend pour l'abonnement Musicien PRO**
-  - **Where to resume:** Le fichier  vient d'être créé. Il faut maintenant y ajouter le contenu JSX/CSS pour présenter l'offre PRO, puis l'intégrer dans le .
-  - **What will be achieved with this?** Les musiciens pourront voir l'offre PRO, s'abonner via une interface claire (avec la mention des 2 mois d'essai), et accéder aux nouvelles fonctionnalités conditionnellement.
+- **Issue 2:**
+  - **Attempted fixes:** Activation d'un  pour désactiver le rate-limiting, correction d'un bug de validation Pydantic. Le taux de réussite est passé de 10% à 42%.
+  - **Next debug checklist:**
+    -  Modifier le script de test  pour mieux gérer l'état (tokens, IDs) entre les appels de test, en utilisant correctement les variables d'instance.
+    - S'assurer que le script de nettoyage  supprime bien toutes les entités de test pour éviter les erreurs Email already exists.
+  - **Why fix this issue and what will be achieved with the fix?** Assurer la stabilité de l'application et éviter les régressions.
   - **Status:** IN PROGRESS
-  - **Should Test frontend/backend/both after fix?** both
+  - **Is recurring issue?** Y
+  - **Should Test frontend/backend/both after fix?** backend
+  - **Blocked on other issue:** Non
+
+- **Issue 3:**
+  - **Attempted fixes:** Plusieurs contournements ont été tentés, comme la création d'utilisateurs via l'API, mais la cause racine n'a pas été corrigée.
+  - **Next debug checklist:**
+    -  Investiguer l'erreur  qui se produit dans les scripts. Cela indique probablement un conflit de version entre  et .
+    -  Mettre à jour les dépendances ou corriger le code des scripts pour qu'ils utilisent la même méthode de hachage que l'application principale.
+  - **Why fix this issue and what will be achieved with the fix?** Permettre la création et la gestion fiables des comptes de test, ce qui économisera beaucoup de temps de débogage à l'avenir.
+  - **Status:** NOT STARTED
+  - **Is recurring issue?** Y
+  - **Should Test frontend/backend/both after fix?** backend
+  - **Blocked on other issue:** Non
+
+**In progress Task List**:
+- **Task 1: Refactor  (P1)**
+  - **Where to resume:** Le refactoring a commencé. Quatre onglets simples ont été extraits (, , , ). La prochaine étape consiste à extraire les onglets plus complexes comme ,  et .
+  - **What will be achieved with this?** Améliorer la maintenabilité du plus grand composant de l'application (~7894 lignes restantes).
+  - **Status:** IN PROGRESS
+  - **Should Test frontend/backend/both after fix?** frontend
+  - **Blocked on something:** Non
+
+- **Task 2: Refactor  (P2)**
+  - **Where to resume:** L'extraction des onglets principaux est terminée. La tâche restante est d'extraire le modal d'édition de profil (~973 lignes) dans un composant dédié, ce qui a été tenté mais abandonné en raison de sa complexité.
+  - **What will be achieved with this?** Finaliser le refactoring de ce composant pour une meilleure lisibilité.
+  - **Status:** IN PROGRESS
+  - **Should Test frontend/backend/both after fix?** frontend
   - **Blocked on something:** Non
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks:**
-    *   (P0) **Implémenter l'onglet Comptabilité (Frontend):** Créer un nouvel onglet dans  visible uniquement pour les abonnés PRO, qui affichera l'historique des concerts, les cachets et le statut des paiements.
-    *   (P1) **Compléter la fonctionnalité de comptabilité (Backend/Frontend):** Ajouter la possibilité d'uploader des factures, des filtres avancés, et des fonctions d'export (CSV/PDF).
-    *   (P1) **Afficher le badge PRO:** Mettre à jour les profils musiciens pour afficher un badge visuel si .
+    *   (P1) **Implémenter le Pack Premium Venue:** Créer une offre d'abonnement pour les établissements.
 *   **Future Tasks:**
-    *   **Refactoring CRITIQUE du JSX des Dashboards:** Décomposer les fichiers monolithiques  et  en composants d'interface utilisateur plus petits et réutilisables.
-    *   Implémenter les autres fonctionnalités PRO : Analytics, Portfolio enrichi, Outils professionnels.
-    *   Implémenter le Pack Premium Venue comme seconde source de monétisation.
-    *   Rendre les seuils de modération configurables depuis une interface d'administration.
+    *   Rétablir le comportement normal de l'inscription (ne pas activer PRO par défaut) une fois les tests terminés.
+    *   Implémenter le reste des fonctionnalités PRO (portfolio enrichi, etc.).
+    *   Rendre les seuils de modération configurables.
     *   Implémenter des notifications en temps réel avec des WebSockets.
-    *   Exécuter un test de charge formel (ex: Locust) en désactivant temporairement le rate limiting pour obtenir des métriques de performance fiables.
 
 **Completed work in this session**
-- **Pagination des Musiciens:** Implémentation complète et testée de la pagination pour l'endpoint .
-- **Correction d'Erreur de Linting:** Résolution d'une erreur de code inaccessible () dans .
-- **Documentation pour Protection Intellectuelle:** Création de trois documents markdown détaillés pour les démarches INPI.
-- **Amélioration des Notifications:** Ajout d'un message d'avertissement contre le spam et implémentation d'une limite technique de 3 notifications/semaine pour les établissements.
-- **Correction du Bug de Géolocalisation:** Le bug qui empêchait de trouver des musiciens à proximité a été résolu en ajoutant un géocodage automatique basé sur la ville lors de la mise à jour des profils musiciens, et en exécutant un script de migration pour les utilisateurs existants.
-- **Implémentation du Système de Géolocalisation Hybride (Backend):** Mise en place des endpoints et de la logique pour permettre aux musiciens d'activer une localisation temporaire, qui a priorité sur leur localisation de profil.
-- **Infrastructure d'Abonnement Musicien PRO (Backend):**
-    - Mise à jour des modèles de données pour inclure les statuts d'abonnement (, , , etc.).
-    - Création des endpoints Stripe pour la création de sessions de checkout, la gestion du portail client et la réception des webhooks.
-    - Configuration de l'abonnement avec une **période d'essai gratuite de 2 mois** et un renouvellement automatique.
+- **Refactoring :**
+  - ****: Réduction de la taille de 4278 à 3764 lignes en extrayant 3 onglets.
+  - ****: Début du refactoring, réduction de 8206 à 7894 lignes en extrayant 4 onglets.
+- **Fonctionnalités & Bugs :**
+  - **Activation PRO Auto :** L'endpoint  a été modifié pour que tous les nouveaux musiciens soient PRO (pour les tests).
+  - **Comptabilité GUSO :** Ajout de l'édition manuelle des totaux (heures/cachets) et d'un menu déroulant pour le statut de déclaration des concerts.
+  - **Données Fictives :** Des scripts ont été utilisés pour créer des concerts fictifs pour un compte utilisateur, afin de peupler le tableau de bord de comptabilité.
+  - **Bug d'Inscription Résolu :** Le bug critique où les utilisateurs ne semblaient pas être créés a été diagnostiqué (l'agent cherchait dans la mauvaise base de données) et résolu. Il est confirmé que les inscriptions fonctionnent.
 
 **Earlier issues found/mentioned but not fixed**
 - N/A
 
 **Known issue recurrence from previous fork**
-- N/A
+- **Issue recurrence in previous fork:** Faible taux de réussite des tests backend.
+- **Recurrence count:** 1
+- **Status:** IN PROGRESS
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Stack :** React, FastAPI, MongoDB
-- **Paiements :** Intégration de **Stripe** pour les abonnements récurrents, avec gestion des périodes d'essai (), des webhooks pour la synchronisation du statut, et du portail client.
-- **Géolocalisation Hybride :** Le système utilise par défaut la localisation statique du profil (ville géocodée) mais peut être surchargé par une localisation temporaire activée par l'utilisateur, offrant flexibilité et respect de la vie privée.
-- **Architecture de Monétisation :** Utilisation d'un champ  dans le modèle de données utilisateur pour débloquer conditionnellement des fonctionnalités (feature flagging) au lieu de créer des types de profils distincts.
+- **Refactoring Frontend:** Extraction de composants React pour réduire la complexité des fichiers monolithiques.
+- **Débogage Backend :** Diagnostic de problèmes liés à la base de données (Motor vs PyMongo), aux variables d'environnement et à la logique des endpoints.
+- **Modification d'état côté client :** Utilisation de  et  pour gérer une interface utilisateur réactive (formulaires, filtres, modes d'édition).
 
 **key DB schema**
-- ** collection (champs ajoutés):**
-  - , , , 
-  -  (valeurs: free, pro)
-  -  (valeurs: active, trialing, inactive, canceled)
+- ** collection:**
   - 
   - 
+- ** collection:**
   - 
-- ** (ou collection similaire, champs suggérés pour la compta):**
-  - , , 
+  - 
+- ** (embedded document):**
+  - 
 
 **changes in tech stack**
-- Aucune nouvelle dépendance majeure, mais **Stripe** est maintenant un service tiers critique pour la logique métier.
+- Aucune.
 
 **All files of reference**
-- : Fichier principal à modifier pour intégrer les fonctionnalités PRO.
-- : **Fichier de la tâche en cours**, à remplir.
-- : Contient les nouveaux endpoints pour la géolocalisation temporaire et les abonnements.
-- : Modifié pour utiliser la logique de géolocalisation hybride.
-- : Modèle Pydantic mis à jour avec les nouveaux champs.
-- : Fichier gérant la logique Stripe.
+- : **Contient le bug frontend.**
+- : **Doit être modifié pour corriger le bug.**
+- : Refactoring en cours.
+- : Refactoring en cours.
+- : Contient la modification temporaire pour l'activation PRO.
+- : Script de test à améliorer.
 
 **Areas that need refactoring**:
-- **CRITIQUE :** Les composants  (~8000 lignes) et  (~4000 lignes) sont des monolithes. Le découpage de leur JSX en sous-composants réutilisables reste la principale dette technique à résorber pour assurer la maintenabilité future.
+- **CRITIQUE:**  (~7894 lignes) doit être davantage décomposé.
+- **IMPORTANT:**  nécessite l'extraction du modal de profil.
+- **IMPORTANT:** Le script de test  devrait être migré vers une structure ============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0
+rootdir: /app
+plugins: locust-2.43.3, anyio-4.12.0
+collected 68 items / 2 errors
+
+==================================== ERRORS ====================================
+_______________________ ERROR collecting backend_test.py _______________________
+import file mismatch:
+imported module 'backend_test' has this __file__ attribute:
+  /app/backend/tests/backend_test.py
+which is not the same as the test file we want to collect:
+  /app/backend_test.py
+HINT: remove __pycache__ / .pyc files and/or use a unique basename for your test file modules
+_____________________ ERROR collecting locust_load_test.py _____________________
+locust_load_test.py:6: in <module>
+    from locust import HttpUser, task, between, TaskSet
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+/root/.venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:197: in exec_module
+    exec(co, module.__dict__)
+/root/.venv/lib/python3.11/site-packages/locust/__init__.py:25: in <module>
+    from .contrib.fasthttp import FastHttpUser
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+/root/.venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:197: in exec_module
+    exec(co, module.__dict__)
+/root/.venv/lib/python3.11/site-packages/locust/contrib/fasthttp.py:4: in <module>
+    from locust.user import User
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+/root/.venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:197: in exec_module
+    exec(co, module.__dict__)
+/root/.venv/lib/python3.11/site-packages/locust/user/__init__.py:9: in <module>
+    from .users import HttpUser, User
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+/root/.venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:197: in exec_module
+    exec(co, module.__dict__)
+/root/.venv/lib/python3.11/site-packages/locust/user/users.py:3: in <module>
+    from locust.clients import HttpSession
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+/root/.venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:197: in exec_module
+    exec(co, module.__dict__)
+/root/.venv/lib/python3.11/site-packages/locust/clients.py:70: in <module>
+    _preloaded_ssl_context = create_urllib3_context()
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/urllib3/util/ssl_.py:303: in create_urllib3_context
+    context.minimum_version = TLSVersion.TLSv1_2
+    ^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/ssl.py:608: in minimum_version
+    super(SSLContext, SSLContext).minimum_version.__set__(self, value)
+/usr/local/lib/python3.11/ssl.py:608: in minimum_version
+    super(SSLContext, SSLContext).minimum_version.__set__(self, value)
+E   RecursionError: maximum recursion depth exceeded while calling a Python object
+!!! Recursion detected (same locals & position)
+=============================== warnings summary ===============================
+../root/.venv/lib/python3.11/site-packages/starlette/formparsers.py:12
+  /root/.venv/lib/python3.11/site-packages/starlette/formparsers.py:12: PendingDeprecationWarning: Please use `import python_multipart` instead.
+    import multipart
+
+../root/.venv/lib/python3.11/site-packages/locust/__init__.py:16
+  /root/.venv/lib/python3.11/site-packages/locust/__init__.py:16: MonkeyPatchWarning: Monkey-patching ssl after ssl has already been imported may lead to errors, including RecursionError on Python 3.6. It may also silently lead to incorrect behaviour on Python 3.7. Please monkey-patch earlier. See https://github.com/gevent/gevent/issues/1016. Modules that had direct imports (NOT patched): ['jwt.jwks_client (/root/.venv/lib/python3.11/site-packages/jwt/jwks_client.py)', 'aiohttp.client_exceptions (/root/.venv/lib/python3.11/site-packages/aiohttp/client_exceptions.py)', 'aiohttp.client_reqrep (/root/.venv/lib/python3.11/site-packages/aiohttp/client_reqrep.py)', 'aiohttp.connector (/root/.venv/lib/python3.11/site-packages/aiohttp/connector.py)', 'anyio.streams.tls (/root/.venv/lib/python3.11/site-packages/anyio/streams/tls.py)', 'urllib3.util (/root/.venv/lib/python3.11/site-packages/urllib3/util/__init__.py)', 'urllib3.util.ssl_ (/root/.venv/lib/python3.11/site-packages/urllib3/util/ssl_.py)', 'pymongo.ssl_context (/root/.venv/lib/python3.11/site-packages/pymongo/ssl_context.py)']. 
+    monkey.patch_all()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR backend_test.py
+ERROR locust_load_test.py - RecursionError: maximum recursion depth exceeded ...
+!!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!!
+======================== 2 warnings, 2 errors in 1.66s ========================= standard.
 
 **key api endpoints**
 - **Nouveaux Endpoints:**
-  - : Activer la localisation temporaire.
-  - : Désactiver la localisation temporaire.
-  - : Obtenir le statut de l'abonnement de l'utilisateur.
-  - : Initier un paiement Stripe pour un abonnement.
-  - : Accéder au portail client Stripe pour gérer l'abonnement.
-  - : Endpoint pour que Stripe envoie des événements (ex: paiement réussi).
+  - : Sauvegarde les totaux GUSO manuels.
+- **Endpoints à créer:**
+  - : Pour mettre à jour le statut de déclaration d'un concert.
 - **Endpoints Modifiés:**
-  - : Utilise maintenant la géolocalisation hybride.
-  - : Cible les musiciens en utilisant la géolocalisation hybride.
+  - : Active désormais automatiquement le statut PRO pour les musiciens.
 
 **Critical Info for New Agent**
-- La priorité absolue est de construire l'interface frontend pour l'abonnement Musicien PRO, que l'utilisateur vient d'approuver.
-- Commencez par implémenter le composant .
-- La logique backend pour un abonnement avec **renouvellement automatique et 2 mois d'essai gratuit** est déjà en place. L'interface utilisateur doit clairement refléter cette offre.
-- Toute nouvelle fonctionnalité dans les dashboards () doit être développée dans des composants séparés puis importée, afin de ne pas aggraver la dette technique existante.
-- N'oubliez pas de vous attaquer au faible taux de réussite des tests du backend pour garantir la stabilité.
+- **Priorité Absolue (P0):** Corriger le bug du menu déroulant dans la comptabilité GUSO en créant l'endpoint backend manquant dans .
+- **Contexte Important:** Le statut PRO est actuellement activé par défaut pour tout nouveau musicien. C'est une modification temporaire pour faciliter les tests de l'utilisateur. Il faudra penser à la retirer ou à la conditionner à un mode .
+- **Point de friction récurrent:** La création de comptes de test via des scripts Python est peu fiable à cause d'un problème avec . Il est plus sûr de passer par l'interface utilisateur pour créer de nouveaux comptes pour le moment.
 
 **documents and test reports created in this job**
-- 
-- 
-- 
-- 
-- 
-- 
-- 
-- 
-- 
+- Aucun nouveau document formel n'a été créé.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  ****: Approuve le début de l'implémentation frontend pour l'abonnement PRO. (EN COURS)
-2.  ****: Décide du modèle économique final : renouvellement automatique avec 2 mois d'essai. (TERMINÉ)
-3.  ****: Demande une analyse sur les options de renouvellement. (TERMINÉ)
-4.  ****: Approuve le lancement de l'implémentation de Musicien PRO. (TERMINÉ)
-5.  ****: Choisit la monétisation via Musicien PRO et détaille la fonctionnalité de comptabilité. (TERMINÉ)
-6.  ****: Demande des idées de monétisation. (TERMINÉ)
-7.  ****: Choisit d'implémenter le système de géolocalisation hybride. (TERMINÉ)
-8.  ****: Demande une clarification sur le fonctionnement de la géolocalisation. (TERMINÉ)
-9.  ****: Signale le bug de géolocalisation. (TERMINÉ)
-10. ****: Suggère une limite d'envoi de notifications. (TERMINÉ)
+1.  **Utilisateur:** Demande de déboguer le problème d'inscription.
+2.  **Agent:** Débogue et identifie un bug critique de base de données.
+3.  **Utilisateur:** Demande de corriger le bug.
+4.  **Agent:** Réalise que le bug était dans son script de vérification, pas dans l'application. Confirme que les utilisateurs (y compris ) sont bien créés.
+5.  **Agent:** Ajoute les données de concerts fictifs au compte .
+6.  **Utilisateur:** Demande de pouvoir sélectionner Déclarer / À déclarer sur les cartes de concert.
+7.  **Agent:** Implémente un badge cliquable pour changer le statut.
+8.  **Utilisateur:** Préfère un menu déroulant plutôt qu'un badge cliquable.
+9.  **Agent:** Remplace le badge par un menu déroulant .
+10. **Utilisateur:** Signale que le menu déroulant ne fonctionne pas et provoque un bug.
 
 **Project Health Check:**
-- **Broken:** Aucun.
-- **Mocked:** Aucun.
+- **Broken:**
+  - La fonctionnalité de mise à jour du statut de déclaration des concerts.
+  - Les scripts de création/gestion d'utilisateurs de test.
+- **Mocked:**
+  - N/A
 
 **3rd Party Integrations**
-- **MongoDB Atlas:** Base de données principale.
-- **Stripe:** Gestion des abonnements payants.
-- **Resend:** (Probablement pour les emails transactionnels, non utilisé activement dans cette session).
-- **:** Middleware pour la limitation de débit (rate limiting).
-- **API :** Pour le géocodage des adresses en coordonnées GPS.
+- Stripe
+- Emergent Object Storage
 
 **Testing status**
-- **Testing agent used after significant changes:** YES
+- **Testing agent used after significant changes:** NO
 - **Troubleshoot agent used after agent stuck in loop:** NO
-- **Test files created:**
-  - 
-  -  (script de migration/test)
-- **Known regressions:** La suite de tests principale  présente un faible taux de réussite (38.2%), indiquant des régressions potentielles ou des tests obsolètes.
+- **Test files created:** Aucun.
+- **Known regressions:** Les scripts de test pour la gestion des utilisateurs sont devenus moins fiables.
 
 **Credentials to test flow:**
-- **Venue:**  / 
-- **Musician:**  / 
-- **Admin:**  / 
+L'utilisateur peut créer son propre compte directement depuis l'interface. Grâce à la modification de , tout nouveau compte de musicien sera automatiquement PRO. Le compte  a été confirmé comme existant et possède des données de concert fictives. Le mot de passe est connu de l'utilisateur.
 
 **What agent forgot to execute**
-- L'agent n'a pas corrigé ni investigué le faible taux de réussite (38.2%) de la suite de tests principale du backend (), ce qui constitue un risque de régression.
-- Le refactoring JSX des composants monolithiques de tableau de bord, bien qu'identifié comme critique, n'a pas été initié.</analysis>
+- L'agent a oublié d'implémenter l'endpoint backend () nécessaire au fonctionnement du menu déroulant qu'il venait de créer, ce qui a directement causé un bug pour l'utilisateur.
+- L'agent n'a pas résolu la cause première du problème de  dans les scripts de test, ce qui a entraîné une perte de temps et de la confusion lors du débogage des problèmes de connexion et d'inscription.</analysis>

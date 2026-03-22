@@ -74,6 +74,10 @@ class ConcertEvent(BaseModel):
     amount: Optional[float] = None
     payment_status: Optional[str] = "pending"
     invoice_file: Optional[str] = None
+    # GUSO fields (for intermittent artists)
+    is_guso: bool = False
+    cachet_type: Optional[str] = None  # "isolé" or "groupé"
+    guso_contract_type: Optional[str] = None  # "CDDU", "CDD", etc.
 
 class ConcertEventResponse(BaseModel):
     id: str
@@ -110,6 +114,10 @@ class ConcertEventResponse(BaseModel):
     amount: Optional[float] = None
     payment_status: Optional[str] = "pending"
     invoice_file: Optional[str] = None
+    # GUSO fields
+    is_guso: bool = False
+    cachet_type: Optional[str] = None
+    guso_contract_type: Optional[str] = None
 
 class KaraokeEvent(BaseModel):
     date: str

@@ -389,7 +389,11 @@ export default function VenueDashboard() {
     // Accommodation
     has_accommodation: false, accommodation_capacity: 0, accommodation_tbd: false,
     // Comptabilité
-    payment_method: "", amount: "", payment_status: "pending"
+    payment_method: "", amount: "", payment_status: "pending",
+    // GUSO fields (for intermittent artists)
+    cachet_type: "", // "isolé" or "groupé"
+    guso_contract_type: "", // "CDDU", "CDD", etc.
+    is_guso: false // Auto-set to true when payment_method is "guso"
   });
 
   const [karaokeForm, setKaraokeForm] = useState({
@@ -4044,7 +4048,8 @@ export default function VenueDashboard() {
                                 setConcertForm({ 
                                   ...concertForm, 
                                   payment_method: value,
-                                  amount: value === "promotion" ? "0" : concertForm.amount
+                                  amount: value === "promotion" ? "0" : concertForm.amount,
+                                  is_guso: value === "guso"
                                 });
                               }}
                             >
@@ -4053,7 +4058,7 @@ export default function VenueDashboard() {
                               </SelectTrigger>
                               <SelectContent className="bg-background border-white/10">
                                 <SelectItem value="facture">Facture</SelectItem>
-                                <SelectItem value="guso">GUSO</SelectItem>
+                                <SelectItem value="guso">GUSO (Intermittent)</SelectItem>
                                 <SelectItem value="promotion">Promotion du groupe</SelectItem>
                               </SelectContent>
                             </Select>
@@ -4074,6 +4079,79 @@ export default function VenueDashboard() {
                           )}
                         </div>
 
+                        {/* GUSO Details - Show only if payment_method is "guso" */}
+                        {concertForm.payment_method === "guso" && (
+                          <div className="space-y-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                            <h5 className="font-medium text-blue-400 flex items-center gap-2 text-sm">
+                              🎵 Informations Intermittence
+                            </h5>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label>Type de cachet *</Label>
+                                <Select 
+                                  value={concertForm.cachet_type} 
+                                  onValueChange={(value) => setConcertForm({ ...concertForm, cachet_type: value })}
+                                >
+                                  <SelectTrigger className="bg-black/20 border-white/10">
+                                    <SelectValue placeholder="Sélectionner" />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-background border-white/10">
+                                    <SelectItem value="isolé">
+                                      <div className="flex items-center gap-2">
+                                        <span>🎵</span>
+                                        <div>
+                                          <div className="font-semibold">Cachet isolé</div>
+                                          <div className="text-xs text-muted-foreground">12 heures retenues</div>
+                                        </div>
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="groupé">
+                                      <div className="flex items-center gap-2">
+                                        <span>🎸</span>
+                                        <div>
+                                          <div className="font-semibold">Cachet groupé</div>
+                                          <div className="text-xs text-muted-foreground">8 heures retenues</div>
+                                        </div>
+                                      </div>
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                {concertForm.cachet_type && (
+                                  <p className="text-xs text-blue-400">
+                                    ⏱️ {concertForm.cachet_type === "isolé" ? "12h" : "8h"} (logique France Travail)
+                                  </p>
+                                )}
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label>Type de contrat</Label>
+                                <Select 
+                                  value={concertForm.guso_contract_type} 
+                                  onValueChange={(value) => setConcertForm({ ...concertForm, guso_contract_type: value })}
+                                >
+                                  <SelectTrigger className="bg-black/20 border-white/10">
+                                    <SelectValue placeholder="Sélectionner" />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-background border-white/10">
+                                    <SelectItem value="CDDU">CDDU</SelectItem>
+                                    <SelectItem value="CDD">CDD</SelectItem>
+                                    <SelectItem value="CDI">CDI</SelectItem>
+                                    <SelectItem value="Cachet">Cachet isolé</SelectItem>
+                                    <SelectItem value="Autre">Autre</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+
+                            <div className="p-3 bg-blue-500/20 rounded-lg">
+                              <p className="text-xs text-muted-foreground">
+                                ℹ️ Ces informations seront transmises au musicien pour faciliter sa déclaration GUSO
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
                         {concertForm.payment_method && (concertForm.amount || concertForm.payment_method === "promotion") && (
                           <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
                             <p className="text-sm">
@@ -4083,6 +4161,11 @@ export default function VenueDashboard() {
                                 "🎸 Promotion du groupe"
                               }{concertForm.payment_method !== "promotion" && ` • ${parseFloat(concertForm.amount || 0).toFixed(2)} €`}
                               {concertForm.payment_method === "promotion" && " • Gratuit"}
+                              {concertForm.payment_method === "guso" && concertForm.cachet_type && (
+                                <span className="ml-2">
+                                  • {concertForm.cachet_type === "isolé" ? "🎵 Isolé (12h)" : "🎸 Groupé (8h)"}
+                                </span>
+                              )}
                             </p>
                           </div>
                         )}

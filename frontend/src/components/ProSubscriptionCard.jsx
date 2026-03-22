@@ -107,18 +107,8 @@ const ProSubscriptionCard = ({ token, currentTier, onSuccess }) => {
             <TrendingUp className="w-4 h-4 text-orange-400" />
           </div>
           <div>
-            <p className="font-semibold">Priorité dans les résultats</p>
-            <p className="text-sm text-muted-foreground">Apparaissez en premier</p>
-          </div>
-        </div>
-
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center mt-0.5">
-            <Check className="w-4 h-4 text-green-400" />
-          </div>
-          <div>
-            <p className="font-semibold">Candidatures illimitées</p>
-            <p className="text-sm text-muted-foreground">Plus de limite mensuelle</p>
+            <p className="font-semibold">Badge GUSO visible</p>
+            <p className="text-sm text-muted-foreground">Trouvez facilement les établissements au GUSO</p>
           </div>
         </div>
       </div>

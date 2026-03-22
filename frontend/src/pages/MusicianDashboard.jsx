@@ -27,6 +27,7 @@ import { buildImageUrl } from "../utils/urlBuilder";
 import MapTab from "../features/musician-dashboard/tabs/MapTab";
 import PlanningTab from "../features/musician-dashboard/tabs/PlanningTab";
 import SubscriptionsTab from "../features/musician-dashboard/tabs/SubscriptionsTab";
+import ProfileEditModal from "../features/musician-dashboard/ProfileEditModal";
 import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
 import { 
   Music, MapPin, LogOut, Search, Guitar, Users,

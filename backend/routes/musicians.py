@@ -1817,6 +1817,22 @@ async def update_concert(
     if data.notes is not None:
         concerts[concert_index]["notes"] = data.notes
     
+    # GUSO fields
+    if data.cachet_type is not None:
+        concerts[concert_index]["cachet_type"] = data.cachet_type
+        # If cachet_type is set, remove guso_hours (use official logic)
+        if data.cachet_type in ["isolé", "groupé"] and "guso_hours" in concerts[concert_index]:
+            del concerts[concert_index]["guso_hours"]
+    
+    if data.guso_hours is not None:
+        concerts[concert_index]["guso_hours"] = data.guso_hours
+        # If custom hours are set, remove cachet_type
+        if "cachet_type" in concerts[concert_index]:
+            concerts[concert_index]["cachet_type"] = None
+    
+    if data.guso_contract_type is not None:
+        concerts[concert_index]["guso_contract_type"] = data.guso_contract_type
+    
     # Save
     await db.musicians.update_one(
         {"user_id": current_user["id"]},
@@ -2033,63 +2049,6 @@ async def mark_concert_as_declared(
 
 
 
-@router.patch("/musicians/me/concerts/{concert_id}")
-async def update_concert(
-    concert_id: str,
-    data: dict,
-    current_user: dict = Depends(get_current_user)
-):
-    """
-    Update concert details (GUSO type, hours, cachet, etc.)
-    
-    Body can include:
-    - cachet_type: "isolé" or "groupé" (official intermittence logic)
-    - guso_hours: Custom hours (if not using official logic)
-    - cachet: Amount in euros
-    - guso_contract_type: Contract type
-    - notes: Private notes
-    """
-    if current_user["role"] != "musician":
-        raise HTTPException(status_code=403, detail="Only musicians can update concerts")
-    
-    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
-    if not musician:
-        raise HTTPException(status_code=404, detail="Musician profile not found")
-    
-    concerts = musician.get("concerts", [])
-    concert_index = next((i for i, c in enumerate(concerts) if c.get("id") == concert_id), None)
-    
-    if concert_index is None:
-        raise HTTPException(status_code=404, detail="Concert not found")
-    
-    # Update allowed fields
-    allowed_fields = ["cachet_type", "guso_hours", "cachet", "guso_contract_type", "notes"]
-    
-    for field in allowed_fields:
-        if field in data:
-            concerts[concert_index][field] = data[field]
-    
-    # If cachet_type is set, remove guso_hours (use official logic)
-    if data.get("cachet_type") and data["cachet_type"] in ["isolé", "groupé"]:
-        # Official logic: hours are calculated automatically
-        # Remove custom guso_hours if it exists
-        if "guso_hours" in concerts[concert_index] and not data.get("guso_hours"):
-            del concerts[concert_index]["guso_hours"]
-    
-    # Save
-    await db.musicians.update_one(
-        {"user_id": current_user["id"]},
-        {"$set": {"concerts": concerts}}
-    )
-    
-    # Calculate hours for response
-    hours = calculate_concert_hours_official(concerts[concert_index])
-    
-    return {
-        "message": "Concert updated successfully",
-        "concert": concerts[concert_index],
-        "calculated_hours": hours
-    }
 
 
 

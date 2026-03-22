@@ -181,3 +181,7 @@ class ConcertUpdateRequest(BaseModel):
     invoice_url: Optional[str] = None
     invoice_number: Optional[str] = None
     notes: Optional[str] = None
+    # GUSO fields
+    cachet_type: Optional[str] = None  # "isolé" or "groupé"
+    guso_hours: Optional[float] = None  # Custom hours
+    guso_contract_type: Optional[str] = None

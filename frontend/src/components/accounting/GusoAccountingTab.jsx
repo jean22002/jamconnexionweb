@@ -146,6 +146,25 @@ const GusoAccountingTab = ({ token, gusoNumber, onGusoNumberUpdate }) => {
     setEditMode(false);
   };
 
+  const toggleConcertDeclaration = async (concertId, currentStatus) => {
+    try {
+      const newStatus = !currentStatus;
+      await axios.put(
+        `${API}/musicians/me/concerts/${concertId}/guso-declaration`,
+        { is_declared: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      toast.success(newStatus ? 'Concert marqué comme déclaré' : 'Concert marqué comme à déclarer');
+      
+      // Rafraîchir les données
+      await Promise.all([fetchSummary(), fetchConcerts()]);
+    } catch (error) {
+      toast.error('Erreur lors de la mise à jour');
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -459,16 +478,27 @@ const GusoAccountingTab = ({ token, gusoNumber, onGusoNumberUpdate }) => {
                           <p className="text-sm text-muted-foreground">📍 {concert.city}</p>
                         )}
                       </div>
-                      {concert.guso_declared ? (
-                        <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-full border border-green-500/30 flex items-center gap-1">
-                          <CheckCircle className="w-3 h-3" />
-                          Déclaré
-                        </span>
-                      ) : (
-                        <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-full border border-yellow-500/30">
-                          À déclarer
-                        </span>
-                      )}
+                      <button
+                        onClick={() => toggleConcertDeclaration(concert.id, concert.guso_declared)}
+                        className={`px-3 py-1 text-xs rounded-full border flex items-center gap-1 transition-all hover:scale-105 cursor-pointer ${
+                          concert.guso_declared
+                            ? 'bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30'
+                            : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/30'
+                        }`}
+                        title={concert.guso_declared ? 'Cliquer pour marquer comme à déclarer' : 'Cliquer pour marquer comme déclaré'}
+                      >
+                        {concert.guso_declared ? (
+                          <>
+                            <CheckCircle className="w-3 h-3" />
+                            Déclaré
+                          </>
+                        ) : (
+                          <>
+                            <Clock className="w-3 h-3" />
+                            À déclarer
+                          </>
+                        )}
+                      </button>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
@@ -492,18 +522,6 @@ const GusoAccountingTab = ({ token, gusoNumber, onGusoNumberUpdate }) => {
                       )}
                     </div>
                   </div>
-
-                  {!concert.guso_declared && (
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="rounded-full bg-green-500 hover:bg-green-600 gap-2"
-                      onClick={() => markAsDeclared(concert.id)}
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      Marquer comme déclaré
-                    </Button>
-                  )}
                 </div>
               </div>
             ))}

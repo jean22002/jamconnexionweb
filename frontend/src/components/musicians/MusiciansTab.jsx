@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { MapPin, ArrowLeft, MapPinOff, User, Check, Clock, X, UserPlus, Eye } from "lucide-react";
 import LazyImage from "../LazyImage";
+import ProBadge, { getBadgeType } from "../ProBadge";
 import { REGIONS_FRANCE, DEPARTEMENTS_FRANCE } from "../../data/france-locations";
 
 function MusicianCard({ musician, onSendFriendRequest, onCancelRequest, sentRequests, friends }) {
@@ -31,7 +32,12 @@ function MusicianCard({ musician, onSendFriendRequest, onCancelRequest, sentRequ
           </div>
         )}
         <div className="flex-1">
-          <h3 className="font-heading font-semibold">{musician.pseudo}</h3>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-heading font-semibold">{musician.pseudo}</h3>
+            {getBadgeType(musician) && (
+              <ProBadge variant="compact" type={getBadgeType(musician)} showText={false} />
+            )}
+          </div>
           {musician.city && (
             <p className="text-sm text-muted-foreground flex items-center gap-1">
               <MapPin className="w-3 h-3" />

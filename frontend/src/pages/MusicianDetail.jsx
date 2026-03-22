@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import LazyImage from "../components/LazyImage";
 import UserBadges from "../components/UserBadges";
 import ReportProfileDialog from "../components/ReportProfileDialog";
+import ProBadge, { getBadgeType } from "../components/ProBadge";
 import { buildImageUrl } from "../utils/urlBuilder";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -131,7 +132,12 @@ export default function MusicianDetail() {
             )}
             
             <div className="flex-1 text-center md:text-left">
-              <h1 className="font-heading font-bold text-3xl mb-2">{musician.pseudo}</h1>
+              <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+                <h1 className="font-heading font-bold text-3xl">{musician.pseudo}</h1>
+                {getBadgeType(musician) && (
+                  <ProBadge variant="default" type={getBadgeType(musician)} />
+                )}
+              </div>
               
               {musician.age && <p className="text-muted-foreground">{musician.age} ans</p>}
               

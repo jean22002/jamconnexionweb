@@ -94,15 +94,20 @@ async def create_planning_slot(data: PlanningSlot, current_user: dict = Depends(
     slot_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
     
+    # Build slot document (exclude venue_id from data to avoid overriding)
+    data_dict = data.model_dump(exclude={"venue_id"})
     slot_doc = {
         "id": slot_id,
         "venue_id": venue["id"],
         "venue_name": venue["name"],
-        **data.model_dump(),
+        **data_dict,
         "created_at": now
     }
     
     await db.planning_slots.insert_one(slot_doc)
+    
+    # Remove MongoDB _id before returning
+    slot_doc.pop("_id", None)
     
     # Notify subscribers about open slot
     styles = ", ".join(data.music_styles) if data.music_styles else "Tous styles"

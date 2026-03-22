@@ -1795,3 +1795,214 @@ async def update_concert(
     )
     
     return {"message": "Concert updated successfully", "concert": concerts[concert_index]}
+
+
+# ============================================================================
+# GUSO ACCOUNTING
+# ============================================================================
+
+@router.get("/musicians/me/guso/summary")
+async def get_guso_summary(
+    year: int = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get GUSO accounting summary (PRO feature)
+    Returns: total hours, concerts count, threshold progress (507h)
+    """
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can access GUSO accounting")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Check PRO subscription
+    if musician.get("subscription_tier") != "pro":
+        raise HTTPException(status_code=403, detail="PRO subscription required for GUSO accounting")
+    
+    # Get current year if not specified
+    if not year:
+        year = datetime.now(timezone.utc).year
+    
+    concerts = musician.get("concerts", [])
+    
+    # Filter GUSO concerts by year
+    guso_concerts = [
+        c for c in concerts 
+        if c.get("is_guso") and c.get("date", "").startswith(str(year))
+    ]
+    
+    # Calculate totals
+    total_hours = sum(c.get("guso_hours", 0) for c in guso_concerts if c.get("guso_hours"))
+    total_cachet = sum(c.get("cachet", 0) for c in guso_concerts if c.get("cachet"))
+    declared_count = len([c for c in guso_concerts if c.get("guso_declared")])
+    pending_count = len([c for c in guso_concerts if not c.get("guso_declared")])
+    
+    # Calculate progress towards 507h threshold
+    threshold = 507
+    progress_percentage = min(100, (total_hours / threshold) * 100) if total_hours > 0 else 0
+    hours_remaining = max(0, threshold - total_hours)
+    
+    # Status based on hours
+    status = "inactive"
+    if total_hours >= threshold:
+        status = "eligible"  # Eligible for intermittent status
+    elif total_hours >= threshold * 0.75:  # 75% of threshold
+        status = "close"  # Close to threshold
+    elif total_hours > 0:
+        status = "active"  # Has some hours
+    
+    return {
+        "year": year,
+        "total_hours": round(total_hours, 2),
+        "total_cachet": round(total_cachet, 2),
+        "concerts_count": len(guso_concerts),
+        "declared_count": declared_count,
+        "pending_count": pending_count,
+        "threshold": threshold,
+        "hours_remaining": round(hours_remaining, 2),
+        "progress_percentage": round(progress_percentage, 2),
+        "status": status,
+        "guso_number": musician.get("guso_number"),
+        "is_guso_member": musician.get("is_guso_member", False)
+    }
+
+
+@router.get("/musicians/me/guso/concerts")
+async def get_guso_concerts(
+    year: int = None,
+    declared: bool = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get GUSO concerts list with filters (PRO feature)
+    """
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can access GUSO concerts")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Check PRO subscription
+    if musician.get("subscription_tier") != "pro":
+        raise HTTPException(status_code=403, detail="PRO subscription required")
+    
+    concerts = musician.get("concerts", [])
+    
+    # Filter GUSO concerts
+    guso_concerts = [c for c in concerts if c.get("is_guso")]
+    
+    # Apply filters
+    if year:
+        guso_concerts = [c for c in guso_concerts if c.get("date", "").startswith(str(year))]
+    
+    if declared is not None:
+        guso_concerts = [c for c in guso_concerts if c.get("guso_declared") == declared]
+    
+    # Sort by date descending
+    guso_concerts.sort(key=lambda x: x.get("date", ""), reverse=True)
+    
+    return guso_concerts
+
+
+@router.patch("/musicians/me/guso/concerts/{concert_id}/declare")
+async def mark_concert_as_declared(
+    concert_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Mark a GUSO concert as declared"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can update concerts")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    concerts = musician.get("concerts", [])
+    concert_index = next((i for i, c in enumerate(concerts) if c.get("id") == concert_id), None)
+    
+    if concert_index is None:
+        raise HTTPException(status_code=404, detail="Concert not found")
+    
+    if not concerts[concert_index].get("is_guso"):
+        raise HTTPException(status_code=400, detail="This concert is not marked as GUSO")
+    
+    # Mark as declared
+    concerts[concert_index]["guso_declared"] = True
+    
+    # Save
+    await db.musicians.update_one(
+        {"user_id": current_user["id"]},
+        {"$set": {"concerts": concerts}}
+    )
+    
+    return {"message": "Concert marked as declared", "concert": concerts[concert_index]}
+
+
+@router.get("/musicians/me/guso/export/csv")
+async def export_guso_csv(
+    year: int = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Export GUSO data as CSV file (PRO feature)
+    """
+    from fastapi.responses import StreamingResponse
+    import csv
+    import io
+    
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can export GUSO data")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Check PRO subscription
+    if musician.get("subscription_tier") != "pro":
+        raise HTTPException(status_code=403, detail="PRO subscription required")
+    
+    if not year:
+        year = datetime.now(timezone.utc).year
+    
+    concerts = musician.get("concerts", [])
+    guso_concerts = [
+        c for c in concerts 
+        if c.get("is_guso") and c.get("date", "").startswith(str(year))
+    ]
+    
+    # Generate CSV
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Header
+    writer.writerow([
+        "Date", "Établissement", "Ville", "Cachet (€)", "Heures GUSO", 
+        "Type Contrat", "Statut Paiement", "Déclaré GUSO", "Notes"
+    ])
+    
+    # Data
+    for concert in guso_concerts:
+        writer.writerow([
+            concert.get("date", ""),
+            concert.get("venue_name", ""),
+            concert.get("city", ""),
+            concert.get("cachet", ""),
+            concert.get("guso_hours", ""),
+            concert.get("guso_contract_type", ""),
+            concert.get("payment_status", ""),
+            "Oui" if concert.get("guso_declared") else "Non",
+            concert.get("notes", "")
+        ])
+    
+    output.seek(0)
+    
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f"attachment; filename=guso_{year}.csv"
+        }
+    )

@@ -3,7 +3,9 @@ import axios from 'axios';
 import { FileText, TrendingUp, DollarSign, Calendar, Filter, Download, Loader2, Check, X, Clock, Eye } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { toast } from 'sonner';
+import GusoAccountingTab from './GusoAccountingTab';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -15,6 +17,8 @@ const AccountingTab = ({ token }) => {
     year: new Date().getFullYear(),
     status: 'all'
   });
+  const [gusoNumber, setGusoNumber] = useState(null);
+  const [activeSubTab, setActiveSubTab] = useState('general');
 
   const fetchSummary = async () => {
     try {
@@ -122,6 +126,47 @@ const AccountingTab = ({ token }) => {
     );
   };
 
+  return (
+    <Tabs value={activeSubTab} onValueChange={setActiveSubTab} className="w-full">
+      <TabsList className="grid w-full grid-cols-2 mb-6">
+        <TabsTrigger value="general">Comptabilité Générale</TabsTrigger>
+        <TabsTrigger value="guso">Comptabilité GUSO</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="general">
+        <GeneralAccountingContent
+          summary={summary}
+          concerts={concerts}
+          loading={loading}
+          filters={filters}
+          setFilters={setFilters}
+          updatePaymentStatus={updatePaymentStatus}
+          exportToCSV={exportToCSV}
+          getStatusBadge={getStatusBadge}
+        />
+      </TabsContent>
+
+      <TabsContent value="guso">
+        <GusoAccountingTab 
+          token={token}
+          gusoNumber={gusoNumber}
+          onGusoNumberUpdate={setGusoNumber}
+        />
+      </TabsContent>
+    </Tabs>
+  );
+};
+
+const GeneralAccountingContent = ({ 
+  summary, 
+  concerts, 
+  loading, 
+  filters, 
+  setFilters, 
+  updatePaymentStatus, 
+  exportToCSV,
+  getStatusBadge
+}) => {
   if (loading) {
     return (
       <div className="glassmorphism rounded-2xl p-6">

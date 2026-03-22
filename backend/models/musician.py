@@ -54,6 +54,11 @@ class MusicianConcert(BaseModel):
     region: Optional[str] = None
     department: Optional[str] = None
     notes: Optional[str] = None  # Private notes
+    # GUSO specific fields
+    is_guso: bool = False  # Si ce concert compte pour le GUSO
+    guso_hours: Optional[float] = None  # Nombre d'heures GUSO
+    guso_contract_type: Optional[str] = None  # "cdd_usage", "cachet", "other"
+    guso_declared: bool = False  # Si déjà déclaré au GUSO
 
 class MusicianProfile(BaseModel):
     pseudo: str
@@ -78,6 +83,9 @@ class MusicianProfile(BaseModel):
     bands: List[BandInfo] = []
     solo_profile: Optional[Dict[str, Any]] = None
     concerts: List[MusicianConcert] = []
+    # GUSO Information
+    guso_number: Optional[str] = None  # Numéro d'identifiant GUSO
+    is_guso_member: bool = False  # Si le musicien est au GUSO
     # Temporary location (hybrid geolocation system)
     temporary_location_enabled: bool = False
     temporary_latitude: Optional[float] = None

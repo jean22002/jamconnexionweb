@@ -16,7 +16,8 @@ const AccountingTab = ({ token }) => {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     year: new Date().getFullYear(),
-    status: 'all'
+    status: 'all',
+    concertType: 'all'  // 'all', 'guso', 'classic'
   });
   const [gusoNumber, setGusoNumber] = useState(null);
   const [activeSubTab, setActiveSubTab] = useState('general');
@@ -172,6 +173,43 @@ const GeneralAccountingContent = ({
   token,
   fetchConcerts
 }) => {
+  // Filtrer les concerts selon le type sélectionné
+  const filteredConcerts = concerts.filter(concert => {
+    if (filters.concertType === 'all') return true;
+    if (filters.concertType === 'guso') return concert.is_guso === true;
+    if (filters.concertType === 'classic') return !concert.is_guso;
+    return true;
+  });
+
+  const getConcertTypeBadge = (concert) => {
+    if (concert.is_guso) {
+      const cachetType = concert.cachet_type;
+      let label = 'GUSO';
+      let icon = '🎵';
+      
+      if (cachetType === 'isolé') {
+        label = 'GUSO Isolé (12h)';
+        icon = '🎵';
+      } else if (cachetType === 'groupé') {
+        label = 'GUSO Groupé (8h)';
+        icon = '🎸';
+      }
+      
+      return (
+        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border bg-blue-500/20 text-blue-400 border-blue-500/30">
+          <span>{icon}</span>
+          {label}
+        </span>
+      );
+    }
+    
+    return (
+      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border bg-gray-500/20 text-gray-400 border-gray-500/30">
+        💰 Paiement classique
+      </span>
+    );
+  };
+
   if (loading) {
     return (
       <div className="glassmorphism rounded-2xl p-6">
@@ -200,8 +238,8 @@ const GeneralAccountingContent = ({
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="flex-1">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div>
             <Select value={filters.year.toString()} onValueChange={(val) => setFilters({ ...filters, year: parseInt(val) })}>
               <SelectTrigger className="rounded-full">
                 <SelectValue placeholder="Année" />
@@ -214,7 +252,7 @@ const GeneralAccountingContent = ({
             </Select>
           </div>
           
-          <div className="flex-1">
+          <div>
             <Select value={filters.status} onValueChange={(val) => setFilters({ ...filters, status: val })}>
               <SelectTrigger className="rounded-full">
                 <SelectValue placeholder="Statut" />
@@ -224,6 +262,19 @@ const GeneralAccountingContent = ({
                 <SelectItem value="paid">Payés</SelectItem>
                 <SelectItem value="pending">En attente</SelectItem>
                 <SelectItem value="canceled">Annulés</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Select value={filters.concertType} onValueChange={(val) => setFilters({ ...filters, concertType: val })}>
+              <SelectTrigger className="rounded-full">
+                <SelectValue placeholder="Type de concert" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les concerts</SelectItem>
+                <SelectItem value="guso">🎵 GUSO (Intermittence)</SelectItem>
+                <SelectItem value="classic">💰 Paiement classique</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -271,17 +322,17 @@ const GeneralAccountingContent = ({
       <div className="glassmorphism rounded-2xl p-6">
         <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
           <Calendar className="w-5 h-5 text-primary" />
-          Historique des concerts ({concerts.length})
+          Historique des concerts ({filteredConcerts.length})
         </h3>
 
-        {concerts.length === 0 ? (
+        {filteredConcerts.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
             <p>Aucun concert pour cette période</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {concerts.map((concert) => (
+            {filteredConcerts.map((concert) => (
               <div key={concert.id} className="bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/10 transition-all">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex-1">
@@ -301,7 +352,10 @@ const GeneralAccountingContent = ({
                           <p className="text-sm text-muted-foreground mt-1">📍 {concert.city}</p>
                         )}
                       </div>
-                      {getStatusBadge(concert.payment_status)}
+                      <div className="flex flex-col items-end gap-2">
+                        {getConcertTypeBadge(concert)}
+                        {getStatusBadge(concert.payment_status)}
+                      </div>
                     </div>
 
                     {concert.band_name && (

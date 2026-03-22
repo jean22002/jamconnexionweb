@@ -209,6 +209,12 @@ def health_check():
 @app.on_event("startup")
 async def startup_db_client():
     logger.info("Connected to MongoDB")
+    # Initialize object storage
+    try:
+        from utils.storage import init_storage
+        init_storage()
+    except Exception as e:
+        logger.warning(f"⚠️  Object storage init failed (non-critical): {e}")
 
 # Shutdown event
 @app.on_event("shutdown")

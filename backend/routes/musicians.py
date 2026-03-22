@@ -1,7 +1,7 @@
 """
 Musicians router - Handles musician profiles, friends, and bands
 """
-from fastapi import APIRouter, HTTPException, Depends, Header, Query
+from fastapi import APIRouter, HTTPException, Depends, Header, Query, UploadFile, File
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
@@ -2006,3 +2006,165 @@ async def export_guso_csv(
             "Content-Disposition": f"attachment; filename=guso_{year}.csv"
         }
     )
+
+
+# ============================================================================
+# INVOICE/FILE UPLOADS
+# ============================================================================
+
+@router.post("/musicians/me/concerts/{concert_id}/upload-invoice")
+async def upload_invoice(
+    concert_id: str,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Upload invoice for a concert (PRO feature)
+    Allowed formats: PDF, JPEG, PNG, WebP
+    Max size: 5MB
+    """
+    from fastapi import UploadFile, File
+    from utils.storage import put_object, validate_file, generate_storage_path
+    
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can upload invoices")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Check PRO subscription
+    if musician.get("subscription_tier") != "pro":
+        raise HTTPException(status_code=403, detail="PRO subscription required")
+    
+    # Find concert
+    concerts = musician.get("concerts", [])
+    concert_index = next((i for i, c in enumerate(concerts) if c.get("id") == concert_id), None)
+    
+    if concert_index is None:
+        raise HTTPException(status_code=404, detail="Concert not found")
+    
+    # Read file content
+    content = await file.read()
+    content_type = file.content_type or "application/octet-stream"
+    
+    # Validate file
+    is_valid, error_msg = validate_file(content, content_type, file.filename)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+    
+    # Generate unique file ID and path
+    file_id = str(uuid.uuid4())
+    extension = file.filename.split(".")[-1].lower() if "." in file.filename else "bin"
+    storage_path = generate_storage_path(current_user["id"], file_id, extension)
+    
+    try:
+        # Upload to storage
+        result = put_object(storage_path, content, content_type)
+        
+        # Update concert with invoice info
+        concerts[concert_index]["invoice_url"] = storage_path
+        concerts[concert_index]["invoice_filename"] = file.filename
+        concerts[concert_index]["invoice_uploaded_at"] = datetime.now(timezone.utc).isoformat()
+        
+        # Save to database
+        await db.musicians.update_one(
+            {"user_id": current_user["id"]},
+            {"$set": {"concerts": concerts}}
+        )
+        
+        return {
+            "message": "Invoice uploaded successfully",
+            "file_id": file_id,
+            "storage_path": result["path"],
+            "filename": file.filename,
+            "size": result["size"]
+        }
+    
+    except Exception as e:
+        logger.error(f"Failed to upload invoice: {e}")
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
+
+@router.get("/musicians/me/concerts/{concert_id}/invoice")
+async def get_invoice(
+    concert_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Download/view invoice for a concert
+    """
+    from fastapi.responses import Response
+    from utils.storage import get_object
+    
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can view invoices")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Find concert
+    concert = next((c for c in musician.get("concerts", []) if c.get("id") == concert_id), None)
+    
+    if not concert:
+        raise HTTPException(status_code=404, detail="Concert not found")
+    
+    if not concert.get("invoice_url"):
+        raise HTTPException(status_code=404, detail="No invoice uploaded for this concert")
+    
+    try:
+        # Get file from storage
+        content, content_type = get_object(concert["invoice_url"])
+        
+        # Return file
+        return Response(
+            content=content,
+            media_type=content_type,
+            headers={
+                "Content-Disposition": f'inline; filename="{concert.get("invoice_filename", "invoice.pdf")}"'
+            }
+        )
+    
+    except Exception as e:
+        logger.error(f"Failed to retrieve invoice: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve invoice")
+
+
+@router.delete("/musicians/me/concerts/{concert_id}/invoice")
+async def delete_invoice(
+    concert_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Delete invoice for a concert (soft delete - removes reference from DB)
+    """
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can delete invoices")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Find concert
+    concerts = musician.get("concerts", [])
+    concert_index = next((i for i, c in enumerate(concerts) if c.get("id") == concert_id), None)
+    
+    if concert_index is None:
+        raise HTTPException(status_code=404, detail="Concert not found")
+    
+    if not concerts[concert_index].get("invoice_url"):
+        raise HTTPException(status_code=404, detail="No invoice to delete")
+    
+    # Remove invoice reference (soft delete)
+    concerts[concert_index]["invoice_url"] = None
+    concerts[concert_index]["invoice_filename"] = None
+    concerts[concert_index]["invoice_uploaded_at"] = None
+    
+    # Save to database
+    await db.musicians.update_one(
+        {"user_id": current_user["id"]},
+        {"$set": {"concerts": concerts}}
+    )
+    
+    return {"message": "Invoice deleted successfully"}

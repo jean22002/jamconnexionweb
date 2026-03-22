@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { toast } from 'sonner';
 import GusoAccountingTab from './GusoAccountingTab';
+import InvoiceUpload from './InvoiceUpload';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -143,6 +144,8 @@ const AccountingTab = ({ token }) => {
           updatePaymentStatus={updatePaymentStatus}
           exportToCSV={exportToCSV}
           getStatusBadge={getStatusBadge}
+          token={token}
+          fetchConcerts={fetchConcerts}
         />
       </TabsContent>
 
@@ -165,7 +168,9 @@ const GeneralAccountingContent = ({
   setFilters, 
   updatePaymentStatus, 
   exportToCSV,
-  getStatusBadge
+  getStatusBadge,
+  token,
+  fetchConcerts
 }) => {
   if (loading) {
     return (
@@ -324,17 +329,15 @@ const GeneralAccountingContent = ({
                       </div>
                     )}
 
-                    {concert.invoice_url && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-full gap-2"
-                        onClick={() => window.open(concert.invoice_url, '_blank')}
-                      >
-                        <Eye className="w-4 h-4" />
-                        Facture
-                      </Button>
-                    )}
+                    {/* Invoice Upload Component */}
+                    <InvoiceUpload
+                      concertId={concert.id}
+                      currentInvoice={concert.invoice_url}
+                      token={token}
+                      onUploadSuccess={() => {
+                        fetchConcerts();
+                      }}
+                    />
 
                     {concert.payment_status === 'pending' && (
                       <Button

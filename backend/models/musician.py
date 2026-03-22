@@ -47,8 +47,10 @@ class MusicianConcert(BaseModel):
     cachet: Optional[float] = None  # Amount in euros
     payment_status: str = "pending"  # "pending", "paid", "canceled"
     payment_date: Optional[str] = None  # ISO date
-    invoice_url: Optional[str] = None  # URL to uploaded invoice
-    invoice_number: Optional[str] = None  # Invoice reference
+    invoice_url: Optional[str] = None  # Storage path to uploaded invoice
+    invoice_filename: Optional[str] = None  # Original filename
+    invoice_uploaded_at: Optional[str] = None  # ISO datetime
+    invoice_number: Optional[str] = None  # Invoice reference number
     formation_type: Optional[str] = None  # "solo", "duo", "groupe"
     band_name: Optional[str] = None  # If groupe
     region: Optional[str] = None

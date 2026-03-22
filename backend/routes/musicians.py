@@ -1383,7 +1383,7 @@ async def create_pro_subscription(current_user: dict = Depends(get_current_user)
             )
         
         # Create Checkout Session with 2 MONTHS FREE TRIAL
-        frontend_url = os.environ.get("FRONTEND_URL", "https://pro-musician-sub.preview.emergentagent.com")
+        frontend_url = os.environ.get("FRONTEND_URL", "https://pro-features-beta.preview.emergentagent.com")
         
         checkout_session = stripe.checkout.Session.create(
             customer=stripe_customer_id,

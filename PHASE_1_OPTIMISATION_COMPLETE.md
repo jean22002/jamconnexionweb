@@ -207,7 +207,7 @@ cache-control: public, max-age=300, stale-while-revalidate=600
 cdn-cache-control: public, max-age=600
 
 # Test en production (écrasé par ingress - comportement attendu)
-$ curl -I https://pro-musician-sub.preview.emergentagent.com/api/venues
+$ curl -I https://pro-features-beta.preview.emergentagent.com/api/venues
 cache-control: no-store, no-cache, must-revalidate
 # Note: Normal en environnement Kubernetes, sera correct en production
 ```

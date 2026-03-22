@@ -4,7 +4,7 @@ echo "Testing rate limiting on /api/auth/login"
 echo "Making 12 consecutive requests with wrong credentials..."
 
 for i in {1..12}; do
-    response=$(curl -X POST "https://pro-musician-sub.preview.emergentagent.com/api/auth/login" \
+    response=$(curl -X POST "https://pro-features-beta.preview.emergentagent.com/api/auth/login" \
         -H "Content-Type: application/json" \
         -d '{"email":"test@invalid.com","password":"wrong"}' \
         -w "Status: %{http_code}" \

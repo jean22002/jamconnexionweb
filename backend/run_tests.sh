@@ -8,8 +8,16 @@ echo ""
 # Set testing mode environment variable
 export TESTING_MODE=true
 
-# Run the test suite
+# Clean test data first
+echo "🧹 Cleaning old test data..."
 cd /app/backend
+python tests/clean_test_data.py
+
+echo ""
+echo "▶️  Starting tests..."
+echo ""
+
+# Run the test suite
 python tests/backend_test.py
 
 # Capture exit code

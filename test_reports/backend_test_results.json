@@ -147,13 +147,13 @@
     {
       "test": "Karaok\u00e9 Creation",
       "success": true,
-      "details": "Karaok\u00e9 created: ID=3d3462d2-6ac2-4c15-859e-fca6b32e8c3f, Title='Soir\u00e9e Karaok\u00e9 Rock', Date=2026-02-15",
+      "details": "Karaok\u00e9 created: ID=pro-musician-sub, Title='Soir\u00e9e Karaok\u00e9 Rock', Date=2026-02-15",
       "timestamp": "2026-03-21T11:19:33.967909"
     },
     {
       "test": "Spectacle Creation",
       "success": true,
-      "details": "Spectacle created: ID=4c01f9cc-0d1d-46e2-92e5-2af45c1a2d24, Artist='Les Musiciens de Test', Date=2026-02-20",
+      "details": "Spectacle created: ID=pro-musician-sub, Artist='Les Musiciens de Test', Date=2026-02-20",
       "timestamp": "2026-03-21T11:19:34.082135"
     },
     {
@@ -183,13 +183,13 @@
     {
       "test": "Karaok\u00e9 Delete Endpoint",
       "success": true,
-      "details": "\u2705 Karaok\u00e9 deleted successfully: ID=66c37c25-da34-42c3-adcd-bf14136508e5",
+      "details": "\u2705 Karaok\u00e9 deleted successfully: ID=pro-musician-sub",
       "timestamp": "2026-03-21T11:19:34.713425"
     },
     {
       "test": "Spectacle Delete Endpoint",
       "success": true,
-      "details": "\u2705 Spectacle deleted successfully: ID=aed8b465-3f52-4fa2-981b-28ae227ba963",
+      "details": "\u2705 Spectacle deleted successfully: ID=pro-musician-sub",
       "timestamp": "2026-03-21T11:19:34.921886"
     },
     {

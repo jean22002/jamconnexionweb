@@ -45,7 +45,7 @@ POST /api/admin/optimize-images
 
 **Utilisation :**
 ```bash
-API_URL="https://perf-optimize-15.preview.emergentagent.com"
+API_URL="https://pro-musician-sub.preview.emergentagent.com"
 TOKEN="votre_token"
 
 curl -X POST "$API_URL/api/admin/optimize-images" \

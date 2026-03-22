@@ -20,6 +20,7 @@ import { MusicianImageUpload } from "../components/ui/image-upload";
 import OnlineStatusSelector from "../components/OnlineStatusSelector";
 import BackgroundSyncSettings from "../components/BackgroundSyncSettings";
 import LocationWidget from "../components/LocationWidget";
+import ProSubscriptionCard from "../components/ProSubscriptionCard";
 // NEW: Import refactored utilities
 import { buildImageUrl } from "../utils/urlBuilder";
 import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
@@ -47,6 +48,7 @@ import ParticipationsTab from "../components/participations/ParticipationsTab";
 import MusiciansTab from "../components/musicians/MusiciansTab";
 import FriendsTab from "../components/friends/FriendsTab";
 import Calendar from "../components/Calendar";
+import AccountingTab from "../components/accounting/AccountingTab";
 // NEW: Import custom hooks for refactored logic
 import { 
   useMusicianProfile, 
@@ -237,6 +239,14 @@ export default function MusicianDashboard() {
     // Restaurer le dernier onglet depuis localStorage
     const savedTab = localStorage.getItem('musician_activeTab');
     return savedTab || "map";
+  });
+  
+  // PRO Subscription state
+  const [subscriptionData, setSubscriptionData] = useState({
+    tier: "free",
+    status: "inactive",
+    in_trial: false,
+    trial_days_remaining: null
   });
   
   // Sauvegarder l'onglet actif dans localStorage à chaque changement
@@ -641,6 +651,17 @@ export default function MusicianDashboard() {
     }
   }, [token]);
 
+  const fetchSubscriptionStatus = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/musicians/me/subscription-status`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSubscriptionData(response.data);
+    } catch (error) {
+      console.error("Error fetching subscription status:", error);
+    }
+  }, [token]);
+
   useEffect(() => {
     // Initial data load - only runs once on mount
     fetchData();
@@ -650,6 +671,7 @@ export default function MusicianDashboard() {
     fetchBlockedUsers();
     fetchCurrentParticipation();
     fetchParticipations();
+    fetchSubscriptionStatus();
     
     // Force service worker update to get latest cache version
     if ('serviceWorker' in navigator) {
@@ -699,6 +721,28 @@ export default function MusicianDashboard() {
     }, 60000); // 60 secondes au lieu de 30
     
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Handle Stripe payment success callback
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const subscriptionStatus = params.get('subscription');
+    const sessionId = params.get('session_id');
+    
+    if (subscriptionStatus === 'success' && sessionId) {
+      toast.success('🎉 Bienvenue dans Musicien PRO ! Vous avez 2 mois gratuits.');
+      fetchSubscriptionStatus(); // Refresh subscription data
+      fetchProfile(); // Refresh profile
+      
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (subscriptionStatus === 'canceled') {
+      toast.error('Abonnement annulé');
+      
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -3237,11 +3281,30 @@ export default function MusicianDashboard() {
           </div>
         )}
 
+        {/* PRO Subscription Card (only for free tier) */}
+        {subscriptionData.tier === 'free' && (
+          <div className="mb-6">
+            <ProSubscriptionCard 
+              token={token} 
+              currentTier={subscriptionData.tier}
+              onSuccess={() => {
+                fetchSubscriptionStatus();
+                fetchProfile();
+              }}
+            />
+          </div>
+        )}
+
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 mb-6 gap-1 scrollbar-thin scrollbar-thumb-cyan-500/50 scrollbar-track-transparent min-h-[44px] items-center">
             <TabsTrigger value="map" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Carte</TabsTrigger>
             <TabsTrigger value="planning" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Planning</TabsTrigger>
+            {subscriptionData.tier === 'pro' && (
+              <TabsTrigger value="accounting" className="rounded-full whitespace-nowrap flex-shrink-0 px-4 bg-gradient-to-r from-primary/20 to-cyan-500/20 border border-primary/30">
+                💼 Comptabilité
+              </TabsTrigger>
+            )}
             <TabsTrigger value="candidatures" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Candidatures</TabsTrigger>
             <TabsTrigger value="my-applications" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Mes Candidatures</TabsTrigger>
             <TabsTrigger value="participations" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Mes Participations ({participations.length})</TabsTrigger>
@@ -3712,6 +3775,20 @@ export default function MusicianDashboard() {
                 </>
               )}
             </div>
+          </TabsContent>
+
+
+          {/* Accounting Tab (PRO only) */}
+          <TabsContent value="accounting">
+            {subscriptionData.tier === 'pro' ? (
+              <AccountingTab token={token} />
+            ) : (
+              <div className="glassmorphism rounded-2xl p-6">
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">Fonctionnalité réservée aux abonnés PRO</p>
+                </div>
+              </div>
+            )}
           </TabsContent>
 
 

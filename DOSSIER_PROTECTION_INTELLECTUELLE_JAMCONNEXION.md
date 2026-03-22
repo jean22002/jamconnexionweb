@@ -722,7 +722,7 @@
 
 **Date de première conception** : [À compléter]  
 **Date de première mise en ligne** : [À compléter]  
-**URL de démonstration** : https://perf-optimize-15.preview.emergentagent.com  
+**URL de démonstration** : https://pro-musician-sub.preview.emergentagent.com  
 **Version actuelle** : 2.0 (avec optimisations performance)
 
 **Créateur/Inventeur** : [VOTRE NOM COMPLET]  

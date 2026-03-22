@@ -7,7 +7,8 @@ from .musician import (
     FriendRequest,
     FriendRequestResponse,
     BandJoinRequest,
-    BandJoinRequestResponse
+    BandJoinRequestResponse,
+    ConcertUpdateRequest
 )
 from .melomane import MelomaneCreate, MelomaneUpdate, MelomaneResponse
 from .venue import (
@@ -42,6 +43,7 @@ __all__ = [
     'UserRegister', 'UserLogin', 'UserResponse', 'TokenResponse', 'ChangePasswordRequest',
     'BandInfo', 'MusicianConcert', 'MusicianProfile', 'MusicianProfileResponse',
     'FriendRequest', 'FriendRequestResponse', 'BandJoinRequest', 'BandJoinRequestResponse',
+    'ConcertUpdateRequest',
     'MelomaneCreate', 'MelomaneUpdate', 'MelomaneResponse',
     'VenueProfile', 'VenueProfileResponse', 'VenueSubscription', 'NearbySearchRequest',
     'JamEvent', 'JamEventResponse', 'ConcertBand', 'ConcertEvent', 'ConcertEventResponse',

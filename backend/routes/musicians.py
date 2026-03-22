@@ -4,14 +4,15 @@ Musicians router - Handles musician profiles, friends, and bands
 from fastapi import APIRouter, HTTPException, Depends, Header, Query
 from typing import List, Optional
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import jwt
 import os
 import logging
 
 from models import (
     MusicianProfile, MusicianProfileResponse,
-    FriendRequest, FriendRequestResponse
+    FriendRequest, FriendRequestResponse,
+    ConcertUpdateRequest
 )
 
 router = APIRouter()
@@ -1382,7 +1383,7 @@ async def create_pro_subscription(current_user: dict = Depends(get_current_user)
             )
         
         # Create Checkout Session with 2 MONTHS FREE TRIAL
-        frontend_url = os.environ.get("FRONTEND_URL", "https://perf-optimize-15.preview.emergentagent.com")
+        frontend_url = os.environ.get("FRONTEND_URL", "https://pro-musician-sub.preview.emergentagent.com")
         
         checkout_session = stripe.checkout.Session.create(
             customer=stripe_customer_id,
@@ -1679,3 +1680,118 @@ async def export_accounting_data(
     
     else:
         raise HTTPException(status_code=400, detail="Only CSV format supported for now")
+
+
+@router.get("/musicians/me/accounting/export/csv")
+async def export_accounting_csv(
+    year: int = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Export accounting data as CSV file (PRO feature)
+    """
+    from fastapi.responses import StreamingResponse
+    import csv
+    import io
+    
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can export accounting")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Check PRO subscription
+    if musician.get("subscription_tier") != "pro":
+        raise HTTPException(status_code=403, detail="PRO subscription required")
+    
+    if not year:
+        year = datetime.now(timezone.utc).year
+    
+    concerts = musician.get("concerts", [])
+    year_concerts = [c for c in concerts if c.get("date", "").startswith(str(year))]
+    
+    # Generate CSV
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Header
+    writer.writerow([
+        "Date", "Établissement", "Ville", "Région", "Formation", 
+        "Cachet (€)", "Statut Paiement", "Date Paiement", "Facture N°", "Notes"
+    ])
+    
+    # Data
+    for concert in year_concerts:
+        writer.writerow([
+            concert.get("date", ""),
+            concert.get("venue_name", ""),
+            concert.get("city", ""),
+            concert.get("region", ""),
+            concert.get("formation_type", ""),
+            concert.get("cachet", ""),
+            concert.get("payment_status", ""),
+            concert.get("payment_date", ""),
+            concert.get("invoice_number", ""),
+            concert.get("notes", "")
+        ])
+    
+    output.seek(0)
+    
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f"attachment; filename=comptabilite_{year}.csv"
+        }
+    )
+
+
+@router.patch("/musicians/me/concerts/{concert_id}")
+async def update_concert(
+    concert_id: str,
+    data: ConcertUpdateRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update concert payment information (PRO feature)"""
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can update concerts")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    concerts = musician.get("concerts", [])
+    concert_index = next((i for i, c in enumerate(concerts) if c.get("id") == concert_id), None)
+    
+    if concert_index is None:
+        raise HTTPException(status_code=404, detail="Concert not found")
+    
+    # Update fields
+    if data.payment_status is not None:
+        concerts[concert_index]["payment_status"] = data.payment_status
+        if data.payment_status == "paid" and not concerts[concert_index].get("payment_date"):
+            concerts[concert_index]["payment_date"] = datetime.now(timezone.utc).isoformat()
+    
+    if data.payment_date is not None:
+        concerts[concert_index]["payment_date"] = data.payment_date
+    
+    if data.cachet is not None:
+        concerts[concert_index]["cachet"] = data.cachet
+    
+    if data.invoice_url is not None:
+        concerts[concert_index]["invoice_url"] = data.invoice_url
+    
+    if data.invoice_number is not None:
+        concerts[concert_index]["invoice_number"] = data.invoice_number
+    
+    if data.notes is not None:
+        concerts[concert_index]["notes"] = data.notes
+    
+    # Save
+    await db.musicians.update_one(
+        {"user_id": current_user["id"]},
+        {"$set": {"concerts": concerts}}
+    )
+    
+    return {"message": "Concert updated successfully", "concert": concerts[concert_index]}

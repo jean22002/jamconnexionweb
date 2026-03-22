@@ -159,3 +159,13 @@ class BandJoinRequestResponse(BaseModel):
     message: Optional[str] = None
     status: str  # pending, accepted, rejected
     created_at: str
+
+
+class ConcertUpdateRequest(BaseModel):
+    """Model for updating concert payment information"""
+    payment_status: Optional[str] = None
+    payment_date: Optional[str] = None
+    cachet: Optional[float] = None
+    invoice_url: Optional[str] = None
+    invoice_number: Optional[str] = None
+    notes: Optional[str] = None

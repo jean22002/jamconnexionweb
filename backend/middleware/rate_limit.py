@@ -8,15 +8,31 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
+import os
 
 
-# Create limiter instance
-limiter = Limiter(
-    key_func=get_remote_address,
-    default_limits=["200/minute"],  # Default limit for all routes
-    storage_uri="memory://",  # In-memory storage (use Redis for production)
-    strategy="fixed-window"
-)
+# Check if we're in testing mode
+TESTING_MODE = os.getenv("TESTING_MODE", "false").lower() == "true"
+
+# Create limiter instance with conditional limits
+if TESTING_MODE:
+    # In testing mode, disable rate limiting
+    limiter = Limiter(
+        key_func=get_remote_address,
+        default_limits=["10000/minute"],  # Very high limit
+        storage_uri="memory://",
+        strategy="fixed-window",
+        enabled=False  # Disable rate limiting in tests
+    )
+    print("⚠️  Rate limiting DISABLED for testing mode")
+else:
+    # Production rate limiting
+    limiter = Limiter(
+        key_func=get_remote_address,
+        default_limits=["200/minute"],  # Default limit for all routes
+        storage_uri="memory://",  # In-memory storage (use Redis for production)
+        strategy="fixed-window"
+    )
 
 
 # Custom rate limit exceeded handler
@@ -26,7 +42,7 @@ def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded) -> Res
         status_code=429,
         content={
             "error": "Rate limit exceeded",
-            "message": f"Too many requests. Please try again later.",
+            "message": "Too many requests. Please try again later.",
             "retry_after": exc.detail
         },
         headers={"Retry-After": str(exc.detail)}
@@ -36,18 +52,32 @@ def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded) -> Res
 # Rate limit decorators by category
 # Usage: @router.post("/endpoint", dependencies=[Depends(strict_rate_limit)])
 
-# CRITICAL: Authentication & Security
-AUTH_RATE_LIMIT = "10/5minutes"  # Login attempts
-REGISTER_RATE_LIMIT = "5/hour"  # Account creation
-RESET_PASSWORD_RATE_LIMIT = "3/hour"  # Password reset
-
-# IMPORTANT: Content Creation
-CREATE_PROFILE_RATE_LIMIT = "10/hour"  # Profile creation
-CREATE_EVENT_RATE_LIMIT = "30/hour"  # Event creation
-APPLY_RATE_LIMIT = "50/hour"  # Job applications
-UPLOAD_RATE_LIMIT = "20/hour"  # File uploads
-MESSAGE_RATE_LIMIT = "20/minute"  # Messaging
-BROADCAST_RATE_LIMIT = "10/hour"  # Broadcast messages
+# Conditional rate limits based on testing mode
+if TESTING_MODE:
+    # Testing mode - very permissive limits
+    AUTH_RATE_LIMIT = "1000/minute"
+    REGISTER_RATE_LIMIT = "1000/minute"
+    RESET_PASSWORD_RATE_LIMIT = "1000/minute"
+    CREATE_PROFILE_RATE_LIMIT = "1000/minute"
+    CREATE_EVENT_RATE_LIMIT = "1000/minute"
+    APPLY_RATE_LIMIT = "1000/minute"
+    UPLOAD_RATE_LIMIT = "1000/minute"
+    MESSAGE_RATE_LIMIT = "1000/minute"
+    BROADCAST_RATE_LIMIT = "1000/minute"
+else:
+    # Production mode - strict limits
+    # CRITICAL: Authentication & Security
+    AUTH_RATE_LIMIT = "10/5minutes"  # Login attempts
+    REGISTER_RATE_LIMIT = "5/hour"  # Account creation
+    RESET_PASSWORD_RATE_LIMIT = "3/hour"  # Password reset
+    
+    # IMPORTANT: Content Creation
+    CREATE_PROFILE_RATE_LIMIT = "10/hour"  # Profile creation
+    CREATE_EVENT_RATE_LIMIT = "30/hour"  # Event creation
+    APPLY_RATE_LIMIT = "50/hour"  # Job applications
+    UPLOAD_RATE_LIMIT = "20/hour"  # File uploads
+    MESSAGE_RATE_LIMIT = "20/minute"  # Messaging
+    BROADCAST_RATE_LIMIT = "10/hour"  # Broadcast messages
 
 # MODERATE: Search & Read Operations
 SEARCH_RATE_LIMIT = "50/minute"  # Search queries

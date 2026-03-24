@@ -383,6 +383,45 @@ async def create_concert_event(data: ConcertEvent, current_user: dict = Depends(
     
     await db.concerts.insert_one(concert_doc)
     
+    # 🎵 SYNC GUSO INFO TO MUSICIANS
+    # If this is a GUSO concert, copy info to each musician's profile
+    if concert_doc.get("is_guso") and concert_doc.get("bands"):
+        for band in concert_doc["bands"]:
+            musician_id = band.get("musician_id")
+            if musician_id:
+                # Check if musician exists and is PRO
+                musician = await db.musicians.find_one({"user_id": musician_id}, {"_id": 0})
+                if musician:
+                    # Create concert entry for musician's profile
+                    musician_concert = {
+                        "id": concert_id,
+                        "venue_name": venue["name"],
+                        "venue_id": venue["id"],
+                        "city": venue.get("city", ""),
+                        "date": data.date,
+                        "is_guso": True,
+                        "cachet_type": concert_doc.get("cachet_type"),
+                        "cachet": concert_doc.get("amount"),
+                        "guso_contract_type": concert_doc.get("guso_contract_type"),
+                        "guso_declared": False,
+                        "payment_status": "pending",
+                        "formation_type": band.get("formation_type", "Solo")
+                    }
+                    
+                    # Check if concert already exists in musician's profile
+                    existing_concert = next(
+                        (c for c in musician.get("concerts", []) if c.get("id") == concert_id),
+                        None
+                    )
+                    
+                    if not existing_concert:
+                        # Add to musician's concerts
+                        await db.musicians.update_one(
+                            {"user_id": musician_id},
+                            {"$push": {"concerts": musician_concert}}
+                        )
+                        logger.info(f"✅ GUSO info synced to musician {musician_id} for concert {concert_id}")
+    
     # Notify subscribers
     await notify_venue_subscribers(
         venue["id"],
@@ -570,6 +609,36 @@ async def update_concert(concert_id: str, data: ConcertEvent, current_user: dict
         {"id": concert_id},
         {"$set": update_data}
     )
+    
+    # 🎵 SYNC UPDATED GUSO INFO TO MUSICIANS
+    # If GUSO info changed, update musician profiles
+    if update_data.get("is_guso") and update_data.get("bands"):
+        for band in update_data["bands"]:
+            musician_id = band.get("musician_id")
+            if musician_id:
+                # Update the concert in musician's profile
+                musician = await db.musicians.find_one({"user_id": musician_id}, {"_id": 0})
+                if musician:
+                    concerts = musician.get("concerts", [])
+                    concert_index = next(
+                        (i for i, c in enumerate(concerts) if c.get("id") == concert_id),
+                        None
+                    )
+                    
+                    if concert_index is not None:
+                        # Update existing concert
+                        concerts[concert_index].update({
+                            "cachet_type": update_data.get("cachet_type"),
+                            "cachet": update_data.get("amount"),
+                            "guso_contract_type": update_data.get("guso_contract_type"),
+                            "is_guso": True
+                        })
+                        
+                        await db.musicians.update_one(
+                            {"user_id": musician_id},
+                            {"$set": {"concerts": concerts}}
+                        )
+                        logger.info(f"✅ GUSO info updated for musician {musician_id} - concert {concert_id}")
     
     updated = await db.concerts.find_one({"id": concert_id}, {"_id": 0})
     participants_count = await db.event_participations.count_documents({

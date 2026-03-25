@@ -360,8 +360,7 @@ export default function MusicianDashboard() {
     youtube: "",
     // Members management
     members: [],  // Liste des membres actuels du groupe
-    pending_invitations: []  // Invitations en attente
-  });
+    pending_invitations: [],  // Invitations en attente
     website: "",
     bandcamp: "",
     looking_for_concerts: true,

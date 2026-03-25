@@ -3407,7 +3407,7 @@ export default function MusicianDashboard() {
 
           {/* Participations Tab - Copié du MelomaneDashboard */}
           <TabsContent value="participations">
-            <ParticipationsTab participations={participations} />
+            <ParticipationsTab participations={participations} token={token} />
           </TabsContent>
 
           <TabsContent value="musicians">

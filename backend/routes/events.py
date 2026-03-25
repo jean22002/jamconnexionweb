@@ -2,7 +2,7 @@
 Events router - Handles all event types (jams, concerts, karaoke, spectacles) and participations
 """
 from fastapi import APIRouter, HTTPException, Depends, Header, UploadFile, File, Query, Body, Request
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse, Response
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
@@ -1026,12 +1026,165 @@ async def get_my_participations(current_user: dict = Depends(get_current_user)):
                 "venue_city": venue.get("city") if venue else None,
                 "event_date": event.get("date"),
                 "event_time": event.get("start_time"),
+                "event_end_time": event.get("end_time"),
                 "event_title": event.get("title") if event_type == "concert" else None
             })
         else:
             enriched_participations.append(participation)
     
     return enriched_participations
+
+
+@router.get("/musicians/me/participations/calendar.ics")
+async def export_my_participations_calendar(current_user: dict = Depends(get_current_user)):
+    """
+    Export all my participations as .ics file
+    Compatible with Google Calendar, iOS Calendar, Outlook, etc.
+    """
+    if current_user["role"] not in ["musician", "melomane"]:
+        raise HTTPException(status_code=403, detail="Only musicians and melomanes can export participations")
+    
+    # Get all participations
+    participations = await db.event_participations.find({
+        "user_id": current_user["id"],
+        "active": True
+    }, {"_id": 0}).to_list(1000)
+    
+    # Build events list for iCal
+    events = []
+    for participation in participations:
+        event_id = participation.get("event_id")
+        event_type = participation.get("event_type")
+        
+        # Get event details
+        event = None
+        if event_type == "jam":
+            event = await db.jams.find_one({"id": event_id}, {"_id": 0})
+        elif event_type == "concert":
+            event = await db.concerts.find_one({"id": event_id}, {"_id": 0})
+        elif event_type == "karaoke":
+            event = await db.karaoke.find_one({"id": event_id}, {"_id": 0})
+        elif event_type == "spectacle":
+            event = await db.spectacle.find_one({"id": event_id}, {"_id": 0})
+        
+        if event:
+            venue = await db.venues.find_one({"id": event.get("venue_id")}, {"_id": 0})
+            
+            events.append({
+                "id": event_id,
+                "type": event_type,
+                "date": event.get("date"),
+                "start_time": event.get("start_time", "20:00"),
+                "end_time": event.get("end_time", "23:00"),
+                "venue_name": venue.get("name") if venue else "Établissement",
+                "venue_city": venue.get("city") if venue else "",
+                "title": event.get("title") if event_type == "concert" else None
+            })
+    
+    # Generate iCal content
+    ical_content = generate_participations_ical(events, current_user.get("name", "Musicien"))
+    
+    # Return as downloadable .ics file
+    filename = "mes_participations.ics"
+    
+    return Response(
+        content=ical_content,
+        media_type="text/calendar",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"'
+        }
+    )
+
+
+def generate_participations_ical(events: List[dict], user_name: str) -> str:
+    """Generate iCalendar format for participations"""
+    ical_lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Jam Connexion//Mes Participations//FR",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        f"X-WR-CALNAME:Mes Participations - {user_name}",
+        "X-WR-TIMEZONE:Europe/Paris",
+        "X-WR-CALDESC:Tous mes concerts, bœufs et événements musicaux"
+    ]
+    
+    for event in events:
+        try:
+            # Parse date and time
+            event_date = event.get("date", "")
+            start_time = event.get("start_time", "20:00")
+            end_time = event.get("end_time", "23:00")
+            
+            date_obj = datetime.fromisoformat(event_date)
+            
+            # Parse times
+            start_parts = start_time.split(":")
+            start_hour = int(start_parts[0]) if start_parts else 20
+            start_minute = int(start_parts[1]) if len(start_parts) > 1 else 0
+            
+            end_parts = end_time.split(":")
+            end_hour = int(end_parts[0]) if end_parts else 23
+            end_minute = int(end_parts[1]) if len(end_parts) > 1 else 0
+            
+            start_dt = date_obj.replace(hour=start_hour, minute=start_minute)
+            end_dt = date_obj.replace(hour=end_hour, minute=end_minute)
+            
+            dtstart = start_dt.strftime("%Y%m%dT%H%M%S")
+            dtend = end_dt.strftime("%Y%m%dT%H%M%S")
+            dtstamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+            
+        except Exception:
+            continue
+        
+        # Event details
+        event_type = event.get("type", "event")
+        venue_name = event.get("venue_name", "Établissement")
+        venue_city = event.get("venue_city", "")
+        title = event.get("title")
+        event_id = event.get("id", "")
+        
+        # Build summary
+        type_labels = {
+            "jam": "Bœuf musical",
+            "concert": "Concert",
+            "karaoke": "Karaoké",
+            "spectacle": "Spectacle"
+        }
+        
+        event_label = type_labels.get(event_type, "Événement")
+        
+        if title and event_type == "concert":
+            summary = f"{title} @ {venue_name}"
+        else:
+            summary = f"{event_label} @ {venue_name}"
+        
+        # Build location
+        location = venue_name
+        if venue_city:
+            location = f"{venue_name}, {venue_city}"
+        
+        # Build description
+        description = f"{event_label} - Participation confirmée"
+        
+        # Add event to calendar
+        ical_lines.extend([
+            "BEGIN:VEVENT",
+            f"UID:{event_id}@jamconnexion.com",
+            f"DTSTAMP:{dtstamp}",
+            f"DTSTART:{dtstart}",
+            f"DTEND:{dtend}",
+            f"SUMMARY:{summary}",
+            f"DESCRIPTION:{description}",
+            f"LOCATION:{location}",
+            "STATUS:CONFIRMED",
+            "TRANSP:OPAQUE",
+            "END:VEVENT"
+        ])
+    
+    ical_lines.append("END:VCALENDAR")
+    
+    return "\r\n".join(ical_lines)
 
 
 # ============= ACCOUNTING - UPDATE PAYMENT STATUS =============

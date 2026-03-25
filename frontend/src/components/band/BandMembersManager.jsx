@@ -191,9 +191,7 @@ const BandMembersManager = ({ bandId, currentMembers = [], token, onUpdate }) =>
           1. Invitez un musicien par email ou pseudo<br/>
           2. Un code unique sera généré et envoyé par notification<br/>
           3. Le musicien entre le code pour rejoindre le groupe<br/>
-          4. Il devient membre et peut être ajouté aux concerts<br/>
-          <br/>
-          ✅ <span className="font-semibold">Accessible à tous</span> - FREE et PRO
+          4. Il devient membre et peut être ajouté aux concerts
         </p>
       </div>
     </div>

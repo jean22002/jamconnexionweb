@@ -1,7 +1,7 @@
 """
 Band invitations and member management routes
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Header
 from fastapi.responses import Response
 from pydantic import BaseModel
 from typing import Optional, List
@@ -20,7 +20,7 @@ def get_db():
     return database
 
 # Dependency to get current user
-async def get_current_user_local(authorization: str = Depends(lambda: None)):
+async def get_current_user_local(authorization: str = Header(None)):
     from utils import get_current_user
     return await get_current_user(authorization, get_db())
 

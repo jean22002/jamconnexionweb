@@ -28,6 +28,8 @@ import MapTab from "../features/musician-dashboard/tabs/MapTab";
 import PlanningTab from "../features/musician-dashboard/tabs/PlanningTab";
 import SubscriptionsTab from "../features/musician-dashboard/tabs/SubscriptionsTab";
 import ProfileEditModal from "../features/musician-dashboard/ProfileEditModal";
+import BandMembersManager from "../components/band/BandMembersManager";
+import JoinBandWithCode from "../components/band/JoinBandWithCode";
 import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
 import { 
   Music, MapPin, LogOut, Search, Guitar, Users,
@@ -2026,13 +2028,16 @@ export default function MusicianDashboard() {
                     <TabsContent value="band" className="space-y-4 mt-4">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="font-heading text-lg">Mes Groupes</h3>
-                        <Button 
-                          onClick={() => handleOpenBandDialog(null)}
-                          className="bg-primary hover:bg-primary/90 rounded-full"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Ajouter un groupe
-                        </Button>
+                        <div className="flex gap-2">
+                          <JoinBandWithCode token={token} onSuccess={fetchProfile} />
+                          <Button 
+                            onClick={() => handleOpenBandDialog(null)}
+                            className="bg-primary hover:bg-primary/90 rounded-full"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Ajouter un groupe
+                          </Button>
+                        </div>
                       </div>
 
                       {profileForm.bands.length === 0 ? (
@@ -2983,6 +2988,16 @@ export default function MusicianDashboard() {
                         )}
                       </div>
                     </div>
+
+                    {/* Gestion des membres - Seulement en mode édition */}
+                    {editingBandIndex !== null && currentBand.id && (
+                      <BandMembersManager
+                        bandId={currentBand.id}
+                        currentMembers={currentBand.members || []}
+                        token={token}
+                        onUpdate={fetchProfile}
+                      />
+                    )}
 
                     {/* Boutons */}
                     <div className="flex gap-3 pt-4">

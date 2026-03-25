@@ -1084,7 +1084,7 @@ export default function VenueDashboard() {
   };
 
   // Toggle function pour la messagerie (sauvegarde immédiate)
-  const toggleMessaging = async (allowEveryone) => {
+  const toggleMessaging = async (newValue) => {
     // Vérifier que le profil existe (avec les champs requis)
     if (!profile || !formData.address || !formData.city) {
       toast.error("Veuillez d'abord compléter votre profil (nom, ville, adresse)");
@@ -1092,7 +1092,6 @@ export default function VenueDashboard() {
     }
     
     try {
-      const newValue = allowEveryone ? "everyone" : "connected_only";
       const updatedData = { ...formData, allow_messages_from: newValue };
       
       await axios.put(`${API}/venues`, updatedData, { 
@@ -1100,9 +1099,15 @@ export default function VenueDashboard() {
       });
       
       setFormData(updatedData);
-      toast.success(allowEveryone 
-        ? "Tous les musiciens peuvent vous contacter" 
-        : "Seuls les musiciens connectés peuvent vous contacter");
+      
+      const messages = {
+        "everyone": "Tous les musiciens peuvent vous contacter",
+        "pro_only": "Seuls les musiciens PRO peuvent vous contacter",
+        "connected_only": "Seuls les musiciens connectés peuvent vous contacter"
+      };
+      
+      toast.success(messages[newValue] || "Paramètres de messagerie mis à jour");
+      
       // Ne pas appeler fetchProfile() pour éviter d'écraser formData en mode édition
       if (!editing) {
         fetchProfile();
@@ -3223,18 +3228,91 @@ export default function VenueDashboard() {
 
                 <div className="space-y-4 border-t border-white/10 pt-4">
                   <Label>Paramètres de messagerie</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Choisissez qui peut vous contacter par messagerie privée
+                  </p>
+                  
                   <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <Switch 
-                        checked={formData.allow_messages_from === "everyone"} 
-                        onCheckedChange={(checked) => toggleMessaging(checked)} 
-                      />
-                      <div>
-                        <Label className="cursor-pointer">Autoriser les messages de tous les musiciens</Label>
+                    {/* Option 1: Tous les musiciens */}
+                    <div 
+                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                        formData.allow_messages_from === "everyone" 
+                          ? "border-primary bg-primary/10" 
+                          : "border-white/10 hover:border-white/20"
+                      }`}
+                      onClick={() => toggleMessaging("everyone")}
+                    >
+                      <div className="flex items-center h-5">
+                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          formData.allow_messages_from === "everyone" 
+                            ? "border-primary" 
+                            : "border-white/30"
+                        }`}>
+                          {formData.allow_messages_from === "everyone" && (
+                            <div className="w-2 h-2 rounded-full bg-primary"></div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <Label className="cursor-pointer font-semibold">Tous les musiciens</Label>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {formData.allow_messages_from === "everyone" 
-                            ? "✅ Tout musicien peut vous contacter par messagerie"
-                            : "🔒 Seuls les musiciens ayant joué dans votre établissement ou ayant été acceptés peuvent vous contacter"}
+                          ✅ Tout musicien peut vous contacter par messagerie
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Option 2: Seulement les musiciens PRO */}
+                    <div 
+                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                        formData.allow_messages_from === "pro_only" 
+                          ? "border-primary bg-primary/10" 
+                          : "border-white/10 hover:border-white/20"
+                      }`}
+                      onClick={() => toggleMessaging("pro_only")}
+                    >
+                      <div className="flex items-center h-5">
+                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          formData.allow_messages_from === "pro_only" 
+                            ? "border-primary" 
+                            : "border-white/30"
+                        }`}>
+                          {formData.allow_messages_from === "pro_only" && (
+                            <div className="w-2 h-2 rounded-full bg-primary"></div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <Label className="cursor-pointer font-semibold">Seulement les musiciens PRO</Label>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          🎵 Seuls les musiciens avec abonnement PRO peuvent vous contacter
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Option 3: Seulement les musiciens connectés */}
+                    <div 
+                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                        formData.allow_messages_from === "connected_only" 
+                          ? "border-primary bg-primary/10" 
+                          : "border-white/10 hover:border-white/20"
+                      }`}
+                      onClick={() => toggleMessaging("connected_only")}
+                    >
+                      <div className="flex items-center h-5">
+                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          formData.allow_messages_from === "connected_only" 
+                            ? "border-primary" 
+                            : "border-white/30"
+                        }`}>
+                          {formData.allow_messages_from === "connected_only" && (
+                            <div className="w-2 h-2 rounded-full bg-primary"></div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <Label className="cursor-pointer font-semibold">Seulement les musiciens connectés</Label>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          🔒 Seuls les musiciens ayant joué chez vous ou acceptés peuvent vous contacter
                         </p>
                       </div>
                     </div>

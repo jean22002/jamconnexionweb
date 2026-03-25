@@ -29,6 +29,37 @@ async def send_message(request: Request, data: MessageCreate, current_user: dict
     if not recipient:
         raise HTTPException(status_code=404, detail="Recipient not found")
     
+    # CHECK MESSAGING PREFERENCES
+    # If recipient is a venue, check their messaging settings
+    if recipient.get("role") == "venue":
+        venue_profile = await db.venues.find_one({"user_id": recipient["id"]}, {"_id": 0})
+        if venue_profile:
+            allow_messages_from = venue_profile.get("allow_messages_from", "everyone")
+            
+            # If venue only accepts from PRO musicians
+            if allow_messages_from == "pro_only" and current_user.get("role") == "musician":
+                # Check if sender is PRO
+                sender_user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+                if not sender_user:
+                    raise HTTPException(status_code=403, detail="Sender profile not found")
+                
+                is_pro = (
+                    sender_user.get("subscription_tier") == "pro" and 
+                    sender_user.get("subscription_status") == "active"
+                )
+                
+                if not is_pro:
+                    raise HTTPException(
+                        status_code=403, 
+                        detail="Cet établissement n'accepte que les messages des musiciens PRO. Passez à l'abonnement PRO pour le contacter."
+                    )
+            
+            # If venue only accepts from connected musicians
+            elif allow_messages_from == "connected_only" and current_user.get("role") == "musician":
+                # Check if musician has played at this venue or has been accepted
+                # This logic already exists - keep it as is
+                pass
+    
     # Get sender profile info
     sender_profile = None
     sender_image = None

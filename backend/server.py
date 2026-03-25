@@ -114,6 +114,7 @@ import routes.venues as venues
 import routes.events as events
 import routes.planning as planning
 import routes.bands as bands
+import routes.band_invitations as band_invitations  # NEW: Band member invitations
 import routes.badges as badges
 import routes.push_notifications as push_notifications
 import routes.friends as friends
@@ -142,6 +143,7 @@ musicians.set_db(db)
 events.set_db(db)
 planning.set_db(db)
 bands.set_db(db)
+band_invitations.db = db  # NEW: Band invitations
 badges.set_db(db)
 push_notifications.set_db(db)
 reports.set_db(db)
@@ -156,6 +158,7 @@ api_router.include_router(venues.router)
 api_router.include_router(events.router)
 api_router.include_router(planning.router)
 api_router.include_router(bands.router)
+api_router.include_router(band_invitations.router)  # NEW: Band invitations
 api_router.include_router(badges.router)
 api_router.include_router(push_notifications.router)
 api_router.include_router(friends.router)

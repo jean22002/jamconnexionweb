@@ -285,3 +285,81 @@ async def join_band_with_code(
         "band_id": band["id"],
         "band_name": band["name"]
     }
+
+
+
+@router.get("/{band_id}/events")
+async def get_band_events(
+    band_id: str,
+    month: Optional[int] = None,
+    year: Optional[int] = None,
+    current_user: dict = Depends(get_current_user_local)
+):
+    """
+    Get all events/concerts for a band
+    Accessible by all band members
+    """
+    db = get_db()
+    
+    # Check if user is a member of this band
+    band = await db.bands.find_one({"id": band_id}, {"_id": 0})
+    if not band:
+        raise HTTPException(status_code=404, detail="Groupe non trouvé")
+    
+    # Check if current user is a member or admin
+    is_member = (
+        band.get("admin_id") == current_user["id"] or
+        any(m.get("user_id") == current_user["id"] for m in band.get("members", []))
+    )
+    
+    if not is_member:
+        raise HTTPException(
+            status_code=403, 
+            detail="Seuls les membres du groupe peuvent voir le planning"
+        )
+    
+    # Build query for concerts featuring this band
+    query = {
+        "bands.name": band["name"]  # Search by band name in concerts
+    }
+    
+    # Filter by month/year if provided
+    if month and year:
+        # Get date range for the month
+        from datetime import date
+        import calendar
+        
+        # First and last day of the month
+        first_day = date(year, month, 1).isoformat()
+        last_day_num = calendar.monthrange(year, month)[1]
+        last_day = date(year, month, last_day_num).isoformat()
+        
+        query["date"] = {"$gte": first_day, "$lte": last_day}
+    
+    # Get concerts from database
+    concerts = await db.concerts.find(query, {"_id": 0}).to_list(1000)
+    
+    # Format events for frontend
+    events = []
+    for concert in concerts:
+        # Get venue info
+        venue = await db.venues.find_one({"id": concert.get("venue_id")}, {"_id": 0})
+        
+        event = {
+            "id": concert.get("id"),
+            "date": concert.get("date"),
+            "start_time": concert.get("start_time"),
+            "end_time": concert.get("end_time"),
+            "venue_name": venue.get("name") if venue else concert.get("venue_name", "Établissement"),
+            "venue_city": venue.get("city") if venue else "",
+            "venue_id": concert.get("venue_id"),
+            "description": concert.get("description"),
+            "title": concert.get("title"),
+            "status": "confirmed",  # Most band concerts are confirmed
+            "payment_method": concert.get("payment_method"),
+            "amount": concert.get("amount"),
+            "band_name": band["name"]
+        }
+        events.append(event)
+    
+    return events

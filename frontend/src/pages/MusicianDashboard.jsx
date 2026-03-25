@@ -30,6 +30,7 @@ import SubscriptionsTab from "../features/musician-dashboard/tabs/SubscriptionsT
 import ProfileEditModal from "../features/musician-dashboard/ProfileEditModal";
 import BandMembersManager from "../components/band/BandMembersManager";
 import JoinBandWithCode from "../components/band/JoinBandWithCode";
+import BandPlanningTab from "../features/musician-dashboard/tabs/BandPlanningTab";
 import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
 import { 
   Music, MapPin, LogOut, Search, Guitar, Users,
@@ -343,6 +344,8 @@ export default function MusicianDashboard() {
   // State for managing multiple bands
   const [editingBandIndex, setEditingBandIndex] = useState(null);
   const [showBandDialog, setShowBandDialog] = useState(false);
+  const [showBandPlanningDialog, setShowBandPlanningDialog] = useState(false);
+  const [selectedBandForPlanning, setSelectedBandForPlanning] = useState(null);
   const [currentBand, setCurrentBand] = useState({
     name: "",
     photo: "",
@@ -2110,6 +2113,21 @@ export default function MusicianDashboard() {
                                 </div>
                               )}
 
+                              {/* Bouton Planning du Groupe */}
+                              {band.id && (
+                                <Button
+                                  onClick={() => {
+                                    setSelectedBandForPlanning(band);
+                                    setShowBandPlanningDialog(true);
+                                  }}
+                                  variant="outline"
+                                  className="w-full mt-4 rounded-full"
+                                >
+                                  <CalendarIcon className="w-4 h-4 mr-2" />
+                                  Voir le planning du groupe
+                                </Button>
+                              )}
+
                               {/* Liens sociaux */}
                               <SocialLinks 
                                 facebook={band.facebook}
@@ -3770,6 +3788,19 @@ export default function MusicianDashboard() {
                 )}
               </div>
             </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Band Planning Dialog */}
+      <Dialog open={showBandPlanningDialog} onOpenChange={setShowBandPlanningDialog}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto glassmorphism border-white/10">
+          {selectedBandForPlanning && (
+            <BandPlanningTab
+              bandId={selectedBandForPlanning.id}
+              bandName={selectedBandForPlanning.name}
+              token={token}
+            />
           )}
         </DialogContent>
       </Dialog>

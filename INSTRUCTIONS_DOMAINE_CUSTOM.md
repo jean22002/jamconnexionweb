@@ -47,7 +47,7 @@ Ces IPs Cloudflare sont correctes SI elles sont fournies par Emergent lors de la
 En attendant que le domaine custom soit configuré, vous pouvez utiliser :
 
 ```
-https://pro-subscription-3.preview.emergentagent.com
+https://musician-calendar-1.preview.emergentagent.com
 ```
 
 Cette URL fonctionne **parfaitement** dès maintenant (testé et vérifié).

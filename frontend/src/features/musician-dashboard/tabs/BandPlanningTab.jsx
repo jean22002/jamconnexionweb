@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, CalendarIcon, Check, Clock, MapPin, Music, Users } from "lucide-react";
+import { Loader2, CalendarIcon, Check, Clock, MapPin, Music, Users, Download, Link2, Copy } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog";
 import Calendar from "../../../components/Calendar";
@@ -14,6 +14,8 @@ export default function BandPlanningTab({ bandId, bandName, token }) {
   const [eventsByDate, setEventsByDate] = useState({});
   const [selectedDate, setSelectedDate] = useState(null);
   const [showEventModal, setShowEventModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [subscriptionUrl, setSubscriptionUrl] = useState("");
 
   // Charger les événements du groupe
   useEffect(() => {
@@ -70,16 +72,82 @@ export default function BandPlanningTab({ bandId, bandName, token }) {
     console.log('Show event on map:', event);
   };
 
+  const handleDownloadCalendar = async () => {
+    try {
+      const response = await axios.get(
+        `${API}/bands/${bandId}/calendar.ics`,
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'blob'
+        }
+      );
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${bandName.replace(/\s+/g, '_')}_planning.ics`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.success('📅 Fichier .ics téléchargé ! Importez-le dans votre calendrier.');
+    } catch (error) {
+      console.error('Erreur lors du téléchargement:', error);
+      toast.error('Erreur lors du téléchargement du calendrier');
+    }
+  };
+
+  const handleShowSubscriptionUrl = () => {
+    // Generate subscription URL
+    const url = `${API}/bands/${bandId}/calendar.ics`;
+    setSubscriptionUrl(url);
+    setShowExportModal(true);
+  };
+
+  const handleCopySubscriptionUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(subscriptionUrl);
+      toast.success('✅ Lien copié ! Collez-le dans les paramètres de votre calendrier.');
+    } catch (error) {
+      toast.error('Erreur lors de la copie du lien');
+    }
+  };
+
   return (
     <div className="glassmorphism rounded-2xl p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="font-heading font-semibold text-2xl flex items-center gap-2">
-          <CalendarIcon className="w-6 h-6 text-primary" />
-          Planning du Groupe
-        </h2>
-        <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full">
-          <Users className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium">{bandName}</span>
+        <div className="flex items-center gap-3">
+          <h2 className="font-heading font-semibold text-2xl flex items-center gap-2">
+            <CalendarIcon className="w-6 h-6 text-primary" />
+            Planning du Groupe
+          </h2>
+          <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full">
+            <Users className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium">{bandName}</span>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleDownloadCalendar}
+            variant="outline"
+            size="sm"
+            className="rounded-full"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Télécharger .ics
+          </Button>
+          <Button
+            onClick={handleShowSubscriptionUrl}
+            variant="default"
+            size="sm"
+            className="rounded-full"
+          >
+            <Link2 className="w-4 h-4 mr-2" />
+            S'abonner au calendrier
+          </Button>
         </div>
       </div>
 
@@ -207,6 +275,91 @@ export default function BandPlanningTab({ bandId, bandName, token }) {
                     <p className="text-muted-foreground">Aucun événement ce jour-là</p>
                   </div>
                 )}
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Export Calendar Modal */}
+          <Dialog open={showExportModal} onOpenChange={setShowExportModal}>
+            <DialogContent className="max-w-2xl glassmorphism border-white/10">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5 text-primary" />
+                  Exporter vers Google Agenda / iOS
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-6">
+                {/* Option 1: Télécharger le fichier */}
+                <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                      <Download className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-heading font-semibold text-lg mb-1">Option 1 : Télécharger le fichier</h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Téléchargez le fichier .ics et importez-le manuellement dans votre application de calendrier.
+                        Cette option crée un <strong>instantané unique</strong> (ne se met pas à jour automatiquement).
+                      </p>
+                      <Button onClick={handleDownloadCalendar} variant="outline" size="sm" className="rounded-full">
+                        <Download className="w-4 h-4 mr-2" />
+                        Télécharger {bandName}_planning.ics
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="ml-13 text-xs text-muted-foreground bg-blue-500/10 p-3 rounded-lg">
+                    <p className="font-semibold mb-1">📱 Comment importer :</p>
+                    <ul className="list-disc list-inside space-y-1">
+                      <li><strong>Google Agenda</strong> : Paramètres → Importer et exporter → Sélectionner le fichier</li>
+                      <li><strong>iOS</strong> : Ouvrir le fichier → Ajouter tous les événements</li>
+                      <li><strong>Outlook</strong> : Fichier → Ouvrir et exporter → Importer</li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Option 2: URL d'abonnement */}
+                <div className="bg-white/5 border border-primary/30 rounded-xl p-5">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                      <Link2 className="w-5 h-5 text-green-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-heading font-semibold text-lg mb-1 flex items-center gap-2">
+                        Option 2 : S'abonner au calendrier
+                        <span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded-full">Recommandé</span>
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Utilisez ce lien pour vous abonner au planning. Les événements se <strong>synchronisent automatiquement</strong> !
+                      </p>
+                      
+                      {/* URL Box */}
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="flex-1 bg-black/30 rounded-lg p-3 border border-white/10">
+                          <code className="text-xs text-primary break-all">{subscriptionUrl}</code>
+                        </div>
+                        <Button onClick={handleCopySubscriptionUrl} variant="outline" size="sm">
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="ml-13 text-xs text-muted-foreground bg-green-500/10 p-3 rounded-lg">
+                    <p className="font-semibold mb-1">🔄 Comment s'abonner :</p>
+                    <ul className="list-disc list-inside space-y-1">
+                      <li><strong>Google Agenda</strong> : Autres agendas (+) → À partir de l'URL → Coller le lien</li>
+                      <li><strong>iOS</strong> : Réglages → Calendrier → Comptes → Ajouter un compte → Autre → S'abonner à un calendrier</li>
+                      <li><strong>Outlook</strong> : Ajouter un calendrier → S'abonner à partir du web → Coller le lien</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <Button onClick={() => setShowExportModal(false)} variant="ghost" size="sm">
+                    Fermer
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>

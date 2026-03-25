@@ -2,6 +2,7 @@
 Band invitations and member management routes
 """
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, timezone, timedelta
@@ -139,7 +140,7 @@ async def invite_member(
         "type": "band_invitation",
         "title": f"Invitation à rejoindre {band['name']}",
         "message": f"{current_user['name']} vous invite à rejoindre son groupe. Code: {code}",
-        "link": f"/dashboard",
+        "link": "/dashboard",
         "read": False,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "metadata": {
@@ -274,7 +275,7 @@ async def join_band_with_code(
         "type": "band_member_joined",
         "title": f"{current_user['name']} a rejoint {band['name']}",
         "message": f"{current_user['name']} a accepté l'invitation et est maintenant membre du groupe",
-        "link": f"/dashboard",
+        "link": "/dashboard",
         "read": False,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
@@ -362,4 +363,184 @@ async def get_band_events(
         }
         events.append(event)
     
+
+
+# ============= ICAL EXPORT FOR GOOGLE CALENDAR / iOS =============
+
+def generate_ical(events: List[dict], band_name: str) -> str:
+    """
+    Generate iCalendar format (.ics) for band events
+    Compatible with Google Calendar, Apple Calendar (iOS/macOS), Outlook, etc.
+    """
+    # iCal header
+    ical_lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Musician Calendar//Band Planning//EN",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        f"X-WR-CALNAME:{band_name} - Planning",
+        "X-WR-TIMEZONE:Europe/Paris",
+        "X-WR-CALDESC:Planning des concerts et événements du groupe"
+    ]
+    
+    for event in events:
+        # Parse date and time
+        event_date = event.get("date", "")
+        start_time = event.get("start_time", "20:00")
+        end_time = event.get("end_time", "23:00")
+        
+        # Build datetime string in iCal format (YYYYMMDDTHHMMSS)
+        try:
+            # Parse ISO date
+            date_obj = datetime.fromisoformat(event_date)
+            
+            # Parse start time
+            start_parts = start_time.split(":")
+            start_hour = int(start_parts[0]) if start_parts else 20
+            start_minute = int(start_parts[1]) if len(start_parts) > 1 else 0
+            
+            # Parse end time
+            end_parts = end_time.split(":")
+            end_hour = int(end_parts[0]) if end_parts else 23
+            end_minute = int(end_parts[1]) if len(end_parts) > 1 else 0
+            
+            # Create start and end datetime
+            start_dt = date_obj.replace(hour=start_hour, minute=start_minute)
+            end_dt = date_obj.replace(hour=end_hour, minute=end_minute)
+            
+            # Format for iCal (local time)
+            dtstart = start_dt.strftime("%Y%m%dT%H%M%S")
+            dtend = end_dt.strftime("%Y%m%dT%H%M%S")
+            dtstamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+            
+        except Exception:
+            # Fallback si parsing échoue
+            continue
+        
+        # Event details
+        venue_name = event.get("venue_name", "Lieu non spécifié")
+        venue_city = event.get("venue_city", "")
+        description_text = event.get("description", "")
+        event_id = event.get("id", "")
+        
+        # Build location
+        location = venue_name
+        if venue_city:
+            location = f"{venue_name}, {venue_city}"
+        
+        # Build description
+        description = f"Concert avec {band_name}"
+        if description_text:
+            description += f"\\n\\n{description_text}"
+        if event.get("payment_method"):
+            payment_info = event.get("payment_method")
+            if payment_info == "guso":
+                description += "\\n\\nMode de paiement: GUSO"
+            elif payment_info == "facture":
+                description += "\\n\\nMode de paiement: Facture"
+            elif payment_info == "promotion":
+                description += "\\n\\nConcert promotionnel"
+        if event.get("amount"):
+            description += f"\\n\\nCachet: {event.get('amount')}€"
+        
+        # Build summary (title)
+        summary = f"{venue_name} - {band_name}"
+        if event.get("title"):
+            summary = f"{event.get('title')} @ {venue_name}"
+        
+        # Add event to calendar
+        ical_lines.extend([
+            "BEGIN:VEVENT",
+            f"UID:{event_id}@musician-calendar.com",
+            f"DTSTAMP:{dtstamp}",
+            f"DTSTART:{dtstart}",
+            f"DTEND:{dtend}",
+            f"SUMMARY:{summary}",
+            f"DESCRIPTION:{description}",
+            f"LOCATION:{location}",
+            "STATUS:CONFIRMED",
+            "TRANSP:OPAQUE",
+            "END:VEVENT"
+        ])
+    
+    # Close calendar
+    ical_lines.append("END:VCALENDAR")
+    
+    return "\r\n".join(ical_lines)
+
+
+@router.get("/{band_id}/calendar.ics")
+async def export_band_calendar(
+    band_id: str,
+    current_user: dict = Depends(get_current_user_local)
+):
+    """
+    Export band planning as .ics file
+    Compatible with Google Calendar, iOS Calendar, Outlook, etc.
+    
+    Usage:
+    - Download: Click to download and import into any calendar app
+    - Subscribe: Use the URL as a calendar subscription (auto-updates)
+    """
+    db = get_db()
+    
+    # Check if user is a member of this band
+    band = await db.bands.find_one({"id": band_id}, {"_id": 0})
+    if not band:
+        raise HTTPException(status_code=404, detail="Groupe non trouvé")
+    
+    # Check if current user is a member or admin
+    is_member = (
+        band.get("admin_id") == current_user["id"] or
+        any(m.get("user_id") == current_user["id"] for m in band.get("members", []))
+    )
+    
+    if not is_member:
+        raise HTTPException(
+            status_code=403, 
+            detail="Seuls les membres du groupe peuvent exporter le planning"
+        )
+    
+    # Get all band events
+    query = {
+        "bands.name": band["name"]
+    }
+    
+    concerts = await db.concerts.find(query, {"_id": 0}).to_list(1000)
+    
+    # Format events
+    events = []
+    for concert in concerts:
+        # Get venue info
+        venue = await db.venues.find_one({"id": concert.get("venue_id")}, {"_id": 0})
+        
+        event = {
+            "id": concert.get("id"),
+            "date": concert.get("date"),
+            "start_time": concert.get("start_time", "20:00"),
+            "end_time": concert.get("end_time", "23:00"),
+            "venue_name": venue.get("name") if venue else concert.get("venue_name", "Établissement"),
+            "venue_city": venue.get("city") if venue else "",
+            "description": concert.get("description", ""),
+            "title": concert.get("title", ""),
+            "payment_method": concert.get("payment_method"),
+            "amount": concert.get("amount"),
+        }
+        events.append(event)
+    
+    # Generate iCal content
+    ical_content = generate_ical(events, band["name"])
+    
+    # Return as downloadable .ics file
+    filename = f"{band['name'].replace(' ', '_')}_planning.ics"
+    
+    return Response(
+        content=ical_content,
+        media_type="text/calendar",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"'
+        }
+    )
+
     return events

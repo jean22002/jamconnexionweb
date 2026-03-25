@@ -101,7 +101,7 @@
 ### Sur Mobile (Android)
 
 1. **Ouvrir Chrome/Firefox** sur Android
-2. Visiter `https://pro-subscription-3.preview.emergentagent.com`
+2. Visiter `https://musician-calendar-1.preview.emergentagent.com`
 3. **Banner d'installation** apparaît automatiquement
    - OU menu ⋮ → "Ajouter à l'écran d'accueil"
 4. L'app s'installe avec l'icône Jam Connexion

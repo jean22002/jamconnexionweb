@@ -73,6 +73,11 @@ const JoinBandWithCode = ({ token, onSuccess }) => {
             <DialogDescription>
               Entrez le code d'invitation reçu de l'admin du groupe
             </DialogDescription>
+            <div className="p-2 bg-green-500/10 border border-green-500/20 rounded-lg mt-2">
+              <p className="text-xs text-green-400">
+                ✅ Gratuit - Accessible à tous les musiciens (FREE et PRO)
+              </p>
+            </div>
           </DialogHeader>
 
           <div className="space-y-4 mt-4">

@@ -961,9 +961,9 @@ export default function MusicianDashboard() {
       setEditingProfile(false);
       fetchData(); // Recharger la liste des musiciens pour mettre à jour les filtres
       
-      // Si des groupes ont été modifiés, recharger la liste des groupes
-      if (profileData.bands && profileData.bands.length > 0) {
-        fetchBands(); // Recharger la liste des groupes pour afficher les nouveaux
+      // Recharger la liste des groupes si la section bands a été modifiée
+      if (profileData.bands !== undefined) {
+        fetchBands(); // Recharger la liste des groupes pour afficher les modifications
       }
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur");

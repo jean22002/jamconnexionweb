@@ -36,7 +36,16 @@ export default function ConcertsTab({ profileForm, setProfileForm }) {
         <div className="space-y-2 mt-3">
           {(profileForm.concerts || []).map((concert, i) => (
             <div key={i} className="flex items-center gap-2 p-3 bg-black/20 rounded-lg border border-white/10">
-              <span className="flex-1 text-sm">{concert}</span>
+              <span className="flex-1 text-sm">
+                {typeof concert === 'string' ? concert : (
+                  <>
+                    {concert.date && <span className="font-semibold">{concert.date}</span>}
+                    {concert.venue_name && <span> - {concert.venue_name}</span>}
+                    {concert.city && <span> ({concert.city})</span>}
+                    {concert.description && <span className="block text-xs text-gray-400 mt-1">{concert.description}</span>}
+                  </>
+                )}
+              </span>
               <button onClick={() => removeConcert(i)} className="hover:text-red-500">
                 <X className="w-4 h-4" />
               </button>

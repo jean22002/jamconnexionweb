@@ -3,11 +3,15 @@ from datetime import datetime, timezone, timedelta
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import uuid
+import logging
 
 from models import UserRegister, UserLogin, UserResponse, TokenResponse
 from utils import hash_password, verify_password, create_token, get_current_user
+from utils.email import send_welcome_email
 from middleware.rate_limit import limiter
 from routes.audit import log_action  # Import audit logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -92,6 +96,13 @@ async def register(request: Request, data: UserRegister):
         await db.melomanes.insert_one(melomane_profile)
     
     token = create_token(user_id, data.email, data.role)
+    
+    # Envoyer l'email de bienvenue (non-bloquant)
+    try:
+        await send_welcome_email(data.name, data.email, data.role)
+    except Exception as e:
+        # Ne pas bloquer l'inscription si l'email échoue
+        logger.error(f"Failed to send welcome email to {data.email}: {str(e)}")
     
     return TokenResponse(
         token=token,

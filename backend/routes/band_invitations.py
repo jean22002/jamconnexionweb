@@ -490,9 +490,13 @@ async def export_band_calendar(
     if not band:
         raise HTTPException(status_code=404, detail="Groupe non trouvé")
     
+    # Get musician profile for current user
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0, "id": 1})
+    musician_id = musician.get("id") if musician else None
+    
     # Check if current user is a member or admin or leader
     is_member = (
-        band.get("leader_id") == current_user["id"] or  # Leader du groupe
+        band.get("leader_id") == musician_id or  # Leader du groupe (compare musician.id)
         band.get("admin_id") == current_user["id"] or   # Admin du groupe
         any(m.get("user_id") == current_user["id"] for m in band.get("members", []))  # Membre
     )

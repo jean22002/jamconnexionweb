@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { MapPin, User } from "lucide-react";
 import LazyImage from "../../components/LazyImage";
+import { useState } from "react";
 
 // Profile tabs components
 import InfoTab from "./profile/InfoTab";
@@ -11,6 +12,7 @@ import SoloTab from "./profile/SoloTab";
 import BandTab from "./profile/BandTab";
 import ConcertsTab from "./profile/ConcertsTab";
 import SettingsTab from "./profile/SettingsTab";
+import { ShareBandModal, JoinBandModal } from "./profile/BandInviteModals";
 
 const BAND_TYPES = [
   "Duo acoustique",
@@ -59,10 +61,30 @@ export default function ProfileEditModal({
   removeConcert,
   setNewConcert,
   newConcert,
-  API
+  API,
+  onProfileRefresh
 }) {
+  const [shareBandModal, setShareBandModal] = useState({ open: false, band: null });
+  const [joinBandModal, setJoinBandModal] = useState(false);
+
+  const handleShareBand = (band) => {
+    setShareBandModal({ open: true, band });
+  };
+
+  const handleJoinBand = () => {
+    setJoinBandModal(true);
+  };
+
+  const handleJoinBandSuccess = () => {
+    // Rafraîchir le profil pour afficher le nouveau groupe
+    if (onProfileRefresh) {
+      onProfileRefresh();
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button variant="ghost" className="gap-2" data-testid="profile-btn">
           {profile?.profile_image ? (
@@ -129,6 +151,9 @@ export default function ProfileEditModal({
               profileForm={profileForm}
               handleOpenBandDialog={handleOpenBandDialog}
               onViewPlanning={onViewBandPlanning}
+              onShareBand={handleShareBand}
+              onJoinBand={handleJoinBand}
+              currentUserId={profile?.user_id}
             />
           </TabsContent>
 
@@ -155,5 +180,21 @@ export default function ProfileEditModal({
         </Button>
       </DialogContent>
     </Dialog>
+
+    {/* Modals pour les codes d'invitation */}
+    <ShareBandModal
+      open={shareBandModal.open}
+      onClose={() => setShareBandModal({ open: false, band: null })}
+      band={shareBandModal.band}
+      token={token}
+    />
+
+    <JoinBandModal
+      open={joinBandModal}
+      onClose={() => setJoinBandModal(false)}
+      token={token}
+      onSuccess={handleJoinBandSuccess}
+    />
+  </>
   );
 }

@@ -1458,6 +1458,8 @@ export default function MusicianDashboard() {
                 onViewBandPlanning={handleViewBandPlanning}
                 handleSaveProfile={handleSaveProfile}
                 handleChangePassword={handleChangePassword}
+                onProfileRefresh={fetchProfile}
+                API={API}
               />
 
               <Dialog open={showBandDialog} onOpenChange={setShowBandDialog}>

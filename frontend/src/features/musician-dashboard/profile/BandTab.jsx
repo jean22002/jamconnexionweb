@@ -1,58 +1,88 @@
 import { Button } from "../../../components/ui/button";
-import { Plus, Calendar } from "lucide-react";
+import { Plus, Calendar, Share2, UserPlus } from "lucide-react";
 
-export default function BandTab({ profileForm, handleOpenBandDialog, onViewPlanning }) {
+export default function BandTab({ 
+  profileForm, 
+  handleOpenBandDialog, 
+  onViewPlanning, 
+  onShareBand, 
+  onJoinBand,
+  currentUserId 
+}) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-heading text-lg">Mes Groupes</h3>
-        <Button onClick={() => handleOpenBandDialog()} size="sm" className="rounded-full">
-          <Plus className="w-4 h-4 mr-1" />
-          Ajouter un groupe
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={onJoinBand} size="sm" variant="outline" className="rounded-full">
+            <UserPlus className="w-4 h-4 mr-1" />
+            Rejoindre un groupe
+          </Button>
+          <Button onClick={() => handleOpenBandDialog()} size="sm" className="rounded-full">
+            <Plus className="w-4 h-4 mr-1" />
+            Ajouter un groupe
+          </Button>
+        </div>
       </div>
 
       {profileForm.bands && profileForm.bands.length > 0 ? (
         <div className="grid gap-3">
-          {profileForm.bands.map((band, index) => (
-            <div key={index} className="p-4 bg-black/20 rounded-xl border border-white/10 hover:border-primary/30 transition-colors">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h4 className="font-semibold text-lg mb-1">{band.name}</h4>
-                  {band.band_type && (
-                    <p className="text-sm text-muted-foreground">{band.band_type}</p>
-                  )}
-                  {band.music_styles && band.music_styles.length > 0 && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {band.music_styles.join(', ')}
-                    </p>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  {/* Bouton Voir le planning */}
-                  {onViewPlanning && (
+          {profileForm.bands.map((band, index) => {
+            // Vérifier si l'utilisateur est admin du groupe
+            const isAdmin = band.admin_id === currentUserId;
+            
+            return (
+              <div key={index} className="p-4 bg-black/20 rounded-xl border border-white/10 hover:border-primary/30 transition-colors">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-lg mb-1">{band.name}</h4>
+                    {band.band_type && (
+                      <p className="text-sm text-muted-foreground">{band.band_type}</p>
+                    )}
+                    {band.music_styles && band.music_styles.length > 0 && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {band.music_styles.join(', ')}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    {/* Bouton Partager (admin uniquement) */}
+                    {isAdmin && onShareBand && (
+                      <Button
+                        onClick={() => onShareBand(band)}
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full"
+                        title="Partager le groupe"
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                    {/* Bouton Voir le planning */}
+                    {onViewPlanning && (
+                      <Button
+                        onClick={() => onViewPlanning(band)}
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full"
+                        title="Voir le planning du groupe"
+                      >
+                        <Calendar className="w-4 h-4" />
+                      </Button>
+                    )}
                     <Button
-                      onClick={() => onViewPlanning(band)}
+                      onClick={() => handleOpenBandDialog(index)}
                       variant="outline"
                       size="sm"
                       className="rounded-full"
-                      title="Voir le planning du groupe"
                     >
-                      <Calendar className="w-4 h-4" />
+                      Éditer
                     </Button>
-                  )}
-                  <Button
-                    onClick={() => handleOpenBandDialog(index)}
-                    variant="outline"
-                    size="sm"
-                    className="rounded-full"
-                  >
-                    Éditer
-                  </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-8 text-muted-foreground border-2 border-dashed border-white/10 rounded-xl">

@@ -490,10 +490,11 @@ async def export_band_calendar(
     if not band:
         raise HTTPException(status_code=404, detail="Groupe non trouvé")
     
-    # Check if current user is a member or admin
+    # Check if current user is a member or admin or leader
     is_member = (
-        band.get("admin_id") == current_user["id"] or
-        any(m.get("user_id") == current_user["id"] for m in band.get("members", []))
+        band.get("leader_id") == current_user["id"] or  # Leader du groupe
+        band.get("admin_id") == current_user["id"] or   # Admin du groupe
+        any(m.get("user_id") == current_user["id"] for m in band.get("members", []))  # Membre
     )
     
     if not is_member:

@@ -70,14 +70,17 @@ export default function BandTab({
                         <Calendar className="w-4 h-4" />
                       </Button>
                     )}
-                    <Button
-                      onClick={() => handleOpenBandDialog(index)}
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full"
-                    >
-                      Éditer
-                    </Button>
+                    {/* Bouton Éditer (admin uniquement) */}
+                    {isAdmin && (
+                      <Button
+                        onClick={() => handleOpenBandDialog(index)}
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full"
+                      >
+                        Éditer
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

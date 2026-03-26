@@ -1,7 +1,8 @@
 import { Button } from "../../components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
-import { MapPin } from "lucide-react";
+import { MapPin, User } from "lucide-react";
+import LazyImage from "../../components/LazyImage";
 
 // Profile tabs components
 import InfoTab from "./profile/InfoTab";

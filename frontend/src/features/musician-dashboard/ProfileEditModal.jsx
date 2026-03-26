@@ -148,18 +148,6 @@ export default function ProfileEditModal({
           </TabsContent>
         </Tabs>
 
-        {/* Info message for geolocation */}
-        {!geoPosition && (
-          <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-            <p className="text-sm text-yellow-200 flex items-center gap-2">
-              <MapPin className="w-4 h-4" />
-              <span>
-                Activez la géolocalisation dans l'onglet Carte pour recevoir les notifications des établissements à proximité
-              </span>
-            </p>
-          </div>
-        )}
-
         <Button onClick={handleSaveProfile} className="w-full mt-4 bg-primary hover:bg-primary/90 rounded-full" data-testid="save-profile-btn">
           Sauvegarder
         </Button>

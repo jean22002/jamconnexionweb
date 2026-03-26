@@ -796,8 +796,10 @@ export default function MusicianDashboard() {
       setCurrentBand(profileForm.bands[index]);
       setEditingBandIndex(index);
     } else {
-      // Adding new band
+      // Adding new band - Generate unique ID
+      const bandId = `band_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       setCurrentBand({
+        id: bandId, // Ajouter un ID unique pour le nouveau groupe
         name: "",
         photo: "",
         description: "",
@@ -2119,19 +2121,30 @@ export default function MusicianDashboard() {
                               )}
 
                               {/* Bouton Planning du Groupe */}
-                              {band.id && (
-                                <Button
-                                  onClick={() => {
-                                    setSelectedBandForPlanning(band);
-                                    setShowBandPlanningDialog(true);
-                                  }}
-                                  variant="outline"
-                                  className="w-full mt-4 rounded-full"
-                                >
-                                  <CalendarIcon className="w-4 h-4 mr-2" />
-                                  Voir le planning du groupe
-                                </Button>
-                              )}
+                              <Button
+                                onClick={() => {
+                                  // Générer un ID si nécessaire pour les anciens groupes
+                                  const bandWithId = {
+                                    ...band,
+                                    id: band.id || `band_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                                  };
+                                  
+                                  // Si l'ID a été généré, le sauvegarder dans le profil
+                                  if (!band.id) {
+                                    const newBands = [...profileForm.bands];
+                                    newBands[index] = bandWithId;
+                                    setProfileForm({ ...profileForm, bands: newBands });
+                                  }
+                                  
+                                  setSelectedBandForPlanning(bandWithId);
+                                  setShowBandPlanningDialog(true);
+                                }}
+                                variant="default"
+                                className="w-full mt-4 rounded-full bg-gradient-to-r from-primary to-cyan-600 hover:from-primary/90 hover:to-cyan-600/90"
+                              >
+                                <CalendarIcon className="w-4 h-4 mr-2" />
+                                Voir le planning du groupe
+                              </Button>
 
                               {/* Liens sociaux */}
                               <SocialLinks 

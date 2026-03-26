@@ -85,13 +85,13 @@ export default function ProfileEditModal({
         </DialogHeader>
         
         <Tabs defaultValue="info" className="mt-4">
-          <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 gap-1 scrollbar-thin scrollbar-thumb-cyan-500/50 scrollbar-track-transparent">
-            <TabsTrigger value="info" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Infos</TabsTrigger>
-            <TabsTrigger value="styles" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Styles</TabsTrigger>
-            <TabsTrigger value="solo" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Solo</TabsTrigger>
-            <TabsTrigger value="band" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Groupe</TabsTrigger>
-            <TabsTrigger value="concerts" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Concerts</TabsTrigger>
-            <TabsTrigger value="settings" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Paramètres</TabsTrigger>
+          <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 gap-1 scrollbar-thin scrollbar-thumb-cyan-500/50 scrollbar-track-transparent scroll-smooth snap-x snap-mandatory">
+            <TabsTrigger value="info" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[70px] sm:min-w-auto">Infos</TabsTrigger>
+            <TabsTrigger value="styles" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[70px] sm:min-w-auto">Styles</TabsTrigger>
+            <TabsTrigger value="solo" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[70px] sm:min-w-auto">Solo</TabsTrigger>
+            <TabsTrigger value="band" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[70px] sm:min-w-auto">Groupe</TabsTrigger>
+            <TabsTrigger value="concerts" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[80px] sm:min-w-auto">Concerts</TabsTrigger>
+            <TabsTrigger value="settings" className="rounded-full whitespace-nowrap flex-shrink-0 px-2 sm:px-4 text-xs sm:text-sm snap-center min-w-[90px] sm:min-w-auto">Paramètres</TabsTrigger>
           </TabsList>
 
           <TabsContent value="info" className="space-y-4 mt-4">

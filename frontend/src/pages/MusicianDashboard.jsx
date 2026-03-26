@@ -1436,13 +1436,13 @@ export default function MusicianDashboard() {
                   </DialogHeader>
                   
                   <Tabs defaultValue="info" className="mt-4">
-                    <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 gap-1 scrollbar-thin scrollbar-thumb-cyan-500/50 scrollbar-track-transparent">
-                      <TabsTrigger value="info" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Infos</TabsTrigger>
-                      <TabsTrigger value="styles" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Styles</TabsTrigger>
-                      <TabsTrigger value="solo" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Solo</TabsTrigger>
-                      <TabsTrigger value="band" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Groupe</TabsTrigger>
-                      <TabsTrigger value="concerts" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Concerts</TabsTrigger>
-                      <TabsTrigger value="settings" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Paramètres</TabsTrigger>
+                    <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 gap-1 scrollbar-thin scrollbar-thumb-cyan-500/50 scrollbar-track-transparent scroll-smooth snap-x snap-mandatory">
+                      <TabsTrigger value="info" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[70px] sm:min-w-auto">Infos</TabsTrigger>
+                      <TabsTrigger value="styles" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[70px] sm:min-w-auto">Styles</TabsTrigger>
+                      <TabsTrigger value="solo" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[70px] sm:min-w-auto">Solo</TabsTrigger>
+                      <TabsTrigger value="band" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[70px] sm:min-w-auto">Groupe</TabsTrigger>
+                      <TabsTrigger value="concerts" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[80px] sm:min-w-auto">Concerts</TabsTrigger>
+                      <TabsTrigger value="settings" className="rounded-full whitespace-nowrap flex-shrink-0 px-2 sm:px-4 text-xs sm:text-sm snap-center min-w-[90px] sm:min-w-auto">Paramètres</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="info" className="space-y-4 mt-4">
@@ -3275,27 +3275,30 @@ export default function MusicianDashboard() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 mb-6 gap-1 scrollbar-thin scrollbar-thumb-cyan-500/50 scrollbar-track-transparent min-h-[44px] items-center">
-            <TabsTrigger value="map" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Carte</TabsTrigger>
-            <TabsTrigger value="planning" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Planning</TabsTrigger>
+          <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 mb-6 gap-1 scrollbar-thin scrollbar-thumb-cyan-500/50 scrollbar-track-transparent min-h-[44px] items-center scroll-smooth snap-x snap-mandatory">
+            <TabsTrigger value="map" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[60px] sm:min-w-auto">Carte</TabsTrigger>
+            <TabsTrigger value="planning" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[75px] sm:min-w-auto">Planning</TabsTrigger>
             {subscriptionData.tier === 'pro' && (
               <>
-                <TabsTrigger value="accounting" className="rounded-full whitespace-nowrap flex-shrink-0 px-4 bg-gradient-to-r from-primary/20 to-cyan-500/20 border border-primary/30">
-                  💼 Comptabilité
+                <TabsTrigger value="accounting" className="rounded-full whitespace-nowrap flex-shrink-0 px-2 sm:px-4 text-xs sm:text-sm snap-center min-w-[110px] sm:min-w-auto bg-gradient-to-r from-primary/20 to-cyan-500/20 border border-primary/30">
+                  💼 <span className="hidden xs:inline">Comptabilité</span><span className="xs:hidden">Compta</span>
                 </TabsTrigger>
-                <TabsTrigger value="analytics" className="rounded-full whitespace-nowrap flex-shrink-0 px-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30">
+                <TabsTrigger value="analytics" className="rounded-full whitespace-nowrap flex-shrink-0 px-2 sm:px-4 text-xs sm:text-sm snap-center min-w-[100px] sm:min-w-auto bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30">
                   📊 Analytics
                 </TabsTrigger>
               </>
             )}
-            <TabsTrigger value="candidatures" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Candidatures</TabsTrigger>
-            <TabsTrigger value="my-applications" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Mes Candidatures</TabsTrigger>
-            <TabsTrigger value="participations" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Mes Participations ({participations.length})</TabsTrigger>
-            <TabsTrigger value="musicians" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Musiciens</TabsTrigger>
-            <TabsTrigger value="venues" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Établissements</TabsTrigger>
-            <TabsTrigger value="friends" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Amis ({friends.length})</TabsTrigger>
-            <TabsTrigger value="subscriptions" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Connexions</TabsTrigger>
-            <TabsTrigger value="bands" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Groupes</TabsTrigger>
+            <TabsTrigger value="candidatures" className="rounded-full whitespace-nowrap flex-shrink-0 px-2 sm:px-4 text-xs sm:text-sm snap-center min-w-[95px] sm:min-w-auto">Candidatures</TabsTrigger>
+            <TabsTrigger value="my-applications" className="rounded-full whitespace-nowrap flex-shrink-0 px-2 sm:px-4 text-xs sm:text-sm snap-center min-w-[110px] sm:min-w-auto">Mes Cand.</TabsTrigger>
+            <TabsTrigger value="participations" className="rounded-full whitespace-nowrap flex-shrink-0 px-2 sm:px-4 text-xs sm:text-sm snap-center min-w-[120px] sm:min-w-auto">
+              <span className="hidden sm:inline">Mes Participations ({participations.length})</span>
+              <span className="sm:hidden">Particip. ({participations.length})</span>
+            </TabsTrigger>
+            <TabsTrigger value="musicians" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[85px] sm:min-w-auto">Musiciens</TabsTrigger>
+            <TabsTrigger value="venues" className="rounded-full whitespace-nowrap flex-shrink-0 px-2 sm:px-4 text-xs sm:text-sm snap-center min-w-[100px] sm:min-w-auto">Établissements</TabsTrigger>
+            <TabsTrigger value="friends" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[85px] sm:min-w-auto">Amis ({friends.length})</TabsTrigger>
+            <TabsTrigger value="subscriptions" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[90px] sm:min-w-auto">Connexions</TabsTrigger>
+            <TabsTrigger value="bands" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[75px] sm:min-w-auto">Groupes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="map">

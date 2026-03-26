@@ -8,6 +8,8 @@ from datetime import datetime, timezone, timedelta
 import jwt
 import os
 import logging
+import string
+import random
 
 from models import (
     MusicianProfile, MusicianProfileResponse,
@@ -40,6 +42,52 @@ async def get_current_user(authorization: str = Header(None)):
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
+
+def generate_invite_code() -> str:
+    """Génère un code d'invitation unique de 6 caractères"""
+    characters = string.ascii_uppercase + string.digits
+    return ''.join(random.choices(characters, k=6))
+
+
+async def create_band_invite_code_auto(band_id: str, user_id: str) -> None:
+    """
+    Crée automatiquement un code d'invitation pour un nouveau groupe.
+    Appelé lors de la création d'un groupe.
+    """
+    try:
+        # Vérifier si un code existe déjà
+        existing_code = await db.band_invite_codes.find_one(
+            {"band_id": band_id, "is_active": True},
+            {"_id": 0}
+        )
+        
+        if existing_code:
+            logger.info(f"Invite code already exists for band {band_id}")
+            return
+        
+        # Générer un code unique
+        code = generate_invite_code()
+        while await db.band_invite_codes.find_one({"code": code, "is_active": True}):
+            code = generate_invite_code()
+        
+        # Créer le code d'invitation
+        invite_code = {
+            "id": str(uuid.uuid4()),
+            "band_id": band_id,
+            "code": code,
+            "created_by": user_id,
+            "created_at": datetime.now(timezone.utc),
+            "expires_at": datetime.now(timezone.utc) + timedelta(days=7),
+            "is_active": True,
+            "used_by": []
+        }
+        
+        await db.band_invite_codes.insert_one(invite_code)
+        logger.info(f"Auto-generated invite code {code} for band {band_id}")
+        
+    except Exception as e:
+        logger.error(f"Failed to create invite code for band {band_id}: {e}")
+        # Non-blocking, continue même si la génération échoue
 
 
 # ============= HELPER FUNCTIONS =============
@@ -161,6 +209,9 @@ async def update_musician_profile(data: MusicianProfile, current_user: dict = De
                 }
                 await db.bands.insert_one(band_document)
                 logger.info(f"Band created in bands collection: {band_id} - {band_data.get('name')}")
+                
+                # Générer automatiquement un code d'invitation pour le nouveau groupe
+                await create_band_invite_code_auto(band_id, current_user["id"])
             
             bands_with_ids.append(band_data)
         

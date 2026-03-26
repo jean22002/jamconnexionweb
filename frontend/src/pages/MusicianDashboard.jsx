@@ -833,15 +833,18 @@ export default function MusicianDashboard() {
 
   // Fonction pour ouvrir le planning d'un groupe
   const handleViewBandPlanning = (band) => {
-    if (band && band.band_id) {
+    // Utiliser band.id ou band.band_id, selon ce qui existe
+    const bandId = band.band_id || band.id;
+    
+    if (bandId) {
       setSelectedBandForPlanning({
-        id: band.band_id,
+        id: bandId,
         name: band.name
       });
       setShowBandPlanningDialog(true);
       setEditingProfile(false); // Fermer le modal de profil
     } else {
-      toast.error("Ce groupe n'a pas encore d'ID. Sauvegardez d'abord votre profil.");
+      toast.error("Erreur : Ce groupe n'a pas d'identifiant.");
     }
   };
 

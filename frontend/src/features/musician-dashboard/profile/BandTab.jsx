@@ -36,8 +36,7 @@ export default function BandTab({ profileForm, handleOpenBandDialog, onViewPlann
                       variant="outline"
                       size="sm"
                       className="rounded-full"
-                      title={band.band_id ? "Voir le planning du groupe" : "Sauvegardez d'abord pour activer le planning"}
-                      disabled={!band.band_id}
+                      title="Voir le planning du groupe"
                     >
                       <Calendar className="w-4 h-4" />
                     </Button>

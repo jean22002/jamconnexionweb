@@ -45,7 +45,7 @@ class VenueProfileResponse(BaseModel):
     city: str
     department: Optional[str] = None
     region: Optional[str] = None
-    postal_code: str
+    postal_code: Optional[str] = None
     latitude: Optional[float] = 0.0
     longitude: Optional[float] = 0.0
     phone: Optional[str] = None
@@ -65,7 +65,7 @@ class VenueProfileResponse(BaseModel):
     equipment: List[str] = []
     music_styles: List[str] = []
     opening_hours: Optional[str] = None
-    created_at: str
+    created_at: Optional[str] = None
     subscription_status: Optional[str] = None
     trial_end: Optional[str] = None
     trial_days_left: Optional[int] = None

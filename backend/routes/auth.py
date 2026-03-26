@@ -7,7 +7,7 @@ import logging
 
 from models import UserRegister, UserLogin, UserResponse, TokenResponse
 from utils import hash_password, verify_password, create_token, get_current_user
-from utils.email import send_welcome_email
+from utils.email import send_welcome_email, send_verification_email, send_account_activated_email
 from middleware.rate_limit import limiter
 from routes.audit import log_action  # Import audit logging
 
@@ -32,6 +32,10 @@ async def register(request: Request, data: UserRegister):
     user_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
     
+    # Générer un token de vérification unique
+    verification_token = str(uuid.uuid4())
+    verification_expires = (datetime.now(timezone.utc) + timedelta(hours=48)).isoformat()
+    
     trial_end = None
     subscription_status = None
     if data.role == "venue":
@@ -46,7 +50,12 @@ async def register(request: Request, data: UserRegister):
         "role": data.role,
         "created_at": now,
         "subscription_status": subscription_status,
-        "trial_end": trial_end
+        "trial_end": trial_end,
+        "email_verified": False,
+        "verification_token": verification_token,
+        "verification_token_expires": verification_expires,
+        "verification_resend_count": 0,
+        "verification_last_resend": None
     }
     
     await db.users.insert_one(user_doc)
@@ -97,12 +106,12 @@ async def register(request: Request, data: UserRegister):
     
     token = create_token(user_id, data.email, data.role)
     
-    # Envoyer l'email de bienvenue (non-bloquant)
+    # Envoyer l'email de vérification (non-bloquant)
     try:
-        await send_welcome_email(data.name, data.email, data.role)
+        await send_verification_email(data.name, data.email, verification_token)
     except Exception as e:
         # Ne pas bloquer l'inscription si l'email échoue
-        logger.error(f"Failed to send welcome email to {data.email}: {str(e)}")
+        logger.error(f"Failed to send verification email to {data.email}: {str(e)}")
     
     return TokenResponse(
         token=token,
@@ -129,6 +138,13 @@ async def login(request: Request, data: UserLogin):
             status="failed"
         )
         raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Vérifier si l'email est vérifié
+    if not user.get("email_verified", False):
+        raise HTTPException(
+            status_code=403, 
+            detail="Veuillez vérifier votre email avant de vous connecter. Consultez votre boîte mail."
+        )
     
     # Audit log: Successful login
     await log_action(
@@ -159,3 +175,107 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         subscription_status=current_user.get("subscription_status"),
         trial_end=current_user.get("trial_end")
     )
+
+
+@router.get("/verify-email")
+async def verify_email(token: str):
+    """
+    Vérifie l'email d'un utilisateur via le token de vérification
+    """
+    user = await db.users.find_one({"verification_token": token}, {"_id": 0})
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="Token de vérification invalide")
+    
+    # Vérifier si le token est expiré
+    expires = datetime.fromisoformat(user["verification_token_expires"])
+    if expires < datetime.now(timezone.utc):
+        raise HTTPException(
+            status_code=400, 
+            detail="Le lien de vérification a expiré. Demandez un nouveau lien."
+        )
+    
+    # Vérifier si déjà vérifié
+    if user.get("email_verified", False):
+        return {"message": "Email déjà vérifié", "already_verified": True}
+    
+    # Marquer l'email comme vérifié
+    await db.users.update_one(
+        {"id": user["id"]},
+        {
+            "$set": {
+                "email_verified": True,
+                "verification_token": None,
+                "verification_token_expires": None
+            }
+        }
+    )
+    
+    # Envoyer l'email de confirmation d'activation
+    try:
+        await send_account_activated_email(user.get("name", ""), user["email"])
+    except Exception as e:
+        logger.error(f"Failed to send activation email to {user['email']}: {str(e)}")
+    
+    return {"message": "Email vérifié avec succès !", "email": user["email"]}
+
+
+@router.post("/resend-verification")
+@limiter.limit("3/day")
+async def resend_verification(request: Request, email: str):
+    """
+    Renvoie l'email de vérification (limité à 3 par jour)
+    """
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    # Vérifier si déjà vérifié
+    if user.get("email_verified", False):
+        raise HTTPException(status_code=400, detail="Email déjà vérifié")
+    
+    # Vérifier le nombre de renvois aujourd'hui
+    resend_count = user.get("verification_resend_count", 0)
+    last_resend = user.get("verification_last_resend")
+    
+    if last_resend:
+        last_resend_date = datetime.fromisoformat(last_resend).date()
+        today = datetime.now(timezone.utc).date()
+        
+        # Reset le compteur si c'est un nouveau jour
+        if last_resend_date < today:
+            resend_count = 0
+    
+    if resend_count >= 3:
+        raise HTTPException(
+            status_code=429, 
+            detail="Vous avez atteint la limite de 3 renvois par jour. Réessayez demain."
+        )
+    
+    # Générer un nouveau token
+    new_token = str(uuid.uuid4())
+    new_expires = (datetime.now(timezone.utc) + timedelta(hours=48)).isoformat()
+    
+    # Mettre à jour l'utilisateur
+    await db.users.update_one(
+        {"id": user["id"]},
+        {
+            "$set": {
+                "verification_token": new_token,
+                "verification_token_expires": new_expires,
+                "verification_resend_count": resend_count + 1,
+                "verification_last_resend": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    # Envoyer le nouvel email
+    try:
+        await send_verification_email(user.get("name", ""), user["email"], new_token)
+    except Exception as e:
+        logger.error(f"Failed to resend verification email to {user['email']}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur lors de l'envoi de l'email")
+    
+    return {"message": "Email de vérification renvoyé avec succès"}
+

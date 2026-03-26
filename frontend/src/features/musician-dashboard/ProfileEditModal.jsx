@@ -446,17 +446,6 @@ export default function ProfileEditModal({
             </p>
           </div>
         )}
-        
-        {geoPosition && (
-          <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-            <p className="text-sm text-green-200 flex items-center gap-2">
-              <MapPin className="w-4 h-4" />
-              <span>
-                ✓ Position GPS active - Vos coordonnées seront sauvegardées lors de la mise à jour du profil
-              </span>
-            </p>
-          </div>
-        )}
 
         <Button onClick={handleSaveProfile} className="w-full mt-4 bg-primary hover:bg-primary/90 rounded-full" data-testid="save-profile-btn">
           Sauvegarder

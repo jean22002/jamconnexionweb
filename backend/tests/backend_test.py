@@ -1,10 +1,10 @@
 import requests
 import sys
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class JamConnexionAPITester:
-    def __init__(self, base_url="https://musician-calendar-1.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://band-calendar-1.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0
@@ -938,7 +938,6 @@ class JamConnexionAPITester:
             headers = {'Authorization': f'Bearer {self.venue_token}'}
             
             # Get current time and create an active jam (happening now)
-            from datetime import datetime, timedelta
             now = datetime.now()
             start_time = (now - timedelta(minutes=15)).strftime("%H:%M")  # Started 15 min ago
             end_time = (now + timedelta(hours=2)).strftime("%H:%M")       # Ends in 2 hours
@@ -1184,7 +1183,6 @@ class JamConnexionAPITester:
             
             # Create another active jam and join it (to trigger friend notification)
             venue_headers = {'Authorization': f'Bearer {self.venue_token}'}
-            from datetime import datetime, timedelta
             now = datetime.now()
             start_time = (now - timedelta(minutes=10)).strftime("%H:%M")
             end_time = (now + timedelta(hours=1)).strftime("%H:%M")
@@ -1541,7 +1539,6 @@ class JamConnexionAPITester:
     def test_create_test_events_for_notifications(self):
         """Créer des événements de test pour le script de notifications"""
         try:
-            from datetime import datetime, timedelta
             
             # Create events for testing notification script
             venue_headers = {'Authorization': f'Bearer {self.venue_token}'}
@@ -1879,7 +1876,6 @@ class JamConnexionAPITester:
         try:
             # First, create an active jam and participate
             venue_headers = {'Authorization': f'Bearer {self.venue_token}'}
-            from datetime import datetime, timedelta
             now = datetime.now()
             start_time = (now - timedelta(minutes=5)).strftime("%H:%M")
             end_time = (now + timedelta(hours=1)).strftime("%H:%M")
@@ -4505,7 +4501,6 @@ class JamConnexionAPITester:
         try:
             # Create a jam event first
             headers = {'Authorization': f'Bearer {self.venue_token}'}
-            from datetime import datetime, timedelta
             now = datetime.now()
             start_time = (now - timedelta(minutes=10)).strftime("%H:%M")
             end_time = (now + timedelta(hours=2)).strftime("%H:%M")
@@ -4595,7 +4590,6 @@ class JamConnexionAPITester:
         try:
             # Create an active jam for testing
             headers = {'Authorization': f'Bearer {self.venue_token}'}
-            from datetime import datetime, timedelta
             now = datetime.now()
             start_time = (now - timedelta(minutes=10)).strftime("%H:%M")
             end_time = (now + timedelta(hours=2)).strftime("%H:%M")
@@ -4674,7 +4668,6 @@ class JamConnexionAPITester:
         try:
             # Create an active jam
             headers = {'Authorization': f'Bearer {self.venue_token}'}
-            from datetime import datetime, timedelta
             now = datetime.now()
             start_time = (now - timedelta(minutes=5)).strftime("%H:%M")
             end_time = (now + timedelta(hours=1)).strftime("%H:%M")
@@ -4731,7 +4724,6 @@ class JamConnexionAPITester:
         try:
             # Create an active jam
             headers = {'Authorization': f'Bearer {self.venue_token}'}
-            from datetime import datetime, timedelta
             now = datetime.now()
             start_time = (now - timedelta(minutes=5)).strftime("%H:%M")
             end_time = (now + timedelta(hours=2)).strftime("%H:%M")
@@ -4983,7 +4975,6 @@ class JamConnexionAPITester:
     def test_create_planning_slot_tomorrow(self):
         """Create an open planning slot for tomorrow"""
         try:
-            from datetime import datetime, timedelta
             tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
             
             planning_data = {
@@ -5076,7 +5067,6 @@ class JamConnexionAPITester:
         """TEST 2 - Notification de suppression de concert"""
         try:
             # Create a concert with both bands
-            from datetime import datetime, timedelta
             tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
             
             concert_data = {
@@ -5160,7 +5150,6 @@ class JamConnexionAPITester:
         """TEST 3 - Notification de suppression de candidature acceptée"""
         try:
             # Create new planning slot for this test
-            from datetime import datetime, timedelta
             tomorrow = (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%d")
             
             planning_data = {
@@ -5271,7 +5260,6 @@ class JamConnexionAPITester:
         """TEST 4 - Réouverture de créneau après suppression"""
         try:
             # Create slot with num_bands_needed: 2
-            from datetime import datetime, timedelta
             tomorrow = (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d")
             
             planning_data = {
@@ -5377,7 +5365,6 @@ class JamConnexionAPITester:
         """TEST 5 - Pas de notification si candidature pas acceptée"""
         try:
             # Create new planning slot
-            from datetime import datetime, timedelta
             tomorrow = (datetime.now() + timedelta(days=4)).strftime("%Y-%m-%d")
             
             planning_data = {
@@ -6249,7 +6236,6 @@ class JamConnexionAPITester:
             # Step 2: Create a concert
             print("\nStep 2: Creating concert event...")
             
-            from datetime import datetime, timedelta
             tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
             
             concert_data = {
@@ -8419,7 +8405,6 @@ class JamConnexionAPITester:
             bug_venue_id = bug_venue_profile.get('id')
             
             # Test 2: Create active jam event
-            from datetime import datetime, timedelta
             now = datetime.now()
             start_time = (now - timedelta(minutes=10)).strftime("%H:%M")
             end_time = (now + timedelta(hours=2)).strftime("%H:%M")
@@ -8806,7 +8791,7 @@ class JamConnexionAPITester:
         try:
             headers = {'Authorization': f'Bearer {self.venue_token}'}
             checkout_data = {
-                "origin_url": "https://musician-calendar-1.preview.emergentagent.com"
+                "origin_url": "https://band-calendar-1.preview.emergentagent.com"
             }
             
             response = requests.post(f"{self.base_url}/payments/checkout", json=checkout_data, headers=headers, timeout=15)
@@ -8838,7 +8823,7 @@ class JamConnexionAPITester:
         try:
             headers = {'Authorization': f'Bearer {self.musician_token}'}
             checkout_data = {
-                "origin_url": "https://musician-calendar-1.preview.emergentagent.com"
+                "origin_url": "https://band-calendar-1.preview.emergentagent.com"
             }
             
             response = requests.post(f"{self.base_url}/payments/checkout", json=checkout_data, headers=headers, timeout=10)
@@ -8859,7 +8844,7 @@ class JamConnexionAPITester:
         """Test Stripe checkout session creation without authentication (should fail - 401)"""
         try:
             checkout_data = {
-                "origin_url": "https://musician-calendar-1.preview.emergentagent.com"
+                "origin_url": "https://band-calendar-1.preview.emergentagent.com"
             }
             
             response = requests.post(f"{self.base_url}/payments/checkout", json=checkout_data, timeout=10)

@@ -13,7 +13,7 @@ import re
 import time
 
 # Backend URL from environment
-BACKEND_URL = "https://musician-calendar-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://band-calendar-1.preview.emergentagent.com/api"
 
 class ParticipationsCalendarTestSuite:
     def __init__(self):

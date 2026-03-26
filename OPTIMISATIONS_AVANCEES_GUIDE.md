@@ -45,7 +45,7 @@ POST /api/admin/optimize-images
 
 **Utilisation :**
 ```bash
-API_URL="https://musician-calendar-1.preview.emergentagent.com"
+API_URL="https://band-calendar-1.preview.emergentagent.com"
 TOKEN="votre_token"
 
 curl -X POST "$API_URL/api/admin/optimize-images" \

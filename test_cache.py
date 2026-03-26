@@ -5,7 +5,7 @@ import asyncio
 import httpx
 
 async def test_cache_headers():
-    base_url = "https://musician-calendar-1.preview.emergentagent.com"
+    base_url = "https://band-calendar-1.preview.emergentagent.com"
     
     test_cases = [
         ("/api/venues", "GET", "Should have public cache (300s)"),

@@ -13,7 +13,7 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Get backend URL from frontend environment
-BACKEND_URL = "https://band-calendar-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://ical-sync-staging.preview.emergentagent.com/api"
 
 # Test credentials
 TEST_EMAIL = "bar@gmail.com"
@@ -342,7 +342,7 @@ class PerformanceTestSuite:
                 ("/venues", "GET"),
                 ("/musicians", "GET"), 
                 ("/bands", "GET"),
-                ("/health", "GET", "https://band-calendar-1.preview.emergentagent.com")
+                ("/health", "GET", "https://ical-sync-staging.preview.emergentagent.com")
             ]
             
             results = []

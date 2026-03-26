@@ -147,13 +147,13 @@
     {
       "test": "Karaok\u00e9 Creation",
       "success": true,
-      "details": "Karaok\u00e9 created: ID=0bec9b62-166d-48d7-828a-3c34546a0252, Title='Soir\u00e9e Karaok\u00e9 Rock', Date=2026-02-15",
+      "details": "Karaok\u00e9 created: ID=ical-sync-staging, Title='Soir\u00e9e Karaok\u00e9 Rock', Date=2026-02-15",
       "timestamp": "2026-03-26T10:55:58.962663"
     },
     {
       "test": "Spectacle Creation",
       "success": true,
-      "details": "Spectacle created: ID=0926afc8-9824-4344-9e7e-2565af0d2789, Artist='Les Musiciens de Test', Date=2026-02-20",
+      "details": "Spectacle created: ID=ical-sync-staging, Artist='Les Musiciens de Test', Date=2026-02-20",
       "timestamp": "2026-03-26T10:55:59.056579"
     },
     {
@@ -183,13 +183,13 @@
     {
       "test": "Karaok\u00e9 Delete Endpoint",
       "success": true,
-      "details": "\u2705 Karaok\u00e9 deleted successfully: ID=fe59a8d0-3c15-4043-9a33-ca9b2cb6bd95",
+      "details": "\u2705 Karaok\u00e9 deleted successfully: ID=ical-sync-staging",
       "timestamp": "2026-03-26T10:55:59.668575"
     },
     {
       "test": "Spectacle Delete Endpoint",
       "success": true,
-      "details": "\u2705 Spectacle deleted successfully: ID=bfe1e325-af7d-4c23-b5a0-7cedd445b928",
+      "details": "\u2705 Spectacle deleted successfully: ID=ical-sync-staging",
       "timestamp": "2026-03-26T10:55:59.862462"
     },
     {

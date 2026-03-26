@@ -6,7 +6,7 @@ Test band membership and iCal export with proper band data
 import requests
 import json
 
-BACKEND_URL = "https://band-calendar-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://ical-sync-staging.preview.emergentagent.com/api"
 
 def test_band_membership():
     print("🎯 Testing Band Membership and iCal Export")

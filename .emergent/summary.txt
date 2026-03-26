@@ -1,297 +1,161 @@
 <analysis>**original_problem_statement:**
-Initialement, le projet visait à finaliser l'abonnement Musicien PRO. Les demandes de l'utilisateur ont ensuite évolué pour inclure la modification de l'offre PRO, l'ajout d'un badge GUSO, la gestion de l'abonnement, l'implémentation de la comptabilité GUSO, le refactoring des dashboards, la correction des tests et la création de données de test.
-
-Les dernières demandes de l'utilisateur concernaient :
-1.  L'activation manuelle du statut PRO pour un compte de test.
-2.  La résolution des problèmes de connexion avec les comptes de test.
-3.  La résolution d'un bug critique d'inscription où les utilisateurs n'étaient pas sauvegardés en base de données.
-4.  L'ajout de la possibilité de modifier manuellement les heures et cachets GUSO.
-5.  La création de données de concerts fictives pour peupler la comptabilité.
-6.  La modification du statut de déclaration d'un concert (Déclaré/À déclarer) via un menu déroulant.
+L'utilisateur a demandé plusieurs évolutions et corrections : 
+1. L'export des plannings (groupes et participations personnelles) vers Google Agenda / iOS via des fichiers  et liens d'abonnement.
+2. L'amélioration du design responsive (mobile) pour les menus à onglets.
+3. La correction d'un bug où les nouveaux groupes créés n'apparaissaient pas dans la liste.
+4. L'ajout d'un bouton pour accéder au planning directement depuis les cartes de groupe.
+5. Le nettoyage de l'interface (suppression de la carte d'information GPS).
+6. Le refactoring massif des fichiers monolithiques pour améliorer la maintenabilité.
+*(Nouvelles demandes ajoutées en cours de route : Migration vers MongoDB Atlas en production, configuration du nom de domaine personnalisé , correction de bugs en production sur les concerts, l'export iCal, et les profils manquants).*
 
 **PRODUCT REQUIREMENTS:**
-1.  **Abonnement Musicien PRO :** Finaliser l'interface, ajuster le prix, et permettre l'annulation via Stripe.
-2.  **Fonctionnalités PRO :**
-    - **Badge PRO :** Afficher un badge sur les profils publics, conditionné par l'abonnement et un numéro GUSO.
-    - **Comptabilité Générale :** Permettre l'upload de factures.
-    - **Comptabilité GUSO :** Suivre les cachets/heures, permettre l'édition manuelle des totaux et la modification du statut de déclaration de chaque concert.
-    - **Analytics PRO :** Créer un tableau de bord de statistiques.
-3.  **Dette Technique :**
-    - **Tests Backend :** Augmenter le taux de réussite de la suite de tests.
-    - **Refactoring Frontend :** Décomposer  et .
-4.  **Fiabilité :**
-    - **Inscription :** Le processus d'inscription doit être fiable et sauvegarder les utilisateurs en base de données.
-    - **Authentification :** Les comptes de test créés via des scripts doivent pouvoir se connecter.
+- Génération de flux iCal RFC 5545 pour le planning des groupes et les participations individuelles.
+- Interface utilisateur 100% responsive sur mobile.
+- Base de données persistante en production (MongoDB Atlas).
+- Domaine personnalisé fonctionnel et correctement routé (jamconnexion.com).
+- Synchronisation correcte de la double structure de données des groupes ( vs ).
 
-**User's preferred language**: Français
+**User's preferred language**: French
+*(INSTRUCT: Next agent MUST respond in French only)*
 
-**what currently exists?**
-L'application full-stack (React, FastAPI, MongoDB) est fonctionnelle. Le système d'abonnement PRO et ses fonctionnalités associées (badge, analytics, upload de factures) sont implémentés. Le refactoring des dashboards  et  a commencé, avec plusieurs onglets extraits dans des composants séparés. La comptabilité GUSO permet désormais l'édition manuelle des totaux (heures/cachets) et un menu déroulant a été ajouté pour changer le statut de chaque concert, bien que cette dernière fonctionnalité soit actuellement boguée. Un bug critique d'inscription a été résolu, et il est désormais confirmé que les utilisateurs sont correctement enregistrés en base. Le statut PRO est automatiquement activé pour tout nouvel utilisateur musicien à des fins de test.
+**what currently exists?** 
+Une application full-stack (React, FastAPI, MongoDB) de mise en relation et de gestion pour musiciens et établissements. L'application est désormais connectée à **MongoDB Atlas en environnement de production** et est accessible via le domaine personnalisé . Les fonctionnalités récentes incluent l'export iCal, les dashboards refactorisés, et la création/synchronisation automatique des ID de groupes (Bands) entre le profil musicien et la collection globale des groupes.
 
 **Last working item**:
-- **Last item agent was working:** Correction d'un bug sur le menu déroulant de déclaration de concert dans l'onglet de comptabilité GUSO (). L'utilisateur a signalé que la modification du statut échouait avec une erreur réseau.
-- **Status:** IN PROGRESS
-- **Agent Testing Done:** N
-- **Which testing method agent to use?** backend testing agent
-- **User Testing Done:** Y (User found the bug)
+    - Last item agent was working: Vérification de l'intégrité des données du profil de l'utilisateur. L'utilisateur craignait que ses données aient été effacées suite à la résolution d'une erreur 404 sur le chargement du profil (causée par l'absence d'un document musician pour le user Test). L'agent a confirmé via script que toutes les données (groupes, concerts) sont intactes.
+    - Status: USER VERIFICATION PENDING
+    - Agent Testing Done: Y
+    - Which testing method agent to use? manual testing by python -c
+    - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-- **Issue 1:** Le menu déroulant pour changer le statut d'un concert (Déclaré / À déclarer) ne fonctionne pas. (P0)
-- **Issue 2:** La suite de tests principale du backend () a un faible taux de réussite (42.0%). (P1)
-- **Issue 3:** Les scripts Python utilisés pour créer/modifier des utilisateurs de test échouent ou sont peu fiables en raison d'un problème de hashing de mot de passe (). (P2)
+  Issue 1: Désactiver l'activation automatique du statut PRO pour les nouveaux utilisateurs (P0)
+     - Attempted fixes: N/A (Repoussé pour traiter les bugs de production critiques)
+     - Next debug checklist: Modifier  pour retirer le bloc de code qui attribue automatiquement le statut PRO aux nouveaux musiciens (actuellement en place pour les tests).
+     - Why fix this issue and what will be achieved with the fix?: L'application est maintenant en production avec MongoDB Atlas. Les nouveaux inscrits ne doivent plus avoir le statut PRO gratuit pour permettre le vrai modèle économique (abonnement).
+     - Status: NOT STARTED
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? Backend
 
-**Issues Detail:**
-- **Issue 1:**
-  - **Attempted fixes:** L'agent a implémenté le menu déroulant sur le frontend, mais a oublié de créer l'endpoint backend correspondant, ce qui cause une erreur 404.
-  - **Next debug checklist:**
-    1.  Ouvrir .
-    2.  Créer un nouvel endpoint , par exemple .
-    3.  Cet endpoint doit accepter un body JSON contenant le nouvel état, ex: .
-    4.  Implémenter la logique pour trouver le musicien par , puis trouver le concert spécifique dans son tableau  et mettre à jour le champ .
-    5.  Sauvegarder la modification dans la base de données.
-    6.  Redémarrer le service backend.
-  - **Why fix this issue and what will be achieved with the fix?** Pour rendre la fonctionnalité de comptabilité GUSO entièrement opérationnelle, comme demandé par l'utilisateur.
-  - **Status:** IN PROGRESS
-  - **Is recurring issue?** N
-  - **Should Test frontend/backend/both after fix?** backend
+  Issue 2: Incohérence possible des  et profils manquants pour les anciens utilisateurs (P1)
+     - Attempted fixes: Corrigé manuellement pour l'utilisateur jean (user_id mismatch) et l'utilisateur Test (profil manquant).
+     - Next debug checklist: Créer un script de migration qui parcourt tous les documents de la collection , vérifie qu'un document correspondant existe dans  ou , et s'assure que le  correspond exactement au uid=0(root) gid=0(root) groups=0(root) de la table .
+     - Why fix this issue and what will be achieved with the fix?: Éviter les erreurs 403 (Forbidden) sur l'export iCal et les erreurs 404 (Not Found) au chargement des profils pour les anciens comptes.
+     - Status: NOT STARTED
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix? Backend
 
-- **Issue 2:**
-  - **Attempted fixes:** Activation d'un  pour désactiver le rate-limiting, correction d'un bug de validation Pydantic. Le taux de réussite est passé de 10% à 42%.
-  - **Next debug checklist:**
-    -  Modifier le script de test  pour mieux gérer l'état (tokens, IDs) entre les appels de test, en utilisant correctement les variables d'instance.
-    - S'assurer que le script de nettoyage  supprime bien toutes les entités de test pour éviter les erreurs Email already exists.
-  - **Why fix this issue and what will be achieved with the fix?** Assurer la stabilité de l'application et éviter les régressions.
-  - **Status:** IN PROGRESS
-  - **Is recurring issue?** Y
-  - **Should Test frontend/backend/both after fix?** backend
-  - **Blocked on other issue:** Non
-
-- **Issue 3:**
-  - **Attempted fixes:** Plusieurs contournements ont été tentés, comme la création d'utilisateurs via l'API, mais la cause racine n'a pas été corrigée.
-  - **Next debug checklist:**
-    -  Investiguer l'erreur  qui se produit dans les scripts. Cela indique probablement un conflit de version entre  et .
-    -  Mettre à jour les dépendances ou corriger le code des scripts pour qu'ils utilisent la même méthode de hachage que l'application principale.
-  - **Why fix this issue and what will be achieved with the fix?** Permettre la création et la gestion fiables des comptes de test, ce qui économisera beaucoup de temps de débogage à l'avenir.
-  - **Status:** NOT STARTED
-  - **Is recurring issue?** Y
-  - **Should Test frontend/backend/both after fix?** backend
-  - **Blocked on other issue:** Non
+  Issue 3: Amélioration du taux de réussite de la suite de tests backend (P2)
+     - Attempted fixes: Résolution du conflit de nommage  et correction des endpoints appelés. Le taux est passé de 0% à ~46%.
+     - Next debug checklist: Continuer à déboguer  pour les tests échouant restants (ex: bugs de création de jams multiples, erreurs 422 sur les applications).
+     - Why fix this issue and what will be achieved with the fix?: Assurer la stabilité de la CI/CD.
+     - Status: IN PROGRESS
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix? Backend
 
 **In progress Task List**:
-- **Task 1: Refactor  (P1)**
-  - **Where to resume:** Le refactoring a commencé. Quatre onglets simples ont été extraits (, , , ). La prochaine étape consiste à extraire les onglets plus complexes comme ,  et .
-  - **What will be achieved with this?** Améliorer la maintenabilité du plus grand composant de l'application (~7894 lignes restantes).
-  - **Status:** IN PROGRESS
-  - **Should Test frontend/backend/both after fix?** frontend
-  - **Blocked on something:** Non
-
-- **Task 2: Refactor  (P2)**
-  - **Where to resume:** L'extraction des onglets principaux est terminée. La tâche restante est d'extraire le modal d'édition de profil (~973 lignes) dans un composant dédié, ce qui a été tenté mais abandonné en raison de sa complexité.
-  - **What will be achieved with this?** Finaliser le refactoring de ce composant pour une meilleure lisibilité.
-  - **Status:** IN PROGRESS
-  - **Should Test frontend/backend/both after fix?** frontend
-  - **Blocked on something:** Non
+  Aucune tâche officiellement en cours, toutes les urgences de production ont été stabilisées.
 
 **Upcoming and Future Tasks**
-*   **Upcoming Tasks:**
-    *   (P1) **Implémenter le Pack Premium Venue:** Créer une offre d'abonnement pour les établissements.
-*   **Future Tasks:**
-    *   Rétablir le comportement normal de l'inscription (ne pas activer PRO par défaut) une fois les tests terminés.
-    *   Implémenter le reste des fonctionnalités PRO (portfolio enrichi, etc.).
-    *   Rendre les seuils de modération configurables.
-    *   Implémenter des notifications en temps réel avec des WebSockets.
+  - (P0) Désactiver l'activation automatique du statut PRO à l'inscription (dans ).
+  - (P1) Script de migration global pour la cohérence des  et la création des profils manquants.
+  - (P1) Rendre les seuils de modération configurables.
+  - (P2) Implémenter des notifications en temps réel avec des WebSockets.
 
 **Completed work in this session**
-- **Refactoring :**
-  - ****: Réduction de la taille de 4278 à 3764 lignes en extrayant 3 onglets.
-  - ****: Début du refactoring, réduction de 8206 à 7894 lignes en extrayant 4 onglets.
-- **Fonctionnalités & Bugs :**
-  - **Activation PRO Auto :** L'endpoint  a été modifié pour que tous les nouveaux musiciens soient PRO (pour les tests).
-  - **Comptabilité GUSO :** Ajout de l'édition manuelle des totaux (heures/cachets) et d'un menu déroulant pour le statut de déclaration des concerts.
-  - **Données Fictives :** Des scripts ont été utilisés pour créer des concerts fictifs pour un compte utilisateur, afin de peupler le tableau de bord de comptabilité.
-  - **Bug d'Inscription Résolu :** Le bug critique où les utilisateurs ne semblaient pas être créés a été diagnostiqué (l'agent cherchait dans la mauvaise base de données) et résolu. Il est confirmé que les inscriptions fonctionnent.
+  - Migration vers MongoDB Atlas en production via le changement de  dans  (DONE)
+  - Configuration et diagnostic du domaine personnalisé  avec le Support Agent et Cloudflare (DONE)
+  - Correction des tests backend : Résolution du conflit d'import  (DONE)
+  - Correction d'une erreur 500 sur  : Rendu de  et  optionnels dans les modèles Pydantic (DONE)
+  - Correction d'une erreur React #31 : Rendu conditionnel des propriétés des concerts au lieu des objets entiers dans  (DONE)
+  - Ajout du bouton Voir le planning directement sur les cartes de groupe dans l'onglet Profil (DONE)
+  - Suppression de la carte d'information GPS dans le Modal d'édition de profil (DONE)
+  - Correction du bug de création des groupes (Synchronisation) : Les groupes créés depuis le profil sont désormais correctement injectés dans la collection globale  avec génération garantie d'un  (Frontend + Backend) (DONE)
+  - Réparation en masse de 28 anciens groupes sans  dans la base de données (DONE)
+  - Résolution de l'erreur 403 Forbidden sur l'export iCal (Correction de la comparaison  vs  et correction DB pour jean) (DONE)
+  - Résolution de l'erreur 404 Profil non trouvé (Création d'un script pour générer le profil manquant de l'utilisateur Test) (DONE)
 
 **Earlier issues found/mentioned but not fixed**
-- N/A
+   Issue 1: Profils musiciens non créés ou incohérents
+   - Debug checklist: Écrire un script pour détecter les utilisateurs sans entrée dans  et les  désynchronisés.
+   - Why to solve this issue and what will be achieved with this: Évite des crashs 404 sur le dashboard pour d'anciens utilisateurs.
+   - Should Test frontend/backend/both after fix: backend
+   - Is recurring issue? Y
 
 **Known issue recurrence from previous fork**
-- **Issue recurrence in previous fork:** Faible taux de réussite des tests backend.
-- **Recurrence count:** 1
-- **Status:** IN PROGRESS
+  - Issue recurrence in previous fork: Tests backend qui échouent en masse.
+  - Recurrence count: 4
+  - Status: IN PROGRESS (Taux de succès passé de ~0% à 45.9%)
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Refactoring Frontend:** Extraction de composants React pour réduire la complexité des fichiers monolithiques.
-- **Débogage Backend :** Diagnostic de problèmes liés à la base de données (Motor vs PyMongo), aux variables d'environnement et à la logique des endpoints.
-- **Modification d'état côté client :** Utilisation de  et  pour gérer une interface utilisateur réactive (formulaires, filtres, modes d'édition).
+- FastAPI + Motor (MongoDB Async)
+- React Frontend
+- Pydantic Models validation
+- MongoDB Atlas (Production Environment)
 
 **key DB schema**
-- ** collection:**
-  - 
-  - 
-- ** collection:**
-  - 
-  - 
-- ** (embedded document):**
-  - 
+  - : {id, email, role}
+  - : {user_id, pseudo, bands: [{id, name...}], concerts: []}
+  - : {id, name, leader_id, admin_id, members: []} -> **CRITICAL**: The  embedded array inside  must stay synced with the  standalone collection.
 
 **changes in tech stack**
-- Aucune.
+  - **CRITICAL MIGRATION**: Base de données passée de MongoDB local () à MongoDB Atlas (). Les données sont désormais persistantes et en live !
 
 **All files of reference**
-- : **Contient le bug frontend.**
-- : **Doit être modifié pour corriger le bug.**
-- : Refactoring en cours.
-- : Refactoring en cours.
-- : Contient la modification temporaire pour l'activation PRO.
-- : Script de test à améliorer.
+  -  (Définit ENVIRONMENT='production' et pointe vers Atlas)
+  -  (Mise à jour Pydantic)
+  -  (Logique de création/synchronisation des bands modifiée)
+  -  (Logique de permission iCal modifiée)
+  -  (UI du bouton planning)
+  -  (Gestion de l'état du planning)
 
 **Areas that need refactoring**:
-- **CRITIQUE:**  (~7894 lignes) doit être davantage décomposé.
-- **IMPORTANT:**  nécessite l'extraction du modal de profil.
-- **IMPORTANT:** Le script de test  devrait être migré vers une structure ============================= test session starts ==============================
-platform linux -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0
-rootdir: /app
-plugins: locust-2.43.3, anyio-4.12.0
-collected 68 items / 2 errors
-
-==================================== ERRORS ====================================
-_______________________ ERROR collecting backend_test.py _______________________
-import file mismatch:
-imported module 'backend_test' has this __file__ attribute:
-  /app/backend/tests/backend_test.py
-which is not the same as the test file we want to collect:
-  /app/backend_test.py
-HINT: remove __pycache__ / .pyc files and/or use a unique basename for your test file modules
-_____________________ ERROR collecting locust_load_test.py _____________________
-locust_load_test.py:6: in <module>
-    from locust import HttpUser, task, between, TaskSet
-<frozen importlib._bootstrap>:1176: in _find_and_load
-    ???
-<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
-    ???
-<frozen importlib._bootstrap>:690: in _load_unlocked
-    ???
-/root/.venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:197: in exec_module
-    exec(co, module.__dict__)
-/root/.venv/lib/python3.11/site-packages/locust/__init__.py:25: in <module>
-    from .contrib.fasthttp import FastHttpUser
-<frozen importlib._bootstrap>:1176: in _find_and_load
-    ???
-<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
-    ???
-<frozen importlib._bootstrap>:690: in _load_unlocked
-    ???
-/root/.venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:197: in exec_module
-    exec(co, module.__dict__)
-/root/.venv/lib/python3.11/site-packages/locust/contrib/fasthttp.py:4: in <module>
-    from locust.user import User
-<frozen importlib._bootstrap>:1176: in _find_and_load
-    ???
-<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
-    ???
-<frozen importlib._bootstrap>:690: in _load_unlocked
-    ???
-/root/.venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:197: in exec_module
-    exec(co, module.__dict__)
-/root/.venv/lib/python3.11/site-packages/locust/user/__init__.py:9: in <module>
-    from .users import HttpUser, User
-<frozen importlib._bootstrap>:1176: in _find_and_load
-    ???
-<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
-    ???
-<frozen importlib._bootstrap>:690: in _load_unlocked
-    ???
-/root/.venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:197: in exec_module
-    exec(co, module.__dict__)
-/root/.venv/lib/python3.11/site-packages/locust/user/users.py:3: in <module>
-    from locust.clients import HttpSession
-<frozen importlib._bootstrap>:1176: in _find_and_load
-    ???
-<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
-    ???
-<frozen importlib._bootstrap>:690: in _load_unlocked
-    ???
-/root/.venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:197: in exec_module
-    exec(co, module.__dict__)
-/root/.venv/lib/python3.11/site-packages/locust/clients.py:70: in <module>
-    _preloaded_ssl_context = create_urllib3_context()
-                             ^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/urllib3/util/ssl_.py:303: in create_urllib3_context
-    context.minimum_version = TLSVersion.TLSv1_2
-    ^^^^^^^^^^^^^^^^^^^^^^^
-/usr/local/lib/python3.11/ssl.py:608: in minimum_version
-    super(SSLContext, SSLContext).minimum_version.__set__(self, value)
-/usr/local/lib/python3.11/ssl.py:608: in minimum_version
-    super(SSLContext, SSLContext).minimum_version.__set__(self, value)
-E   RecursionError: maximum recursion depth exceeded while calling a Python object
-!!! Recursion detected (same locals & position)
-=============================== warnings summary ===============================
-../root/.venv/lib/python3.11/site-packages/starlette/formparsers.py:12
-  /root/.venv/lib/python3.11/site-packages/starlette/formparsers.py:12: PendingDeprecationWarning: Please use `import python_multipart` instead.
-    import multipart
-
-../root/.venv/lib/python3.11/site-packages/locust/__init__.py:16
-  /root/.venv/lib/python3.11/site-packages/locust/__init__.py:16: MonkeyPatchWarning: Monkey-patching ssl after ssl has already been imported may lead to errors, including RecursionError on Python 3.6. It may also silently lead to incorrect behaviour on Python 3.7. Please monkey-patch earlier. See https://github.com/gevent/gevent/issues/1016. Modules that had direct imports (NOT patched): ['jwt.jwks_client (/root/.venv/lib/python3.11/site-packages/jwt/jwks_client.py)', 'aiohttp.client_exceptions (/root/.venv/lib/python3.11/site-packages/aiohttp/client_exceptions.py)', 'aiohttp.client_reqrep (/root/.venv/lib/python3.11/site-packages/aiohttp/client_reqrep.py)', 'aiohttp.connector (/root/.venv/lib/python3.11/site-packages/aiohttp/connector.py)', 'anyio.streams.tls (/root/.venv/lib/python3.11/site-packages/anyio/streams/tls.py)', 'urllib3.util (/root/.venv/lib/python3.11/site-packages/urllib3/util/__init__.py)', 'urllib3.util.ssl_ (/root/.venv/lib/python3.11/site-packages/urllib3/util/ssl_.py)', 'pymongo.ssl_context (/root/.venv/lib/python3.11/site-packages/pymongo/ssl_context.py)']. 
-    monkey.patch_all()
-
--- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-=========================== short test summary info ============================
-ERROR backend_test.py
-ERROR locust_load_test.py - RecursionError: maximum recursion depth exceeded ...
-!!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!!
-======================== 2 warnings, 2 errors in 1.66s ========================= standard.
+  - La synchronisation entre  et la collection  a été renforcée dans , mais ce pattern de double stockage reste sujet à des désynchronisations si des endpoints futurs modifient une collection sans modifier l'autre.
 
 **key api endpoints**
-- **Nouveaux Endpoints:**
-  - : Sauvegarde les totaux GUSO manuels.
-- **Endpoints à créer:**
-  - : Pour mettre à jour le statut de déclaration d'un concert.
-- **Endpoints Modifiés:**
-  - : Active désormais automatiquement le statut PRO pour les musiciens.
+  -  (Export iCal)
+  -  (Mise à jour profil et synchronisation des groupes)
 
 **Critical Info for New Agent**
-- **Priorité Absolue (P0):** Corriger le bug du menu déroulant dans la comptabilité GUSO en créant l'endpoint backend manquant dans .
-- **Contexte Important:** Le statut PRO est actuellement activé par défaut pour tout nouveau musicien. C'est une modification temporaire pour faciliter les tests de l'utilisateur. Il faudra penser à la retirer ou à la conditionner à un mode .
-- **Point de friction récurrent:** La création de comptes de test via des scripts Python est peu fiable à cause d'un problème avec . Il est plus sûr de passer par l'interface utilisateur pour créer de nouveaux comptes pour le moment.
+  - **L'application est en PRODUCTION**. Toutes les modifications dans la DB affectent les vrais utilisateurs. Utilisez des requêtes de lecture sûres ou des comptes de test isolés.
+  - Le domaine web  pointe désormais vers cette application via Cloudflare.
+  - Il existe un problème récurrent dans l'architecture où  correspond à  mais certaines anciennes tables référencent un vieux format ou ont des désynchronisations. Toujours vérifier la correspondance entre  et  lors de requêtes d'autorisation.
+  - N'oubliez pas de re-déployer (via l'UI Emergent) si des modifications de code doivent être visibles sur le domaine de production par l'utilisateur.
 
 **documents and test reports created in this job**
-- Aucun nouveau document formel n'a été créé.
+  - None created strictly as files, but test scripts logs are in the terminal history.
 
-**Last 10 User Messages and any pending HUMAN messages**
-1.  **Utilisateur:** Demande de déboguer le problème d'inscription.
-2.  **Agent:** Débogue et identifie un bug critique de base de données.
-3.  **Utilisateur:** Demande de corriger le bug.
-4.  **Agent:** Réalise que le bug était dans son script de vérification, pas dans l'application. Confirme que les utilisateurs (y compris ) sont bien créés.
-5.  **Agent:** Ajoute les données de concerts fictifs au compte .
-6.  **Utilisateur:** Demande de pouvoir sélectionner Déclarer / À déclarer sur les cartes de concert.
-7.  **Agent:** Implémente un badge cliquable pour changer le statut.
-8.  **Utilisateur:** Préfère un menu déroulant plutôt qu'un badge cliquable.
-9.  **Agent:** Remplace le badge par un menu déroulant .
-10. **Utilisateur:** Signale que le menu déroulant ne fonctionne pas et provoque un bug.
+**Last 10 User Messages and any pending HUMAN messages** 
+ 1. User: Appuie sur exporter le calendrier et observe un bug 404 (L'agent a corrigé la non-synchronisation des ID de groupes dans la base de données).
+ 2. User: Indique que les groupes créés ne sont plus sauvegardés (L'agent a corrigé un oubli dans l'attribution de l'ID backend et a réparé 28 groupes via script).
+ 3. User: Demande pourquoi le groupe toto n'est pas dans son profil (L'agent a confirmé que le script l'a réparé).
+ 4. User: Demande de s'assurer que tous les nouveaux groupes auront un ID pour pallier le problème (L'agent a vérifié la double protection front/back).
+ 5. User: Signale un bug persistant (Erreur 403) pour télécharger le calendrier (L'agent a diagnostiqué un problème d'autorisation avec ).
+ 6. User: Relance avec ??? et une capture d'écran de l'erreur 403 qui persiste (L'agent a trouvé une incohérence profonde dans la base de données entre  et  pour ce compte précis et l'a corrigée).
+ 7. User: Demande de corriger le 403 Forbidden v1 (L'agent a testé via DB que l'accès était maintenant autorisé).
+ 8. User: Signale un problème de profil (404 Not found) avec capture d'écran (L'agent a découvert que l'utilisateur Test n'avait pas de document  créé, et l'a généré manuellement).
+ 9. User: les donne du profil ont été effacé? (L'agent a rassuré l'utilisateur en vérifiant via script que les données sont intactes).
 
 **Project Health Check:**
-- **Broken:**
-  - La fonctionnalité de mise à jour du statut de déclaration des concerts.
-  - Les scripts de création/gestion d'utilisateurs de test.
-- **Mocked:**
-  - N/A
+  - Broken: Backend Bash Tests (partially passing: 45.9%).
+  - Mocked: Auto-PRO feature on register.
 
 **3rd Party Integrations**
-- Stripe
-- Emergent Object Storage
+  - Cloudflare (DNS/Proxy) — requires User Account (already configured)
+  - MongoDB Atlas — uses Database connection string in 
+  - Stripe (Payments) — requires User API Key
 
 **Testing status**
-- **Testing agent used after significant changes:** NO
-- **Troubleshoot agent used after agent stuck in loop:** NO
-- **Test files created:** Aucun.
-- **Known regressions:** Les scripts de test pour la gestion des utilisateurs sont devenus moins fiables.
+  - Testing agent used after significant changes: NO (Used terminal manual testing).
+  - Troubleshoot agent used after agent stuck in loop: YES (Support Agent was called to help user resolve Cloudflare/Domain linking problem).
+  - Test files created: []
+  - Known regressions: None
 
 **Credentials to test flow:**
-L'utilisateur peut créer son propre compte directement depuis l'interface. Grâce à la modification de , tout nouveau compte de musicien sera automatiquement PRO. Le compte  a été confirmé comme existant et possède des données de concert fictives. Le mot de passe est connu de l'utilisateur.
+  - L'inscription via l'UI est le meilleur moyen de tester de nouveaux workflows.
 
 **What agent forgot to execute**
-- L'agent a oublié d'implémenter l'endpoint backend () nécessaire au fonctionnement du menu déroulant qu'il venait de créer, ce qui a directement causé un bug pour l'utilisateur.
-- L'agent n'a pas résolu la cause première du problème de  dans les scripts de test, ce qui a entraîné une perte de temps et de la confusion lors du débogage des problèmes de connexion et d'inscription.</analysis>
+  - La désactivation du PRO automatique pour les nouveaux musiciens (Issue P0) a été repoussée en raison des problèmes critiques consécutifs liés au passage en production, à la migration de la base de données, aux configurations DNS, et aux bugs bloquants liés au profil/calendrier. C'est la priorité numéro 1 pour le prochain agent.</analysis>

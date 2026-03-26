@@ -7,7 +7,7 @@ import requests
 import json
 
 # Backend URL
-BACKEND_URL = "https://band-calendar-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://ical-sync-staging.preview.emergentagent.com/api"
 
 # Test credentials
 MUSICIAN_EMAIL = "musician@gmail.com"

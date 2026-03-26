@@ -11,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Dict
 import json
 
-BASE_URL = "https://band-calendar-1.preview.emergentagent.com/api"
+BASE_URL = "https://ical-sync-staging.preview.emergentagent.com/api"
 
 class PerformanceTester:
     def __init__(self):

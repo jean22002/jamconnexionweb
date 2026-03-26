@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Copy, Check, Loader2, Calendar, Users } from "lucide-react";
 import axios from "axios";
 
@@ -17,7 +17,7 @@ export function ShareBandModal({ open, onClose, band, token }) {
 
   // Générer ou récupérer le code d'invitation
   const fetchInviteCode = async () => {
-    if (inviteCode) return; // Déjà chargé
+    if (!band || inviteCode) return; // Vérifier que band existe
     
     setLoading(true);
     try {
@@ -52,6 +52,8 @@ export function ShareBandModal({ open, onClose, band, token }) {
 
   // Récupérer les membres ayant rejoint via code
   const fetchMembers = async () => {
+    if (!band) return;
+    
     try {
       const response = await axios.get(
         `${API_URL}/api/bands/${band.band_id || band.id}/invite-code/members`,
@@ -72,11 +74,19 @@ export function ShareBandModal({ open, onClose, band, token }) {
   };
 
   // Charger le code dès l'ouverture
-  useState(() => {
-    if (open && !inviteCode) {
+  useEffect(() => {
+    if (open && band && !inviteCode) {
       fetchInviteCode();
     }
-  }, [open]);
+    
+    // Reset quand le modal se ferme
+    if (!open) {
+      setInviteCode(null);
+      setMembersJoined([]);
+      setShowMembers(false);
+      setCopied(false);
+    }
+  }, [open, band]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {
@@ -87,6 +97,11 @@ export function ShareBandModal({ open, onClose, band, token }) {
       minute: '2-digit'
     });
   };
+
+  // Si pas de band, ne rien afficher
+  if (!band) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>

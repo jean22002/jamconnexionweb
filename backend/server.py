@@ -204,9 +204,14 @@ app.include_router(api_router)
 def read_root():
     return {"message": "Jam Connexion API v2.0", "status": "healthy"}
 
-# Health check endpoint
+# Health check endpoint (at root level for local testing)
 @app.get("/health")
 def health_check():
+    return {"status": "healthy"}
+
+# Health check endpoint under /api for external access through ingress
+@app.get("/api/health")
+def api_health_check():
     return {"status": "healthy"}
 
 # Startup event

@@ -33,7 +33,9 @@ class JamConnexionAPITester:
     def test_health_check(self):
         """Test basic API health"""
         try:
-            response = requests.get(f"{self.base_url}/health", timeout=10)
+            # Health endpoint is at root level, not under /api
+            health_url = self.base_url.replace('/api', '')
+            response = requests.get(f"{health_url}/health", timeout=10)
             success = response.status_code == 200
             details = f"Status: {response.status_code}"
             if success:
@@ -189,8 +191,10 @@ class JamConnexionAPITester:
             return False
 
     def test_create_musician_profile(self):
-        """Test enhanced musician profile creation"""
+        """Test enhanced musician profile update (profile auto-created at registration)"""
         try:
+            # NOTE: Musician profile is auto-created during registration
+            # This test updates the existing profile instead
             musician_data = {
                 "pseudo": "JazzMaster",
                 "age": 28,
@@ -207,15 +211,17 @@ class JamConnexionAPITester:
                 "youtube": "https://youtube.com/johndoemusic",
                 "bandcamp": "https://johndoe.bandcamp.com",
                 "has_band": True,
-                "band": {
-                    "name": "The Jazz Collective",
-                    "photo": "https://example.com/band.jpg",
-                    "facebook": "https://facebook.com/jazzcollective",
-                    "instagram": "@jazzcollective",
-                    "youtube": "https://youtube.com/jazzcollective",
-                    "website": "https://jazzcollective.com",
-                    "bandcamp": "https://jazzcollective.bandcamp.com"
-                },
+                "bands": [
+                    {
+                        "name": "The Jazz Collective",
+                        "photo": "https://example.com/band.jpg",
+                        "facebook": "https://facebook.com/jazzcollective",
+                        "instagram": "@jazzcollective",
+                        "youtube": "https://youtube.com/jazzcollective",
+                        "website": "https://jazzcollective.com",
+                        "bandcamp": "https://jazzcollective.bandcamp.com"
+                    }
+                ],
                 "concerts": [
                     {
                         "date": "2024-12-25",
@@ -227,7 +233,8 @@ class JamConnexionAPITester:
             }
             
             headers = {'Authorization': f'Bearer {self.musician_token}'}
-            response = requests.post(f"{self.base_url}/musicians", json=musician_data, headers=headers, timeout=10)
+            # Use PUT to update existing profile
+            response = requests.put(f"{self.base_url}/musicians/me", json=musician_data, headers=headers, timeout=10)
             success = response.status_code == 200
             
             if success:
@@ -237,10 +244,10 @@ class JamConnexionAPITester:
             else:
                 details = f"Status: {response.status_code}, Error: {response.text[:100]}"
             
-            self.log_test("Create Enhanced Musician Profile", success, details)
+            self.log_test("Update Enhanced Musician Profile", success, details)
             return success
         except Exception as e:
-            self.log_test("Create Enhanced Musician Profile", False, f"Error: {str(e)}")
+            self.log_test("Update Enhanced Musician Profile", False, f"Error: {str(e)}")
             return False
 
     def test_friend_request_system(self):

@@ -30,13 +30,14 @@ export default function BandTab({ profileForm, handleOpenBandDialog, onViewPlann
                 </div>
                 <div className="flex gap-2">
                   {/* Bouton Voir le planning */}
-                  {band.band_id && onViewPlanning && (
+                  {onViewPlanning && (
                     <Button
                       onClick={() => onViewPlanning(band)}
                       variant="outline"
                       size="sm"
                       className="rounded-full"
-                      title="Voir le planning du groupe"
+                      title={band.band_id ? "Voir le planning du groupe" : "Sauvegardez d'abord pour activer le planning"}
+                      disabled={!band.band_id}
                     >
                       <Calendar className="w-4 h-4" />
                     </Button>

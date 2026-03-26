@@ -54,6 +54,7 @@ export default function ProfileEditModal({
   handleSaveProfile,
   handleChangePassword,
   handleOpenBandDialog,
+  onViewBandPlanning,
   addConcert,
   removeConcert,
   setNewConcert,
@@ -127,6 +128,7 @@ export default function ProfileEditModal({
             <BandTab
               profileForm={profileForm}
               handleOpenBandDialog={handleOpenBandDialog}
+              onViewPlanning={onViewBandPlanning}
             />
           </TabsContent>
 

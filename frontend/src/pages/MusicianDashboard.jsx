@@ -831,6 +831,20 @@ export default function MusicianDashboard() {
     setShowBandDialog(true);
   };
 
+  // Fonction pour ouvrir le planning d'un groupe
+  const handleViewBandPlanning = (band) => {
+    if (band && band.band_id) {
+      setSelectedBandForPlanning({
+        id: band.band_id,
+        name: band.name
+      });
+      setShowBandPlanningDialog(true);
+      setEditingProfile(false); // Fermer le modal de profil
+    } else {
+      toast.error("Ce groupe n'a pas encore d'ID. Sauvegardez d'abord votre profil.");
+    }
+  };
+
   const handleSaveBand = () => {
     if (!currentBand.name) {
       toast.error("Le nom du groupe est requis");
@@ -1438,6 +1452,7 @@ export default function MusicianDashboard() {
                 addToList={addToList}
                 removeFromList={removeFromList}
                 handleOpenBandDialog={handleOpenBandDialog}
+                onViewBandPlanning={handleViewBandPlanning}
                 handleSaveProfile={handleSaveProfile}
                 handleChangePassword={handleChangePassword}
               />

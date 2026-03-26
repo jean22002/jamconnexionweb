@@ -1,7 +1,7 @@
 import { Button } from "../../../components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Calendar } from "lucide-react";
 
-export default function BandTab({ profileForm, handleOpenBandDialog }) {
+export default function BandTab({ profileForm, handleOpenBandDialog, onViewPlanning }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -28,14 +28,28 @@ export default function BandTab({ profileForm, handleOpenBandDialog }) {
                     </p>
                   )}
                 </div>
-                <Button
-                  onClick={() => handleOpenBandDialog(index)}
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full"
-                >
-                  Éditer
-                </Button>
+                <div className="flex gap-2">
+                  {/* Bouton Voir le planning */}
+                  {band.band_id && onViewPlanning && (
+                    <Button
+                      onClick={() => onViewPlanning(band)}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full"
+                      title="Voir le planning du groupe"
+                    >
+                      <Calendar className="w-4 h-4" />
+                    </Button>
+                  )}
+                  <Button
+                    onClick={() => handleOpenBandDialog(index)}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full"
+                  >
+                    Éditer
+                  </Button>
+                </div>
               </div>
             </div>
           ))}

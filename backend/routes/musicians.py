@@ -129,6 +129,35 @@ async def update_musician_profile(data: MusicianProfile, current_user: dict = De
     update_data = data.model_dump()
     update_data["concerts"] = concerts_with_ids
     
+    # Sync bands to the bands collection
+    if update_data.get("bands"):
+        for band_data in update_data["bands"]:
+            # Utiliser l'ID existant ou générer un nouveau
+            band_id = band_data.get("band_id") or band_data.get("id")
+            if not band_id:
+                band_id = f"band_{int(datetime.now().timestamp() * 1000)}_{uuid.uuid4().hex[:9]}"
+                band_data["band_id"] = band_id
+            
+            # Vérifier si le groupe existe déjà
+            existing_band = await db.bands.find_one({"id": band_id}, {"_id": 0})
+            
+            if not existing_band:
+                # Créer le groupe dans la collection bands
+                band_document = {
+                    "id": band_id,
+                    "name": band_data.get("name"),
+                    "leader_id": musician.get("id"),
+                    "leader_name": musician.get("pseudo") or musician.get("name"),
+                    "description": band_data.get("description"),
+                    "members_count": band_data.get("members_count") or 1,
+                    "music_styles": band_data.get("music_styles") or [],
+                    "band_type": band_data.get("band_type"),
+                    "city": band_data.get("city"),
+                    "created_at": datetime.now().isoformat()
+                }
+                await db.bands.insert_one(band_document)
+                logger.info(f"Band created in bands collection: {band_id} - {band_data.get('name')}")
+    
     # Auto-geocode if city and postal_code are provided but latitude/longitude are missing
     if update_data.get("city") and update_data.get("postal_code"):
         if not update_data.get("latitude") or not update_data.get("longitude") or update_data.get("latitude") == 0:

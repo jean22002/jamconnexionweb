@@ -126,14 +126,31 @@ async def register(request: Request, data: UserRegister):
 async def login(request: Request, data: UserLogin):
     user = await db.users.find_one({"email": data.email}, {"_id": 0})
     
-    if not user or not verify_password(data.password, user["password"]):
-        # Audit log: Failed login attempt
+    if not user:
+        logger.warning(f"Login attempt for non-existent email: {data.email}")
         await log_action(
-            user_id=data.email,  # Use email as identifier for failed attempts
+            user_id=data.email,
             user_role="unknown",
             action="login",
             resource_type="auth",
-            details={"email": data.email, "reason": "invalid_credentials"},
+            details={"email": data.email, "reason": "user_not_found"},
+            request=request,
+            status="failed"
+        )
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Vérifier le mot de passe
+    password_valid = verify_password(data.password, user["password"])
+    logger.info(f"Password verification for {data.email}: {password_valid}")
+    
+    if not password_valid:
+        logger.warning(f"Invalid password for {data.email}")
+        await log_action(
+            user_id=data.email,
+            user_role="unknown",
+            action="login",
+            resource_type="auth",
+            details={"email": data.email, "reason": "invalid_password"},
             request=request,
             status="failed"
         )

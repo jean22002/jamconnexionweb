@@ -103,6 +103,10 @@ export default function Landing() {
         <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
             <div className="space-y-6 sm:space-y-8 w-full">
+              <p className="text-lg sm:text-2xl font-semibold bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent animate-fade-up text-center" data-testid="pioneer-message-landing">
+                Soyez les pionniers de la nouvelle connexion musicale
+              </p>
+
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30">
                 <Radio className="w-4 h-4 text-primary animate-pulse" />
                 <span className="font-mono text-xs uppercase tracking-wider text-primary">
@@ -110,10 +114,6 @@ export default function Landing() {
                 </span>
               </div>
 
-              <p className="text-base sm:text-lg font-semibold bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent animate-fade-up" data-testid="pioneer-message-landing">
-                Soyez les pionniers de la nouvelle connexion musicale
-              </p>
-              
               <h1 className="font-heading font-bold text-3xl sm:text-5xl md:text-7xl tracking-tight leading-tight sm:leading-none animate-fade-up">
                 Connectez les
                 <span className="block text-gradient">Musiciens & les Scènes locales</span>

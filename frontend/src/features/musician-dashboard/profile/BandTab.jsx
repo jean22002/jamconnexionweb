@@ -1,5 +1,6 @@
 import { Button } from "../../../components/ui/button";
-import { Plus, Calendar, Share2, UserPlus } from "lucide-react";
+import { Plus, Calendar, Share2, UserPlus, Copy, Check } from "lucide-react";
+import { useState } from "react";
 
 export default function BandTab({ 
   profileForm, 
@@ -9,6 +10,14 @@ export default function BandTab({
   onJoinBand,
   currentUserId 
 }) {
+  const [copiedCode, setCopiedCode] = useState(null);
+
+  const handleCopyCode = (code) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 2000);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -28,7 +37,6 @@ export default function BandTab({
       {profileForm.bands && profileForm.bands.length > 0 ? (
         <div className="grid gap-3">
           {profileForm.bands.map((band, index) => {
-            // Vérifier si l'utilisateur est admin du groupe
             const isAdmin = band.admin_id === currentUserId;
             
             return (
@@ -44,20 +52,28 @@ export default function BandTab({
                         {band.music_styles.join(', ')}
                       </p>
                     )}
+                    {/* Code d'invitation visible uniquement par l'admin */}
+                    {isAdmin && band.invite_code && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Code :</span>
+                        <span className="font-mono font-bold text-sm bg-primary/10 border border-primary/30 px-2 py-0.5 rounded tracking-wider" data-testid={`invite-code-${index}`}>
+                          {band.invite_code}
+                        </span>
+                        <button
+                          onClick={() => handleCopyCode(band.invite_code)}
+                          className="text-muted-foreground hover:text-primary transition-colors"
+                          title="Copier le code"
+                        >
+                          {copiedCode === band.invite_code ? (
+                            <Check className="w-3.5 h-3.5 text-green-500" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-2">
-                    {/* Bouton Partager (admin uniquement) */}
-                    {isAdmin && onShareBand && (
-                      <Button
-                        onClick={() => onShareBand(band)}
-                        variant="outline"
-                        size="sm"
-                        className="rounded-full"
-                        title="Partager le groupe"
-                      >
-                        <Share2 className="w-4 h-4" />
-                      </Button>
-                    )}
                     {/* Bouton Voir le planning */}
                     {onViewPlanning && (
                       <Button
@@ -70,7 +86,7 @@ export default function BandTab({
                         <Calendar className="w-4 h-4" />
                       </Button>
                     )}
-                    {/* Bouton Éditer (admin uniquement) */}
+                    {/* Bouton Editer (admin uniquement) */}
                     {isAdmin && (
                       <Button
                         onClick={() => handleOpenBandDialog(index)}
@@ -78,7 +94,7 @@ export default function BandTab({
                         size="sm"
                         className="rounded-full"
                       >
-                        Éditer
+                        Editer
                       </Button>
                     )}
                   </div>
@@ -89,7 +105,7 @@ export default function BandTab({
         </div>
       ) : (
         <div className="text-center py-8 text-muted-foreground border-2 border-dashed border-white/10 rounded-xl">
-          <p>Aucun groupe ajouté</p>
+          <p>Aucun groupe ajoute</p>
           <p className="text-sm mt-2">Cliquez sur "Ajouter un groupe" pour commencer</p>
         </div>
       )}

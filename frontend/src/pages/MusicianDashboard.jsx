@@ -848,7 +848,7 @@ export default function MusicianDashboard() {
     }
   };
 
-  const handleSaveBand = () => {
+  const handleSaveBand = async () => {
     if (!currentBand.name) {
       toast.error("Le nom du groupe est requis");
       return;
@@ -865,19 +865,41 @@ export default function MusicianDashboard() {
       return;
     }
 
+    let newBands;
     if (editingBandIndex !== null) {
-      // Update existing band
-      const newBands = [...profileForm.bands];
+      newBands = [...profileForm.bands];
       newBands[editingBandIndex] = currentBand;
-      setProfileForm({ ...profileForm, bands: newBands });
-      toast.success("Groupe mis à jour");
     } else {
-      // Add new band
-      setProfileForm({ ...profileForm, bands: [...profileForm.bands, currentBand] });
-      toast.success("Groupe ajouté");
+      newBands = [...profileForm.bands, currentBand];
     }
     
+    const updatedForm = { ...profileForm, bands: newBands };
+    setProfileForm(updatedForm);
     setShowBandDialog(false);
+
+    // Auto-save immédiatement
+    try {
+      const method = profile ? "put" : "post";
+      const profileData = {
+        ...updatedForm,
+        solo_profile: soloProfile,
+        ...(geoPosition && {
+          latitude: geoPosition.latitude,
+          longitude: geoPosition.longitude
+        })
+      };
+      const response = await axios[method](`${API}/musicians`, profileData, { headers: { Authorization: `Bearer ${token}` } });
+      setProfile(response.data);
+      // Mettre à jour les bands avec les invite_codes retournés
+      if (response.data.bands) {
+        setProfileForm(prev => ({ ...prev, bands: response.data.bands }));
+      }
+      toast.success(editingBandIndex !== null ? "Groupe mis à jour" : "Groupe ajouté");
+    } catch (error) {
+      console.error("Erreur sauvegarde groupe:", error);
+      toast.error("Erreur lors de la sauvegarde");
+    }
+    
     setCurrentBand({
       name: "",
       photo: "",

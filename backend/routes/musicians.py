@@ -194,6 +194,11 @@ async def update_musician_profile(data: MusicianProfile, current_user: dict = De
             existing_band = await db.bands.find_one({"id": band_id}, {"_id": 0})
             
             if not existing_band:
+                # Générer un code d'invitation unique
+                invite_code = generate_invite_code()
+                while await db.bands.find_one({"invite_code": invite_code}):
+                    invite_code = generate_invite_code()
+                
                 # Créer le groupe dans la collection bands
                 band_document = {
                     "id": band_id,
@@ -205,13 +210,27 @@ async def update_musician_profile(data: MusicianProfile, current_user: dict = De
                     "music_styles": band_data.get("music_styles") or [],
                     "band_type": band_data.get("band_type"),
                     "city": band_data.get("city"),
+                    "invite_code": invite_code,
                     "created_at": datetime.now().isoformat()
                 }
                 await db.bands.insert_one(band_document)
-                logger.info(f"Band created in bands collection: {band_id} - {band_data.get('name')}")
+                logger.info(f"Band created in bands collection: {band_id} - {band_data.get('name')} - code: {invite_code}")
                 
-                # Générer automatiquement un code d'invitation pour le nouveau groupe
+                # Stocker le code aussi dans le band_data pour le profil musicien
+                band_data["invite_code"] = invite_code
+                
+                # Générer automatiquement un code d'invitation dans la collection legacy
                 await create_band_invite_code_auto(band_id, current_user["id"])
+            else:
+                # Si le groupe existe mais n'a pas de code, en générer un
+                if not existing_band.get("invite_code"):
+                    invite_code = generate_invite_code()
+                    while await db.bands.find_one({"invite_code": invite_code}):
+                        invite_code = generate_invite_code()
+                    await db.bands.update_one({"id": band_id}, {"$set": {"invite_code": invite_code}})
+                    band_data["invite_code"] = invite_code
+                else:
+                    band_data["invite_code"] = existing_band.get("invite_code")
             
             bands_with_ids.append(band_data)
         
@@ -265,8 +284,34 @@ async def get_my_musician_profile(current_user: dict = Depends(get_current_user)
         "status": "accepted"
     })
     
-    # Récupérer les groupes dont le musicien est le leader
-    bands = await db.bands.find({"leader_id": musician["id"]}, {"_id": 0}).to_list(100)
+    # Utiliser les bands embarqués dans le profil musicien
+    bands = musician.get("bands", [])
+    
+    # Enrichir chaque band : générer invite_code si manquant, définir admin_id
+    updated = False
+    for band_data in bands:
+        band_id = band_data.get("band_id") or band_data.get("id")
+        
+        # Définir admin_id si absent
+        if not band_data.get("admin_id"):
+            band_data["admin_id"] = current_user["id"]
+            updated = True
+        
+        # Générer invite_code si absent
+        if not band_data.get("invite_code"):
+            code = generate_invite_code()
+            band_data["invite_code"] = code
+            updated = True
+            # Aussi mettre à jour la collection bands si le doc existe
+            if band_id:
+                await db.bands.update_one({"id": band_id}, {"$set": {"invite_code": code}}, upsert=False)
+    
+    # Sauvegarder les mises à jour dans le profil musicien
+    if updated:
+        await db.musicians.update_one(
+            {"user_id": current_user["id"]},
+            {"$set": {"bands": bands}}
+        )
     
     return MusicianProfileResponse(**{**musician, "friends_count": friends_count, "bands": bands})
 

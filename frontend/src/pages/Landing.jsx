@@ -276,7 +276,7 @@ export default function Landing() {
               </Button>
             </Link>
             <p className="text-muted-foreground text-sm mt-4">
-              Aucune carte bancaire requise • Gratuit pour les musiciens
+              Gratuit pour les musiciens
             </p>
           </div>
         </div>

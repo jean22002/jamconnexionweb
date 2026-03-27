@@ -18,8 +18,13 @@ from utils import haversine_distance, save_upload_file
 
 router = APIRouter()
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+# MongoDB connection - Use production URL if ENVIRONMENT is production
+environment = os.environ.get('ENVIRONMENT', 'development')
+if environment == 'production':
+    mongo_url = os.environ.get('MONGO_URL_PRODUCTION', os.environ['MONGO_URL'])
+else:
+    mongo_url = os.environ['MONGO_URL']
+
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 

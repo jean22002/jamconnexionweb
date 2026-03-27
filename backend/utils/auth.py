@@ -37,7 +37,14 @@ async def get_current_user(authorization: str = Header(None), db=None):
     if db is None:
         # Import here to avoid circular dependency
         from motor.motor_asyncio import AsyncIOMotorClient
-        mongo_url = os.environ['MONGO_URL']
+        
+        # MongoDB connection - Use production URL if ENVIRONMENT is production
+        environment = os.environ.get('ENVIRONMENT', 'development')
+        if environment == 'production':
+            mongo_url = os.environ.get('MONGO_URL_PRODUCTION', os.environ['MONGO_URL'])
+        else:
+            mongo_url = os.environ['MONGO_URL']
+        
         client = AsyncIOMotorClient(mongo_url)
         db = client[os.environ['DB_NAME']]
     

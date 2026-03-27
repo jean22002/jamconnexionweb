@@ -109,6 +109,10 @@ export default function Landing() {
                   Plateforme Live Music
                 </span>
               </div>
+
+              <p className="text-base sm:text-lg font-semibold bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent animate-fade-up" data-testid="pioneer-message-landing">
+                Soyez les pionniers de la nouvelle connexion musicale
+              </p>
               
               <h1 className="font-heading font-bold text-3xl sm:text-5xl md:text-7xl tracking-tight leading-tight sm:leading-none animate-fade-up">
                 Connectez les

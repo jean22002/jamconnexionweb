@@ -263,14 +263,11 @@ export default function MapTab({
             )}
             
             {/* Venue markers - show all venues, highlight nearby ones */}
-            {console.log('[MapTab] Rendering venue markers. Total venues:', venues.length, 'With coordinates:', venues.filter(v => v.latitude && v.longitude).length) || null}
             {venues && venues.length > 0 && venues.map((venue) => {
-              if (!venue.latitude || !venue.longitude) {
-                console.warn('[MapTab] Venue missing coordinates:', venue.name, venue.id);
+              if (venue.latitude == null || venue.longitude == null) {
                 return null;
               }
               const isNearby = nearbyVenues.some(nv => nv.id === venue.id);
-              console.log(`[MapTab] Rendering marker for "${venue.name}" at [${venue.latitude}, ${venue.longitude}]`);
               return (
                 <Marker 
                   key={venue.id} 

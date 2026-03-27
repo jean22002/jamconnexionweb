@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 import jwt
 import os
 import logging
+import httpx
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from models import (
@@ -17,6 +18,27 @@ from models import (
 from utils import haversine_distance, save_upload_file
 
 router = APIRouter()
+
+# Geocoding function using Nominatim (OpenStreetMap)
+async def geocode_city(city: str, address: str = None) -> tuple:
+    """Geocode a city/address to lat/lng using Nominatim"""
+    if not city:
+        return None, None
+    query = f"{address}, {city}, France" if address else f"{city}, France"
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                "https://nominatim.openstreetmap.org/search",
+                params={"q": query, "format": "json", "limit": 1, "countrycodes": "fr"},
+                headers={"User-Agent": "JamConnexion/1.0"},
+                timeout=5.0
+            )
+            results = resp.json()
+            if results:
+                return float(results[0]["lat"]), float(results[0]["lon"])
+    except Exception as e:
+        logger.warning(f"Geocoding failed for '{query}': {e}")
+    return None, None
 
 # MongoDB connection - Use production URL if ENVIRONMENT is production
 environment = os.environ.get('ENVIRONMENT', 'development')
@@ -72,6 +94,14 @@ async def create_venue_profile(data: VenueProfile, current_user: dict = Depends(
         "created_at": now
     }
     
+    # Geocode city if coordinates are missing or zero
+    if not venue_doc.get("latitude") or not venue_doc.get("longitude"):
+        lat, lng = await geocode_city(venue_doc.get("city"), venue_doc.get("address"))
+        if lat and lng:
+            venue_doc["latitude"] = lat
+            venue_doc["longitude"] = lng
+            logger.info(f"Geocoded {venue_doc.get('city')} -> [{lat}, {lng}]")
+    
     logger.info(f"✅ VENUE CREATED - Images in doc: profile={venue_doc.get('profile_image')}, cover={venue_doc.get('cover_image')}")
     
     await db.venues.insert_one(venue_doc)
@@ -96,9 +126,19 @@ async def update_venue_profile(data: VenueProfile, current_user: dict = Depends(
     if not venue:
         raise HTTPException(status_code=404, detail="Venue profile not found")
     
+    update_data = data.model_dump()
+    
+    # Geocode city if coordinates are missing or zero
+    if not update_data.get("latitude") or not update_data.get("longitude"):
+        lat, lng = await geocode_city(update_data.get("city"), update_data.get("address"))
+        if lat and lng:
+            update_data["latitude"] = lat
+            update_data["longitude"] = lng
+            logger.info(f"Geocoded {update_data.get('city')} -> [{lat}, {lng}]")
+    
     await db.venues.update_one(
         {"user_id": current_user["id"]},
-        {"$set": data.model_dump()}
+        {"$set": update_data}
     )
     
     updated = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})

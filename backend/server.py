@@ -168,6 +168,14 @@ api_router.include_router(audit.router)  # NEW: Audit logging
 api_router.include_router(online_status.router)
 api_router.include_router(accounting.router, prefix="/accounting", tags=["Accounting"])
 
+# Stats endpoint for Landing page
+@api_router.get("/stats/counts")
+async def get_stats_counts():
+    """Return public counts for the landing page"""
+    musicians_count = await db.musicians.count_documents({})
+    venues_count = await db.venues.count_documents({})
+    return {"musicians": musicians_count, "venues": venues_count}
+
 # Geocoding utility endpoint
 @api_router.post("/geocode")
 async def geocode_address(data: dict):

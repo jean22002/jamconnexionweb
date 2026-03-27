@@ -159,28 +159,29 @@ export default function ParticipationsTab({ participations, token }) {
   };
 
   return (
-    <div className="glassmorphism rounded-2xl p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="font-heading font-semibold text-xl">Mes Participations</h2>
+    <div className="glassmorphism rounded-2xl p-4 sm:p-6 overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <h2 className="font-heading font-semibold text-lg sm:text-xl">Mes Participations</h2>
         
         {participations.length > 0 && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Button
               onClick={handleDownloadAllCalendar}
               variant="outline"
               size="sm"
-              className="rounded-full"
+              className="rounded-full text-xs sm:text-sm"
             >
-              <Download className="w-4 h-4 mr-2" />
-              Tout exporter
+              <Download className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Tout exporter</span>
+              <span className="sm:hidden">Exporter</span>
             </Button>
             <Button
               onClick={handleShowSubscriptionUrl}
               variant="default"
               size="sm"
-              className="rounded-full"
+              className="rounded-full text-xs sm:text-sm"
             >
-              <Link2 className="w-4 h-4 mr-2" />
+              <Link2 className="w-4 h-4 mr-1 sm:mr-2" />
               S'abonner
             </Button>
           </div>

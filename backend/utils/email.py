@@ -163,7 +163,7 @@ def get_welcome_email_html(name: str, email: str, role: str) -> str:
     """
     Génère le HTML de l'email de bienvenue
     """
-    APP_URL = "https://jamconnexion.com"
+    APP_URL = os.environ.get('APP_URL', 'https://jamconnexion.com')
     
     role_text = {
         "musician": "musicien",
@@ -339,7 +339,7 @@ def get_verification_email_html(name: str, verification_token: str) -> str:
     """
     Génère le HTML de l'email de vérification
     """
-    APP_URL = "https://jamconnexion.com"
+    APP_URL = os.environ.get('APP_URL', 'https://jamconnexion.com')
     verification_link = f"{APP_URL}/verify-email?token={verification_token}"
     
     return f"""
@@ -491,7 +491,7 @@ def get_account_activated_email_html(name: str) -> str:
     """
     Génère le HTML de l'email de confirmation d'activation
     """
-    APP_URL = "https://jamconnexion.com"
+    APP_URL = os.environ.get('APP_URL', 'https://jamconnexion.com')
     
     return f"""
 <!DOCTYPE html>

@@ -1,5 +1,5 @@
 import { Button } from "../../../components/ui/button";
-import { Plus, Calendar, Share2, UserPlus, Copy, Check } from "lucide-react";
+import { Plus, Calendar, UserPlus, Copy, Check, Share2 } from "lucide-react";
 import { useState } from "react";
 
 export default function BandTab({ 
@@ -16,6 +16,19 @@ export default function BandTab({
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const handleShare = (band) => {
+    const code = band.invite_code;
+    if (!code) return;
+    const text = `Rejoins mon groupe "${band.name}" sur Jam Connexion avec le code : ${code}`;
+    if (navigator.share) {
+      navigator.share({ title: `Rejoindre ${band.name}`, text }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(text);
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode(null), 2000);
+    }
   };
 
   return (
@@ -37,7 +50,9 @@ export default function BandTab({
       {profileForm.bands && profileForm.bands.length > 0 ? (
         <div className="grid gap-3">
           {profileForm.bands.map((band, index) => {
-            const isAdmin = band.admin_id === currentUserId;
+            // L'admin est soit défini explicitement, soit on considère que le user courant est admin
+            // (car les groupes dans "Mes Groupes" appartiennent au musicien)
+            const isAdmin = !band.admin_id || band.admin_id === currentUserId;
             
             return (
               <div key={index} className="p-4 bg-black/20 rounded-xl border border-white/10 hover:border-primary/30 transition-colors">
@@ -52,7 +67,7 @@ export default function BandTab({
                         {band.music_styles.join(', ')}
                       </p>
                     )}
-                    {/* Code d'invitation visible uniquement par l'admin */}
+                    {/* Code d'invitation */}
                     {isAdmin && band.invite_code && (
                       <div className="mt-2 flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">Code :</span>
@@ -63,6 +78,7 @@ export default function BandTab({
                           onClick={() => handleCopyCode(band.invite_code)}
                           className="text-muted-foreground hover:text-primary transition-colors"
                           title="Copier le code"
+                          data-testid={`copy-code-${index}`}
                         >
                           {copiedCode === band.invite_code ? (
                             <Check className="w-3.5 h-3.5 text-green-500" />
@@ -74,25 +90,39 @@ export default function BandTab({
                     )}
                   </div>
                   <div className="flex gap-2">
-                    {/* Bouton Voir le planning */}
+                    {/* Bouton Partager */}
+                    {isAdmin && band.invite_code && (
+                      <Button
+                        onClick={() => handleShare(band)}
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full"
+                        title="Partager le code"
+                        data-testid={`share-band-${index}`}
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                    {/* Bouton Planning */}
                     {onViewPlanning && (
                       <Button
                         onClick={() => onViewPlanning(band)}
                         variant="outline"
                         size="sm"
                         className="rounded-full"
-                        title="Voir le planning du groupe"
+                        title="Voir le planning"
                       >
                         <Calendar className="w-4 h-4" />
                       </Button>
                     )}
-                    {/* Bouton Editer (admin uniquement) */}
+                    {/* Bouton Editer */}
                     {isAdmin && (
                       <Button
                         onClick={() => handleOpenBandDialog(index)}
                         variant="outline"
                         size="sm"
                         className="rounded-full"
+                        data-testid={`edit-band-${index}`}
                       >
                         Editer
                       </Button>

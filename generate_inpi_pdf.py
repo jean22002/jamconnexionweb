@@ -323,13 +323,13 @@ pdf.paragraphe(
 pdf.sous_titre("Etablissements : abonnement payant")
 pdf.paragraphe(
     "Les etablissements beneficient d'une periode d'essai gratuite de 2 mois (60 jours). "
-    "Au-dela, un abonnement mensuel de 10 euros/mois est requis pour maintenir leur profil actif "
+    "Au-dela, un abonnement mensuel de 12,99 euros/mois est requis pour maintenir leur profil actif "
     "et continuer a publier des evenements. Le paiement est gere via Stripe avec annulation possible "
     "a tout moment, sans engagement."
 )
 
 pdf.sous_titre("Sources de revenus")
-pdf.puce("Abonnements mensuels des etablissements (10 euros/mois)")
+pdf.puce("Abonnements mensuels des etablissements (12,99 euros/mois)")
 pdf.puce("Abonnements PRO optionnels des musiciens (6,99 euros/mois)")
 
 # Section 7

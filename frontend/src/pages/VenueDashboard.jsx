@@ -2895,7 +2895,7 @@ export default function VenueDashboard() {
 
           {/* Profile Tab */}
           <TabsContent value="profile">
-            <ProfileTab venue={venue} handleOpenProfileDialog={() => setEditingProfile(true)} />
+            <ProfileTab venue={profile} handleOpenProfileDialog={() => setEditingProfile(true)} />
           </TabsContent>
 
           {/* Jams Tab */}

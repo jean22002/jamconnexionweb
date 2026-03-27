@@ -3040,6 +3040,8 @@ export default function VenueDashboard() {
                                 <SelectValue placeholder="Aucune (optionnel)" />
                               </SelectTrigger>
                               <SelectContent className="bg-background border-white/10">
+                                <SelectItem value="fixe">Fixe</SelectItem>
+                                <SelectItem value="etablissement">À définir avec l'établissement</SelectItem>
                                 <SelectItem value="facture">Facture</SelectItem>
                                 <SelectItem value="guso">GUSO</SelectItem>
                                 <SelectItem value="promotion">Promotion du groupe</SelectItem>
@@ -3047,7 +3049,7 @@ export default function VenueDashboard() {
                             </Select>
                           </div>
 
-                          {spectacleForm.payment_method !== "promotion" && (
+                          {spectacleForm.payment_method !== "promotion" && spectacleForm.payment_method !== "etablissement" && (
                             <div className="space-y-2">
                               <Label>Montant (€)</Label>
                               <Input 
@@ -3066,11 +3068,14 @@ export default function VenueDashboard() {
                           <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
                             <p className="text-sm">
                               <span className="font-medium">Paiement:</span> {
+                                spectacleForm.payment_method === "fixe" ? "💰 Fixe" :
+                                spectacleForm.payment_method === "etablissement" ? "🤝 À définir avec l'établissement" :
                                 spectacleForm.payment_method === "facture" ? "📄 Facture" : 
                                 spectacleForm.payment_method === "guso" ? "🎫 GUSO" : 
                                 "🎸 Promotion du groupe"
-                              }{spectacleForm.payment_method !== "promotion" && ` • ${parseFloat(spectacleForm.amount || 0).toFixed(2)} €`}
+                              }{spectacleForm.payment_method !== "promotion" && spectacleForm.payment_method !== "etablissement" && ` • ${parseFloat(spectacleForm.amount || 0).toFixed(2)} €`}
                               {spectacleForm.payment_method === "promotion" && " • Gratuit"}
+                              {spectacleForm.payment_method === "etablissement" && " • Montant à négocier"}
                             </p>
                           </div>
                         )}

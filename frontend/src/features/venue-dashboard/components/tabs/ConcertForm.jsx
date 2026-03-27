@@ -276,32 +276,11 @@ export default function ConcertForm({
 
           {/* Price */}
           <div className="space-y-2">
-            <Label>Tarif</Label>
-            <Select 
-              value={form.price} 
-              onValueChange={(value) => setForm({ ...form, price: value })}
-            >
-              <SelectTrigger className="bg-black/20 border-white/10">
-                <SelectValue placeholder="Sélectionnez un tarif" />
-              </SelectTrigger>
-              <SelectContent className="bg-background border-white/10">
-                <SelectItem value="Gratuit">Gratuit</SelectItem>
-                <SelectItem value="5€">5€</SelectItem>
-                <SelectItem value="10€">10€</SelectItem>
-                <SelectItem value="15€">15€</SelectItem>
-                <SelectItem value="20€">20€</SelectItem>
-                <SelectItem value="PAF">PAF (Prix au chapeau)</SelectItem>
-                <SelectItem value="Voir avec le gérant d'établissement">Voir avec le gérant d'établissement</SelectItem>
-              </SelectContent>
-            </Select>
-            {/* Input personnalisé si besoin */}
-            {form.price && !["Gratuit", "5€", "10€", "15€", "20€", "PAF", "Voir avec le gérant d'établissement"].includes(form.price) && (
-              <p className="text-xs text-muted-foreground">Tarif personnalisé : {form.price}</p>
-            )}
+            <Label>Prix</Label>
             <Input 
-              value={form.price.startsWith("Gratuit") || form.price.includes("€") || form.price === "PAF" || form.price === "Voir avec le gérant d'établissement" ? "" : form.price} 
+              value={form.price} 
               onChange={(e) => setForm({ ...form, price: e.target.value })} 
-              placeholder="Ou entrez un tarif personnalisé" 
+              placeholder="Ex: Gratuit, 10€, PAF" 
               className="bg-black/20 border-white/10" 
             />
           </div>

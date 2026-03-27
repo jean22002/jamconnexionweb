@@ -277,6 +277,12 @@ export default function VenueDashboard() {
   const [showEventSelectionModal, setShowEventSelectionModal] = useState(false);
   const [multipleEventsOfDay, setMultipleEventsOfDay] = useState([]);
   
+  // Applications modal
+  const [showApplicationsModal, setShowApplicationsModal] = useState(false);
+  
+  // Selected planning slot for applications
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  
   // Reviews
   const [reviews, setReviews] = useState([]);
   const [averageRating, setAverageRating] = useState(0);

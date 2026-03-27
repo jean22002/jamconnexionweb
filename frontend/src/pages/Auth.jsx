@@ -130,6 +130,13 @@ export default function Auth() {
                   : "Rejoignez la communauté musicale"
                 }
               </p>
+              
+              {/* Message pionnier */}
+              <div className="mt-4 p-3 bg-gradient-to-r from-primary/20 to-purple-500/20 border border-primary/30 rounded-lg">
+                <p className="text-sm text-primary font-medium">
+                  🎵 "Soyez les pionniers de la nouvelle connexion musicale"
+                </p>
+              </div>
             </div>
 
             <Tabs value={mode} onValueChange={setMode} className="w-full">

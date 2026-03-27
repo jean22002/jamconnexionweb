@@ -2127,6 +2127,23 @@ export default function VenueDashboard() {
     setShowEventDetailsModal(true);
   };
 
+  const handleDeleteEvent = async (eventId, type) => {
+    if (!window.confirm("Supprimer cet événement ?")) return;
+    try {
+      const endpoint = type === 'concert' ? 'concerts' : type === 'jam' ? 'jams' : type === 'karaoke' ? 'karaokes' : type;
+      await axios.delete(`${API}/${endpoint}/${eventId}`, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Événement supprimé");
+      fetchEvents();
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      toast.error("Erreur lors de la suppression");
+    }
+  };
+
+  const handleCreateConcert = () => createConcert();
+  const handleAcceptApplication = (appId) => handleApplication(appId, "accept");
+  const handleRejectApplication = (appId) => handleApplication(appId, "reject");
+
   const handleUpdateEvent = async () => {
     try {
       if (selectedEventType === 'concert') {

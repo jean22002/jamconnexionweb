@@ -1352,9 +1352,6 @@ export default function MusicianDashboard() {
                 <Music className="w-5 h-5 text-primary" />
               </div>
               <span className="font-heading font-bold text-xl text-gradient">Jam Connexion</span>
-              <span className="hidden md:inline text-xs text-muted-foreground italic max-w-[280px] leading-tight border-l border-muted-foreground/30 pl-3 ml-1">
-                Vous êtes le pionnier de la nouvelle connexion musicale. Soyez patient, les données grandiront de semaine en semaine.
-              </span>
             </div>
             
             {/* Desktop Navigation */}
@@ -2218,6 +2215,9 @@ export default function MusicianDashboard() {
             Salut, <span className="text-gradient">{profile?.pseudo || user?.name}</span>!
           </h1>
           <p className="text-muted-foreground">Trouve des spots et connecte-toi avec d'autres musiciens</p>
+          <p className="mt-2 text-sm font-medium bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent" data-testid="pioneer-message">
+            Vous êtes le pionnier de la nouvelle connexion musicale. Soyez patient, les données grandiront de semaine en semaine.
+          </p>
         </div>
 
         {/* Friend Requests */}

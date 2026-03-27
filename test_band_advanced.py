@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime, timedelta
 
 # Backend URL
-BACKEND_URL = "https://ical-sync-staging.preview.emergentagent.com/api"
+BACKEND_URL = "https://band-invites-hub.preview.emergentagent.com/api"
 
 # Test credentials
 MUSICIAN_EMAIL = "musician@gmail.com"

@@ -271,7 +271,7 @@ Inscription → Recherche événements "Lyon, cette semaine, Jazz"
 
 **Date de première conception** : [À COMPLÉTER]  
 **Date de mise en ligne** : [À COMPLÉTER]  
-**URL de démonstration** : https://ical-sync-staging.preview.emergentagent.com
+**URL de démonstration** : https://band-invites-hub.preview.emergentagent.com
 
 **Version actuelle** : 2.0 (avec optimisations performance)
 

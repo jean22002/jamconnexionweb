@@ -13,7 +13,7 @@ import re
 import time
 
 # Backend URL from environment
-BACKEND_URL = "https://ical-sync-staging.preview.emergentagent.com/api"
+BACKEND_URL = "https://band-invites-hub.preview.emergentagent.com/api"
 
 class ExtendedParticipationsTestSuite:
     def __init__(self):

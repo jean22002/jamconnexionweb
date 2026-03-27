@@ -41,6 +41,7 @@ const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const UserHistoryPage = lazy(() => import("./pages/UserHistoryPage"));
 const MyReportsPage = lazy(() => import("./pages/MyReportsPage"));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -124,6 +125,7 @@ function App() {
             <Route path="/admin/analytics-v2" element={<ProtectedRoute allowedRole="admin"><AdminAnalytics /></ProtectedRoute>} />
             <Route path="/admin/analytics" element={<ProtectedRoute allowedRole="admin"><AnalyticsPage /></ProtectedRoute>} />
             <Route path="/admin/user/:userId/history" element={<ProtectedRoute allowedRole="admin"><UserHistoryPage /></ProtectedRoute>} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/cgu" element={<CGU />} />
             <Route path="/cgv" element={<CGV />} />
             <Route 

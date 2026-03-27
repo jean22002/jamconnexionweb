@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 class FocusedGeolocationTester:
-    def __init__(self, base_url="https://ical-sync-staging.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://band-invites-hub.preview.emergentagent.com/api"):
         self.base_url = base_url
 
     def test_paris_100km(self):

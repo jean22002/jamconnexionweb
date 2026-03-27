@@ -80,10 +80,6 @@ async def register(request: Request, data: UserRegister):
     
     # Créer automatiquement le profil correspondant au rôle
     if data.role == "musician":
-        # Auto-activate PRO for all new musicians (for testing)
-        pro_start = datetime.now(timezone.utc)
-        pro_end = pro_start + timedelta(days=365)
-        
         musician_profile = {
             "id": str(uuid.uuid4()),
             "user_id": user_id,
@@ -91,13 +87,10 @@ async def register(request: Request, data: UserRegister):
             "instruments": [],
             "music_styles": [],
             "created_at": now,
-            # PRO subscription auto-activated
-            "subscription_tier": "pro",
-            "subscription_status": "active",
-            "subscription_started": pro_start.isoformat(),
-            "subscription_expires": pro_end.isoformat(),
-            "is_pro": True,
-            "pro_subscription_status": "active"
+            "subscription_tier": "free",
+            "subscription_status": "inactive",
+            "is_pro": False,
+            "pro_subscription_status": "inactive"
         }
         await db.musicians.insert_one(musician_profile)
     elif data.role == "melomane":

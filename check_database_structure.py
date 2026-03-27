@@ -6,7 +6,7 @@ Check database structure for bands vs musicians.bands
 import requests
 import json
 
-BACKEND_URL = "https://ical-sync-staging.preview.emergentagent.com/api"
+BACKEND_URL = "https://band-invites-hub.preview.emergentagent.com/api"
 
 def check_database_structure():
     print("🔍 Checking Database Structure for Bands")

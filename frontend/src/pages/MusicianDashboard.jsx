@@ -1351,12 +1351,10 @@ export default function MusicianDashboard() {
               <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center neon-border">
                 <Music className="w-5 h-5 text-primary" />
               </div>
-              <div className="flex flex-col">
-                <span className="font-heading font-bold text-xl text-gradient">Jam Connexion</span>
-                <p className="text-xs text-muted-foreground max-w-[180px] leading-tight">
-                  Vous êtes le pionnier de la nouvelle connexion musicale. Soyez patient, les données utilisateurs grandiront de semaine en semaine.
-                </p>
-              </div>
+              <span className="font-heading font-bold text-xl text-gradient">Jam Connexion</span>
+              <span className="hidden md:inline text-xs text-muted-foreground italic max-w-[280px] leading-tight border-l border-muted-foreground/30 pl-3 ml-1">
+                Vous êtes le pionnier de la nouvelle connexion musicale. Soyez patient, les données grandiront de semaine en semaine.
+              </span>
             </div>
             
             {/* Desktop Navigation */}

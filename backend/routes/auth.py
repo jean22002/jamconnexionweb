@@ -139,8 +139,10 @@ async def login(request: Request, data: UserLogin):
         )
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
-    # Vérifier si l'email est vérifié
-    if not user.get("email_verified", False):
+    # Vérifier si l'email est vérifié (seulement pour les nouveaux comptes)
+    # Les anciens comptes (email_verified == null) peuvent se connecter
+    email_verified = user.get("email_verified")
+    if email_verified is not None and not email_verified:
         raise HTTPException(
             status_code=403, 
             detail="Veuillez vérifier votre email avant de vous connecter. Consultez votre boîte mail."

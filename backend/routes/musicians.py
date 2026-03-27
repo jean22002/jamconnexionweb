@@ -2576,3 +2576,124 @@ async def get_analytics(
             "cachet_vs_industry": round(cachet_vs_industry, 2)
         }
     }
+
+
+
+@router.post("/musicians/contact-band")
+async def contact_band(
+    band_id: str,
+    band_name: str,
+    subject: str,
+    content: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Permet à un musicien de contacter un groupe via email
+    """
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can contact bands")
+    
+    # Récupérer les informations du groupe
+    band = await db.bands.find_one({"id": band_id}, {"_id": 0})
+    if not band:
+        raise HTTPException(status_code=404, detail="Band not found")
+    
+    # Récupérer le profil de l'expéditeur
+    sender = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not sender:
+        raise HTTPException(status_code=404, detail="Sender profile not found")
+    
+    # Récupérer l'admin du groupe
+    admin_user = await db.users.find_one({"id": band.get("admin_id")}, {"_id": 0})
+    if not admin_user:
+        # Essayer avec le leader_id
+        leader = await db.musicians.find_one({"id": band.get("leader_id")}, {"_id": 0})
+        if leader:
+            admin_user = await db.users.find_one({"id": leader.get("user_id")}, {"_id": 0})
+    
+    if not admin_user:
+        raise HTTPException(status_code=404, detail="Band admin not found")
+    
+    # Envoyer l'email à l'admin du groupe
+    try:
+        from utils.email import send_email, SENDER_EMAIL
+        
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #0f0f0f; color: #ffffff;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0f0f0f;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table width="600" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; overflow: hidden; border: 1px solid rgba(56, 189, 248, 0.2);">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 40px 40px 30px; text-align: center; background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #38bdf8;">
+                                💬 Nouveau message pour {band_name}
+                            </h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <div style="background-color: rgba(56, 189, 248, 0.1); border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.2); padding: 20px; margin-bottom: 20px;">
+                                <p style="margin: 0 0 10px; font-size: 14px; color: #94a3b8;">
+                                    <strong>De :</strong> {sender.get('pseudo', 'Un musicien')}
+                                </p>
+                                <p style="margin: 0; font-size: 14px; color: #94a3b8;">
+                                    <strong>Objet :</strong> {subject}
+                                </p>
+                            </div>
+                            
+                            <div style="background-color: rgba(0, 0, 0, 0.3); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                                <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #cbd5e1; white-space: pre-wrap;">
+{content}
+                                </p>
+                            </div>
+                            
+                            <p style="margin: 0; font-size: 14px; color: #94a3b8; text-align: center;">
+                                Pour répondre, connectez-vous sur <a href="https://jamconnexion.com" style="color: #38bdf8; text-decoration: none;">Jam Connexion</a>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px 40px; text-align: center; background-color: rgba(0, 0, 0, 0.3); border-top: 1px solid rgba(56, 189, 248, 0.2);">
+                            <p style="margin: 0; font-size: 12px; color: #64748b;">
+                                © 2026 Jam Connexion. Tous droits réservés.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+        """
+        
+        success = await send_email(
+            to_email=admin_user["email"],
+            subject=f"Message de {sender.get('pseudo', 'un musicien')} - {subject}",
+            html_content=html_content,
+            from_email=f"Jam Connexion <{SENDER_EMAIL}>"
+        )
+        
+        if success:
+            logger.info(f"Contact email sent to band {band_name} admin {admin_user['email']}")
+            return {"success": True, "message": "Message envoyé avec succès"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to send email")
+            
+    except Exception as e:
+        logger.error(f"Failed to send contact email: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to send message")

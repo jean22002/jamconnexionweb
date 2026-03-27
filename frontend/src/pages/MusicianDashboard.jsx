@@ -9,7 +9,7 @@ import { Textarea } from "../components/ui/textarea";
 import { Switch } from "../components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Slider } from "../components/ui/slider";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "../components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
 import LazyImage from "../components/LazyImage";
@@ -2687,6 +2687,94 @@ export default function MusicianDashboard() {
                   )}
                 </DialogContent>
               </Dialog>
+
+          {/* Modal de messagerie pour contacter le groupe */}
+          <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
+            <DialogContent className="glassmorphism border-white/10 max-w-lg">
+              <DialogHeader>
+                <DialogTitle className="font-heading text-2xl">
+                  Contacter {selectedBand?.name}
+                </DialogTitle>
+                <DialogDescription>
+                  Envoyez un message au groupe. Il sera notifié par email.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                {/* Sujet */}
+                <div className="space-y-2">
+                  <Label htmlFor="subject">Objet</Label>
+                  <Input
+                    id="subject"
+                    value={messageForm.subject}
+                    onChange={(e) => setMessageForm({ ...messageForm, subject: e.target.value })}
+                    placeholder="Ex: Proposition de collaboration"
+                    className="bg-black/20 border-white/10"
+                  />
+                </div>
+
+                {/* Message */}
+                <div className="space-y-2">
+                  <Label htmlFor="content">Message</Label>
+                  <textarea
+                    id="content"
+                    value={messageForm.content}
+                    onChange={(e) => setMessageForm({ ...messageForm, content: e.target.value })}
+                    placeholder="Bonjour, je serais intéressé pour..."
+                    className="w-full min-h-[150px] bg-black/20 border border-white/10 rounded-md p-3 text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Ce message sera envoyé à l'administrateur du groupe par email.
+                  </p>
+                </div>
+              </div>
+
+              <DialogFooter className="gap-2">
+                <Button
+                  onClick={() => {
+                    setShowMessageDialog(false);
+                    setMessageForm({ subject: "", content: "" });
+                  }}
+                  variant="outline"
+                  className="rounded-full"
+                >
+                  Annuler
+                </Button>
+                <Button
+                  onClick={async () => {
+                    if (!messageForm.subject || !messageForm.content) {
+                      toast.error("Veuillez remplir tous les champs");
+                      return;
+                    }
+
+                    try {
+                      await axios.post(
+                        `${API}/api/musicians/contact-band`,
+                        {
+                          band_id: selectedBand?.id,
+                          band_name: selectedBand?.name,
+                          subject: messageForm.subject,
+                          content: messageForm.content
+                        },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                      );
+
+                      toast.success("Message envoyé avec succès !");
+                      setShowMessageDialog(false);
+                      setMessageForm({ subject: "", content: "" });
+                    } catch (error) {
+                      console.error("Erreur envoi message:", error);
+                      toast.error(error.response?.data?.detail || "Erreur lors de l'envoi du message");
+                    }
+                  }}
+                  className="rounded-full bg-primary hover:bg-primary/90"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  Envoyer
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           </TabsContent>
         </Tabs>
       </main>

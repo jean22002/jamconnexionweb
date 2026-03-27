@@ -15,22 +15,35 @@ export function ShareBandModal({ open, onClose, band, token }) {
   const [membersJoined, setMembersJoined] = useState([]);
   const [showMembers, setShowMembers] = useState(false);
 
-  // Récupérer le code d'invitation (généré automatiquement à la création du groupe)
+  // Récupérer le code d'invitation ou en générer un nouveau
   const fetchInviteCode = async () => {
-    if (!band || inviteCode) return; // Vérifier que band existe
+    if (!band || inviteCode) return;
     
     setLoading(true);
     try {
-      // Récupérer le code existant (créé automatiquement)
+      const bandId = band.band_id || band.id;
+      // Récupérer le code existant
       const response = await axios.get(
-        `${API_URL}/api/bands/${band.band_id || band.id}/invite-code`,
+        `${API_URL}/api/bands/${bandId}/invite-code`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setInviteCode(response.data);
     } catch (error) {
       console.error("Erreur lors de la récupération du code:", error);
       if (error.response?.status === 404) {
-        alert("Aucun code d'invitation trouvé pour ce groupe. Le code devrait être généré automatiquement lors de la création du groupe.");
+        // Pas de code actif -> en générer un nouveau
+        try {
+          const bandId = band.band_id || band.id;
+          const createResponse = await axios.post(
+            `${API_URL}/api/bands/${bandId}/invite-code`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setInviteCode(createResponse.data);
+        } catch (createError) {
+          console.error("Erreur lors de la création du code:", createError);
+          alert("Impossible de générer un code d'invitation");
+        }
       } else {
         alert("Impossible de récupérer le code d'invitation");
       }

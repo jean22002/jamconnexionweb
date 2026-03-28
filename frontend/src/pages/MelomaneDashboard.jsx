@@ -29,6 +29,7 @@ import {
 } from "../components/ui/dropdown-menu";
 import { MelomaneImageUpload } from "../components/ui/image-upload";
 import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
+import VenuesTab from "../components/venues/VenuesTab";
 import { 
   Music, MapPin, LogOut, User, Loader2, Bell, Menu,
   Calendar as CalendarIcon, Check, Trash2, Heart, MessageSquare,
@@ -1430,108 +1431,14 @@ export default function MelomaneDashboard() {
           </TabsContent>
 
           {/* Établissements Tab */}
+          {/* Établissements Tab */}
           <TabsContent value="etablissements">
-            <div className="glassmorphism rounded-2xl p-6">
-              <h2 className="font-heading font-semibold text-2xl mb-6">Établissements</h2>
-              
-              <Tabs defaultValue="all" className="w-full">
-                <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 gap-1 scrollbar-thin scrollbar-thumb-primary/50 scrollbar-track-transparent">
-                  <TabsTrigger value="all" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
-                    Tous ({venues.length})
-                  </TabsTrigger>
-                  <TabsTrigger value="nearby" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
-                    À proximité {nearbyVenues.length > 0 && `(${nearbyVenues.length})`}
-                  </TabsTrigger>
-                </TabsList>
-
-                {/* Tous les établissements */}
-                <TabsContent value="all" className="mt-6">
-                  {loading ? (
-                    <div className="flex items-center justify-center py-12">
-                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                    </div>
-                  ) : venues.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <Building2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p>Aucun établissement trouvé</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {venues.map((venue) => (
-                        <Link key={venue.id} to={`/venue/${venue.id}`}>
-                          <div className="card-venue p-4 hover:border-primary/50 transition-all cursor-pointer">
-                            {venue.profile_image && (
-                              <LazyImage 
-                                src={venue.profile_image} 
-                                alt={venue.name} 
-                                className="w-full h-32 object-cover rounded-lg mb-3" 
-                              />
-                            )}
-                            <h3 className="font-heading font-semibold">{venue.name}</h3>
-                            <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                              <MapPin className="w-3 h-3" />
-                              {venue.city}
-                            </p>
-                            {venue.music_styles && venue.music_styles.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {venue.music_styles.slice(0, 2).map((style, i) => (
-                                  <span key={i} className="text-xs px-2 py-0.5 bg-primary/20 rounded-full">{style}</span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </TabsContent>
-
-                {/* À proximité */}
-                <TabsContent value="nearby" className="mt-6">
-                  {!geoPosition ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <MapPinOff className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p>Activez votre géolocalisation dans l'onglet "Carte"</p>
-                      <p className="text-sm mt-2">pour voir les établissements à proximité</p>
-                      <Button 
-                        onClick={() => setActiveTab("map")} 
-                        className="mt-4 bg-primary hover:bg-primary/90 rounded-full"
-                      >
-                        Aller à la carte
-                      </Button>
-                    </div>
-                  ) : nearbyVenues.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <Building2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p>Aucun établissement dans un rayon de {searchRadius}km</p>
-                      <p className="text-sm mt-2">Augmentez le rayon de recherche dans l'onglet "Carte"</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {nearbyVenues.map((venue) => (
-                        <Link key={venue.id} to={`/venue/${venue.id}`}>
-                          <div className="card-venue p-4 hover:border-primary/50 transition-all cursor-pointer">
-                            {venue.profile_image && (
-                              <LazyImage 
-                                src={venue.profile_image} 
-                                alt={venue.name} 
-                                className="w-full h-32 object-cover rounded-lg mb-3" 
-                              />
-                            )}
-                            <h3 className="font-heading font-semibold">{venue.name}</h3>
-                            <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                              <MapPin className="w-3 h-3" />
-                              {venue.city}
-                            </p>
-                            <p className="text-xs text-primary mt-1">📍 {venue.distance_km} km</p>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </div>
+            <VenuesTab
+              venues={venues}
+              subscriptions={subscriptions}
+              onSubscribe={handleSubscribe}
+              onUnsubscribe={handleUnsubscribe}
+            />
           </TabsContent>
 
           {/* Connexions Tab */}

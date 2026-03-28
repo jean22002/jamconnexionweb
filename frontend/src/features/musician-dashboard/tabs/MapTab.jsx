@@ -118,13 +118,17 @@ export default function MapTab({
     });
   };
 
-  // Extract all unique styles from venues
+  // Extract all unique styles from venues (normalize case to avoid duplicates)
   const allStyles = useMemo(() => {
     const styles = new Set();
     (venues || []).forEach(v => {
-      (v.music_styles || []).forEach(s => styles.add(s));
+      (v.music_styles || []).forEach(s => {
+        // Normalize: capitalize first letter, lowercase rest
+        const normalized = s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+        styles.add(normalized);
+      });
     });
-    return [...styles].sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
+    return [...styles].sort((a, b) => a.localeCompare(b, 'fr'));
   }, [venues]);
 
   const toggleStyle = (style) => {
@@ -133,18 +137,24 @@ export default function MapTab({
     );
   };
 
-  // Filter venues by selected styles
+  // Filter venues by selected styles (case-insensitive comparison)
   const styleFilteredVenues = useMemo(() => {
     if (selectedStyles.length === 0) return venues || [];
     return (venues || []).filter(v => 
-      (v.music_styles || []).some(s => selectedStyles.includes(s))
+      (v.music_styles || []).some(s => {
+        const normalized = s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+        return selectedStyles.includes(normalized);
+      })
     );
   }, [venues, selectedStyles]);
 
   const styleFilteredNearby = useMemo(() => {
     if (selectedStyles.length === 0) return nearbyVenues || [];
     return (nearbyVenues || []).filter(v =>
-      (v.music_styles || []).some(s => selectedStyles.includes(s))
+      (v.music_styles || []).some(s => {
+        const normalized = s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+        return selectedStyles.includes(normalized);
+      })
     );
   }, [nearbyVenues, selectedStyles]);
 
@@ -400,12 +410,11 @@ export default function MapTab({
                   }}
                 >
                   <Tooltip 
-                    permanent 
-                    direction="right" 
-                    offset={[15, -5]}
+                    direction="top" 
+                    offset={[0, -10]}
                     className="venue-name-tooltip"
                   >
-                    <div className="text-xs font-semibold cursor-pointer hover:text-primary">
+                    <div className="text-xs font-semibold">
                       {venue.name}
                       {isNearby && venue.distance_km && (
                         <span className="text-primary ml-1">({venue.distance_km}km)</span>

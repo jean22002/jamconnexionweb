@@ -2407,6 +2407,8 @@ export default function MusicianDashboard() {
               showRadiusCircle={showRadiusCircle}
               setShowRadiusCircle={setShowRadiusCircle}
               fetchData={fetchData}
+              myApplications={myApplications}
+              musicianProfile={profile}
             />
           </TabsContent>
 

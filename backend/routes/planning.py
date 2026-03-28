@@ -439,6 +439,7 @@ async def get_my_applications(current_user: dict = Depends(get_current_user)):
             app["slot_date"] = slot.get("date")
             app["slot_start_time"] = slot.get("time") or slot.get("start_time")
             app["slot_end_time"] = slot.get("end_time")
+            app["music_styles"] = slot.get("music_styles", [])  # Add music styles from slot
             
             # Keep legacy fields for backward compatibility
             app["venue_name"] = slot.get("venue_name")

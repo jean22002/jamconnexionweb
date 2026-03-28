@@ -8,7 +8,7 @@ import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
 import { Slider } from "../../../components/ui/slider";
 import LazyImage from "../../../components/LazyImage";
-import { Radio, MapPinOff, Locate, Search, Loader2, X, MapPin, Music, ChevronDown, ChevronUp } from "lucide-react";
+import { Radio, MapPinOff, Locate, Search, Loader2, X, MapPin, Music, ChevronDown, ChevronUp, Crown } from "lucide-react";
 
 // Import cluster styles
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -105,7 +105,9 @@ export default function MapTab({
   setFollowUser,
   showRadiusCircle,
   setShowRadiusCircle,
-  fetchData
+  fetchData,
+  myApplications = [],
+  musicianProfile = {}
 }) {
   const [selectedStyles, setSelectedStyles] = useState([]);
   
@@ -123,6 +125,57 @@ export default function MapTab({
       return newValue;
     });
   };
+  
+  // PRO filter for applications
+  const [showApplicationFilter, setShowApplicationFilter] = useState(false);
+  const [selectedApplicationDate, setSelectedApplicationDate] = useState('all');
+  const [selectedApplicationStyle, setSelectedApplicationStyle] = useState('all');
+  
+  const isPro = musicianProfile?.tier === 'pro';
+
+  // Extract unique dates and styles from applications (for PRO filter)
+  const applicationDates = useMemo(() => {
+    const dates = new Set();
+    (myApplications || []).forEach(app => {
+      if (app.slot_date) dates.add(app.slot_date);
+    });
+    return ['all', ...Array.from(dates).sort()];
+  }, [myApplications]);
+
+  const applicationStyles = useMemo(() => {
+    const styles = new Set();
+    (myApplications || []).forEach(app => {
+      if (app.music_styles && Array.isArray(app.music_styles)) {
+        app.music_styles.forEach(style => styles.add(style));
+      }
+    });
+    return ['all', ...Array.from(styles).sort()];
+  }, [myApplications]);
+
+  // Get venue IDs from filtered applications
+  const filteredApplicationVenueIds = useMemo(() => {
+    if (!showApplicationFilter) return null;
+    
+    const filtered = (myApplications || []).filter(app => {
+      // Filter by date
+      if (selectedApplicationDate !== 'all' && app.slot_date !== selectedApplicationDate) {
+        return false;
+      }
+      
+      // Filter by style
+      if (selectedApplicationStyle !== 'all') {
+        if (!app.music_styles || !app.music_styles.includes(selectedApplicationStyle)) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+    
+    // Extract venue IDs (need to match with venues by name since app doesn't have venue_id directly)
+    const venueNames = new Set(filtered.map(app => app.slot_venue_name).filter(Boolean));
+    return venueNames;
+  }, [myApplications, showApplicationFilter, selectedApplicationDate, selectedApplicationStyle]);
 
   // Extract all unique styles from venues (normalize case to avoid duplicates)
   const allStyles = useMemo(() => {
@@ -145,24 +198,46 @@ export default function MapTab({
 
   // Filter venues by selected styles (case-insensitive comparison)
   const styleFilteredVenues = useMemo(() => {
-    if (selectedStyles.length === 0) return venues || [];
-    return (venues || []).filter(v => 
-      (v.music_styles || []).some(s => {
-        const normalized = s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-        return selectedStyles.includes(normalized);
-      })
-    );
-  }, [venues, selectedStyles]);
+    let filtered = venues || [];
+    
+    // Apply style filter
+    if (selectedStyles.length > 0) {
+      filtered = filtered.filter(v => 
+        (v.music_styles || []).some(s => {
+          const normalized = s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+          return selectedStyles.includes(normalized);
+        })
+      );
+    }
+    
+    // Apply application filter (PRO only)
+    if (showApplicationFilter && filteredApplicationVenueIds) {
+      filtered = filtered.filter(v => filteredApplicationVenueIds.has(v.name));
+    }
+    
+    return filtered;
+  }, [venues, selectedStyles, showApplicationFilter, filteredApplicationVenueIds]);
 
   const styleFilteredNearby = useMemo(() => {
-    if (selectedStyles.length === 0) return nearbyVenues || [];
-    return (nearbyVenues || []).filter(v =>
-      (v.music_styles || []).some(s => {
-        const normalized = s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-        return selectedStyles.includes(normalized);
-      })
-    );
-  }, [nearbyVenues, selectedStyles]);
+    let filtered = nearbyVenues || [];
+    
+    // Apply style filter
+    if (selectedStyles.length > 0) {
+      filtered = filtered.filter(v =>
+        (v.music_styles || []).some(s => {
+          const normalized = s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+          return selectedStyles.includes(normalized);
+        })
+      );
+    }
+    
+    // Apply application filter (PRO only)
+    if (showApplicationFilter && filteredApplicationVenueIds) {
+      filtered = filtered.filter(v => filteredApplicationVenueIds.has(v.name));
+    }
+    
+    return filtered;
+  }, [nearbyVenues, selectedStyles, showApplicationFilter, filteredApplicationVenueIds]);
 
   return (
     <>
@@ -352,6 +427,87 @@ export default function MapTab({
               </span>
             )}
           </div>
+        </div>
+      )}
+
+      {/* PRO Application Filter */}
+      {isPro && myApplications && myApplications.length > 0 && (
+        <div className="glassmorphism rounded-xl p-4 mb-6 border-2 border-primary/30">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <Crown className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm">Filtre Candidatures</h3>
+                <p className="text-xs text-muted-foreground">Réservé Musicien PRO</p>
+              </div>
+            </div>
+            <Button
+              onClick={() => setShowApplicationFilter(!showApplicationFilter)}
+              variant={showApplicationFilter ? "default" : "outline"}
+              size="sm"
+              className="rounded-full"
+            >
+              {showApplicationFilter ? 'Actif' : 'Désactivé'}
+            </Button>
+          </div>
+          
+          {showApplicationFilter && (
+            <div className="space-y-3 pt-3 border-t border-white/10">
+              {/* Date filter */}
+              <div>
+                <Label className="text-xs text-muted-foreground mb-2 block">Filtrer par date de candidature</Label>
+                <select
+                  value={selectedApplicationDate}
+                  onChange={(e) => setSelectedApplicationDate(e.target.value)}
+                  className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-sm"
+                >
+                  {applicationDates.map(date => (
+                    <option key={date} value={date}>
+                      {date === 'all' ? 'Toutes les dates' : new Date(date).toLocaleDateString('fr-FR', { 
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Style filter */}
+              <div>
+                <Label className="text-xs text-muted-foreground mb-2 block">Filtrer par style musical</Label>
+                <select
+                  value={selectedApplicationStyle}
+                  onChange={(e) => setSelectedApplicationStyle(e.target.value)}
+                  className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-sm"
+                >
+                  {applicationStyles.map(style => (
+                    <option key={style} value={style}>
+                      {style === 'all' ? 'Tous les styles' : style}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Results counter */}
+              <div className="flex items-center justify-between pt-2 text-xs">
+                <span className="text-muted-foreground">
+                  {styleFilteredVenues.length} établissement{styleFilteredVenues.length > 1 ? 's' : ''} trouvé{styleFilteredVenues.length > 1 ? 's' : ''}
+                </span>
+                <button
+                  onClick={() => {
+                    setSelectedApplicationDate('all');
+                    setSelectedApplicationStyle('all');
+                  }}
+                  className="text-primary hover:underline"
+                >
+                  Réinitialiser
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -82,7 +82,12 @@ async def get_my_melomane_profile(current_user: dict = Depends(get_current_user_
     if not melomane:
         raise HTTPException(status_code=404, detail="Melomane profile not found")
     
-    return MelomaneResponse(**melomane)
+    # Convert datetime to ISO string for Pydantic
+    melomane_dict = dict(melomane)
+    if 'created_at' in melomane_dict and isinstance(melomane_dict['created_at'], datetime):
+        melomane_dict['created_at'] = melomane_dict['created_at'].isoformat()
+    
+    return MelomaneResponse(**melomane_dict)
 
 # Update melomane profile
 @router.put("/me", response_model=MelomaneResponse)

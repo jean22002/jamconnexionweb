@@ -46,6 +46,7 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - [x] Suppression "Aucune carte bancaire requise" Landing
 - [x] Filtre par style musical sur la carte (chips interactifs)
 - [x] Carte rétractable/collapsible (toggle expand/collapse avec localStorage)
+- [x] Offre PRO rétractable/collapsible (ProSubscriptionCard + ProSubscriptionManager)
 
 ## P0/P1/P2 Remaining
 

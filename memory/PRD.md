@@ -49,6 +49,7 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - [x] Offre PRO rétractable/collapsible (ProSubscriptionCard + ProSubscriptionManager)
 - [x] Fix doublon "Rock" dans filtres styles musicaux (normalisation casse)
 - [x] Amélioration lisibilité carte : tooltips au survol uniquement (non permanents)
+- [x] Clustering des marqueurs carte (react-leaflet-cluster, gradient purple-pink, 3 tailles)
 
 ## P0/P1/P2 Remaining
 

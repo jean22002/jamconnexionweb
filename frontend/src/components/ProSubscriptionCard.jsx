@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Check, Crown, TrendingUp, FileText, BarChart3, Loader2, Sparkles } from 'lucide-react';
+import { Check, Crown, TrendingUp, FileText, BarChart3, Loader2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 
@@ -8,6 +8,21 @@ const API = process.env.REACT_APP_BACKEND_URL;
 
 const ProSubscriptionCard = ({ token, currentTier, onSuccess }) => {
   const [loading, setLoading] = useState(false);
+  
+  // State for collapsible - persist in localStorage
+  const [isExpanded, setIsExpanded] = useState(() => {
+    const saved = localStorage.getItem('proOfferExpanded');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  // Toggle expansion
+  const toggleExpanded = () => {
+    setIsExpanded(prev => {
+      const newValue = !prev;
+      localStorage.setItem('proOfferExpanded', JSON.stringify(newValue));
+      return newValue;
+    });
+  };
 
   const handleSubscribe = async () => {
     setLoading(true);
@@ -31,7 +46,40 @@ const ProSubscriptionCard = ({ token, currentTier, onSuccess }) => {
   }
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/20 via-cyan-500/20 to-purple-500/20 border-2 border-primary/50 p-8">
+    <div className="mb-6">
+      {/* Collapsible header */}
+      <div className="glassmorphism rounded-xl p-4 mb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <Crown className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="font-heading font-semibold text-lg">Offre PRO</h2>
+              <p className="text-xs text-muted-foreground">
+                7 jours gratuits puis 6,99€/mois
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={toggleExpanded}
+            variant="ghost"
+            size="sm"
+            className="rounded-full hover:bg-white/10"
+            aria-label={isExpanded ? "Réduire l'offre PRO" : "Agrandir l'offre PRO"}
+          >
+            {isExpanded ? (
+              <ChevronUp className="w-5 h-5" />
+            ) : (
+              <ChevronDown className="w-5 h-5" />
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Collapsible content */}
+      {isExpanded && (
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/20 via-cyan-500/20 to-purple-500/20 border-2 border-primary/50 p-8">
       {/* Sparkle decoration */}
       <div className="absolute top-4 right-4">
         <Sparkles className="w-8 h-8 text-primary animate-pulse" />
@@ -140,6 +188,8 @@ const ProSubscriptionCard = ({ token, currentTier, onSuccess }) => {
           ✅ Résiliable en 1 clic
         </p>
       </div>
+    </div>
+      )}
     </div>
   );
 };

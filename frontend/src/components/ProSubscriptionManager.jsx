@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Crown, Calendar, CreditCard, AlertCircle, Check, X, Loader2 } from 'lucide-react';
+import { Crown, Calendar, CreditCard, AlertCircle, Check, X, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -17,6 +17,21 @@ const API = process.env.REACT_APP_BACKEND_URL;
 const ProSubscriptionManager = ({ token, subscriptionData, onUpdate }) => {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [canceling, setCanceling] = useState(false);
+  
+  // State for collapsible - persist in localStorage
+  const [isExpanded, setIsExpanded] = useState(() => {
+    const saved = localStorage.getItem('proManagerExpanded');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  // Toggle expansion
+  const toggleExpanded = () => {
+    setIsExpanded(prev => {
+      const newValue = !prev;
+      localStorage.setItem('proManagerExpanded', JSON.stringify(newValue));
+      return newValue;
+    });
+  };
 
   const handleCancelSubscription = async () => {
     setCanceling(true);
@@ -81,7 +96,25 @@ const ProSubscriptionManager = ({ token, subscriptionData, onUpdate }) => {
               <p className="text-sm text-muted-foreground">6,99€/mois • Annulable à tout moment</p>
             </div>
           </div>
+          
+          <Button
+            onClick={toggleExpanded}
+            variant="ghost"
+            size="sm"
+            className="rounded-full hover:bg-white/10"
+            aria-label={isExpanded ? "Réduire l'abonnement PRO" : "Agrandir l'abonnement PRO"}
+          >
+            {isExpanded ? (
+              <ChevronUp className="w-5 h-5" />
+            ) : (
+              <ChevronDown className="w-5 h-5" />
+            )}
+          </Button>
         </div>
+
+        {/* Collapsible content */}
+        {isExpanded && (
+          <>
 
         {/* Trial Info */}
         {inTrial && subscriptionData.trial_ends && (
@@ -148,6 +181,8 @@ const ProSubscriptionManager = ({ token, subscriptionData, onUpdate }) => {
               Annuler l'abonnement
             </Button>
           </div>
+        )}
+          </>
         )}
       </div>
 

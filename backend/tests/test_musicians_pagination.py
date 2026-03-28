@@ -10,7 +10,7 @@ from typing import Dict, Any
 
 class MusiciansPaginationTester:
     def __init__(self):
-        self.base_url = "https://band-invites-hub.preview.emergentagent.com/api"
+        self.base_url = "https://collapsible-map.preview.emergentagent.com/api"
         self.test_results = []
         
     def log_test(self, test_name: str, passed: bool, details: str = ""):

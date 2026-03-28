@@ -8,7 +8,7 @@ import json
 import sys
 from datetime import datetime
 
-BACKEND_URL = "https://band-invites-hub.preview.emergentagent.com/api"
+BACKEND_URL = "https://collapsible-map.preview.emergentagent.com/api"
 
 def test_ical_with_real_band():
     print("🎯 Testing iCal Export with Real Band Data")

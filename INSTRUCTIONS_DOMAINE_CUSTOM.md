@@ -47,7 +47,7 @@ Ces IPs Cloudflare sont correctes SI elles sont fournies par Emergent lors de la
 En attendant que le domaine custom soit configuré, vous pouvez utiliser :
 
 ```
-https://band-invites-hub.preview.emergentagent.com
+https://collapsible-map.preview.emergentagent.com
 ```
 
 Cette URL fonctionne **parfaitement** dès maintenant (testé et vérifié).

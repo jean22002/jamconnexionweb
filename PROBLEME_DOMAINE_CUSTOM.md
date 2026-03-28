@@ -4,13 +4,13 @@
 
 Votre domaine custom **jamconnexion.com** est configuré pour utiliser le mauvais backend:
 - ❌ **Backend actuel** : `https://venuemate-35.emergent.host` → **CASSÉ (erreur 500)**
-- ✅ **Backend fonctionnel** : `https://band-invites-hub.preview.emergentagent.com` → **FONCTIONNE**
+- ✅ **Backend fonctionnel** : `https://collapsible-map.preview.emergentagent.com` → **FONCTIONNE**
 
 ## 🧪 Tests Effectués
 
 ```bash
 # Backend fonctionnel (preview URL)
-curl -X POST "https://band-invites-hub.preview.emergentagent.com/api/auth/login" \
+curl -X POST "https://collapsible-map.preview.emergentagent.com/api/auth/login" \
   -H "Content-Type: application/json" \
   -d '{"email":"bar@gmail.com","password":"test"}'
 # Résultat: ✅ SUCCESS - token JWT retourné
@@ -27,7 +27,7 @@ curl -X POST "https://venuemate-35.emergent.host/api/auth/login" \
 ### Solution 1: Utiliser l'URL Preview directement (RAPIDE)
 Au lieu d'utiliser votre domaine custom, utilisez directement:
 ```
-https://band-invites-hub.preview.emergentagent.com
+https://collapsible-map.preview.emergentagent.com
 ```
 
 ### Solution 2: Reconfigurer le domaine custom (RECOMMANDÉ)
@@ -49,7 +49,7 @@ Si vous voulez un nouveau déploiement propre:
 ## 📊 État Actuel de l'Application
 
 ### ✅ Ce qui fonctionne
-- Backend API: `https://band-invites-hub.preview.emergentagent.com/api/*`
+- Backend API: `https://collapsible-map.preview.emergentagent.com/api/*`
 - Frontend: Tous les composants React
 - Base de données: MongoDB avec 290 utilisateurs
 - Authentification: Login/Register fonctionnels

@@ -7,7 +7,7 @@ import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
 import { Slider } from "../../../components/ui/slider";
 import LazyImage from "../../../components/LazyImage";
-import { Radio, MapPinOff, Locate, Search, Loader2, X, MapPin, Music } from "lucide-react";
+import { Radio, MapPinOff, Locate, Search, Loader2, X, MapPin, Music, ChevronDown, ChevronUp } from "lucide-react";
 
 // Component to detect manual map movements (drag, zoom)
 function MapEventHandler({ onMapMove }) {
@@ -102,6 +102,21 @@ export default function MapTab({
   fetchData
 }) {
   const [selectedStyles, setSelectedStyles] = useState([]);
+  
+  // State for collapsible map - persist in localStorage
+  const [isMapExpanded, setIsMapExpanded] = useState(() => {
+    const saved = localStorage.getItem('mapExpanded');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  // Save preference to localStorage
+  const toggleMapExpanded = () => {
+    setIsMapExpanded(prev => {
+      const newValue = !prev;
+      localStorage.setItem('mapExpanded', JSON.stringify(newValue));
+      return newValue;
+    });
+  };
 
   // Extract all unique styles from venues
   const allStyles = useMemo(() => {
@@ -135,8 +150,41 @@ export default function MapTab({
 
   return (
     <>
-      {/* Geolocation Controls */}
+      {/* Collapsible header */}
       <div className="glassmorphism rounded-xl p-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <MapPin className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="font-heading font-semibold text-lg">Carte des établissements</h2>
+              <p className="text-xs text-muted-foreground">
+                {styleFilteredVenues.length} établissement{styleFilteredVenues.length > 1 ? 's' : ''} disponible{styleFilteredVenues.length > 1 ? 's' : ''}
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={toggleMapExpanded}
+            variant="ghost"
+            size="sm"
+            className="rounded-full hover:bg-white/10"
+            aria-label={isMapExpanded ? "Réduire la carte" : "Agrandir la carte"}
+          >
+            {isMapExpanded ? (
+              <ChevronUp className="w-5 h-5" />
+            ) : (
+              <ChevronDown className="w-5 h-5" />
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Collapsible content */}
+      {isMapExpanded && (
+        <>
+          {/* Geolocation Controls */}
+          <div className="glassmorphism rounded-xl p-4 mb-6">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
           {/* Status & Toggle */}
           <div className="flex items-center gap-3">
@@ -504,6 +552,8 @@ export default function MapTab({
           )}
         </div>
       </div>
+        </>
+      )}
     </>
   );
 }

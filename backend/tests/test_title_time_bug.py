@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 
 class TitleTimeBugTester:
-    def __init__(self, base_url="https://band-invites-hub.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://collapsible-map.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.venue_token = None
         self.venue_user = None

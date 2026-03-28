@@ -101,7 +101,7 @@
 ### Sur Mobile (Android)
 
 1. **Ouvrir Chrome/Firefox** sur Android
-2. Visiter `https://band-invites-hub.preview.emergentagent.com`
+2. Visiter `https://collapsible-map.preview.emergentagent.com`
 3. **Banner d'installation** apparaît automatiquement
    - OU menu ⋮ → "Ajouter à l'écran d'accueil"
 4. L'app s'installe avec l'icône Jam Connexion

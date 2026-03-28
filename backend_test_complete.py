@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import re
 
 # Backend URL
-BACKEND_URL = "https://band-invites-hub.preview.emergentagent.com/api"
+BACKEND_URL = "https://collapsible-map.preview.emergentagent.com/api"
 
 # Test credentials
 MUSICIAN_EMAIL = "musician@gmail.com"

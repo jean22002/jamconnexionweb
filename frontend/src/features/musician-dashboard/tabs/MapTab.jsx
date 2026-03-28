@@ -8,7 +8,7 @@ import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
 import { Slider } from "../../../components/ui/slider";
 import LazyImage from "../../../components/LazyImage";
-import { Radio, MapPinOff, Locate, Search, Loader2, X, MapPin, Music, ChevronDown, ChevronUp, Crown } from "lucide-react";
+import { Radio, MapPinOff, Locate, Search, Loader2, X, MapPin, Music, ChevronDown, ChevronUp, Crown, CalendarIcon } from "lucide-react";
 
 // Import cluster styles
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -107,7 +107,8 @@ export default function MapTab({
   setShowRadiusCircle,
   fetchData,
   myApplications = [],
-  musicianProfile = {}
+  musicianProfile = {},
+  availableSlots = []
 }) {
   const [selectedStyles, setSelectedStyles] = useState([]);
   
@@ -130,6 +131,11 @@ export default function MapTab({
   const [showApplicationFilter, setShowApplicationFilter] = useState(false);
   const [selectedApplicationDate, setSelectedApplicationDate] = useState('all');
   const [selectedApplicationStyle, setSelectedApplicationStyle] = useState('all');
+  
+  // PRO filter for available slots (offers)
+  const [showOffersFilter, setShowOffersFilter] = useState(false);
+  const [selectedOfferDate, setSelectedOfferDate] = useState('all');
+  const [selectedOfferStyle, setSelectedOfferStyle] = useState('all');
   
   const isPro = musicianProfile?.tier === 'pro';
 
@@ -177,6 +183,56 @@ export default function MapTab({
     return venueNames;
   }, [myApplications, showApplicationFilter, selectedApplicationDate, selectedApplicationStyle]);
 
+  // Extract unique dates and styles from available slots/offers (for PRO filter)
+  const offerDates = useMemo(() => {
+    const dates = new Set();
+    (availableSlots || []).forEach(slot => {
+      if (slot.date) dates.add(slot.date);
+    });
+    return ['all', ...Array.from(dates).sort()];
+  }, [availableSlots]);
+
+  const offerStyles = useMemo(() => {
+    const styles = new Set();
+    (availableSlots || []).forEach(slot => {
+      if (slot.music_styles && Array.isArray(slot.music_styles)) {
+        slot.music_styles.forEach(style => {
+          const normalized = style.charAt(0).toUpperCase() + style.slice(1).toLowerCase();
+          styles.add(normalized);
+        });
+      }
+    });
+    return ['all', ...Array.from(styles).sort()];
+  }, [availableSlots]);
+
+  // Get venue IDs from filtered available slots/offers
+  const filteredOfferVenueIds = useMemo(() => {
+    if (!showOffersFilter) return null;
+    
+    const filtered = (availableSlots || []).filter(slot => {
+      // Filter by date
+      if (selectedOfferDate !== 'all' && slot.date !== selectedOfferDate) {
+        return false;
+      }
+      
+      // Filter by style (case-insensitive)
+      if (selectedOfferStyle !== 'all') {
+        if (!slot.music_styles || !slot.music_styles.some(s => {
+          const normalized = s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+          return normalized === selectedOfferStyle;
+        })) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+    
+    // Extract venue names
+    const venueNames = new Set(filtered.map(slot => slot.venue_name).filter(Boolean));
+    return venueNames;
+  }, [availableSlots, showOffersFilter, selectedOfferDate, selectedOfferStyle]);
+
   // Extract all unique styles from venues (normalize case to avoid duplicates)
   const allStyles = useMemo(() => {
     const styles = new Set();
@@ -210,13 +266,18 @@ export default function MapTab({
       );
     }
     
-    // Apply application filter (PRO only)
+    // Apply application filter (PRO only) - show venues where user applied
     if (showApplicationFilter && filteredApplicationVenueIds) {
       filtered = filtered.filter(v => filteredApplicationVenueIds.has(v.name));
     }
     
+    // Apply offers filter (PRO only) - show venues with available slots
+    if (showOffersFilter && filteredOfferVenueIds) {
+      filtered = filtered.filter(v => filteredOfferVenueIds.has(v.name));
+    }
+    
     return filtered;
-  }, [venues, selectedStyles, showApplicationFilter, filteredApplicationVenueIds]);
+  }, [venues, selectedStyles, showApplicationFilter, filteredApplicationVenueIds, showOffersFilter, filteredOfferVenueIds]);
 
   const styleFilteredNearby = useMemo(() => {
     let filtered = nearbyVenues || [];
@@ -236,8 +297,13 @@ export default function MapTab({
       filtered = filtered.filter(v => filteredApplicationVenueIds.has(v.name));
     }
     
+    // Apply offers filter (PRO only)
+    if (showOffersFilter && filteredOfferVenueIds) {
+      filtered = filtered.filter(v => filteredOfferVenueIds.has(v.name));
+    }
+    
     return filtered;
-  }, [nearbyVenues, selectedStyles, showApplicationFilter, filteredApplicationVenueIds]);
+  }, [nearbyVenues, selectedStyles, showApplicationFilter, filteredApplicationVenueIds, showOffersFilter, filteredOfferVenueIds]);
 
   return (
     <>
@@ -502,6 +568,87 @@ export default function MapTab({
                     setSelectedApplicationStyle('all');
                   }}
                   className="text-primary hover:underline"
+                >
+                  Réinitialiser
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* PRO Available Slots/Offers Filter */}
+      {isPro && availableSlots && availableSlots.length > 0 && (
+        <div className="glassmorphism rounded-xl p-4 mb-6 border-2 border-cyan-500/30">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
+                <CalendarIcon className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm">Filtre Offres Disponibles</h3>
+                <p className="text-xs text-muted-foreground">Réservé Musicien PRO</p>
+              </div>
+            </div>
+            <Button
+              onClick={() => setShowOffersFilter(!showOffersFilter)}
+              variant={showOffersFilter ? "default" : "outline"}
+              size="sm"
+              className="rounded-full"
+            >
+              {showOffersFilter ? 'Actif' : 'Désactivé'}
+            </Button>
+          </div>
+          
+          {showOffersFilter && (
+            <div className="space-y-3 pt-3 border-t border-white/10">
+              {/* Date filter */}
+              <div>
+                <Label className="text-xs text-muted-foreground mb-2 block">Filtrer par date d'offre</Label>
+                <select
+                  value={selectedOfferDate}
+                  onChange={(e) => setSelectedOfferDate(e.target.value)}
+                  className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-sm"
+                >
+                  {offerDates.map(date => (
+                    <option key={date} value={date}>
+                      {date === 'all' ? 'Toutes les dates' : new Date(date).toLocaleDateString('fr-FR', { 
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Style filter */}
+              <div>
+                <Label className="text-xs text-muted-foreground mb-2 block">Filtrer par style musical recherché</Label>
+                <select
+                  value={selectedOfferStyle}
+                  onChange={(e) => setSelectedOfferStyle(e.target.value)}
+                  className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-sm"
+                >
+                  {offerStyles.map(style => (
+                    <option key={style} value={style}>
+                      {style === 'all' ? 'Tous les styles' : style}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Results counter */}
+              <div className="flex items-center justify-between pt-2 text-xs">
+                <span className="text-muted-foreground">
+                  {styleFilteredVenues.length} établissement{styleFilteredVenues.length > 1 ? 's' : ''} avec offres
+                </span>
+                <button
+                  onClick={() => {
+                    setSelectedOfferDate('all');
+                    setSelectedOfferStyle('all');
+                  }}
+                  className="text-cyan-400 hover:underline"
                 >
                   Réinitialiser
                 </button>

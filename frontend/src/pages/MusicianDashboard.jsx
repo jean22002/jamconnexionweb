@@ -2409,6 +2409,7 @@ export default function MusicianDashboard() {
               fetchData={fetchData}
               myApplications={myApplications}
               musicianProfile={profile}
+              availableSlots={candidatures}
             />
           </TabsContent>
 

@@ -1,98 +1,74 @@
 # Jam Connexion - PRD
 
 ## Original Problem Statement
-Application de mise en relation entre cafés-concerts (où se font des jams/boeufs musicaux) et les musiciens.
-- Abonnement 10€/mois pour les établissements avec 2 mois d'essai gratuit
+Application de mise en relation entre cafés-concerts et musiciens.
+- Abonnement 12,99€/mois pour les établissements avec 2 mois d'essai gratuit
 - Gratuit pour les musiciens
-- Établissements: adresse, FB, Instagram, site web, matériel, scène, ingé son
 - Géolocalisation pour localiser les établissements à proximité
-
-## User Personas
-1. **Musicien**: Cherche des lieux pour jouer en jam session, veut voir le matériel disponible et contacter les établissements
-2. **Établissement (Café-concert)**: Veut attirer des musiciens, présenter son lieu et ses équipements
-3. **Mélomane**: Amateur de musique qui suit les événements et musiciens
-
-## Core Requirements
-- Authentification JWT (email/password) avec vérification d'email (Resend)
-- Système d'abonnement Stripe (10€/mois, 2 mois gratuits pour établissements)
-- Profils établissements détaillés (équipement, styles, jours de jam)
-- Profils musiciens (instruments, styles, expérience) - inscription gratuite, tier "free"
-- Carte géolocalisée avec recherche par proximité
-- Interface sombre/neon thème musical
-- Système de codes d'invitation pour rejoindre des groupes
+- URL production : https://jamconnexion.com
 
 ## Architecture
-- **Backend**: FastAPI + MongoDB Atlas + Stripe + Resend
+- **Backend**: FastAPI + MongoDB Atlas (production) + Stripe + Resend
 - **Frontend**: React + Tailwind CSS + Shadcn/UI + Leaflet maps
-- **Database Collections**: users, venues, musicians, melomanes, friends, venue_subscriptions, jams, concerts, planning_slots, applications, notifications, payment_transactions, band_invite_codes
+- **DB**: MongoDB Atlas (ENVIRONMENT=production → MONGO_URL_PRODUCTION)
+- **Tous les fichiers routes utilisent Atlas** (server.py, auth.py, venues.py, payments.py, musicians.py, account.py, online_status.py, uploads.py, webhooks.py)
 
 ## What's Been Implemented
 
-### Phase 1 (Initial MVP)
-- [x] Landing page avec hero section
-- [x] Authentification (register/login) avec rôle musicien/venue/melomane
-- [x] Dashboard musicien avec carte interactive
-- [x] Dashboard établissement avec gestion profil
-- [x] Géolocalisation et recherche par proximité
-- [x] Page détail établissement
-- [x] Page tarifs
-- [x] Intégration Stripe (checkout, paiement, statut)
-- [x] Période d'essai 2 mois pour établissements
+### Phase 1 (MVP)
+- [x] Landing page, Auth (register/login), Dashboards musicien/venue/mélomane
+- [x] Carte interactive géolocalisée (Leaflet)
+- [x] Intégration Stripe (checkout, paiement)
+- [x] Période d'essai 2 mois établissements
 
 ### Phase 2 (Fonctionnalités avancées)
-- [x] Profil musicien enrichi: pseudo, âge, photo, bio, instruments, styles
-- [x] Profil groupe: nom, photo, liens (FB, Instagram, YouTube, site web, Bandcamp)
-- [x] Concerts musicien: liste des dates avec lieux
-- [x] Système d'amis: demande, acceptation, refus, liste
-- [x] Profil établissement enrichi: photo de profil, photo couverture
-- [x] Calendrier Boeufs musicaux: date, heure, styles, règlement, matériel
-- [x] Calendrier Concerts: date, groupes, prix
-- [x] Mode Planning: dates ouvertes aux candidatures
-- [x] Système de candidatures
-- [x] Abonnement aux établissements
-- [x] Système de notifications in-app
-- [x] Page profil musicien public
+- [x] Profils enrichis (musicien, venue, groupe)
+- [x] Système d'amis, messagerie, notifications
+- [x] Calendrier boeufs/concerts/planning + candidatures
+- [x] Gamification (badges, leaderboard)
 
-### Phase 3 (Récentes - Mars 2026)
-- [x] Vérification d'email via Resend (backend + frontend page `/verify-email`)
-- [x] Email de bienvenue à l'inscription
-- [x] Codes d'invitation pour rejoindre des groupes (6 caractères, 7 jours)
-- [x] Modal "Contacter ce groupe" avec envoi d'email à l'admin
-- [x] Options de cachet "Fixe" et "À définir avec l'établissement" (VenueDashboard)
-- [x] Message pionnier dans le header du MusicianDashboard
-- [x] Désactivation du statut PRO automatique (tier "free" par défaut)
-- [x] Migration données profil jean → test@gmail.com
+### Phase 3 (Mars 2026)
+- [x] Vérification email via Resend + page /verify-email frontend
+- [x] Codes d'invitation groupes (6 chars, unique, auto-généré)
+- [x] Bouton Partager + Copier code sur carte groupe (admin)
+- [x] Auto-save à la création de groupe
+- [x] Message pionnier (Landing + Dashboard, dégradé coloré)
+- [x] Modal "Contacter ce groupe" + endpoint backend email
+- [x] Options cachet "Fixe" / "À définir avec l'établissement"
+- [x] Fix VenueDashboard (venue→profile, handlers manquants, states manquants)
+- [x] Géocodage automatique villes (Nominatim) + migration 42 venues Atlas
+- [x] 42 venues réparties sur 40 villes / 12 régions françaises
+- [x] Fix projection API venues (region, latitude, longitude)
+- [x] Unification MongoDB Atlas sur toutes les routes backend
+- [x] Fix layout mobile "Mes Participations"
+- [x] Endpoint GET /api/stats/counts
+- [x] Archive ZIP + PDF descriptif INPI e-Soleau
+- [x] Suppression "Aucune carte bancaire requise" Landing
 
-## P0/P1/P2 Features Remaining
+## P0/P1/P2 Remaining
 
-### P0 (Critical)
-- Toutes les fonctionnalités P0 implémentées ✓
-
-### P1 (Important)
-- [ ] Notifications push/email (actuellement in-app seulement)
-- [ ] Rappels automatiques avant les événements
+### P1
 - [ ] Upload d'images (actuellement via URL)
+- [ ] Notifications push/email
 - [ ] Recherche avancée par style, équipement, date
 
-### P2 (Nice to have)
-- [ ] Rendre les seuils de modération configurables
-- [ ] Notifications en temps réel avec WebSockets
+### P2
+- [ ] Notifications temps réel (WebSockets)
 - [ ] Système d'avis/notation
-- [ ] Chat/messagerie privée entre utilisateurs
-- [ ] Application mobile
-- [ ] Partage sur réseaux sociaux
-- [ ] Statistiques avancées pour établissements
+- [ ] Chat/messagerie privée amélioré
+- [ ] Désactivation statut PRO auto (quand décidé par l'utilisateur)
+- [ ] Seuils de modération configurables
 
 ## Key API Endpoints
-- `POST /api/auth/register` - Inscription (email_verified=false, tier=free)
-- `POST /api/auth/login` - Connexion (bloqué si email non vérifié)
-- `GET /api/auth/verify-email?token=xxx` - Vérification d'email
-- `POST /api/auth/resend-verification?email=xxx` - Renvoi du lien (3/jour max)
-- `POST /api/musicians/me/bands/{band_id}/invite` - Rejoindre via code
-- `POST /api/musicians/contact-band/{band_id}` - Contacter l'admin du groupe
+- `POST /api/auth/register` — Inscription (email_verified=false, PRO auto)
+- `POST /api/auth/login` — Connexion (bloqué si email non vérifié)
+- `GET /api/auth/verify-email?token=xxx` — Vérification email
+- `POST /api/auth/resend-verification?email=xxx` — Renvoi lien (3/jour)
+- `GET /api/stats/counts` — Compteurs landing page
+- `GET /api/venues` — Liste venues avec region/GPS
+- `POST /api/musicians/contact-band/{band_id}` — Contacter admin groupe
 
-## Next Action Items
-1. Notifications push/email
-2. Upload d'images
-3. Recherche avancée avec filtres
-4. WebSockets pour notifications temps réel
+## Notes Production
+- `REACT_APP_BACKEND_URL` doit être vide en déploiement (URLs relatives)
+- Cloudflare redirect www → non-www configuré
+- `ENVIRONMENT='production'` active MongoDB Atlas

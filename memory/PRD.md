@@ -44,6 +44,8 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - [x] Endpoint GET /api/stats/counts
 - [x] Archive ZIP + PDF descriptif INPI e-Soleau
 - [x] Suppression "Aucune carte bancaire requise" Landing
+- [x] Filtre par style musical sur la carte (chips interactifs)
+- [x] Carte rétractable/collapsible (toggle expand/collapse avec localStorage)
 
 ## P0/P1/P2 Remaining
 

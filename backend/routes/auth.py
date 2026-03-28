@@ -186,8 +186,9 @@ async def login(request: Request, data: UserLogin):
         token=token,
         user=UserResponse(
             id=user["id"], email=user["email"], name=user.get("name", user["email"]), role=user["role"],
-            created_at=user["created_at"], subscription_status=user.get("subscription_status"),
-            trial_end=user.get("trial_end")
+            created_at=user["created_at"].isoformat() if isinstance(user["created_at"], datetime) else user["created_at"],
+            subscription_status=user.get("subscription_status"),
+            trial_end=user.get("trial_end").isoformat() if isinstance(user.get("trial_end"), datetime) else user.get("trial_end")
         )
     )
 
@@ -195,9 +196,10 @@ async def login(request: Request, data: UserLogin):
 async def get_me(current_user: dict = Depends(get_current_user)):
     return UserResponse(
         id=current_user["id"], email=current_user["email"], name=current_user.get("name", current_user["email"]),
-        role=current_user["role"], created_at=current_user["created_at"],
+        role=current_user["role"], 
+        created_at=current_user["created_at"].isoformat() if isinstance(current_user["created_at"], datetime) else current_user["created_at"],
         subscription_status=current_user.get("subscription_status"),
-        trial_end=current_user.get("trial_end")
+        trial_end=current_user.get("trial_end").isoformat() if isinstance(current_user.get("trial_end"), datetime) else current_user.get("trial_end")
     )
 
 

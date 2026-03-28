@@ -280,6 +280,33 @@ export default function MelomaneDashboard() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+  
+  // Handlers for subscriptions
+  const handleSubscribe = async (venueId) => {
+    try {
+      await axios.post(`${API}/subscribe/${venueId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success("Vous êtes maintenant connecté à cet établissement");
+      fetchSubscriptions(); // Refresh subscriptions
+    } catch (error) {
+      console.error("Error subscribing:", error);
+      toast.error("Erreur lors de la connexion");
+    }
+  };
+  
+  const handleUnsubscribe = async (venueId) => {
+    try {
+      await axios.delete(`${API}/unsubscribe/${venueId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success("Vous êtes déconnecté de cet établissement");
+      fetchSubscriptions(); // Refresh subscriptions
+    } catch (error) {
+      console.error("Error unsubscribing:", error);
+      toast.error("Erreur lors de la déconnexion");
+    }
+  };
 
   const handleSaveProfile = async () => {
     try {

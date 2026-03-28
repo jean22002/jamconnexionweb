@@ -15,7 +15,16 @@
 export const buildImageUrl = (path, backendUrl) => {
   if (!path) return "";
   
-  // If already a complete URL, return as-is
+  // If path contains old domain URLs, extract just the path
+  if (path.includes('jamconnexion.com') || path.includes('image-crop-test') || path.includes('preview.emergentagent.com')) {
+    // Extract the path after the domain
+    const urlMatch = path.match(/https?:\/\/[^/]+(\/api\/uploads\/.+)$/);
+    if (urlMatch) {
+      return urlMatch[1]; // Return just the /api/uploads/... part
+    }
+  }
+  
+  // If already a complete URL (but not old domains), return as-is
   if (path.startsWith('http')) {
     return path;
   }

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, Circle, Tooltip } from "react-leaflet";
 import L from "leaflet";
@@ -7,7 +7,7 @@ import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
 import { Slider } from "../../../components/ui/slider";
 import LazyImage from "../../../components/LazyImage";
-import { Radio, MapPinOff, Locate, Search, Loader2, X, MapPin } from "lucide-react";
+import { Radio, MapPinOff, Locate, Search, Loader2, X, MapPin, Music } from "lucide-react";
 
 // Component to detect manual map movements (drag, zoom)
 function MapEventHandler({ onMapMove }) {
@@ -101,6 +101,38 @@ export default function MapTab({
   setShowRadiusCircle,
   fetchData
 }) {
+  const [selectedStyles, setSelectedStyles] = useState([]);
+
+  // Extract all unique styles from venues
+  const allStyles = useMemo(() => {
+    const styles = new Set();
+    (venues || []).forEach(v => {
+      (v.music_styles || []).forEach(s => styles.add(s));
+    });
+    return [...styles].sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
+  }, [venues]);
+
+  const toggleStyle = (style) => {
+    setSelectedStyles(prev => 
+      prev.includes(style) ? prev.filter(s => s !== style) : [...prev, style]
+    );
+  };
+
+  // Filter venues by selected styles
+  const styleFilteredVenues = useMemo(() => {
+    if (selectedStyles.length === 0) return venues || [];
+    return (venues || []).filter(v => 
+      (v.music_styles || []).some(s => selectedStyles.includes(s))
+    );
+  }, [venues, selectedStyles]);
+
+  const styleFilteredNearby = useMemo(() => {
+    if (selectedStyles.length === 0) return nearbyVenues || [];
+    return (nearbyVenues || []).filter(v =>
+      (v.music_styles || []).some(s => selectedStyles.includes(s))
+    );
+  }, [nearbyVenues, selectedStyles]);
+
   return (
     <>
       {/* Geolocation Controls */}
@@ -219,6 +251,46 @@ export default function MapTab({
         )}
       </div>
 
+      {/* Style filter chips */}
+      {allStyles.length > 0 && (
+        <div className="glassmorphism rounded-xl p-3 mb-6" data-testid="style-filter">
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground mr-1">
+              <Music className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Styles :</span>
+            </div>
+            {selectedStyles.length > 0 && (
+              <button
+                onClick={() => setSelectedStyles([])}
+                className="px-2.5 py-1 text-xs rounded-full border border-white/10 text-muted-foreground hover:text-white transition-colors"
+                data-testid="clear-styles"
+              >
+                Tous
+              </button>
+            )}
+            {allStyles.map(style => (
+              <button
+                key={style}
+                onClick={() => toggleStyle(style)}
+                className={`px-2.5 py-1 text-xs rounded-full transition-all ${
+                  selectedStyles.includes(style)
+                    ? 'bg-primary text-white border border-primary'
+                    : 'bg-black/20 text-muted-foreground border border-white/10 hover:border-primary/50 hover:text-white'
+                }`}
+                data-testid={`style-${style}`}
+              >
+                {style}
+              </button>
+            ))}
+            {selectedStyles.length > 0 && (
+              <span className="text-xs text-primary ml-1">
+                {styleFilteredVenues.length} résultat{styleFilteredVenues.length > 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="h-[500px] rounded-2xl overflow-hidden neon-border relative z-0">
           <MapContainer center={mapCenter} zoom={geoPosition ? 12 : 6} className="h-full w-full" style={{ background: 'hsl(240 25% 10%)' }}>
@@ -262,8 +334,8 @@ export default function MapTab({
               </>
             )}
             
-            {/* Venue markers - show all venues, highlight nearby ones */}
-            {venues && venues.length > 0 && venues.map((venue) => {
+            {/* Venue markers - filtered by style */}
+            {styleFilteredVenues && styleFilteredVenues.length > 0 && styleFilteredVenues.map((venue) => {
               if (venue.latitude == null || venue.longitude == null) {
                 return null;
               }
@@ -331,9 +403,9 @@ export default function MapTab({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-heading font-semibold text-xl">
-              {geoPosition && nearbyVenues.length > 0 
-                ? `${nearbyVenues.length} établissement${nearbyVenues.length > 1 ? 's' : ''} à proximité`
-                : `${venues.length} établissement${venues.length > 1 ? 's' : ''} répertorié${venues.length > 1 ? 's' : ''}`
+              {geoPosition && styleFilteredNearby.length > 0 
+                ? `${styleFilteredNearby.length} établissement${styleFilteredNearby.length > 1 ? 's' : ''} à proximité`
+                : `${styleFilteredVenues.length} établissement${styleFilteredVenues.length > 1 ? 's' : ''} répertorié${styleFilteredVenues.length > 1 ? 's' : ''}`
               }
             </h2>
             {nearbyVenues.length > 0 && geoPosition && (
@@ -364,7 +436,7 @@ export default function MapTab({
             <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2">
               {/* Filtrer pour n'afficher que les établissements dans le rayon si géolocalisation active */}
               {(() => {
-                const filteredVenues = (geoPosition && nearbyVenues.length > 0 ? nearbyVenues : venues)
+                const filteredVenues = (geoPosition && styleFilteredNearby.length > 0 ? styleFilteredNearby : styleFilteredVenues)
                   .filter(venue => {
                     // Filtrer par ville si recherche active
                     if (searchCity && searchCity.trim() !== '') {

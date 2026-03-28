@@ -47,6 +47,8 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - [x] Filtre par style musical sur la carte (chips interactifs)
 - [x] Carte rétractable/collapsible (toggle expand/collapse avec localStorage)
 - [x] Offre PRO rétractable/collapsible (ProSubscriptionCard + ProSubscriptionManager)
+- [x] Fix doublon "Rock" dans filtres styles musicaux (normalisation casse)
+- [x] Amélioration lisibilité carte : tooltips au survol uniquement (non permanents)
 
 ## P0/P1/P2 Remaining
 

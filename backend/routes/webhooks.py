@@ -8,7 +8,7 @@ import stripe
 
 router = APIRouter(prefix="/webhook", tags=["Webhooks"])
 
-mongo_url = os.environ['MONGO_URL']
+mongo_url = os.environ.get('MONGO_URL_PRODUCTION', os.environ['MONGO_URL']) if os.environ.get('ENVIRONMENT') == 'production' else os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 

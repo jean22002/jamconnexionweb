@@ -52,7 +52,7 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - [x] Clustering des marqueurs carte (react-leaflet-cluster, gradient purple-pink, 3 tailles)
 - [x] Filtre candidatures PRO sur carte (par date et style musical, réservé abonnés PRO)
 - [x] Filtre offres disponibles PRO sur carte (par date et style, réservé abonnés PRO)
-- [x] Dashboard Mélomane : Clustering carte + filtres (styles, région, département)
+- [x] Dashboard Mélomane : Clustering carte (sans filtres styles/région/département)
 - [x] Dashboard Mélomane : Onglet Établissements avec filtres par région et département
 
 ## P0/P1/P2 Remaining

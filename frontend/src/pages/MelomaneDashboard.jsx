@@ -96,11 +96,6 @@ export default function MelomaneDashboard() {
   const [nearbyVenues, setNearbyVenues] = useState([]);
   const [showRadiusCircle, setShowRadiusCircle] = useState(true);
   
-  // Filter states
-  const [selectedStyles, setSelectedStyles] = useState([]);
-  const [selectedRegion, setSelectedRegion] = useState('all');
-  const [selectedDepartment, setSelectedDepartment] = useState('all');
-  
   // Subscription state for Connexions tab
   const [subscriptions, setSubscriptions] = useState([]);
   
@@ -875,110 +870,6 @@ export default function MelomaneDashboard() {
 
           {/* Map Tab */}
           <TabsContent value="map">
-            {/* Style, Region, and Department Filters */}
-            {venues && venues.length > 0 && (() => {
-              // Extract unique styles
-              const allStyles = new Set();
-              venues.forEach(v => {
-                (v.music_styles || []).forEach(s => {
-                  const normalized = s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-                  allStyles.add(normalized);
-                });
-              });
-              const uniqueStyles = [...allStyles].sort((a, b) => a.localeCompare(b, 'fr'));
-              
-              // Extract unique regions and departments
-              const allRegions = new Set(venues.map(v => v.region).filter(Boolean));
-              const uniqueRegions = ['all', ...Array.from(allRegions).sort()];
-              
-              const allDepartments = new Set(venues.map(v => v.department).filter(Boolean));
-              const uniqueDepartments = ['all', ...Array.from(allDepartments).sort()];
-              
-              return (
-                <>
-                  {/* Style Filter */}
-                  {uniqueStyles.length > 0 && (
-                    <div className="glassmorphism rounded-xl p-4 mb-6">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Music className="w-4 h-4 text-primary" />
-                        <h3 className="font-semibold text-sm">Filtrer par style musical</h3>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {uniqueStyles.map((style) => (
-                          <button
-                            key={style}
-                            onClick={() => {
-                              setSelectedStyles(prev =>
-                                prev.includes(style)
-                                  ? prev.filter(s => s !== style)
-                                  : [...prev, style]
-                              );
-                            }}
-                            className={`px-3 py-1.5 text-sm rounded-full transition-all ${
-                              selectedStyles.includes(style)
-                                ? 'bg-primary text-white shadow-lg scale-105'
-                                : 'bg-black/20 border border-white/10 hover:border-primary/50'
-                            }`}
-                          >
-                            {style}
-                          </button>
-                        ))}
-                        {selectedStyles.length > 0 && (
-                          <button
-                            onClick={() => setSelectedStyles([])}
-                            className="px-3 py-1.5 text-sm rounded-full bg-destructive/20 text-destructive border border-destructive/30 hover:bg-destructive/30"
-                          >
-                            Réinitialiser
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Region and Department Filters */}
-                  <div className="glassmorphism rounded-xl p-4 mb-6">
-                    <div className="flex items-center gap-2 mb-3">
-                      <MapPin className="w-4 h-4 text-primary" />
-                      <h3 className="font-semibold text-sm">Filtrer par localisation</h3>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {/* Region filter */}
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-2 block">Région</Label>
-                        <select
-                          value={selectedRegion}
-                          onChange={(e) => setSelectedRegion(e.target.value)}
-                          className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-sm"
-                        >
-                          {uniqueRegions.map(region => (
-                            <option key={region} value={region}>
-                              {region === 'all' ? 'Toutes les régions' : region}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      
-                      {/* Department filter */}
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-2 block">Département</Label>
-                        <select
-                          value={selectedDepartment}
-                          onChange={(e) => setSelectedDepartment(e.target.value)}
-                          className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-sm"
-                        >
-                          {uniqueDepartments.map(dept => (
-                            <option key={dept} value={dept}>
-                              {dept === 'all' ? 'Tous les départements' : dept}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              );
-            })()}
-            
             {/* Geolocation Controls */}
             <div className="glassmorphism rounded-xl p-4 mb-6">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
@@ -1204,58 +1095,33 @@ export default function MelomaneDashboard() {
                       });
                     }}
                   >
-                    {(() => {
-                      // Apply all filters
-                      let filteredVenues = venues;
-                      
-                      // Filter by styles
-                      if (selectedStyles.length > 0) {
-                        filteredVenues = filteredVenues.filter(v =>
-                          (v.music_styles || []).some(s => {
-                            const normalized = s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-                            return selectedStyles.includes(normalized);
-                          })
-                        );
-                      }
-                      
-                      // Filter by region
-                      if (selectedRegion !== 'all') {
-                        filteredVenues = filteredVenues.filter(v => v.region === selectedRegion);
-                      }
-                      
-                      // Filter by department
-                      if (selectedDepartment !== 'all') {
-                        filteredVenues = filteredVenues.filter(v => v.department === selectedDepartment);
-                      }
-                      
-                      return filteredVenues.map((venue) => {
-                        if (!venue.latitude || !venue.longitude) return null;
-                        return (
-                          <Marker 
-                            key={venue.id} 
-                            position={[venue.latitude, venue.longitude]} 
-                            icon={venueIcon}
+                    {venues.map((venue) => {
+                      if (!venue.latitude || !venue.longitude) return null;
+                      return (
+                        <Marker 
+                          key={venue.id} 
+                          position={[venue.latitude, venue.longitude]} 
+                          icon={venueIcon}
+                        >
+                          <Tooltip 
+                            direction="top" 
+                            offset={[0, -10]}
+                            className="venue-name-tooltip"
                           >
-                            <Tooltip 
-                              direction="top" 
-                              offset={[0, -10]}
-                              className="venue-name-tooltip"
-                            >
-                              <div className="text-xs font-semibold">
-                                {venue.name}
-                              </div>
-                            </Tooltip>
-                            <Popup>
-                              <div className="min-w-[200px]">
-                                <h3 className="font-semibold text-lg mb-1">{venue.name}</h3>
-                                <p className="text-sm text-gray-600 mb-1">{venue.city}</p>
-                                <Link to={`/venue/${venue.id}`}><Button size="sm" className="w-full bg-primary text-white">Voir détails</Button></Link>
-                              </div>
-                            </Popup>
-                          </Marker>
-                        );
-                      });
-                    })()}
+                            <div className="text-xs font-semibold">
+                              {venue.name}
+                            </div>
+                          </Tooltip>
+                          <Popup>
+                            <div className="min-w-[200px]">
+                              <h3 className="font-semibold text-lg mb-1">{venue.name}</h3>
+                              <p className="text-sm text-gray-600 mb-1">{venue.city}</p>
+                              <Link to={`/venue/${venue.id}`}><Button size="sm" className="w-full bg-primary text-white">Voir détails</Button></Link>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      );
+                    })}
                   </MarkerClusterGroup>
                 </MapContainer>
 

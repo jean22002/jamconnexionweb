@@ -3190,7 +3190,7 @@ export default function VenueDashboard() {
               showApplicationsModal={showApplicationsModal}
               setShowApplicationsModal={setShowApplicationsModal}
               selectedSlot={selectedSlot}
-              applications={applications}
+              applications={selectedSlot ? (applications[selectedSlot.id] || []) : []}
               handleAcceptApplication={handleAcceptApplication}
               handleRejectApplication={handleRejectApplication}
             />

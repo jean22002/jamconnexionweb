@@ -1,0 +1,49 @@
+/* Custom cluster styles for Jam Connexion */
+.custom-cluster-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.custom-cluster-icon div {
+  animation: pulse-cluster 2s ease-in-out infinite;
+}
+
+@keyframes pulse-cluster {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(168, 85, 247, 0.4);
+  }
+}
+
+/* Override default cluster styles */
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+  background: transparent !important;
+}
+
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+  background: transparent !important;
+}
+
+/* Venue tooltip styles */
+.venue-name-tooltip {
+  background: rgba(0, 0, 0, 0.85) !important;
+  border: 1px solid rgba(168, 85, 247, 0.5) !important;
+  border-radius: 8px !important;
+  padding: 4px 8px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.venue-name-tooltip::before {
+  border-top-color: rgba(0, 0, 0, 0.85) !important;
+}

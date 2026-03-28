@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, Circle, Tooltip } from "react-leaflet";
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from "leaflet";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
@@ -8,6 +9,11 @@ import { Label } from "../../../components/ui/label";
 import { Slider } from "../../../components/ui/slider";
 import LazyImage from "../../../components/LazyImage";
 import { Radio, MapPinOff, Locate, Search, Loader2, X, MapPin, Music, ChevronDown, ChevronUp } from "lucide-react";
+
+// Import cluster styles
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import './MapTab.css';
 
 // Component to detect manual map movements (drag, zoom)
 function MapEventHandler({ onMapMove }) {
@@ -392,48 +398,74 @@ export default function MapTab({
               </>
             )}
             
-            {/* Venue markers - filtered by style */}
-            {styleFilteredVenues && styleFilteredVenues.length > 0 && styleFilteredVenues.map((venue) => {
-              if (venue.latitude == null || venue.longitude == null) {
-                return null;
-              }
-              const isNearby = nearbyVenues.some(nv => nv.id === venue.id);
-              return (
-                <Marker 
-                  key={venue.id} 
-                  position={[venue.latitude, venue.longitude]} 
-                  icon={venueIcon}
-                  eventHandlers={{
-                    click: () => {
-                      window.location.href = `/venue/${venue.id}`;
-                    }
-                  }}
-                >
-                  <Tooltip 
-                    direction="top" 
-                    offset={[0, -10]}
-                    className="venue-name-tooltip"
+            {/* Venue markers - filtered by style - with clustering */}
+            <MarkerClusterGroup
+              chunkedLoading
+              maxClusterRadius={60}
+              spiderfyOnMaxZoom={true}
+              showCoverageOnHover={false}
+              zoomToBoundsOnClick={true}
+              iconCreateFunction={(cluster) => {
+                const count = cluster.getChildCount();
+                let size = 'small';
+                let sizeClass = 'w-10 h-10 text-sm';
+                
+                if (count > 20) {
+                  size = 'large';
+                  sizeClass = 'w-16 h-16 text-lg';
+                } else if (count > 10) {
+                  size = 'medium';
+                  sizeClass = 'w-12 h-12 text-base';
+                }
+                
+                return L.divIcon({
+                  html: `
+                    <div class="${sizeClass} rounded-full bg-gradient-to-br from-purple-500 to-pink-500 border-4 border-white shadow-lg flex items-center justify-center font-bold text-white">
+                      ${count}
+                    </div>
+                  `,
+                  className: 'custom-cluster-icon',
+                  iconSize: L.point(40, 40, true)
+                });
+              }}
+            >
+              {styleFilteredVenues && styleFilteredVenues.length > 0 && styleFilteredVenues.map((venue) => {
+                if (venue.latitude == null || venue.longitude == null) {
+                  return null;
+                }
+                const isNearby = nearbyVenues.some(nv => nv.id === venue.id);
+                return (
+                  <Marker 
+                    key={venue.id} 
+                    position={[venue.latitude, venue.longitude]} 
+                    icon={venueIcon}
                   >
-                    <div className="text-xs font-semibold">
-                      {venue.name}
-                      {isNearby && venue.distance_km && (
-                        <span className="text-primary ml-1">({venue.distance_km}km)</span>
-                      )}
-                    </div>
-                  </Tooltip>
-                  <Popup>
-                    <div className="min-w-[200px]">
-                      <h3 className="font-semibold text-lg mb-1">{venue.name}</h3>
-                      <p className="text-sm text-gray-600 mb-1">{venue.city}</p>
-                      {isNearby && venue.distance_km && (
-                        <p className="text-xs text-primary mb-2">📍 {venue.distance_km} km (à proximité)</p>
-                      )}
-                      <Link to={`/venue/${venue.id}`}><Button size="sm" className="w-full bg-primary text-white">Voir détails</Button></Link>
-                    </div>
-                  </Popup>
-                </Marker>
-              );
-            })}
+                    <Tooltip 
+                      direction="top" 
+                      offset={[0, -10]}
+                      className="venue-name-tooltip"
+                    >
+                      <div className="text-xs font-semibold">
+                        {venue.name}
+                        {isNearby && venue.distance_km && (
+                          <span className="text-primary ml-1">({venue.distance_km}km)</span>
+                        )}
+                      </div>
+                    </Tooltip>
+                    <Popup>
+                      <div className="min-w-[200px]">
+                        <h3 className="font-semibold text-lg mb-1">{venue.name}</h3>
+                        <p className="text-sm text-gray-600 mb-1">{venue.city}</p>
+                        {isNearby && venue.distance_km && (
+                          <p className="text-xs text-primary mb-2">📍 {venue.distance_km} km (à proximité)</p>
+                        )}
+                        <Link to={`/venue/${venue.id}`}><Button size="sm" className="w-full bg-primary text-white">Voir détails</Button></Link>
+                      </div>
+                    </Popup>
+                  </Marker>
+                );
+              })}
+            </MarkerClusterGroup>
           </MapContainer>
 
           {/* Map controls overlay */}

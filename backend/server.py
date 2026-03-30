@@ -123,6 +123,8 @@ import routes.analytics as analytics
 import routes.audit as audit  # NEW: Audit logging
 import routes.online_status as online_status
 import routes.accounting as accounting
+import routes.firebase_push as firebase_push
+import routes.chat as chat
 
 # Include routers with basic functionality
 api_router.include_router(auth_router)
@@ -150,6 +152,8 @@ reports.set_db(db)
 analytics.set_db(db)
 audit.set_db(db)  # NEW: Audit logging
 accounting.set_db(db)
+firebase_push.set_db(db)
+chat.set_db(db)
 
 # Include domain-specific routers
 api_router.include_router(melomanes.router)
@@ -167,6 +171,8 @@ api_router.include_router(analytics.router)
 api_router.include_router(audit.router)  # NEW: Audit logging
 api_router.include_router(online_status.router)
 api_router.include_router(accounting.router, prefix="/accounting", tags=["Accounting"])
+api_router.include_router(firebase_push.router)
+api_router.include_router(chat.router)
 
 # Stats endpoint for Landing page
 @api_router.get("/stats/counts")
@@ -226,12 +232,32 @@ def api_health_check():
 @app.on_event("startup")
 async def startup_db_client():
     logger.info("Connected to MongoDB")
+    
     # Initialize object storage
     try:
         from utils.storage import init_storage
         init_storage()
     except Exception as e:
         logger.warning(f"⚠️  Object storage init failed (non-critical): {e}")
+    
+    # Initialize Firebase (for mobile push notifications)
+    try:
+        from firebase_config import initialize_firebase
+        if initialize_firebase():
+            logger.info("✅ Firebase Cloud Messaging initialized")
+        else:
+            logger.warning("⚠️  Firebase not initialized (credentials missing). Mobile push notifications disabled.")
+    except Exception as e:
+        logger.warning(f"⚠️  Firebase init failed (non-critical): {e}")
+    
+    # Initialize WebSocket (Socket.IO for real-time chat)
+    try:
+        from websocket import init_websocket, set_db as ws_set_db
+        ws_set_db(db)
+        init_websocket(app)
+        logger.info("✅ WebSocket Socket.IO initialized for real-time chat")
+    except Exception as e:
+        logger.error(f"❌ WebSocket init failed: {e}")
 
 # Shutdown event
 @app.on_event("shutdown")

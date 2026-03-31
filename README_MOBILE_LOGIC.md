@@ -624,18 +624,23 @@ Authorization: Bearer {token}
 ```
 Email: test@gmail.com
 Password: test
+Role: musician
+Name: GuitaristeTest
 ```
 
 **Établissement** :
 ```
 Email: bar@gmail.com
 Password: test
+Role: venue
+Name: Bar Test
 ```
 
 **Mélomane** :
 ```
 Email: melomane@test.com
 Password: test
+Role: melomane
 ```
 
 ---

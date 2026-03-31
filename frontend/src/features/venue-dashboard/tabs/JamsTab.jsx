@@ -1,22 +1,93 @@
 import { Button } from "../../../components/ui/button";
 import { Plus, Edit, Trash2, Calendar, Clock, Music } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../../components/ui/dialog";
+import { Label } from "../../../components/ui/label";
+import { Input } from "../../../components/ui/input";
+import { Textarea } from "../../../components/ui/textarea";
+import TimeSelect from "../../../components/TimeSelect";
 
 export default function JamsTab({ 
   jams,
   handleOpenJamDialog,
   handleEditEvent,
-  handleDeleteEvent
+  handleDeleteEvent,
+  // Nouveaux props pour le Dialog
+  showJamDialog,
+  setShowJamDialog,
+  jamForm,
+  setJamForm,
+  handleCreateJam
 }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-heading font-semibold text-xl">Bœufs Musicaux</h2>
-        <Button 
-          onClick={handleOpenJamDialog}
-          className="bg-primary hover:bg-primary/90 rounded-full gap-2"
-        >
-          <Plus className="w-4 h-4" /> Nouveau bœuf
-        </Button>
+        <Dialog open={showJamDialog} onOpenChange={setShowJamDialog}>
+          <DialogTrigger asChild>
+            <Button className="bg-primary hover:bg-primary/90 rounded-full gap-2">
+              <Plus className="w-4 h-4" /> Nouveau bœuf
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="glassmorphism border-white/10 max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Créer un bœuf musical</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Date</Label>
+                  <Input 
+                    type="date" 
+                    value={jamForm.date} 
+                    onChange={(e) => setJamForm({ ...jamForm, date: e.target.value })} 
+                    className="bg-black/20 border-white/10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Heure début</Label>
+                  <TimeSelect
+                    value={jamForm.start_time}
+                    onChange={(value) => setJamForm({ ...jamForm, start_time: value })}
+                    placeholder="Heure de début"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Heure fin</Label>
+                  <TimeSelect
+                    value={jamForm.end_time}
+                    onChange={(value) => setJamForm({ ...jamForm, end_time: value })}
+                    placeholder="Heure de fin"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Styles musicaux (ex: Rock, Jazz, Blues)</Label>
+                <Input 
+                  value={jamForm.music_styles} 
+                  onChange={(e) => setJamForm({ ...jamForm, music_styles: e.target.value })} 
+                  placeholder="Séparer par des virgules"
+                  className="bg-black/20 border-white/10" 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Règles / Informations</Label>
+                <Textarea 
+                  value={jamForm.rules} 
+                  onChange={(e) => setJamForm({ ...jamForm, rules: e.target.value })} 
+                  placeholder="Ex: Ouvert à tous, 3 morceaux max par musicien..."
+                  className="bg-black/20 border-white/10" 
+                  rows={3}
+                />
+              </div>
+              <Button 
+                onClick={handleCreateJam} 
+                className="w-full bg-primary hover:bg-primary/90 rounded-full"
+              >
+                Créer le bœuf
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {jams.length === 0 ? (

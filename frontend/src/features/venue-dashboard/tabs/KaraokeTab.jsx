@@ -1,22 +1,102 @@
 import { Button } from "../../../components/ui/button";
 import { Plus, Edit, Trash2, Calendar, Clock, Mic } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../../components/ui/dialog";
+import { Label } from "../../../components/ui/label";
+import { Input } from "../../../components/ui/input";
+import { Textarea } from "../../../components/ui/textarea";
+import TimeSelect from "../../../components/TimeSelect";
 
 export default function KaraokeTab({ 
   karaokes,
   handleOpenKaraokeDialog,
   handleEditEvent,
-  handleDeleteEvent
+  handleDeleteEvent,
+  // Nouveaux props pour le Dialog
+  showKaraokeDialog,
+  setShowKaraokeDialog,
+  karaokeForm,
+  setKaraokeForm,
+  handleCreateKaraoke
 }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-heading font-semibold text-xl">Karaoké</h2>
-        <Button 
-          onClick={handleOpenKaraokeDialog}
-          className="bg-primary hover:bg-primary/90 rounded-full gap-2"
-        >
-          <Plus className="w-4 h-4" /> Nouveau karaoké
-        </Button>
+        <Dialog open={showKaraokeDialog} onOpenChange={setShowKaraokeDialog}>
+          <DialogTrigger asChild>
+            <Button className="bg-primary hover:bg-primary/90 rounded-full gap-2">
+              <Plus className="w-4 h-4" /> Nouveau karaoké
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="glassmorphism border-white/10 max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Créer une soirée karaoké</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Date</Label>
+                  <Input 
+                    type="date" 
+                    value={karaokeForm.date} 
+                    onChange={(e) => setKaraokeForm({ ...karaokeForm, date: e.target.value })} 
+                    className="bg-black/20 border-white/10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Heure début</Label>
+                  <TimeSelect
+                    value={karaokeForm.start_time}
+                    onChange={(value) => setKaraokeForm({ ...karaokeForm, start_time: value })}
+                    placeholder="Heure de début"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Heure fin</Label>
+                  <TimeSelect
+                    value={karaokeForm.end_time}
+                    onChange={(value) => setKaraokeForm({ ...karaokeForm, end_time: value })}
+                    placeholder="Heure de fin"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Titre</Label>
+                <Input 
+                  value={karaokeForm.title} 
+                  onChange={(e) => setKaraokeForm({ ...karaokeForm, title: e.target.value })} 
+                  placeholder="Ex: Soirée Karaoké Pop-Rock"
+                  className="bg-black/20 border-white/10" 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <Textarea 
+                  value={karaokeForm.description} 
+                  onChange={(e) => setKaraokeForm({ ...karaokeForm, description: e.target.value })} 
+                  placeholder="Décrivez votre soirée karaoké..."
+                  className="bg-black/20 border-white/10" 
+                  rows={3}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Styles musicaux (optionnel)</Label>
+                <Input 
+                  value={karaokeForm.music_styles} 
+                  onChange={(e) => setKaraokeForm({ ...karaokeForm, music_styles: e.target.value })} 
+                  placeholder="Ex: Pop, Rock, Variété française"
+                  className="bg-black/20 border-white/10" 
+                />
+              </div>
+              <Button 
+                onClick={handleCreateKaraoke} 
+                className="w-full bg-primary hover:bg-primary/90 rounded-full"
+              >
+                Créer le karaoké
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {karaokes.length === 0 ? (

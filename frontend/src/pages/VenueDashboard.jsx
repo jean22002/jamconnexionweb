@@ -2918,7 +2918,17 @@ export default function VenueDashboard() {
 
           {/* Jams Tab */}
           <TabsContent value="jams">
-            <JamsTab jams={jams} handleOpenJamDialog={() => setShowJamDialog(true)} handleEditEvent={handleEditEvent} handleDeleteEvent={handleDeleteEvent} />
+            <JamsTab 
+              jams={jams} 
+              handleOpenJamDialog={() => setShowJamDialog(true)} 
+              handleEditEvent={handleEditEvent} 
+              handleDeleteEvent={handleDeleteEvent}
+              showJamDialog={showJamDialog}
+              setShowJamDialog={setShowJamDialog}
+              jamForm={jamForm}
+              setJamForm={setJamForm}
+              handleCreateJam={createJam}
+            />
           </TabsContent>
 
           {/* Concerts Tab */}
@@ -2937,7 +2947,17 @@ export default function VenueDashboard() {
 
           {/* Karaoké Tab */}
           <TabsContent value="karaoke">
-            <KaraokeTab karaokes={karaokes} handleOpenKaraokeDialog={() => setShowKaraokeDialog(true)} handleEditEvent={handleEditEvent} handleDeleteEvent={handleDeleteEvent} />
+            <KaraokeTab 
+              karaokes={karaokes} 
+              handleOpenKaraokeDialog={() => setShowKaraokeDialog(true)} 
+              handleEditEvent={handleEditEvent} 
+              handleDeleteEvent={handleDeleteEvent}
+              showKaraokeDialog={showKaraokeDialog}
+              setShowKaraokeDialog={setShowKaraokeDialog}
+              karaokeForm={karaokeForm}
+              setKaraokeForm={setKaraokeForm}
+              handleCreateKaraoke={createKaraoke}
+            />
           </TabsContent>
 
           {/* Spectacle Tab */}

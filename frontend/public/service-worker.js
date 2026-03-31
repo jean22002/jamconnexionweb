@@ -2,7 +2,7 @@
 // Service Worker PWA pour Jam Connexion
 // Support du mode hors ligne, notifications push et cache intelligent
 
-const CACHE_VERSION = 'v5.4';  // Updated 2026-03-31: Cache cleared, fresh build
+const CACHE_VERSION = 'v5.5';  // Updated 2026-03-31: Backend API fixed (Socket.IO)
 const CACHE_NAME = `jam-connexion-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `jam-connexion-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE = `jam-connexion-images-${CACHE_VERSION}`;

@@ -52,8 +52,15 @@ async def connect(sid, environ, auth):
             return False
         
         # Valider token
-        from utils.auth import verify_jwt_token
-        user = verify_jwt_token(token)
+        from utils.auth import decode_token
+        payload = decode_token(token)
+        
+        # Extraire les infos utilisateur du payload
+        user = {
+            'id': payload.get('user_id'),
+            'name': payload.get('email', '').split('@')[0],  # Utiliser email comme nom par défaut
+            'role': payload.get('role', 'musician')
+        }
         
         if not user:
             logger.warning(f"❌ Connection rejected (invalid token): {sid}")

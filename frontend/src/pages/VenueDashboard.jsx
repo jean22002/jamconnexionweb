@@ -3926,7 +3926,7 @@ export default function VenueDashboard() {
 
           {/* Settings Tab */}
           <TabsContent value="settings">
-            <SettingsTab />
+            <SettingsTab venueId={profile?.id} token={token} />
           </TabsContent>
 
         </Tabs>

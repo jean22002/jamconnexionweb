@@ -201,6 +201,10 @@ async def search_planning_slots(
                 "status": "accepted"
             })
             
+            # Convert expected_attendance to string if it's an int (legacy data)
+            if "expected_attendance" in s and isinstance(s["expected_attendance"], int):
+                s["expected_attendance"] = str(s["expected_attendance"])
+            
             slot_with_venue = {
                 **s,
                 "venue_name": venue.get("name"),

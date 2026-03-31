@@ -89,6 +89,41 @@ export default function AccountingTab({
     return labels[status] || status;
   };
 
+  // Export to CSV
+  const exportToCSV = () => {
+    if (filteredEvents.length === 0) return;
+    
+    const headers = ['Type', 'Titre', 'Date', 'Méthode de paiement', 'Montant', 'Statut'];
+    const csvData = filteredEvents.map(event => [
+      getEventTypeLabel(event),
+      event.title || event.name || 'Sans titre',
+      event.date || '',
+      getPaymentMethodLabel(event.payment_method || ''),
+      event.amount ? parseFloat(event.amount).toFixed(2) : '0.00',
+      getPaymentStatusLabel(event.payment_status || '')
+    ]);
+    
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `comptabilite_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // View event details (placeholder - can be enhanced)
+  const viewEventDetails = (event) => {
+    alert(`Détails de l'événement:\n\nTitre: ${event.title || event.name || 'Sans titre'}\nDate: ${event.date}\nMontant: ${event.amount ? parseFloat(event.amount).toFixed(2) + ' €' : 'N/A'}\nStatut: ${getPaymentStatusLabel(event.payment_status)}`);
+  };
+
   return (
     <div className="glassmorphism rounded-2xl p-6">
       <div className="flex items-center justify-between mb-6">
@@ -214,7 +249,12 @@ export default function AccountingTab({
             📋 Événements ({filteredEvents.length})
           </h3>
           {filteredEvents.length > 0 && (
-            <Button variant="outline" size="sm" className="rounded-full">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="rounded-full"
+              onClick={exportToCSV}
+            >
               <Download className="w-4 h-4 mr-2" />
               Exporter CSV
             </Button>
@@ -262,7 +302,13 @@ export default function AccountingTab({
                     </div>
                   </div>
                   
-                  <Button variant="ghost" size="sm" className="rounded-full">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="rounded-full"
+                    onClick={() => viewEventDetails(event)}
+                    title="Voir les détails"
+                  >
                     <Eye className="w-4 h-4" />
                   </Button>
                 </div>

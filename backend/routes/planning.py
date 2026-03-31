@@ -175,40 +175,45 @@ async def search_planning_slots(
     # Filter by venue location (region/department) and music styles
     result = []
     for s in slots:
-        # Get venue info for location filtering
-        venue = await db.venues.find_one({"id": s["venue_id"]}, {"_id": 0})
-        if not venue:
+        try:
+            # Get venue info for location filtering
+            venue = await db.venues.find_one({"id": s["venue_id"]}, {"_id": 0})
+            if not venue:
+                logger.warning(f"Venue {s['venue_id']} not found for planning slot {s.get('id')}")
+                continue
+            
+            # Filter by region
+            if region and venue.get("region") != region:
+                continue
+            
+            # Filter by department
+            if department and venue.get("department") != department:
+                continue
+            
+            # Filter by music style
+            if music_style and music_style not in s.get("music_styles", []):
+                continue
+            
+            # Add venue info to slot
+            apps_count = await db.applications.count_documents({"planning_slot_id": s["id"]})
+            accepted_count = await db.applications.count_documents({
+                "planning_slot_id": s["id"],
+                "status": "accepted"
+            })
+            
+            slot_with_venue = {
+                **s,
+                "venue_name": venue.get("name"),
+                "venue_city": venue.get("city"),
+                "venue_region": venue.get("region"),
+                "venue_department": venue.get("department"),
+                "applications_count": apps_count,
+                "accepted_bands_count": accepted_count
+            }
+            result.append(PlanningSlotResponse(**slot_with_venue))
+        except Exception as e:
+            logger.error(f"Error processing planning slot {s.get('id')}: {str(e)}")
             continue
-        
-        # Filter by region
-        if region and venue.get("region") != region:
-            continue
-        
-        # Filter by department
-        if department and venue.get("department") != department:
-            continue
-        
-        # Filter by music style
-        if music_style and music_style not in s.get("music_styles", []):
-            continue
-        
-        # Add venue info to slot
-        apps_count = await db.applications.count_documents({"planning_slot_id": s["id"]})
-        accepted_count = await db.applications.count_documents({
-            "planning_slot_id": s["id"],
-            "status": "accepted"
-        })
-        
-        slot_with_venue = {
-            **s,
-            "venue_name": venue.get("name"),
-            "venue_city": venue.get("city"),
-            "venue_region": venue.get("region"),
-            "venue_department": venue.get("department"),
-            "applications_count": apps_count,
-            "accepted_bands_count": accepted_count
-        }
-        result.append(PlanningSlotResponse(**slot_with_venue))
     
     return result
 

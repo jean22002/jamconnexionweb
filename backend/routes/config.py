@@ -27,13 +27,27 @@ async def get_app_config():
     # Stripe configuration
     stripe_publishable_key = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
     
-    # Firebase configuration (empty if not configured)
-    firebase_config = {}
-    if os.path.exists('/app/backend/firebase-credentials.json'):
-        # Just indicate that Firebase is available, don't expose credentials
+    # Firebase Web SDK configuration (for mobile and web apps)
+    firebase_api_key = os.environ.get('FIREBASE_API_KEY', '')
+    firebase_auth_domain = os.environ.get('FIREBASE_AUTH_DOMAIN', '')
+    firebase_project_id = os.environ.get('FIREBASE_PROJECT_ID', '')
+    firebase_storage_bucket = os.environ.get('FIREBASE_STORAGE_BUCKET', '')
+    firebase_messaging_sender_id = os.environ.get('FIREBASE_MESSAGING_SENDER_ID', '')
+    firebase_app_id = os.environ.get('FIREBASE_APP_ID', '')
+    
+    # Check if Firebase is configured
+    firebase_configured = bool(firebase_api_key and firebase_project_id)
+    
+    # Firebase configuration
+    if firebase_configured:
         firebase_config = {
             "enabled": True,
-            "message": "Firebase Cloud Messaging is enabled for push notifications"
+            "apiKey": firebase_api_key,
+            "authDomain": firebase_auth_domain,
+            "projectId": firebase_project_id,
+            "storageBucket": firebase_storage_bucket,
+            "messagingSenderId": firebase_messaging_sender_id,
+            "appId": firebase_app_id
         }
     else:
         firebase_config = {

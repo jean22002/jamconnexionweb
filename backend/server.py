@@ -131,6 +131,7 @@ import routes.firebase_push as firebase_push
 import routes.chat as chat
 import routes.config as config  # NEW: Configuration endpoint for mobile
 import routes.moderation as moderation  # NEW: Moderation settings
+import routes.websocket as websocket  # NEW: WebSocket notifications
 
 # Include routers with basic functionality
 api_router.include_router(auth_router)
@@ -180,7 +181,8 @@ api_router.include_router(accounting.router, prefix="/accounting", tags=["Accoun
 api_router.include_router(firebase_push.router)
 api_router.include_router(chat.router)
 api_router.include_router(config.router)
-api_router.include_router(moderation.router)  # NEW: Moderation settings  # NEW: Mobile app configuration
+api_router.include_router(moderation.router)  # NEW: Moderation settings
+api_router.include_router(websocket.router)  # NEW: WebSocket  # NEW: Mobile app configuration
 
 # Stats endpoint for Landing page
 @api_router.get("/stats/counts")

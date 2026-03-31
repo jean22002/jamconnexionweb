@@ -29,6 +29,16 @@ def create_token(user_id: str, email: str, role: str) -> str:
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
+def decode_token(token: str) -> dict:
+    """Decode and verify JWT token"""
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
 async def get_current_user(authorization: str = Header(None), db=None):
     """Get current user from JWT token. DB instance must be passed from route."""
     if not authorization:

@@ -31,6 +31,7 @@ import ProfileEditModal from "../features/musician-dashboard/ProfileEditModal";
 import BandMembersManager from "../components/band/BandMembersManager";
 import JoinBandWithCode from "../components/band/JoinBandWithCode";
 import BandPlanningTab from "../features/musician-dashboard/tabs/BandPlanningTab";
+import BandModerationSettings from "../components/band/BandModerationSettings";
 import { CityAutocomplete, reverseGeocode } from "../components/CityAutocomplete";
 import { 
   Music, MapPin, LogOut, Search, Guitar, Users,
@@ -57,6 +58,8 @@ import MusiciansTab from "../components/musicians/MusiciansTab";
 import FriendsTab from "../components/friends/FriendsTab";
 import Calendar from "../components/Calendar";
 import AccountingTab from "../components/accounting/AccountingTab";
+import WebSocketIndicator from "../components/WebSocketIndicator";
+import { useWebSocket } from "../hooks/useWebSocket";
 // NEW: Import custom hooks for refactored logic
 import { 
   useMusicianProfile, 
@@ -1360,10 +1363,23 @@ export default function MusicianDashboard() {
     setProfileForm({ ...profileForm, [field]: profileForm[field].filter(item => item !== value) });
   };
 
+  // WebSocket for real-time notifications
+  useWebSocket(token, {
+    onNotification: (message) => {
+      console.log('📨 Notification:', message);
+      if (message.notification_type === 'new_invitation') {
+        fetchProfile();
+      }
+    },
+  });
+
   return (
     <div className="min-h-screen bg-background" data-testid="musician-dashboard">
       {/* Dashboard Notifications */}
       <DashboardNotification />
+      
+      {/* WebSocket Indicator */}
+      <WebSocketIndicator token={token} />
       
       {/* Header */}
       <header className="sticky top-0 z-50 glassmorphism">
@@ -2084,12 +2100,26 @@ export default function MusicianDashboard() {
 
                     {/* Gestion des membres - Seulement en mode édition */}
                     {editingBandIndex !== null && currentBand.id && (
-                      <BandMembersManager
-                        bandId={currentBand.id}
-                        currentMembers={currentBand.members || []}
-                        token={token}
-                        onUpdate={fetchProfile}
-                      />
+                      <>
+                        <BandMembersManager
+                          bandId={currentBand.id}
+                          currentMembers={currentBand.members || []}
+                          token={token}
+                          onUpdate={fetchProfile}
+                        />
+                        
+                        {/* Moderation Settings - Only for band admins */}
+                        {currentBand.admin_id === user?.id && (
+                          <div className="p-4 glassmorphism rounded-xl border border-primary/20">
+                            <BandModerationSettings
+                              bandId={currentBand.id}
+                              bandName={currentBand.name}
+                              token={token}
+                              isAdmin={true}
+                            />
+                          </div>
+                        )}
+                      </>
                     )}
 
                     {/* Boutons */}

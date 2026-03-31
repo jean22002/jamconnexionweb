@@ -49,6 +49,8 @@ import { MUSIC_STYLES_LIST } from "../data/music-styles";
 import { useNotifications } from "../hooks/useNotifications";
 import DashboardNotification from "../components/DashboardNotification";
 import ConcertForm from "../features/venue-dashboard/components/tabs/ConcertForm";
+import WebSocketIndicator from "../components/WebSocketIndicator";
+import { useWebSocket } from "../hooks/useWebSocket";
 // NEW: Import custom hooks for refactored logic
 import { 
   useVenueProfile, 
@@ -2312,6 +2314,16 @@ export default function VenueDashboard() {
     }
   };
 
+  // WebSocket for real-time notifications
+  useWebSocket(token, {
+    onNotification: (message) => {
+      console.log('📨 Notification:', message);
+      if (message.notification_type === 'new_application') {
+        fetchPlanning();
+      }
+    },
+  });
+
   if (loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   }
@@ -2320,6 +2332,9 @@ export default function VenueDashboard() {
     <div className="min-h-screen bg-background" data-testid="venue-dashboard">
       {/* Dashboard Notifications */}
       <DashboardNotification />
+      
+      {/* WebSocket Indicator */}
+      <WebSocketIndicator token={token} />
       
       {/* Header */}
       <header className="sticky top-0 z-50 glassmorphism">

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { toast } from 'sonner';
+import io from 'socket.io-client';
 
-const WS_URL = process.env.REACT_APP_BACKEND_URL?.replace('https://', 'wss://').replace('http://', 'ws://') || 'ws://localhost:8001';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 /**
- * Hook personnalisé pour la connexion WebSocket temps réel
+ * Hook personnalisé pour les notifications temps réel via Socket.IO
  * 
  * @param {string} token - JWT token pour l'authentification
  * @param {Object} options - Options de configuration
@@ -27,17 +28,10 @@ export function useWebSocket(token, options = {}) {
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState(null);
   
-  const wsRef = useRef(null);
-  const reconnectTimeoutRef = useRef(null);
-  const reconnectAttemptsRef = useRef(0);
-  const maxReconnectAttempts = 5;
-  const reconnectDelay = 3000; // 3 secondes
-
-  // Keepalive ping every 30 seconds
-  const pingIntervalRef = useRef(null);
+  const socketRef = useRef(null);
 
   const connect = useCallback(() => {
-    if (!token || wsRef.current?.readyState === WebSocket.OPEN) {
+    if (!token || socketRef.current?.connected) {
       return;
     }
 
@@ -45,133 +39,88 @@ export function useWebSocket(token, options = {}) {
     setError(null);
 
     try {
-      const wsUrl = `${WS_URL}/api/ws/notifications?token=${token}`;
-      console.log('🔌 Connecting to WebSocket:', wsUrl);
+      console.log('🔌 Connecting to Socket.IO:', BACKEND_URL);
       
-      const ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
+      const socket = io(BACKEND_URL, {
+        auth: { token },
+        transports: ['websocket', 'polling'], // Essaie WebSocket puis fallback sur polling
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 3000,
+      });
+      
+      socketRef.current = socket;
 
-      ws.onopen = () => {
-        console.log('✅ WebSocket connected');
+      socket.on('connect', () => {
+        console.log('✅ Socket.IO connected');
         setConnected(true);
         setConnecting(false);
         setError(null);
-        reconnectAttemptsRef.current = 0;
-
-        // Start keepalive ping
-        pingIntervalRef.current = setInterval(() => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'ping' }));
-          }
-        }, 30000);
 
         if (showToasts) {
           toast.success('🔔 Notifications temps réel activées');
         }
-      };
+      });
 
-      ws.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          console.log('📨 WebSocket message:', message);
-
-          // Handle different message types
-          switch (message.type) {
-            case 'notification':
-              handleNotification(message);
-              if (onNotification) {
-                onNotification(message);
-              }
-              break;
-
-            case 'event':
-              handleEvent(message);
-              if (onEvent) {
-                onEvent(message);
-              }
-              break;
-
-            case 'connection_established':
-              console.log('✅ Connection established:', message);
-              break;
-
-            case 'pong':
-              // Keepalive response
-              break;
-
-            default:
-              console.log('Unknown message type:', message.type);
-          }
-        } catch (err) {
-          console.error('Error parsing WebSocket message:', err);
+      socket.on('notification', (message) => {
+        console.log('📨 Notification reçue:', message);
+        handleNotification(message);
+        if (onNotification) {
+          onNotification(message);
         }
-      };
+      });
 
-      ws.onerror = (event) => {
-        console.error('❌ WebSocket error:', event);
-        setError('Erreur de connexion WebSocket');
-      };
+      socket.on('event', (message) => {
+        console.log('📢 Événement reçu:', message);
+        handleEvent(message);
+        if (onEvent) {
+          onEvent(message);
+        }
+      });
 
-      ws.onclose = (event) => {
-        console.log('❌ WebSocket closed:', event.code, event.reason);
+      socket.on('connect_error', (err) => {
+        console.error('❌ Socket.IO connection error:', err.message);
+        setError(`Erreur de connexion: ${err.message}`);
+        setConnecting(false);
+      });
+
+      socket.on('disconnect', (reason) => {
+        console.log('❌ Socket.IO disconnected:', reason);
         setConnected(false);
         setConnecting(false);
 
-        // Clear ping interval
-        if (pingIntervalRef.current) {
-          clearInterval(pingIntervalRef.current);
-          pingIntervalRef.current = null;
+        if (reason === 'io server disconnect') {
+          // Le serveur a forcé la déconnexion, il faut se reconnecter manuellement
+          socket.connect();
         }
-
-        // Attempt reconnection if not a normal closure
-        if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
-          reconnectAttemptsRef.current += 1;
-          console.log(`🔄 Reconnecting... (attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts})`);
-          
-          reconnectTimeoutRef.current = setTimeout(() => {
-            connect();
-          }, reconnectDelay);
-        } else if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
-          setError('Impossible de se reconnecter. Rechargez la page.');
-          if (showToasts) {
-            toast.error('Notifications temps réel déconnectées');
-          }
-        }
-      };
+      });
 
     } catch (err) {
-      console.error('Error creating WebSocket:', err);
+      console.error('Error creating Socket.IO connection:', err);
       setError(err.message);
       setConnecting(false);
     }
   }, [token, onNotification, onEvent, showToasts]);
 
   const disconnect = useCallback(() => {
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-    }
-    if (pingIntervalRef.current) {
-      clearInterval(pingIntervalRef.current);
-    }
-    if (wsRef.current) {
-      wsRef.current.close(1000, 'Manual disconnect');
-      wsRef.current = null;
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
     }
     setConnected(false);
   }, []);
 
-  const sendMessage = useCallback((message) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify(message));
+  const sendMessage = useCallback((eventName, data) => {
+    if (socketRef.current?.connected) {
+      socketRef.current.emit(eventName, data);
       return true;
     }
-    console.warn('WebSocket not connected, cannot send message');
+    console.warn('Socket.IO not connected, cannot send message');
     return false;
   }, []);
 
   const reconnect = useCallback(() => {
     disconnect();
-    reconnectAttemptsRef.current = 0;
     setTimeout(() => connect(), 500);
   }, [connect, disconnect]);
 

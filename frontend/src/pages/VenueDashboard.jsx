@@ -69,6 +69,8 @@ import JamsTab from "../features/venue-dashboard/tabs/JamsTab";
 import BandsTab from "../features/venue-dashboard/tabs/BandsTab";
 import KaraokeTab from "../features/venue-dashboard/tabs/KaraokeTab";
 import SpectacleTab from "../features/venue-dashboard/tabs/SpectacleTab";
+// Refactored dialogs
+import { EditProfileDialog } from "../features/venue-dashboard/dialogs/EditProfileDialog";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/aFa6oG9gV4d20te2uRafS02";
@@ -4855,123 +4857,13 @@ export default function VenueDashboard() {
         </Dialog>
 
         {/* Profile Edit Dialog */}
-        <Dialog open={editingProfile} onOpenChange={setEditingProfile}>
-          <DialogContent className="glassmorphism border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Modifier le profil</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 mt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Nom de l'établissement *</Label>
-                  <Input 
-                    value={formData.name} 
-                    onChange={(e) => setProfileForm({ ...formData, name: e.target.value })} 
-                    className="bg-black/20 border-white/10"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Type</Label>
-                  <Input 
-                    value={formData.venue_type} 
-                    onChange={(e) => setProfileForm({ ...formData, venue_type: e.target.value })} 
-                    placeholder="Bar, Club, Salle..."
-                    className="bg-black/20 border-white/10"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Textarea 
-                  value={formData.description} 
-                  onChange={(e) => setProfileForm({ ...formData, description: e.target.value })} 
-                  className="bg-black/20 border-white/10" 
-                  rows={3}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Adresse</Label>
-                <Input 
-                  value={formData.address} 
-                  onChange={(e) => setProfileForm({ ...formData, address: e.target.value })} 
-                  className="bg-black/20 border-white/10"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Ville</Label>
-                  <Input 
-                    value={formData.city} 
-                    onChange={(e) => setProfileForm({ ...formData, city: e.target.value })} 
-                    className="bg-black/20 border-white/10"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Code postal</Label>
-                  <Input 
-                    value={formData.postal_code} 
-                    onChange={(e) => setProfileForm({ ...formData, postal_code: e.target.value })} 
-                    className="bg-black/20 border-white/10"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Téléphone</Label>
-                  <Input 
-                    value={formData.phone} 
-                    onChange={(e) => setProfileForm({ ...formData, phone: e.target.value })} 
-                    className="bg-black/20 border-white/10"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Capacité</Label>
-                  <Input 
-                    type="number"
-                    value={formData.capacity} 
-                    onChange={(e) => setProfileForm({ ...formData, capacity: e.target.value })} 
-                    className="bg-black/20 border-white/10"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Site web</Label>
-                <Input 
-                  value={formData.website} 
-                  onChange={(e) => setProfileForm({ ...formData, website: e.target.value })} 
-                  placeholder="https://..."
-                  className="bg-black/20 border-white/10"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Facebook</Label>
-                  <Input 
-                    value={formData.facebook} 
-                    onChange={(e) => setProfileForm({ ...formData, facebook: e.target.value })} 
-                    placeholder="URL Facebook"
-                    className="bg-black/20 border-white/10"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Instagram</Label>
-                  <Input 
-                    value={formData.instagram} 
-                    onChange={(e) => setProfileForm({ ...formData, instagram: e.target.value })} 
-                    placeholder="URL Instagram"
-                    className="bg-black/20 border-white/10"
-                  />
-                </div>
-              </div>
-              <Button 
-                onClick={updateProfile} 
-                className="w-full bg-primary hover:bg-primary/90 rounded-full"
-              >
-                Sauvegarder
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <EditProfileDialog
+          open={editingProfile}
+          onOpenChange={setEditingProfile}
+          formData={formData}
+          setProfileForm={setProfileForm}
+          updateProfile={updateProfile}
+        />
 
       </main>
     </div>

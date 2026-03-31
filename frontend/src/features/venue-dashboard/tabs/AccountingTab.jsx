@@ -15,8 +15,10 @@ export default function AccountingTab({
     event_type: 'all'
   });
 
-  // Combine all events
-  const allEvents = [...jams, ...concerts, ...karaokes, ...spectacles];
+  // Combine all events and filter to past events only (to match Historique tab)
+  const today = new Date().toISOString().split('T')[0];
+  const allEvents = [...jams, ...concerts, ...karaokes, ...spectacles]
+    .filter(event => event.date && event.date <= today); // Only past and today's events
 
   // Filter events
   const filteredEvents = allEvents.filter(event => {

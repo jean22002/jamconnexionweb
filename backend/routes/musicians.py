@@ -49,6 +49,50 @@ def generate_invite_code() -> str:
     return ''.join(random.choices(characters, k=6))
 
 
+
+async def save_to_history(collection_name: str, document_id: str, data: dict, action: str = "update"):
+    """Sauvegarde une copie du document dans la collection d'historique"""
+    try:
+        history_doc = {
+            "document_id": document_id,
+            "collection": collection_name,
+            "action": action,
+            "data": data,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        await db[f"{collection_name}_history"].insert_one(history_doc)
+        logger.info(f"✅ Saved {collection_name} history for {document_id}")
+    except Exception as e:
+        logger.error(f"❌ Failed to save history: {e}")
+
+
+def validate_profile_update(current_profile: dict, update_data: dict, min_fields: int = 3) -> bool:
+    """
+    Valide qu'une mise à jour de profil n'est pas un écrasement accidentel
+    Retourne True si la mise à jour semble valide, False sinon
+    """
+    # Champs critiques qui ne devraient jamais être tous vides en même temps
+    critical_fields = ['pseudo', 'instruments', 'music_styles', 'city', 'bio', 'profile_image']
+    
+    # Compter combien de champs critiques sont remplis dans la mise à jour
+    filled_fields = 0
+    for field in critical_fields:
+        value = update_data.get(field)
+        if value:
+            if isinstance(value, (list, str)):
+                if len(value) > 0:
+                    filled_fields += 1
+            else:
+                filled_fields += 1
+    
+    # Si moins de min_fields champs critiques sont remplis, c'est suspect
+    if filled_fields < min_fields:
+        logger.warning(f"⚠️ Profile update validation failed: only {filled_fields} critical fields filled (min: {min_fields})")
+        return False
+    
+    return True
+
+
 async def create_band_invite_code_auto(band_id: str, user_id: str) -> None:
     """
     Crée automatiquement un code d'invitation pour un nouveau groupe.
@@ -165,6 +209,18 @@ async def update_musician_profile(data: MusicianProfile, current_user: dict = De
     musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
     if not musician:
         raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # 🛡️ PROTECTION 1: Sauvegarder l'état actuel dans l'historique
+    await save_to_history("musicians", musician["id"], musician, action="before_update")
+    
+    # 🛡️ PROTECTION 2: Valider que ce n'est pas un écrasement accidentel
+    update_data_dict = data.model_dump()
+    if not validate_profile_update(musician, update_data_dict, min_fields=2):
+        logger.error(f"🚨 Blocked suspicious profile update for musician {musician['id']}")
+        raise HTTPException(
+            status_code=400, 
+            detail="Update rejected: too few fields filled. This looks like an accidental data wipe. Please fill at least 2 critical fields (pseudo, instruments, music_styles, city, bio, or profile_image)."
+        )
     
     # Add IDs to new concerts
     concerts_with_ids = []
@@ -290,8 +346,99 @@ async def get_my_musician_profile(current_user: dict = Depends(get_current_user)
 # Alias route for mobile apps (PUT /musicians/me)
 @router.put("/musicians/me", response_model=MusicianProfileResponse)
 async def update_my_musician_profile(data: MusicianProfile, current_user: dict = Depends(get_current_user)):
-    """Alias for PUT /musicians - mobile-friendly endpoint"""
+    """
+    Alias de PUT /musicians pour les apps mobiles
+    Identique à update_musician_profile mais avec /me au lieu de /{musician_id}
+    Inclut les mêmes protections contre l'écrasement accidentel
+    """
+    # Réutiliser la logique de update_musician_profile (qui inclut les protections)
     return await update_musician_profile(data, current_user)
+
+
+# 🛡️ Endpoint de restauration depuis l'historique
+@router.post("/musicians/me/restore")
+async def restore_musician_profile_from_history(
+    timestamp: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Restaure le profil musicien depuis l'historique
+    Si timestamp fourni, restaure à ce moment précis
+    Sinon, restaure la dernière version sauvegardée
+    """
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musician accounts can restore profiles")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Chercher dans l'historique
+    query = {"document_id": musician["id"], "collection": "musicians"}
+    if timestamp:
+        query["timestamp"] = timestamp
+    
+    history_entry = await db.musicians_history.find_one(
+        query,
+        {"_id": 0},
+        sort=[("timestamp", -1)]  # Plus récent en premier
+    )
+    
+    if not history_entry:
+        raise HTTPException(status_code=404, detail="No history found for this profile")
+    
+    # Restaurer les données
+    restored_data = history_entry["data"]
+    restored_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    # Sauvegarder l'état actuel avant restauration
+    await save_to_history("musicians", musician["id"], musician, action="before_restore")
+    
+    # Mettre à jour le profil
+    await db.musicians.update_one(
+        {"id": musician["id"]},
+        {"$set": restored_data}
+    )
+    
+    logger.info(f"✅ Restored profile for musician {musician['id']} from {history_entry['timestamp']}")
+    
+    # Récupérer friends_count pour la réponse
+    friends_count = await db.friends.count_documents({
+        "$or": [{"from_user_id": current_user["id"]}, {"to_user_id": current_user["id"]}],
+        "status": "accepted"
+    })
+    
+    return {
+        "message": "Profile restored successfully",
+        "restored_from": history_entry["timestamp"],
+        "profile": MusicianProfileResponse(**{**restored_data, "friends_count": friends_count})
+    }
+
+
+# 🛡️ Endpoint pour voir l'historique
+@router.get("/musicians/me/history")
+async def get_musician_profile_history(current_user: dict = Depends(get_current_user)):
+    """
+    Récupère l'historique des modifications du profil
+    """
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musician accounts can view history")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Récupérer les 20 dernières versions
+    history = await db.musicians_history.find(
+        {"document_id": musician["id"], "collection": "musicians"},
+        {"_id": 0, "data": 0}  # Ne pas retourner les données complètes, juste métadata
+    ).sort("timestamp", -1).limit(20).to_list(20)
+    
+    return {
+        "count": len(history),
+        "history": history
+    }
+
     
     # Utiliser les bands embarqués dans le profil musicien
     bands = musician.get("bands", [])
@@ -322,7 +469,6 @@ async def update_my_musician_profile(data: MusicianProfile, current_user: dict =
             {"$set": {"bands": bands}}
         )
     
-    return MusicianProfileResponse(**{**musician, "friends_count": friends_count, "bands": bands})
 
 
 @router.get("/musicians", response_model=List[MusicianProfileResponse])

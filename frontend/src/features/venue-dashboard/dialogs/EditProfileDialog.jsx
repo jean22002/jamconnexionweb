@@ -9,10 +9,10 @@ import { Textarea } from "../../../components/ui/textarea";
  * @param {boolean} open - État d'ouverture du dialog
  * @param {function} onOpenChange - Callback de changement d'état
  * @param {object} formData - Données du formulaire
- * @param {function} setProfileForm - Setter du formulaire
+ * @param {function} setFormData - Setter du formulaire
  * @param {function} updateProfile - Fonction de sauvegarde
  */
-export function EditProfileDialog({ open, onOpenChange, formData, setProfileForm, updateProfile }) {
+export function EditProfileDialog({ open, onOpenChange, formData, setFormData, updateProfile }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="glassmorphism border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -25,7 +25,7 @@ export function EditProfileDialog({ open, onOpenChange, formData, setProfileForm
               <Label>Nom de l'établissement *</Label>
               <Input 
                 value={formData.name} 
-                onChange={(e) => setProfileForm({ ...formData, name: e.target.value })} 
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
                 className="bg-black/20 border-white/10"
               />
             </div>
@@ -33,7 +33,7 @@ export function EditProfileDialog({ open, onOpenChange, formData, setProfileForm
               <Label>Type</Label>
               <Input 
                 value={formData.venue_type} 
-                onChange={(e) => setProfileForm({ ...formData, venue_type: e.target.value })} 
+                onChange={(e) => setFormData({ ...formData, venue_type: e.target.value })} 
                 placeholder="Bar, Club, Salle..."
                 className="bg-black/20 border-white/10"
               />
@@ -43,7 +43,7 @@ export function EditProfileDialog({ open, onOpenChange, formData, setProfileForm
             <Label>Description</Label>
             <Textarea 
               value={formData.description} 
-              onChange={(e) => setProfileForm({ ...formData, description: e.target.value })} 
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
               className="bg-black/20 border-white/10" 
               rows={3}
             />
@@ -52,7 +52,7 @@ export function EditProfileDialog({ open, onOpenChange, formData, setProfileForm
             <Label>Adresse</Label>
             <Input 
               value={formData.address} 
-              onChange={(e) => setProfileForm({ ...formData, address: e.target.value })} 
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })} 
               className="bg-black/20 border-white/10"
             />
           </div>
@@ -61,7 +61,7 @@ export function EditProfileDialog({ open, onOpenChange, formData, setProfileForm
               <Label>Ville</Label>
               <Input 
                 value={formData.city} 
-                onChange={(e) => setProfileForm({ ...formData, city: e.target.value })} 
+                onChange={(e) => setFormData({ ...formData, city: e.target.value })} 
                 className="bg-black/20 border-white/10"
               />
             </div>
@@ -69,7 +69,7 @@ export function EditProfileDialog({ open, onOpenChange, formData, setProfileForm
               <Label>Code postal</Label>
               <Input 
                 value={formData.postal_code} 
-                onChange={(e) => setProfileForm({ ...formData, postal_code: e.target.value })} 
+                onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })} 
                 className="bg-black/20 border-white/10"
               />
             </div>
@@ -79,7 +79,7 @@ export function EditProfileDialog({ open, onOpenChange, formData, setProfileForm
               <Label>Téléphone</Label>
               <Input 
                 value={formData.phone} 
-                onChange={(e) => setProfileForm({ ...formData, phone: e.target.value })} 
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })} 
                 className="bg-black/20 border-white/10"
               />
             </div>
@@ -88,7 +88,7 @@ export function EditProfileDialog({ open, onOpenChange, formData, setProfileForm
               <Input 
                 type="number"
                 value={formData.capacity} 
-                onChange={(e) => setProfileForm({ ...formData, capacity: e.target.value })} 
+                onChange={(e) => setFormData({ ...formData, capacity: e.target.value })} 
                 className="bg-black/20 border-white/10"
               />
             </div>
@@ -97,7 +97,7 @@ export function EditProfileDialog({ open, onOpenChange, formData, setProfileForm
             <Label>Site web</Label>
             <Input 
               value={formData.website} 
-              onChange={(e) => setProfileForm({ ...formData, website: e.target.value })} 
+              onChange={(e) => setFormData({ ...formData, website: e.target.value })} 
               placeholder="https://..."
               className="bg-black/20 border-white/10"
             />
@@ -107,7 +107,7 @@ export function EditProfileDialog({ open, onOpenChange, formData, setProfileForm
               <Label>Facebook</Label>
               <Input 
                 value={formData.facebook} 
-                onChange={(e) => setProfileForm({ ...formData, facebook: e.target.value })} 
+                onChange={(e) => setFormData({ ...formData, facebook: e.target.value })} 
                 placeholder="URL Facebook"
                 className="bg-black/20 border-white/10"
               />
@@ -116,7 +116,7 @@ export function EditProfileDialog({ open, onOpenChange, formData, setProfileForm
               <Label>Instagram</Label>
               <Input 
                 value={formData.instagram} 
-                onChange={(e) => setProfileForm({ ...formData, instagram: e.target.value })} 
+                onChange={(e) => setFormData({ ...formData, instagram: e.target.value })} 
                 placeholder="URL Instagram"
                 className="bg-black/20 border-white/10"
               />

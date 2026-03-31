@@ -4876,7 +4876,7 @@ export default function VenueDashboard() {
           open={editingProfile}
           onOpenChange={setEditingProfile}
           formData={formData}
-          setProfileForm={setProfileForm}
+          setFormData={setFormData}
           updateProfile={updateProfile}
         />
 

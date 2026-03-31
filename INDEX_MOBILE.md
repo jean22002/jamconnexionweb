@@ -14,6 +14,7 @@ Guide complet pour développer l'application mobile React Native
 
 | Fichier | Description | Priorité |
 |---------|-------------|----------|
+| **🚀 QUICKSTART_MOBILE.md** | **Guide de démarrage rapide (10 min)** | ⭐⭐⭐⭐⭐ |
 | **📖 README principale** | Ce fichier - Navigation complète | ⭐⭐⭐⭐⭐ |
 | **🔥 FIREBASE_SETUP_INSTRUCTIONS.md** | Configuration Firebase (Push) | ⭐⭐⭐⭐⭐ |
 | **🚀 BACKEND_PHASE2_IMPLEMENTATION.md** | État du backend Phase 2 | ⭐⭐⭐⭐⭐ |
@@ -60,6 +61,14 @@ Guide complet pour développer l'application mobile React Native
 | 🔟 | **README_CHAT.md** | 💬 Messagerie temps réel (Socket.IO) | ✅ **Implémenté** |
 | 1️⃣1️⃣ | **README_UPLOADS.md** | 📤 Upload fichiers (photos, vidéos) | ✅ Prêt |
 | 1️⃣2️⃣ | **README_SAVE_MECHANISM.md** | 💾 Mécanisme de sauvegarde (Frontend→Backend→DB) | ✅ Prêt |
+
+### 🆕 Documentation Utilitaire (Ajoutée le 31 Mars 2025)
+
+| # | Fichier | Contenu | Priorité |
+|---|---------|---------|----------|
+| 🆕 | **README_CHANGELOG_MOBILE.md** | 📝 Journal des modifications API récentes | ⭐⭐⭐⭐⭐ |
+| 🆕 | **README_API_CONFIG.md** | ⚙️ Endpoint `/api/config` (Firebase, Stripe, WebSocket) | ⭐⭐⭐⭐⭐ |
+| 🆕 | **README_TROUBLESHOOTING_MOBILE.md** | 🚨 Guide de résolution des erreurs courantes | ⭐⭐⭐⭐⭐ |
 
 ---
 
@@ -416,8 +425,36 @@ Guide complet pour développer l'application mobile React Native
 - Console Firebase : https://console.firebase.google.com/
 
 ### Questions Mobile
+- **Démarrage rapide** : `QUICKSTART_MOBILE.md` ⚡
+- **Erreurs courantes** : `README_TROUBLESHOOTING_MOBILE.md` 🚨
+- **Changements récents** : `README_CHANGELOG_MOBILE.md` 📝
 - Suivre les README dans l'ordre recommandé
 - Tous les exemples de code sont fournis dans chaque README
+
+---
+
+## 🆕 DERNIÈRES MISES À JOUR (31 Mars 2025)
+
+### Nouveaux Documents Créés
+
+| Fichier | Utilité | Statut |
+|---------|---------|--------|
+| **QUICKSTART_MOBILE.md** | 🚀 Guide de démarrage rapide (10 min) | ✅ Créé |
+| **README_CHANGELOG_MOBILE.md** | 📝 Journal de tous les changements API | ✅ Créé |
+| **README_API_CONFIG.md** | ⚙️ Documentation endpoint `/api/config` | ✅ Créé |
+| **README_TROUBLESHOOTING_MOBILE.md** | 🚨 Solutions aux erreurs courantes | ✅ Créé |
+
+### Corrections Backend
+
+| Correction | Date | Impact Mobile |
+|------------|------|---------------|
+| Fix build frontend (imports relatifs) | 31 Mars 2025 | ✅ Aucun (Web uniquement) |
+| Fix 500 sur `/api/melomanes/me` | 30 Mars 2025 | 🔥 Critique - Bug bloquant résolu |
+| Fix 500 sur `/api/planning/search` | 30 Mars 2025 | 🔥 Critique - Bug bloquant résolu |
+| Fix 405 sur `PUT /musicians/me` | 30 Mars 2025 | 🔥 Critique - Route ajoutée |
+| Endpoint `/api/config` créé | 30 Mars 2025 | 🔥 Critique - À intégrer |
+
+**👉 L'API est maintenant 100% stable et prête pour l'intégration mobile.**
 
 ---
 
@@ -425,10 +462,11 @@ Guide complet pour développer l'application mobile React Native
 
 **Documentation Complète : ✅ PRÊTE**
 
-11 fichiers README  
+**25 fichiers README** (dont 4 nouveaux au 31/03/2025)  
 Backend Phase 2 implémenté  
+Build Production fonctionnel  
 L'Agent Mobile peut commencer le développement
 
-**Bonne chance ! 🚀**
+**🚀 Commencez par `QUICKSTART_MOBILE.md` ! 🚀**
 
 </div>

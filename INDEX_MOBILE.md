@@ -40,6 +40,14 @@ Guide complet pour développer l'application mobile React Native
 | 7️⃣ | **README_PLANNING_SYSTEM.md** | 📅 Système de recherche événements | ✅ Prêt |
 | 8️⃣ | **README_STRIPE.md** | 💳 Paiements abonnements PRO | ✅ Prêt |
 
+### Profils Utilisateurs (Détails Complets)
+
+| # | Fichier | Contenu | Statut Backend |
+|---|---------|---------|----------------|
+| 🆕 | **README_PROFILE_MUSICIAN.md** | 👤 Profil Musicien (6 sous-onglets) | ✅ Prêt |
+| 🆕 | **README_PROFILE_VENUE.md** | 🏛️ Profil Établissement (formulaire complet) | ✅ Prêt |
+| 🆕 | **README_PROFILE_MELOMANE.md** | 🎧 Profil Mélomane (simple + gestion compte) | ✅ Prêt |
+
 ---
 
 ## 🔥 Documentation Mobile (Phase 2 - Avancée)

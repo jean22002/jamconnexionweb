@@ -105,7 +105,7 @@ if [ -n "$TOKEN" ]; then
     response=$(curl -s -o /dev/null -w "%{http_code}" -X PUT "$API_URL/musicians/me" \
         -H "Authorization: Bearer $TOKEN" \
         -H "Content-Type: application/json" \
-        -d '{"first_name":"Test","last_name":"User"}')
+        -d '{"pseudo":"TestUser","first_name":"Test","last_name":"User","music_styles":["Rock"]}')
     
     if [ "$response" == "200" ]; then
         echo -e "${GREEN}✅ PASS${NC} (HTTP $response)"
@@ -120,11 +120,11 @@ if [ -n "$TOKEN" ]; then
     response=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL/venues/me" \
         -H "Authorization: Bearer $TOKEN")
     
-    if [ "$response" == "200" ] || [ "$response" == "404" ]; then
-        echo -e "${GREEN}✅ PASS${NC} (HTTP $response - OK si 404 car test@gmail.com est musicien)"
+    if [ "$response" == "200" ] || [ "$response" == "404" ] || [ "$response" == "403" ]; then
+        echo -e "${GREEN}✅ PASS${NC} (HTTP $response - OK car test@gmail.com est musicien)"
         ((PASSED++))
     else
-        echo -e "${RED}❌ FAIL${NC} (Expected 200 or 404, got $response)"
+        echo -e "${RED}❌ FAIL${NC} (Expected 200, 404 or 403, got $response)"
         ((FAILED++))
     fi
     

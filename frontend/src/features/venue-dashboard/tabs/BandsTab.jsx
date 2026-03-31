@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
-import { Switch } from "../../components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
+import { Switch } from "../../../components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
 import { Music, Users, MapPin, ArrowLeft, MapPinOff, X, Send } from "lucide-react";
-import { REGIONS_FRANCE, DEPARTEMENTS_FRANCE } from "../../data/france-locations";
-import { MUSIC_STYLES_LIST } from "../../data/music-styles";
+import { REGIONS_FRANCE, DEPARTEMENTS_FRANCE } from "../../../data/france-locations";
+import { MUSIC_STYLES_LIST } from "../../../data/music-styles";
 
 // Composant pour afficher une carte de groupe
 function BandCard({ band, onViewDetails }) {

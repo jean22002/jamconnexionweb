@@ -247,6 +247,9 @@ class PlanningSlotResponse(BaseModel):
     id: str
     venue_id: str
     venue_name: Optional[str] = None
+    venue_city: Optional[str] = None
+    venue_region: Optional[str] = None
+    venue_department: Optional[str] = None
     date: str
     time: Optional[str] = None
     title: Optional[str] = None
@@ -259,6 +262,8 @@ class PlanningSlotResponse(BaseModel):
     num_bands_needed: int = 1
     application_type: str = "bands"
     applications_count: int = 0
+    accepted_bands_count: int = 0
+    is_open: bool = True
     # Catering
     has_catering: bool = False
     catering_drinks: int = 0

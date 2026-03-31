@@ -284,6 +284,15 @@ async def get_my_musician_profile(current_user: dict = Depends(get_current_user)
         "status": "accepted"
     })
     
+    return MusicianProfileResponse(**{**musician, "friends_count": friends_count})
+
+
+# Alias route for mobile apps (PUT /musicians/me)
+@router.put("/musicians/me", response_model=MusicianProfileResponse)
+async def update_my_musician_profile(data: MusicianProfile, current_user: dict = Depends(get_current_user)):
+    """Alias for PUT /musicians - mobile-friendly endpoint"""
+    return await update_musician_profile(data, current_user)
+    
     # Utiliser les bands embarqués dans le profil musicien
     bands = musician.get("bands", [])
     

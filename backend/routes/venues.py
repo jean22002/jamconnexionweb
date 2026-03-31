@@ -221,6 +221,13 @@ async def get_my_venue(current_user: dict = Depends(get_current_user)):
     )
 
 
+# Alias route for mobile apps (PUT /venues/me)
+@router.put("/venues/me", response_model=VenueProfileResponse)
+async def update_my_venue_profile(data: VenueProfile, current_user: dict = Depends(get_current_user)):
+    """Alias for PUT /venues - mobile-friendly endpoint"""
+    return await update_venue_profile(data, current_user)
+
+
 @router.get("/venues", response_model=List[VenueProfileResponse])
 async def list_venues(
     city: Optional[str] = None,

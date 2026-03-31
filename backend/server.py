@@ -81,7 +81,11 @@ app.add_middleware(
 # 2. CORS Configuration (Must be after Gzip for headers to work)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "*",  # Keep wildcard for backward compatibility
+        "https://*.preview.emergentagent.com",  # Mobile development
+        "https://preview.emergentagent.com"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -125,6 +129,7 @@ import routes.online_status as online_status
 import routes.accounting as accounting
 import routes.firebase_push as firebase_push
 import routes.chat as chat
+import routes.config as config  # NEW: Configuration endpoint for mobile
 
 # Include routers with basic functionality
 api_router.include_router(auth_router)
@@ -173,6 +178,7 @@ api_router.include_router(online_status.router)
 api_router.include_router(accounting.router, prefix="/accounting", tags=["Accounting"])
 api_router.include_router(firebase_push.router)
 api_router.include_router(chat.router)
+api_router.include_router(config.router)  # NEW: Mobile app configuration
 
 # Stats endpoint for Landing page
 @api_router.get("/stats/counts")

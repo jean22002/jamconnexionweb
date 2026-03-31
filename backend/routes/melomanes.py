@@ -84,8 +84,19 @@ async def get_my_melomane_profile(current_user: dict = Depends(get_current_user_
     
     # Convert datetime to ISO string for Pydantic
     melomane_dict = dict(melomane)
-    if 'created_at' in melomane_dict and isinstance(melomane_dict['created_at'], datetime):
-        melomane_dict['created_at'] = melomane_dict['created_at'].isoformat()
+    if 'created_at' in melomane_dict:
+        if isinstance(melomane_dict['created_at'], datetime):
+            melomane_dict['created_at'] = melomane_dict['created_at'].isoformat()
+        elif not isinstance(melomane_dict['created_at'], str):
+            melomane_dict['created_at'] = str(melomane_dict['created_at'])
+    
+    # Ensure all required fields have default values
+    melomane_dict.setdefault('favorite_styles', [])
+    melomane_dict.setdefault('favorite_venues', [])
+    melomane_dict.setdefault('notifications_enabled', True)
+    melomane_dict.setdefault('notification_radius_km', 50.0)
+    melomane_dict.setdefault('events_attended', 0)
+    melomane_dict.setdefault('favorite_count', 0)
     
     return MelomaneResponse(**melomane_dict)
 
@@ -122,7 +133,24 @@ async def update_melomane_profile(
         )
     
     updated_melomane = await db.melomanes.find_one({"user_id": user_id}, {"_id": 0})
-    return MelomaneResponse(**updated_melomane)
+    
+    # Convert datetime to ISO string
+    updated_dict = dict(updated_melomane)
+    if 'created_at' in updated_dict:
+        if isinstance(updated_dict['created_at'], datetime):
+            updated_dict['created_at'] = updated_dict['created_at'].isoformat()
+        elif not isinstance(updated_dict['created_at'], str):
+            updated_dict['created_at'] = str(updated_dict['created_at'])
+    
+    # Ensure all required fields have default values
+    updated_dict.setdefault('favorite_styles', [])
+    updated_dict.setdefault('favorite_venues', [])
+    updated_dict.setdefault('notifications_enabled', True)
+    updated_dict.setdefault('notification_radius_km', 50.0)
+    updated_dict.setdefault('events_attended', 0)
+    updated_dict.setdefault('favorite_count', 0)
+    
+    return MelomaneResponse(**updated_dict)
 
 # Get all melomanes (for map)
 @router.get("/", response_model=List[MelomaneResponse])

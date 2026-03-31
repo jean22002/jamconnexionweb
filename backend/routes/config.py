@@ -7,7 +7,8 @@ import os
 
 router = APIRouter(prefix="/config", tags=["Configuration"])
 
-@router.get("/")
+@router.get("/", include_in_schema=True)
+@router.get("", include_in_schema=True)  # Also accept without trailing slash
 async def get_app_config():
     """
     Get application configuration for mobile app

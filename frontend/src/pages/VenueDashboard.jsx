@@ -321,13 +321,12 @@ export default function VenueDashboard() {
   const [bands, setBands] = useState([]);
   const [bandsLoading, setBandsLoading] = useState(false);
   const [bandFilters, setBandFilters] = useState({ 
-    country: "France",
-    region: "", 
-    department: "", 
-    city: "" 
+    musicStyle: "",
+    bandType: "",
+    repertoireType: "",
+    lookingForMembers: false,
+    city: ""
   });
-  const [selectedRegion, setSelectedRegion] = useState(null);
-  const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [showMessageDialog, setShowMessageDialog] = useState(false);
   const [selectedBand, setSelectedBand] = useState(null);
   const [messageForm, setMessageForm] = useState({ subject: "", content: "" });
@@ -1172,11 +1171,7 @@ export default function VenueDashboard() {
   const fetchBands = async () => {
     setBandsLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (bandFilters.department) params.append('department', bandFilters.department);
-      if (bandFilters.city) params.append('city', bandFilters.city);
-      
-      const response = await axios.get(`${API}/bands?${params.toString()}`);
+      const response = await axios.get(`${API}/bands`);
       // Transform image URLs before setting state
       const bandsWithUrls = (response.data || []).map(band => ({
         ...band,
@@ -3487,7 +3482,18 @@ export default function VenueDashboard() {
 
           {/* Bands Tab */}
           <TabsContent value="bands" className="mt-6">
-            <BandsTab bands={bands} />
+            <BandsTab 
+              bands={bands}
+              bandsLoading={bandsLoading}
+              bandTypes={["Groupe", "Duo", "Solo", "Trio", "Quartet", "Orchestre"]}
+              repertoireTypes={["Reprises", "Compositions originales", "Mixte"]}
+              bandFilters={bandFilters}
+              onFiltersChange={setBandFilters}
+              onViewDetails={(band) => {
+                setSelectedBand(band);
+                setShowMessageDialog(true);
+              }}
+            />
           </TabsContent>
 
           {/* Gallery Tab */}

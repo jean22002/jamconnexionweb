@@ -84,6 +84,16 @@ async def get_my_melomane_profile(current_user: dict = Depends(get_current_user_
     
     # Convert datetime to ISO string for Pydantic
     melomane_dict = dict(melomane)
+    
+    # Handle legacy documents without 'id' field
+    if 'id' not in melomane_dict:
+        melomane_dict['id'] = str(uuid.uuid4())
+        # Update the document in DB with the new id
+        await db.melomanes.update_one(
+            {"user_id": user_id},
+            {"$set": {"id": melomane_dict['id']}}
+        )
+    
     if 'created_at' in melomane_dict:
         if isinstance(melomane_dict['created_at'], datetime):
             melomane_dict['created_at'] = melomane_dict['created_at'].isoformat()
@@ -136,6 +146,16 @@ async def update_melomane_profile(
     
     # Convert datetime to ISO string
     updated_dict = dict(updated_melomane)
+    
+    # Handle legacy documents without 'id' field
+    if 'id' not in updated_dict:
+        updated_dict['id'] = str(uuid.uuid4())
+        # Update the document in DB with the new id
+        await db.melomanes.update_one(
+            {"user_id": user_id},
+            {"$set": {"id": updated_dict['id']}}
+        )
+    
     if 'created_at' in updated_dict:
         if isinstance(updated_dict['created_at'], datetime):
             updated_dict['created_at'] = updated_dict['created_at'].isoformat()

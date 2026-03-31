@@ -59,6 +59,7 @@ Guide complet pour développer l'application mobile React Native
 | 9️⃣ | **README_FIREBASE_PUSH.md** | 🔔 Notifications push (Firebase) | ✅ **Implémenté** |
 | 🔟 | **README_CHAT.md** | 💬 Messagerie temps réel (Socket.IO) | ✅ **Implémenté** |
 | 1️⃣1️⃣ | **README_UPLOADS.md** | 📤 Upload fichiers (photos, vidéos) | ✅ Prêt |
+| 1️⃣2️⃣ | **README_SAVE_MECHANISM.md** | 💾 Mécanisme de sauvegarde (Frontend→Backend→DB) | ✅ Prêt |
 
 ---
 

@@ -528,9 +528,10 @@ export default function VenueDashboard() {
     };
     
     // Helper to normalize events array
-    const normalizeEvents = (events) => 
+    const normalizeEvents = (events, type) => 
       events.map(event => ({
         ...event,
+        type: type, // Add type field
         payment_status: event.payment_status ? normalizePaymentStatus(event.payment_status) : event.payment_status
       }));
     
@@ -552,11 +553,11 @@ export default function VenueDashboard() {
       if (spectacleRes.status === 'rejected') console.error('❌ Error loading spectacles:', spectacleRes.reason);
       if (planningRes.status === 'rejected') console.error('❌ Error loading planning:', planningRes.reason);
       
-      // Extraire les données réussies, ou utiliser [] si échoué, et normaliser les statuts
-      const jams = normalizeEvents(jamsRes.status === 'fulfilled' ? jamsRes.value.data : []);
-      const concerts = normalizeEvents(concertsRes.status === 'fulfilled' ? concertsRes.value.data : []);
-      const karaokes = normalizeEvents(karaokeRes.status === 'fulfilled' ? karaokeRes.value.data : []);
-      const spectacles = normalizeEvents(spectacleRes.status === 'fulfilled' ? spectacleRes.value.data : []);
+      // Extraire les données réussies, ou utiliser [] si échoué, et normaliser les statuts + ajouter le type
+      const jams = normalizeEvents(jamsRes.status === 'fulfilled' ? jamsRes.value.data : [], 'jam');
+      const concerts = normalizeEvents(concertsRes.status === 'fulfilled' ? concertsRes.value.data : [], 'concert');
+      const karaokes = normalizeEvents(karaokeRes.status === 'fulfilled' ? karaokeRes.value.data : [], 'karaoke');
+      const spectacles = normalizeEvents(spectacleRes.status === 'fulfilled' ? spectacleRes.value.data : [], 'spectacle');
       const planning = planningRes.status === 'fulfilled' ? planningRes.value.data : [];
       
       console.log(`✅ Events loaded - Jams: ${jams.length}, Concerts: ${concerts.length}, Karaoke: ${karaokes.length}, Spectacles: ${spectacles.length}`);

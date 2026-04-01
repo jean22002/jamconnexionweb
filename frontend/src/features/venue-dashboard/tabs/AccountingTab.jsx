@@ -62,6 +62,16 @@ export default function AccountingTab({
     return 'Événement';
   };
 
+  const getEventType = (event) => {
+    // Use event.type if available, otherwise fallback to includes check
+    if (event.type) return event.type;
+    if (jams.includes(event)) return 'jam';
+    if (concerts.includes(event)) return 'concert';
+    if (karaokes.includes(event)) return 'karaoke';
+    if (spectacles.includes(event)) return 'spectacle';
+    return 'concert'; // Default fallback
+  };
+
   const getPaymentMethodLabel = (method) => {
     const labels = {
       'guso': 'GUSO',
@@ -310,10 +320,7 @@ export default function AccountingTab({
                     size="sm" 
                     className="rounded-full"
                     onClick={() => {
-                      // Déterminer le type d'événement
-                      const eventType = jams.includes(event) ? 'jam' : 
-                                       concerts.includes(event) ? 'concert' : 
-                                       karaokes.includes(event) ? 'karaoke' : 'spectacle';
+                      const eventType = getEventType(event);
                       onViewEventDetails(event, eventType);
                     }}
                     title="Voir les détails"

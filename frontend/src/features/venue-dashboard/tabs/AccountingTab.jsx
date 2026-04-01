@@ -132,11 +132,6 @@ export default function AccountingTab({
     document.body.removeChild(link);
   };
 
-  // View event details (placeholder - can be enhanced)
-  const viewEventDetails = (event) => {
-    alert(`Détails de l'événement:\n\nTitre: ${event.title || event.name || 'Sans titre'}\nDate: ${event.date}\nMontant: ${event.amount ? parseFloat(event.amount).toFixed(2) + ' €' : 'N/A'}\nStatut: ${getPaymentStatusLabel(event.payment_status)}`);
-  };
-
   return (
     <div className="glassmorphism rounded-2xl p-6">
       <div className="flex items-center justify-between mb-6">

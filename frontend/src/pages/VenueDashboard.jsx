@@ -2151,7 +2151,7 @@ export default function VenueDashboard() {
   const handleViewEventDetails = (event, type) => {
     setSelectedEvent(event);
     setSelectedEventType(type);
-    setIsEditingEvent(false); // Mode lecture seule
+    setIsEditingEvent(true); // Mode édition directement
     setShowEventDetailsModal(true);
   };
 

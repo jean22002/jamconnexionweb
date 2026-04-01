@@ -4,12 +4,16 @@ from fastapi import FastAPI
 
 logger = logging.getLogger(__name__)
 
-# Créer serveur Socket.IO
+# Créer serveur Socket.IO avec configuration Cloudflare-friendly
 sio = socketio.AsyncServer(
     async_mode='asgi',
     cors_allowed_origins='*',
-    logger=False,  # Désactiver logs verbeux Socket.IO
-    engineio_logger=False
+    # Keep-alive pour Cloudflare (timeout 100s)
+    ping_interval=25,      # Envoyer un ping toutes les 25 secondes
+    ping_timeout=60,       # Timeout si pas de pong en 60 secondes
+    # Logs activés temporairement pour debug
+    logger=True,
+    engineio_logger=True
 )
 
 # Wrapper ASGI pour FastAPI

@@ -2150,10 +2150,12 @@ export default function VenueDashboard() {
   };
 
   const handleViewEventDetails = (event, type) => {
+    console.log('🔍 handleViewEventDetails appelé:', { event, type });
     setSelectedEvent(event);
     setSelectedEventType(type);
     setIsEditingEvent(true); // Mode édition directement
     setShowEventDetailsModal(true);
+    console.log('✅ Modale devrait s\'ouvrir');
   };
 
   const handleDeleteEvent = async (eventId, type) => {

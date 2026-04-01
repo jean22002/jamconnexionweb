@@ -2,7 +2,7 @@
 // Service Worker PWA pour Jam Connexion
 // Support du mode hors ligne, notifications push et cache intelligent
 
-const CACHE_VERSION = 'v5.6';  // Updated 2026-04-01: Fix bouton œil Comptabilité
+const CACHE_VERSION = 'v6.0';  // Updated 2026-04-01: FORCE RELOAD - Bouton œil supprimé
 const CACHE_NAME = `jam-connexion-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `jam-connexion-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE = `jam-connexion-images-${CACHE_VERSION}`;

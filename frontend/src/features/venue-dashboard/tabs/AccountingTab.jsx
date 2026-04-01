@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Label } from "../../../components/ui/label";
 import { Check, Clock, X, CreditCard, Eye, Download, FileText } from "lucide-react";
 import { Button } from "../../../components/ui/button";
+import { toast } from "sonner";
 
 export default function AccountingTab({ 
   jams = [], 
@@ -130,6 +131,24 @@ export default function AccountingTab({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // Download single invoice
+  const downloadSingleInvoice = async (event) => {
+    if (!event.invoice_file) {
+      toast.error("Aucune facture jointe à cet événement");
+      return;
+    }
+    
+    try {
+      const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+      const invoiceUrl = `${API}/invoices/${event.invoice_file}`;
+      window.open(invoiceUrl, '_blank');
+      toast.success("Facture ouverte");
+    } catch (error) {
+      toast.error("Erreur lors de l'ouverture de la facture");
+      console.error('Error opening invoice:', error);
+    }
   };
 
   return (
@@ -308,6 +327,36 @@ export default function AccountingTab({
                         </span>
                       </div>
                     </div>
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="flex items-center gap-2">
+                    {/* Bouton Facture */}
+                    {event.invoice_file && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="rounded-full"
+                        onClick={() => downloadSingleInvoice(event)}
+                        title="Télécharger la facture"
+                      >
+                        <FileText className="w-4 h-4" />
+                      </Button>
+                    )}
+                    
+                    {/* Bouton Œil */}
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="rounded-full"
+                      onClick={() => {
+                        const eventType = getEventType(event);
+                        onViewEventDetails(event, eventType);
+                      }}
+                      title="Modifier l'événement"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
               </div>

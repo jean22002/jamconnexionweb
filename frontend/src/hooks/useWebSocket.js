@@ -43,7 +43,7 @@ export function useWebSocket(token, options = {}) {
       
       const socket = io(BACKEND_URL, {
         auth: { token },
-        transports: ['websocket', 'polling'], // Essaie WebSocket puis fallback sur polling
+        transports: ['polling'], // Force polling (stable avec Cloudflare)
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 3000,

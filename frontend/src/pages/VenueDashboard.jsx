@@ -2158,6 +2158,33 @@ export default function VenueDashboard() {
     console.log('✅ Modale devrait s\'ouvrir');
   };
 
+  const handleSaveEvent = async (eventType) => {
+    try {
+      const endpoint = eventType === 'concert' ? 'concerts' : 
+                      eventType === 'jam' ? 'jams' : 
+                      eventType === 'karaoke' ? 'karaoke' : 
+                      eventType === 'spectacle' ? 'spectacle' : 
+                      eventType;
+      
+      await axios.put(
+        `${API}/${endpoint}/${selectedEvent.id}`,
+        selectedEvent,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      toast.success("✅ Événement mis à jour !");
+      setShowEventDetailsModal(false);
+      setIsEditingEvent(false);
+      
+      // Rafraîchir les événements
+      fetchEvents();
+      
+    } catch (error) {
+      console.error('Error saving event:', error);
+      toast.error("❌ Erreur lors de la mise à jour");
+    }
+  };
+
   const handleDeleteEvent = async (eventId, type) => {
     if (!window.confirm("Supprimer cet événement ?")) return;
     try {

@@ -309,19 +309,6 @@ export default function AccountingTab({
                       </div>
                     </div>
                   </div>
-                  
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="rounded-full"
-                    onClick={() => {
-                      const eventType = getEventType(event);
-                      onViewEventDetails(event, eventType);
-                    }}
-                    title="Voir les détails"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
                 </div>
               </div>
             ))}

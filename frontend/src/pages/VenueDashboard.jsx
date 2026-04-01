@@ -2148,6 +2148,13 @@ export default function VenueDashboard() {
     setShowEventDetailsModal(true);
   };
 
+  const handleViewEventDetails = (event, type) => {
+    setSelectedEvent(event);
+    setSelectedEventType(type);
+    setIsEditingEvent(false); // Mode lecture seule
+    setShowEventDetailsModal(true);
+  };
+
   const handleDeleteEvent = async (eventId, type) => {
     if (!window.confirm("Supprimer cet événement ?")) return;
     try {
@@ -3857,6 +3864,7 @@ export default function VenueDashboard() {
               concerts={concerts}
               karaokes={karaokes}
               spectacles={spectacles}
+              onViewEventDetails={handleViewEventDetails}
             />
           </TabsContent>
 

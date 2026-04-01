@@ -7,7 +7,8 @@ export default function AccountingTab({
   jams = [], 
   concerts = [], 
   karaokes = [], 
-  spectacles = [] 
+  spectacles = [],
+  onViewEventDetails
 }) {
   const [accountingFilters, setAccountingFilters] = useState({
     payment_method: 'all',
@@ -308,7 +309,13 @@ export default function AccountingTab({
                     variant="ghost" 
                     size="sm" 
                     className="rounded-full"
-                    onClick={() => viewEventDetails(event)}
+                    onClick={() => {
+                      // Déterminer le type d'événement
+                      const eventType = jams.includes(event) ? 'jam' : 
+                                       concerts.includes(event) ? 'concert' : 
+                                       karaokes.includes(event) ? 'karaoke' : 'spectacle';
+                      onViewEventDetails(event, eventType);
+                    }}
                     title="Voir les détails"
                   >
                     <Eye className="w-4 h-4" />

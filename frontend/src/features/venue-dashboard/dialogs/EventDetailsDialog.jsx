@@ -12,9 +12,18 @@ import {
   SelectValue,
 } from "../../../components/ui/select";
 import { TimeSelect } from "../../../components/ui/time-select";
-import { Music, X, Loader2, Trash2, Eye, MessageSquare, Heart } from "lucide-react";
+import { Music, X, Loader2, Trash2, Eye, MessageSquare, Heart, FileText, Upload, Camera, Paperclip, Check } from "lucide-react";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../../../components/ui/dropdown-menu";
 import { MUSIC_STYLES_LIST } from "../../../data/music-styles";
 import { toast } from "sonner";
+import axios from "axios";
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 /**
  * EventDetailsDialog - Modale d'affichage/édition d'événement
@@ -38,6 +47,11 @@ import { toast } from "sonner";
  * @param {function} handleDeleteEvent - Fonction de suppression
  * @param {function} handleSaveEvent - Fonction de sauvegarde
  * @param {string} profile - Profil de l'établissement (pour la validation)
+ * @param {string} token - Token JWT pour l'authentification
+ * @param {function} setConcerts - Setter pour mettre à jour la liste des concerts
+ * @param {function} setJams - Setter pour mettre à jour la liste des jams
+ * @param {function} setKaraokes - Setter pour mettre à jour la liste des karaokés
+ * @param {function} setSpectacles - Setter pour mettre à jour la liste des spectacles
  */
 export function EventDetailsDialog({
   isOpen,
@@ -55,7 +69,12 @@ export function EventDetailsDialog({
   setShowBandSuggestions,
   handleDeleteEvent,
   handleSaveEvent,
-  profile
+  profile,
+  token,
+  setConcerts,
+  setJams,
+  setKaraokes,
+  setSpectacles
 }) {
   
   const handleClose = (open) => {
@@ -65,6 +84,17 @@ export function EventDetailsDialog({
       setIsEditing(false);
     }
     onClose(open);
+  };
+
+  const downloadSingleInvoice = async (filename) => {
+    try {
+      const invoiceUrl = `${API}/invoices/${filename}`;
+      window.open(invoiceUrl, '_blank');
+      toast.success("Facture ouverte dans un nouvel onglet");
+    } catch (error) {
+      toast.error("Erreur lors de l'ouverture de la facture");
+      console.error('Error opening invoice:', error);
+    }
   };
 
   return (
@@ -458,6 +488,258 @@ export function EventDetailsDialog({
                   </div>
                 </div>
               </>
+            )}
+
+            {/* Section Facture - Pour tous les types d'événements sauf 'application' */}
+            {selectedEventType !== 'application' && (
+              <div className="space-y-2 pt-4 border-t border-white/10">
+                <Label>Facture</Label>
+                
+                {selectedEvent.invoice_file ? (
+                  <div className="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                    <Check className="w-5 h-5 text-green-500" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-green-400">Facture jointe</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {selectedEvent.invoice_file}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => downloadSingleInvoice(selectedEvent.invoice_file)}
+                      className="border-green-500/30"
+                    >
+                      <FileText className="w-4 h-4 mr-2" />
+                      Voir
+                    </Button>
+                    {isEditing && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={async () => {
+                          if (window.confirm("Supprimer la facture actuelle ?")) {
+                            try {
+                              const endpoint = selectedEventType === 'jam' ? 'jams' : 
+                                              selectedEventType === 'concert' ? 'concerts' :
+                                              selectedEventType === 'karaoke' ? 'karaoke' : 'spectacle';
+                              
+                              await axios.delete(
+                                `${API}/${endpoint}/${selectedEvent.id}/invoice`,
+                                { headers: { Authorization: `Bearer ${token}` } }
+                              );
+                              
+                              setSelectedEvent({ ...selectedEvent, invoice_file: null });
+                              
+                              // Update local events list
+                              const updateInvoice = (events) => 
+                                events.map(e => 
+                                  e.id === selectedEvent.id 
+                                    ? { ...e, invoice_file: null }
+                                    : e
+                                );
+                              
+                              if (selectedEventType === 'jam') setJams(updateInvoice);
+                              else if (selectedEventType === 'concert') setConcerts(updateInvoice);
+                              else if (selectedEventType === 'karaoke') setKaraokes(updateInvoice);
+                              else if (selectedEventType === 'spectacle') setSpectacles(updateInvoice);
+                              
+                              toast.success("Facture supprimée !");
+                            } catch (error) {
+                              toast.error("Erreur lors de la suppression");
+                            }
+                          }
+                        }}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-4 bg-muted/20 border border-white/10 rounded-lg">
+                    {isEditing ? (
+                      <div>
+                        {/* Hidden input for file selection */}
+                        <input
+                          id="modal-file-input"
+                          type="file"
+                          accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            
+                            if (file.size > 10 * 1024 * 1024) {
+                              toast.error("Fichier trop volumineux (max 10MB)");
+                              return;
+                            }
+                            
+                            try {
+                              const formData = new FormData();
+                              formData.append('file', file);
+                              
+                              const endpoint = selectedEventType === 'jam' ? 'jams' : 
+                                              selectedEventType === 'concert' ? 'concerts' :
+                                              selectedEventType === 'karaoke' ? 'karaoke' : 'spectacle';
+                              
+                              const response = await axios.post(
+                                `${API}/${endpoint}/${selectedEvent.id}/invoice`,
+                                formData,
+                                { 
+                                  headers: { 
+                                    Authorization: `Bearer ${token}`,
+                                    'Content-Type': 'multipart/form-data'
+                                  } 
+                                }
+                              );
+                              
+                              setSelectedEvent({ ...selectedEvent, invoice_file: response.data.filename });
+                              
+                              // Update local events list
+                              const updateInvoice = (events) => 
+                                events.map(ev => 
+                                  ev.id === selectedEvent.id 
+                                    ? { ...ev, invoice_file: response.data.filename }
+                                    : ev
+                                );
+                              
+                              if (selectedEventType === 'jam') setJams(updateInvoice);
+                              else if (selectedEventType === 'concert') setConcerts(updateInvoice);
+                              else if (selectedEventType === 'karaoke') setKaraokes(updateInvoice);
+                              else if (selectedEventType === 'spectacle') setSpectacles(updateInvoice);
+                              
+                              toast.success("Facture ajoutée !");
+                              e.target.value = '';
+                            } catch (error) {
+                              toast.error("Erreur lors de l'upload");
+                              console.error(error);
+                            }
+                          }}
+                        />
+                        
+                        {/* Hidden input for camera capture */}
+                        <input
+                          id="modal-camera-input"
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            
+                            if (file.size > 10 * 1024 * 1024) {
+                              toast.error("Fichier trop volumineux (max 10MB)");
+                              return;
+                            }
+                            
+                            try {
+                              const formData = new FormData();
+                              formData.append('file', file);
+                              
+                              const endpoint = selectedEventType === 'jam' ? 'jams' : 
+                                              selectedEventType === 'concert' ? 'concerts' :
+                                              selectedEventType === 'karaoke' ? 'karaoke' : 'spectacle';
+                              
+                              const response = await axios.post(
+                                `${API}/${endpoint}/${selectedEvent.id}/invoice`,
+                                formData,
+                                { 
+                                  headers: { 
+                                    Authorization: `Bearer ${token}`,
+                                    'Content-Type': 'multipart/form-data'
+                                  } 
+                                }
+                              );
+                              
+                              setSelectedEvent({ ...selectedEvent, invoice_file: response.data.filename });
+                              
+                              // Update local events list
+                              const updateInvoice = (events) => 
+                                events.map(ev => 
+                                  ev.id === selectedEvent.id 
+                                    ? { ...ev, invoice_file: response.data.filename }
+                                    : ev
+                                );
+                              
+                              if (selectedEventType === 'jam') setJams(updateInvoice);
+                              else if (selectedEventType === 'concert') setConcerts(updateInvoice);
+                              else if (selectedEventType === 'karaoke') setKaraokes(updateInvoice);
+                              else if (selectedEventType === 'spectacle') setSpectacles(updateInvoice);
+                              
+                              toast.success("Photo ajoutée !");
+                              e.target.value = '';
+                            } catch (error) {
+                              toast.error("Erreur lors de l'upload");
+                              console.error(error);
+                            }
+                          }}
+                        />
+                        
+                        <div className="flex flex-col items-center gap-3 py-6">
+                          <Paperclip className="w-8 h-8 text-muted-foreground" />
+                          <div className="text-center">
+                            <p className="text-sm font-medium">Cliquez pour joindre une facture</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              PDF, PNG, JPG (max 10MB)
+                            </p>
+                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button size="sm" className="mt-2">
+                                <Upload className="w-4 h-4 mr-2" />
+                                Choisir un fichier
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="center" className="bg-background border-white/10">
+                              <DropdownMenuItem 
+                                onSelect={(e) => {
+                                  e.preventDefault();
+                                  setTimeout(() => {
+                                    const input = document.getElementById('modal-camera-input');
+                                    if (input) {
+                                      input.click();
+                                    } else {
+                                      toast.error("Input caméra introuvable");
+                                    }
+                                  }, 100);
+                                }}
+                                className="cursor-pointer"
+                              >
+                                <Camera className="w-4 h-4 mr-2" />
+                                Prendre une photo
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onSelect={(e) => {
+                                  e.preventDefault();
+                                  setTimeout(() => {
+                                    const input = document.getElementById('modal-file-input');
+                                    if (input) {
+                                      input.click();
+                                    } else {
+                                      toast.error("Input fichier introuvable");
+                                    }
+                                  }, 100);
+                                }}
+                                className="cursor-pointer"
+                              >
+                                <Upload className="w-4 h-4 mr-2" />
+                                Choisir un fichier
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4 text-muted-foreground">
+                        <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">Aucune facture jointe</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
 
             {/* NOTE: Le reste du contenu (Karaoke, Spectacle, Slot, Applications, etc.) 

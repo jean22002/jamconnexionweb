@@ -4017,6 +4017,11 @@ export default function VenueDashboard() {
           handleDeleteEvent={handleDeleteEvent}
           handleSaveEvent={handleSaveEvent}
           profile={profile}
+          token={token}
+          setConcerts={setConcerts}
+          setJams={setJams}
+          setKaraokes={setKaraokes}
+          setSpectacles={setSpectacles}
         />
 
         {/* Modale de message au groupe */}

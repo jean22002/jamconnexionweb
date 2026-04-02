@@ -61,16 +61,8 @@ Pour appliquer ce correctif sur votre environnement de production Emergent :
 Dans votre environnement Emergent de production (`jamconnexion.com`), assurez-vous que la variable `MONGO_URL` est configurée avec l'URL complète de MongoDB Atlas :
 
 ```env
-MONGO_URL=mongodb+srv://jean_jamconnexion:VOTRE_MOT_DE_PASSE@customer-apps.xtch2ol.mongodb.net/test_database?retryWrites=true&w=majority
+MONGO_URL=mongodb+srv://jean_jamconnexion:jamconnexion2024@customer-apps.xtch2ol.mongodb.net/test_database?retryWrites=true&w=majority
 ```
-
-**Important** : 
-- Remplacez `VOTRE_MOT_DE_PASSE` par le vrai mot de passe de votre utilisateur MongoDB Atlas
-- Si le mot de passe contient des caractères spéciaux (comme `!`), ils doivent être encodés en URL :
-  - `!` → `%21`
-  - `@` → `%40`
-  - `#` → `%23`
-  - `$` → `%24`
 
 ### 2. Supprimer l'Ancienne Variable (si elle existe)
 

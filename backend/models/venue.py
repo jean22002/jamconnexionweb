@@ -6,11 +6,11 @@ class VenueProfile(BaseModel):
     description: Optional[str] = None
     profile_image: Optional[str] = None
     cover_image: Optional[str] = None
-    address: str
-    city: str
+    address: Optional[str] = None
+    city: Optional[str] = None
     department: Optional[str] = None
     region: Optional[str] = None
-    postal_code: str
+    postal_code: Optional[str] = None
     latitude: Optional[float] = 0.0
     longitude: Optional[float] = 0.0
     phone: Optional[str] = None
@@ -41,8 +41,8 @@ class VenueProfileResponse(BaseModel):
     description: Optional[str] = None
     profile_image: Optional[str] = None
     cover_image: Optional[str] = None
-    address: str
-    city: str
+    address: Optional[str] = None
+    city: Optional[str] = None
     department: Optional[str] = None
     region: Optional[str] = None
     postal_code: Optional[str] = None

@@ -755,14 +755,35 @@ export default function MapTab({
                         )}
                       </div>
                     </Tooltip>
-                    <Popup>
-                      <div className="min-w-[200px]">
-                        <h3 className="font-semibold text-lg mb-1">{venue.name}</h3>
-                        <p className="text-sm text-gray-600 mb-1">{venue.city}</p>
-                        {isNearby && venue.distance_km && (
-                          <p className="text-xs text-primary mb-2">📍 {venue.distance_km} km (à proximité)</p>
+                    <Popup className="venue-popup">
+                      <div className="min-w-[200px] p-2">
+                        <h3 className="font-semibold text-lg mb-2 text-gray-900">{venue.name}</h3>
+                        {venue.venue_type && (
+                          <p className="text-xs text-gray-500 mb-1">📍 {venue.venue_type}</p>
                         )}
-                        <Link to={`/venue/${venue.id}`}><Button size="sm" className="w-full bg-primary text-white">Voir détails</Button></Link>
+                        <p className="text-sm text-gray-700 mb-2">
+                          {venue.address ? `${venue.address}, ` : ''}{venue.city}
+                        </p>
+                        {venue.music_styles && venue.music_styles.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mb-3">
+                            {venue.music_styles.slice(0, 3).map((style, i) => (
+                              <span key={i} className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">
+                                {style}
+                              </span>
+                            ))}
+                            {venue.music_styles.length > 3 && (
+                              <span className="text-xs text-gray-500">+{venue.music_styles.length - 3}</span>
+                            )}
+                          </div>
+                        )}
+                        {isNearby && venue.distance_km && (
+                          <p className="text-xs text-purple-600 font-medium mb-2">📍 À {venue.distance_km} km</p>
+                        )}
+                        <Link to={`/venue/${venue.id}`}>
+                          <Button size="sm" className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90">
+                            Voir détails
+                          </Button>
+                        </Link>
                       </div>
                     </Popup>
                   </Marker>

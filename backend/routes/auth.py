@@ -15,14 +15,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-# MongoDB connection - Use production URL if ENVIRONMENT is production
-environment = os.environ.get('ENVIRONMENT', 'development')
-if environment == 'production':
-    # Emergent uses MONGO_URL directly in production (not MONGO_URL_PRODUCTION)
-    mongo_url = os.environ.get('MONGO_URL', os.environ.get('MONGO_URL_PRODUCTION', 'mongodb://localhost:27017'))
-else:
-    mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-
+# MongoDB connection
+mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 

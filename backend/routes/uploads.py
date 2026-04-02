@@ -8,7 +8,7 @@ from middleware.rate_limit import limiter
 
 router = APIRouter(prefix="/upload", tags=["Uploads"])
 
-mongo_url = os.environ.get('MONGO_URL_PRODUCTION', os.environ['MONGO_URL']) if os.environ.get('ENVIRONMENT') == 'production' else os.environ['MONGO_URL']
+mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 

@@ -40,13 +40,8 @@ async def geocode_city(city: str, address: str = None) -> tuple:
         logger.warning(f"Geocoding failed for '{query}': {e}")
     return None, None
 
-# MongoDB connection - Use production URL if ENVIRONMENT is production
-environment = os.environ.get('ENVIRONMENT', 'development')
-if environment == 'production':
-    mongo_url = os.environ.get('MONGO_URL_PRODUCTION', os.environ['MONGO_URL'])
-else:
-    mongo_url = os.environ['MONGO_URL']
-
+# MongoDB connection
+mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 

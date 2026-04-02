@@ -11,9 +11,11 @@ sio = socketio.AsyncServer(
     # Keep-alive pour Cloudflare (timeout 100s)
     ping_interval=25,      # Envoyer un ping toutes les 25 secondes
     ping_timeout=60,       # Timeout si pas de pong en 60 secondes
-    # Logs activés temporairement pour debug
-    logger=True,
-    engineio_logger=True
+    # Logs désactivés en production
+    logger=False,
+    engineio_logger=False,
+    # Options avancées
+    always_connect=True,   # Accepter connexions même si auth échoue initialement
 )
 
 # Wrapper ASGI pour FastAPI

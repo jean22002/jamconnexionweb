@@ -43,10 +43,14 @@ export function useWebSocket(token, options = {}) {
       
       const socket = io(BACKEND_URL, {
         auth: { token },
-        transports: ['polling'], // Force polling (stable avec Cloudflare)
+        transports: ['websocket', 'polling'], // WebSocket + polling fallback
         reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 3000,
+        reconnectionAttempts: Infinity,  // Toujours essayer de reconnecter
+        reconnectionDelay: 1000,         // Retry rapide (1s)
+        reconnectionDelayMax: 5000,      // Max 5s entre tentatives
+        timeout: 20000,
+        upgrade: true,                   // Permettre upgrade HTTP → WS
+        rememberUpgrade: true,           // Se souvenir que WS fonctionne
       });
       
       socketRef.current = socket;
@@ -80,7 +84,18 @@ export function useWebSocket(token, options = {}) {
 
       socket.on('connect_error', (err) => {
         console.error('❌ Socket.IO connection error:', err.message);
-        setError(`Erreur de connexion: ${err.message}`);
+        
+        // Gestion des erreurs d'authentification
+        if (err.message.includes('token') || err.message.includes('401') || err.message.includes('authentication')) {
+          console.warn('⚠️ Token invalide ou expiré, déconnexion Socket.IO');
+          setError('Session expirée - Veuillez vous reconnecter');
+          
+          // Option : Rafraîchir automatiquement le token (à implémenter)
+          // refreshAuthToken().then(newToken => { ... });
+        } else {
+          setError(`Erreur de connexion: ${err.message}`);
+        }
+        
         setConnecting(false);
       });
 

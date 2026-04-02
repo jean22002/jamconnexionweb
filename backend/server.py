@@ -50,10 +50,11 @@ logger = logging.getLogger(__name__)
 # MongoDB connection - Use production URL if ENVIRONMENT is production
 environment = os.environ.get('ENVIRONMENT', 'development')
 if environment == 'production':
-    mongo_url = os.environ.get('MONGO_URL_PRODUCTION', os.environ['MONGO_URL'])
+    # Emergent uses MONGO_URL directly in production (not MONGO_URL_PRODUCTION)
+    mongo_url = os.environ.get('MONGO_URL', os.environ.get('MONGO_URL_PRODUCTION', 'mongodb://localhost:27017'))
     logger.info(f"🌍 Using PRODUCTION MongoDB: {mongo_url.split('@')[1] if '@' in mongo_url else 'Atlas'}")
 else:
-    mongo_url = os.environ['MONGO_URL']
+    mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
     logger.info("💻 Using DEVELOPMENT MongoDB: localhost:27017")
 
 # MongoDB Connection with Optimized Pooling

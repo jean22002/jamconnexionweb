@@ -1,5 +1,5 @@
 import { Button } from "../../../components/ui/button";
-import { Edit, MapPin, Phone, Mail, Globe, Facebook, Instagram, Clock } from "lucide-react";
+import { Edit, MapPin, Phone, Mail, Globe, Facebook, Instagram, Clock, Music, Mic, Speaker, Lightbulb, Guitar } from "lucide-react";
 
 export default function ProfileTab({ 
   venue, 
@@ -101,6 +101,133 @@ export default function ProfileTab({
               </a>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Technical Equipment Section */}
+      <div className="mt-8 pt-6 border-t border-white/10">
+        <h3 className="font-semibold text-lg mb-4">🎤 Équipements Techniques</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Stage */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Mic className="w-5 h-5 text-primary" />
+              <p className="font-medium">Scène</p>
+            </div>
+            <div className="text-sm text-muted-foreground space-y-1">
+              {venue.has_stage ? (
+                <>
+                  <p>✅ Scène disponible</p>
+                  {venue.stage_size && <p className="ml-4">Taille : {venue.stage_size}</p>}
+                </>
+              ) : (
+                <p>❌ Pas de scène</p>
+              )}
+            </div>
+          </div>
+
+          {/* PA System */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Speaker className="w-5 h-5 text-primary" />
+              <p className="font-medium">Sonorisation</p>
+            </div>
+            <div className="text-sm text-muted-foreground space-y-1">
+              {venue.has_pa_system ? (
+                <>
+                  <p>✅ Système de sonorisation (PA)</p>
+                  {venue.pa_mixer_name && <p className="ml-4">Table : {venue.pa_mixer_name}</p>}
+                  {venue.pa_speakers_name && <p className="ml-4">Enceintes : {venue.pa_speakers_name}</p>}
+                  {venue.pa_power && <p className="ml-4">Puissance : {venue.pa_power}</p>}
+                </>
+              ) : (
+                <p>❌ Pas de sono</p>
+              )}
+              {venue.has_sound_engineer && (
+                <p className="mt-2">👨‍🎤 Ingénieur son disponible</p>
+              )}
+            </div>
+          </div>
+
+          {/* Lights */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Lightbulb className="w-5 h-5 text-primary" />
+              <p className="font-medium">Lumières</p>
+            </div>
+            <div className="text-sm text-muted-foreground space-y-1">
+              {venue.has_lights ? (
+                <>
+                  <p>✅ Éclairage scénique</p>
+                  {venue.has_auto_light && <p className="ml-4">• Jeu automatique</p>}
+                  {venue.has_light_table && <p className="ml-4">• Table lumière</p>}
+                </>
+              ) : (
+                <p>❌ Pas d'éclairage spécifique</p>
+              )}
+            </div>
+          </div>
+
+          {/* Equipment */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Guitar className="w-5 h-5 text-primary" />
+              <p className="font-medium">Équipements disponibles</p>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {venue.equipment && venue.equipment.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {venue.equipment.map((item, i) => (
+                    <span key={i} className="px-2 py-1 bg-primary/10 rounded-full text-xs">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p>Aucun équipement renseigné</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Music Styles & Schedule */}
+      <div className="mt-8 pt-6 border-t border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Music Styles */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Music className="w-5 h-5 text-primary" />
+              <p className="font-medium">Styles musicaux</p>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {venue.music_styles && venue.music_styles.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {venue.music_styles.map((style, i) => (
+                    <span key={i} className="px-2 py-1 bg-secondary/20 rounded-full text-xs">
+                      {style}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p>Aucun style renseigné</p>
+              )}
+            </div>
+          </div>
+
+          {/* Opening Hours */}
+          {venue.opening_hours && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Clock className="w-5 h-5 text-primary" />
+                <p className="font-medium">Horaires d'ouverture</p>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                <p>{venue.opening_hours}</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

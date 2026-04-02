@@ -16,6 +16,10 @@ sio = socketio.AsyncServer(
     engineio_logger=False,
     # Sécurité: Rejeter les connexions sans auth valide
     always_connect=False,
+    # CRITICAL: Configuration pour Cloudflare proxy
+    allow_upgrades=True,          # Permettre les upgrades WebSocket
+    http_compression=True,         # Compression HTTP
+    compression_threshold=1024,    # Compresser si > 1KB
 )
 
 # Wrapper ASGI pour FastAPI

@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.gzip import GZipMiddleware  # NEW: Gzip compression
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime, timezone
 import os
@@ -17,6 +18,24 @@ from slowapi.errors import RateLimitExceeded
 
 # Import utility functions
 from utils import geocode_city
+
+# CRITICAL: Middleware to trust Cloudflare proxy headers for WebSocket connections
+class CloudflareProxyMiddleware(BaseHTTPMiddleware):
+    """Trust Cloudflare's proxy headers for WebSocket and HTTP connections"""
+    async def dispatch(self, request, call_next):
+        # Trust Cloudflare's real IP header
+        if "cf-connecting-ip" in request.headers:
+            request.scope["client"] = (request.headers["cf-connecting-ip"], 0)
+        
+        # Trust Cloudflare's forwarded protocol (http/https)
+        if "x-forwarded-proto" in request.headers:
+            request.scope["scheme"] = request.headers["x-forwarded-proto"]
+        
+        # Trust Cloudflare's forwarded host
+        if "x-forwarded-host" in request.headers:
+            request.scope["server"] = (request.headers["x-forwarded-host"], 443 if request.scope["scheme"] == "https" else 80)
+        
+        return await call_next(request)
 
 ROOT_DIR = Path(__file__).parent
 UPLOADS_DIR = ROOT_DIR / "uploads"
@@ -95,7 +114,10 @@ app.add_middleware(
 # 3. Cache Headers Middleware - Adds Cache-Control headers
 app.add_middleware(CacheHeadersMiddleware)
 
-logger.info("✅ Performance middlewares configured: Gzip, Cache Headers, Rate Limiting")
+# 4. Cloudflare Proxy Middleware - Trust Cloudflare headers for WebSocket
+app.add_middleware(CloudflareProxyMiddleware)
+
+logger.info("✅ Performance middlewares configured: Gzip, Cache Headers, Rate Limiting, Cloudflare Proxy")
 
 # Create main API router
 api_router = APIRouter(prefix="/api")

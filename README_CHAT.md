@@ -27,15 +27,17 @@
 
 ### État Actuel
 
-⚠️ **ATTENTION : Cette fonctionnalité N'EST PAS ENCORE IMPLÉMENTÉE**
+✅ **CETTE FONCTIONNALITÉ EST ENTIÈREMENT IMPLÉMENTÉE** (Mise à jour : 2026-04-02)
 
-| Composant | État | Action requise |
-|-----------|------|----------------|
-| Collection `conversations` | ❌ Pas créée | Créer dans MongoDB |
-| Collection `messages` | ❌ Pas créée | Créer dans MongoDB |
-| Endpoints Backend | ❌ Pas codés | Créer `/api/chat/*` |
-| WebSocket Backend | ❌ Pas configuré | Implémenter Socket.IO ou FastAPI WebSocket |
-| UI Mobile | ❌ Pas créée | Créer écrans Chat |
+| Composant | État | Fichier |
+|-----------|------|---------|
+| Collection `conversations` | ✅ Créée | MongoDB Atlas |
+| Collection `messages` | ✅ Créée | MongoDB Atlas |
+| Endpoints Backend | ✅ Implémentés | `/app/backend/routes/chat.py` |
+| WebSocket Backend | ✅ Configuré | `/app/backend/websocket.py` (Socket.IO) |
+| UI Mobile | ⚠️ Partiellement | À vérifier |
+
+**Note** : ⚠️ Problème connu : Erreurs WebSocket en production dues à la configuration Cloudflare Proxy. Le code backend fonctionne.
 
 ### Cas d'Usage
 

@@ -148,31 +148,6 @@ export default function PWAPrompt() {
           </div>
         </div>
       )}
-
-      {/* Banner hors ligne */}
-      {showOfflineBanner && (
-        <div className="fixed top-16 left-4 right-4 md:left-auto md:right-4 md:max-w-md z-50 animate-slide-down">
-          <div className="bg-orange-500/90 backdrop-blur-sm rounded-2xl p-4 shadow-2xl">
-            <div className="flex items-start gap-3">
-              <WifiOff className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-              
-              <div className="flex-1">
-                <h3 className="font-semibold text-sm text-white mb-1">Mode hors ligne</h3>
-                <p className="text-xs text-white/90">
-                  Certaines fonctionnalités sont limitées. Les données en cache restent accessibles.
-                </p>
-              </div>
-              
-              <button
-                onClick={handleDismissOffline}
-                className="text-white/80 hover:text-white transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

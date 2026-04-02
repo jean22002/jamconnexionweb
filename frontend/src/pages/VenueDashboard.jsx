@@ -2353,7 +2353,9 @@ export default function VenueDashboard() {
   };
 
   // WebSocket for real-time notifications
+  // N'initialiser le WebSocket QUE quand le profil est chargé
   useWebSocket(token, {
+    autoConnect: !!profile?.id, // Attend que profile.id soit disponible
     onNotification: (message) => {
       console.log('📨 Notification:', message);
       if (message.notification_type === 'new_application') {

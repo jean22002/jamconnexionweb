@@ -14,8 +14,8 @@ sio = socketio.AsyncServer(
     # Logs désactivés en production
     logger=False,
     engineio_logger=False,
-    # Options avancées
-    always_connect=True,   # Accepter connexions même si auth échoue initialement
+    # Sécurité: Rejeter les connexions sans auth valide
+    always_connect=False,
 )
 
 # Wrapper ASGI pour FastAPI
@@ -51,36 +51,49 @@ async def connect(sid, environ, auth):
     ```
     """
     try:
+        logger.info(f"🔌 New connection attempt: {sid[:8]}... | Auth data received: {bool(auth)}")
+        
         # Vérifier JWT token
-        token = auth.get('token')
+        token = auth.get('token') if auth else None
         if not token:
-            logger.warning(f"❌ Connection rejected (no token): {sid}")
+            logger.warning(f"❌ Connection rejected (no token): {sid} | Auth: {auth}")
             return False
+        
+        logger.info(f"🔑 Token received for {sid[:8]}... (length: {len(token)})")
         
         # Valider token
         from utils.auth import decode_token
         payload = decode_token(token)
         
+        logger.info(f"✅ Token decoded successfully | Payload keys: {list(payload.keys())}")
+        
         # Extraire les infos utilisateur du payload
+        user_id = payload.get('user_id')
+        user_email = payload.get('email', '')
+        user_role = payload.get('role', 'musician')
+        
+        if not user_id:
+            logger.error(f"❌ Connection rejected (no user_id in payload): {sid} | Payload: {payload}")
+            return False
+        
         user = {
-            'id': payload.get('user_id'),
-            'name': payload.get('email', '').split('@')[0],  # Utiliser email comme nom par défaut
-            'role': payload.get('role', 'musician')
+            'id': user_id,
+            'name': user_email.split('@')[0] if user_email else 'Unknown',
+            'role': user_role
         }
         
-        if not user:
-            logger.warning(f"❌ Connection rejected (invalid token): {sid}")
-            return False
+        logger.info(f"👤 User extracted: {user}")
         
         # Sauvegarder session
         user_connections[user['id']] = sid
         await sio.save_session(sid, {'user_id': user['id'], 'user': user})
         
-        logger.info(f"✅ User {user['id']} ({user['name']}) connected (sid: {sid[:8]}...)")
+        logger.info(f"✅ User {user['id']} ({user['name']}) connected successfully (sid: {sid[:8]}...)")
         return True
         
     except Exception as e:
-        logger.error(f"❌ Error during connection: {e}")
+        logger.error(f"❌ CRITICAL ERROR during connection handshake: {e}", exc_info=True)
+        logger.error(f"   └─ SID: {sid} | Auth received: {auth}")
         return False
 
 

@@ -2,7 +2,7 @@
 // Service Worker PWA pour Jam Connexion
 // Support du mode hors ligne, notifications push et cache intelligent
 
-const CACHE_VERSION = 'v7.1';  // Profil établissement restauré avec équipements
+const CACHE_VERSION = 'v7.2';  // Fix WebSocket: autoConnect conditionally + backend logging
 const CACHE_NAME = `jam-connexion-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `jam-connexion-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE = `jam-connexion-images-${CACHE_VERSION}`;

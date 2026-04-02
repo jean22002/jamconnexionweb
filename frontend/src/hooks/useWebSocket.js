@@ -3,6 +3,8 @@ import { toast } from 'sonner';
 import io from 'socket.io-client';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+// CRITICAL: Socket.IO path must match backend mount point (/api/socket.io)
+const SOCKET_IO_PATH = '/api/socket.io';
 
 /**
  * Hook personnalisé pour les notifications temps réel via Socket.IO
@@ -39,9 +41,10 @@ export function useWebSocket(token, options = {}) {
     setError(null);
 
     try {
-      console.log('🔌 Connecting to Socket.IO:', BACKEND_URL);
+      console.log('🔌 Connecting to Socket.IO:', BACKEND_URL + SOCKET_IO_PATH);
       
       const socket = io(BACKEND_URL, {
+        path: SOCKET_IO_PATH,  // CRITICAL: Must match backend mount point
         auth: { token },
         transports: ['websocket', 'polling'], // WebSocket + polling fallback
         reconnection: true,

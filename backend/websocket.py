@@ -265,7 +265,8 @@ async def typing(sid, data):
 
 def init_websocket(app: FastAPI):
     """
-    Monte Socket.IO sur l'application FastAPI.
+    Monte Socket.IO sur l'application FastAPI sous /api/socket.io
+    pour être accessible via Cloudflare/Ingress.
     
     À appeler depuis server.py :
     ```python
@@ -273,8 +274,9 @@ def init_websocket(app: FastAPI):
     init_websocket(app)
     ```
     """
-    app.mount('/socket.io', socket_app)
-    logger.info("✅ WebSocket Socket.IO initialized on /socket.io")
+    # CRITICAL: Monter sur /api/socket.io pour être accessible via Ingress
+    app.mount('/api/socket.io', socket_app)
+    logger.info("✅ WebSocket Socket.IO initialized on /api/socket.io")
 
 
 # ============================================

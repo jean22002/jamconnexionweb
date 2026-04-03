@@ -63,16 +63,19 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - [x] Fix cache PWA : Incrémentation CACHE_VERSION (résolution ChunkLoadError)
 - [x] Export factures ZIP pour Musiciens PRO (endpoint + UI avec filtres période/type/statut)
 - [x] Export factures ZIP pour Établissements (endpoint + UI avec filtres période/type/statut)
+- [x] Fix console warning VenueDashboard : Suppression "No profile ID" (fetchEvents optimisé)
+- [x] Fix WebSocket critique : Socket.IO monté avant middlewares (handshake 500 résolu)
+- [x] Notifications temps réel opérationnelles via Socket.IO
 
 ## P0/P1/P2 Remaining
 
 ### P1
+- [x] ~~Notifications temps réel (WebSockets)~~ → **RÉSOLU** (Socket.IO fonctionnel)
 - [ ] Upload d'images (actuellement via URL)
 - [ ] Notifications push/email
 - [ ] Recherche avancée par style, équipement, date
 
 ### P2
-- [ ] Notifications temps réel (WebSockets)
 - [ ] Système d'avis/notation
 - [ ] Chat/messagerie privée amélioré
 - [ ] Désactivation statut PRO auto (quand décidé par l'utilisateur)

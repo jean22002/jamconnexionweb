@@ -86,6 +86,16 @@ app = FastAPI(
     version="2.0.0"
 )
 
+# CRITICAL: Initialize Socket.IO BEFORE middlewares to avoid conflicts
+# This must be done before adding middlewares that could interfere with WebSocket handshake
+try:
+    from websocket import sio, socket_app, set_db as ws_set_db
+    # Mount Socket.IO on /api/socket.io (BEFORE middlewares)
+    app.mount('/api/socket.io', socket_app)
+    logger.info("✅ WebSocket Socket.IO mounted on /api/socket.io (before middlewares)")
+except Exception as e:
+    logger.error(f"❌ WebSocket mount failed: {e}")
+
 # Add rate limiter state to app
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
@@ -283,14 +293,13 @@ async def startup_db_client():
     except Exception as e:
         logger.warning(f"⚠️  Firebase init failed (non-critical): {e}")
     
-    # Initialize WebSocket (Socket.IO for real-time chat)
+    # Set database for Socket.IO (already mounted during app creation)
     try:
-        from websocket import init_websocket, set_db as ws_set_db
+        from websocket import set_db as ws_set_db
         ws_set_db(db)
-        init_websocket(app)
-        logger.info("✅ WebSocket Socket.IO initialized for real-time chat")
+        logger.info("✅ WebSocket Socket.IO database connection configured")
     except Exception as e:
-        logger.error(f"❌ WebSocket init failed: {e}")
+        logger.error(f"❌ WebSocket DB config failed: {e}")
 
 # Shutdown event
 @app.on_event("shutdown")

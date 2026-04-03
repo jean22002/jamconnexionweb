@@ -14,16 +14,21 @@ sio = socketio.AsyncServer(
     # Logs désactivés en production
     logger=False,
     engineio_logger=False,
-    # Sécurité: Rejeter les connexions sans auth valide
-    always_connect=False,
     # CRITICAL: Configuration pour Cloudflare proxy
     allow_upgrades=True,          # Permettre les upgrades WebSocket
     http_compression=True,         # Compression HTTP
     compression_threshold=1024,    # Compresser si > 1KB
+    # FIX: Ajout de configurations pour améliorer la compatibilité proxy
+    max_http_buffer_size=1000000,  # 1MB buffer pour les gros messages
+    transports=['websocket', 'polling'],  # Support fallback polling
 )
 
-# Wrapper ASGI pour FastAPI
-socket_app = socketio.ASGIApp(sio)
+# Wrapper ASGI pour FastAPI avec configuration spéciale
+socket_app = socketio.ASGIApp(
+    sio,
+    other_asgi_app=None,  # Ne pas mélanger avec d'autres apps ASGI
+    socketio_path='',     # Le path sera géré par le mount
+)
 
 # Stockage des connexions utilisateurs (user_id -> session_id)
 user_connections = {}
@@ -257,26 +262,6 @@ async def typing(sid, data):
         
     except Exception as e:
         logger.error(f"Error in typing event: {e}")
-
-
-# ============================================
-# Fonction d'initialisation
-# ============================================
-
-def init_websocket(app: FastAPI):
-    """
-    Monte Socket.IO sur l'application FastAPI sous /api/socket.io
-    pour être accessible via Cloudflare/Ingress.
-    
-    À appeler depuis server.py :
-    ```python
-    from websocket import init_websocket
-    init_websocket(app)
-    ```
-    """
-    # CRITICAL: Monter sur /api/socket.io pour être accessible via Ingress
-    app.mount('/api/socket.io', socket_app)
-    logger.info("✅ WebSocket Socket.IO initialized on /api/socket.io")
 
 
 # ============================================

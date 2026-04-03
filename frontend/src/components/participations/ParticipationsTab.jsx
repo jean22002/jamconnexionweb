@@ -1,13 +1,19 @@
 import { Button } from "../ui/button";
-import { MapPin, CalendarIcon, Check, Download, Link2, Copy } from "lucide-react";
+import { MapPin, CalendarIcon, Check, Download, Link2, Copy, Star } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import ReviewModal from "../ui/ReviewModal";
 import { toast } from "sonner";
 import { useState } from "react";
 import axios from "axios";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-function ParticipationCard({ participation }) {
+function ParticipationCard({ participation, token, onReviewSuccess }) {
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  
+  // Vérifier si l'événement est passé
+  const isPastEvent = participation.event_date && new Date(participation.event_date) < new Date();
+  
   const handleAddToCalendar = () => {
     const event = {
       title: participation.event_title || 
@@ -96,18 +102,66 @@ function ParticipationCard({ participation }) {
         <p className="text-xs text-muted-foreground">
           Ajouté le {new Date(participation.created_at).toLocaleDateString('fr-FR')}
         </p>
-        {participation.event_date && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 text-xs"
-            onClick={handleAddToCalendar}
-          >
-            <CalendarIcon className="w-3 h-3 mr-1" />
-            Ajouter au calendrier
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {/* Bouton Noter (uniquement si événement passé) */}
+          {isPastEvent && !participation.has_reviewed && (
+            <Button
+              size="sm"
+              variant="default"
+              className="h-8 text-xs bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              onClick={() => setReviewModalOpen(true)}
+            >
+              <Star className="w-3 h-3 mr-1" />
+              Laisser un avis
+            </Button>
+          )}
+          
+          {/* Bouton Calendrier */}
+          {participation.event_date && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 text-xs"
+              onClick={handleAddToCalendar}
+            >
+              <CalendarIcon className="w-3 h-3 mr-1" />
+              Ajouter au calendrier
+            </Button>
+          )}
+        </div>
       </div>
+      
+      {/* Modal de notation */}
+      {isPastEvent && (
+        <ReviewModal
+          open={reviewModalOpen}
+          onOpenChange={setReviewModalOpen}
+          venue={{
+            id: participation.venue_id,
+            name: participation.venue_name || 'Établissement'
+          }}
+          event={{
+            id: participation.event_id,
+            title: participation.event_title || 
+                   (participation.event_type === 'jam' ? 'Bœuf musical' :
+                    participation.event_type === 'concert' ? 'Concert' :
+                    participation.event_type === 'karaoke' ? 'Karaoké' :
+                    participation.event_type === 'spectacle' ? 'Spectacle' : 'Événement'),
+            date: new Date(participation.event_date).toLocaleDateString('fr-FR', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            })
+          }}
+          token={token}
+          onSuccess={() => {
+            setReviewModalOpen(false);
+            if (onReviewSuccess) {
+              onReviewSuccess();
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -197,7 +251,15 @@ export default function ParticipationsTab({ participations, token }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {participations.map((participation) => (
-            <ParticipationCard key={participation.id} participation={participation} />
+            <ParticipationCard 
+              key={participation.id} 
+              participation={participation}
+              token={token}
+              onReviewSuccess={() => {
+                // Optionnel : rafraîchir les participations
+                toast.success('Merci pour votre avis ! 🎉');
+              }}
+            />
           ))}
         </div>
       )}

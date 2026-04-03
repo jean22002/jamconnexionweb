@@ -647,14 +647,14 @@ export default function VenueDashboard() {
     // Initial data load - only runs once on mount
     fetchProfile();
     fetchMusicians();
-    fetchEvents();
+    // fetchEvents() removed from here - will be called when profile is loaded
     fetchNotifications();
     fetchUnreadMessages();
     fetchSubscribers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty array = run only once on mount
 
-  // Re-fetch events when profile is loaded (fix for Comptabilité tab)
+  // Fetch events when profile is loaded (avoids "No profile ID" warning)
   useEffect(() => {
     if (profile?.id) {
       fetchEvents();

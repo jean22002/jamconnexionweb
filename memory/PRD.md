@@ -55,6 +55,15 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - [x] Dashboard Mélomane : Clustering carte (sans filtres styles/région/département)
 - [x] Dashboard Mélomane : Onglet Établissements avec filtres par région et département
 
+### Phase 4 (Avril 2026 - Corrections critiques + Export factures)
+- [x] Fix connexion MongoDB : Standardisation variable `MONGO_URL` (suppression `MONGO_URL_PRODUCTION`)
+- [x] Fix modèle Pydantic VenueProfile : Champs address/city/postal_code en Optional
+- [x] Vérification 100% conformité profils vs README (Établissement, Musicien, Mélomane)
+- [x] Fix popup carte Leaflet : Contraste texte amélioré (fond blanc opaque)
+- [x] Fix cache PWA : Incrémentation CACHE_VERSION (résolution ChunkLoadError)
+- [x] Export factures ZIP pour Musiciens PRO (endpoint + UI avec filtres période/type/statut)
+- [x] Export factures ZIP pour Établissements (endpoint + UI avec filtres période/type/statut)
+
 ## P0/P1/P2 Remaining
 
 ### P1
@@ -77,6 +86,8 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - `GET /api/stats/counts` — Compteurs landing page
 - `GET /api/venues` — Liste venues avec region/GPS
 - `POST /api/musicians/contact-band/{band_id}` — Contacter admin groupe
+- `GET /api/musicians/me/accounting/invoices/download` — Export ZIP factures (Musiciens PRO uniquement)
+- `GET /api/venues/me/accounting/invoices/download` — Export ZIP factures (Établissements, inclus abonnement)
 
 ## Notes Production
 - `REACT_APP_BACKEND_URL` doit être vide en déploiement (URLs relatives)

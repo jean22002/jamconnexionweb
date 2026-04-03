@@ -4121,6 +4121,7 @@ export default function VenueDashboard() {
           formData={formData}
           setFormData={setFormData}
           updateProfile={updateProfile}
+          token={token}
         />
 
       </main>

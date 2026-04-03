@@ -13,6 +13,7 @@ import {
 } from "../../../components/ui/select";
 import { Save, X } from "lucide-react";
 import { MUSIC_STYLES_LIST } from "../../../data/music-styles";
+import ImageUploader from "../../../components/ui/ImageUploader";
 
 const INSTRUMENTS_BASE = [
   "Batterie",
@@ -30,10 +31,14 @@ const INSTRUMENTS_BASE = [
  * Dialog pour éditer le profil complet d'un établissement
  * Restauré selon README_PROFILE_VENUE.md
  */
-export function EditProfileDialog({ open, onOpenChange, formData, setFormData, updateProfile }) {
+export function EditProfileDialog({ open, onOpenChange, formData, setFormData, updateProfile, token }) {
   
   const handleClose = () => {
     onOpenChange(false);
+  };
+
+  const handleImageChange = (field, url) => {
+    setFormData({ ...formData, [field]: url });
   };
 
   return (
@@ -47,8 +52,35 @@ export function EditProfileDialog({ open, onOpenChange, formData, setFormData, u
 
         <div className="space-y-6 mt-4">
           
-          {/* 🏢 Section 1 : Informations Générales */}
+          {/* 📸 Section 0 : Photos */}
           <div className="space-y-4">
+            <h3 className="font-semibold text-lg">📸 Photos</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ImageUploader
+                currentImage={formData.profile_image}
+                onImageChange={(url) => handleImageChange('profile_image', url)}
+                endpoint="/api/upload/venue-photo"
+                photoType="profile"
+                label="Photo de profil"
+                token={token}
+                aspectRatio="square"
+              />
+              
+              <ImageUploader
+                currentImage={formData.cover_image}
+                onImageChange={(url) => handleImageChange('cover_image', url)}
+                endpoint="/api/upload/venue-photo"
+                photoType="cover"
+                label="Photo de couverture"
+                token={token}
+                aspectRatio="wide"
+              />
+            </div>
+          </div>
+          
+          {/* 🏢 Section 1 : Informations Générales */}
+          <div className="space-y-4 pt-4 border-t border-white/10">
             <h3 className="font-semibold text-lg">🏢 Informations générales</h3>
             
             <div className="grid grid-cols-2 gap-4">

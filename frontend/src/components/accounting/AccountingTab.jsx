@@ -173,6 +173,45 @@ const GeneralAccountingContent = ({
   token,
   fetchConcerts
 }) => {
+  const [invoiceFilter, setInvoiceFilter] = useState('all');
+  const [downloadingZip, setDownloadingZip] = useState(false);
+
+  const downloadInvoicesZip = async () => {
+    try {
+      setDownloadingZip(true);
+      const response = await axios.get(`${API}/musicians/me/accounting/invoices/download`, {
+        params: { 
+          year: filters.year,
+          type: invoiceFilter // 'all', 'guso', 'classic'
+        },
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+      
+      // Download file
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      const filterLabel = invoiceFilter === 'all' ? 'toutes' : invoiceFilter === 'guso' ? 'guso' : 'normales';
+      link.setAttribute('download', `factures_${filterLabel}_${filters.year}.zip`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success(`Factures téléchargées (${filterLabel})`);
+    } catch (error) {
+      console.error('Error downloading invoices:', error);
+      if (error.response?.status === 404) {
+        toast.error('Aucune facture trouvée pour ce filtre');
+      } else {
+        toast.error('Erreur lors du téléchargement des factures');
+      }
+    } finally {
+      setDownloadingZip(false);
+    }
+  };
+  
   // Filtrer les concerts selon le type sélectionné
   const filteredConcerts = concerts.filter(concert => {
     if (filters.concertType === 'all') return true;
@@ -231,10 +270,46 @@ const GeneralAccountingContent = ({
             Comptabilité PRO
           </h2>
           
-          <Button onClick={exportToCSV} variant="outline" className="rounded-full gap-2">
-            <Download className="w-4 h-4" />
-            Exporter CSV
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Télécharger factures ZIP */}
+            <div className="flex gap-2">
+              <Select value={invoiceFilter} onValueChange={setInvoiceFilter}>
+                <SelectTrigger className="rounded-full w-[180px]">
+                  <SelectValue placeholder="Type de facture" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">📄 Toutes les factures</SelectItem>
+                  <SelectItem value="guso">🎵 Factures GUSO</SelectItem>
+                  <SelectItem value="classic">💰 Factures normales</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Button 
+                onClick={downloadInvoicesZip} 
+                variant="default" 
+                className="rounded-full gap-2 bg-gradient-to-r from-purple-500 to-pink-500"
+                disabled={downloadingZip}
+              >
+                {downloadingZip ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Téléchargement...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    ZIP
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* Exporter CSV */}
+            <Button onClick={exportToCSV} variant="outline" className="rounded-full gap-2">
+              <Download className="w-4 h-4" />
+              Exporter CSV
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}

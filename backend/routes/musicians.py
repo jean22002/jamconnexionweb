@@ -2065,6 +2065,111 @@ async def export_accounting_csv(
     )
 
 
+
+@router.get("/musicians/me/accounting/invoices/download")
+async def download_invoices_zip(
+    year: int = None,
+    type: str = "all",  # 'all', 'guso', 'classic'
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Download all invoices as ZIP file (PRO feature)
+    Filters: all, guso, classic
+    """
+    import zipfile
+    import io
+    import aiohttp
+    from fastapi.responses import StreamingResponse
+    
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can download invoices")
+    
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    # Check PRO status (optional, remove if you want it available for all)
+    # if musician.get("subscription_tier") != "pro":
+    #     raise HTTPException(status_code=403, detail="PRO subscription required")
+    
+    concerts = musician.get("concerts", [])
+    if not year:
+        year = datetime.now(timezone.utc).year
+    
+    # Filter concerts by year and type
+    filtered_concerts = []
+    for concert in concerts:
+        try:
+            concert_date = datetime.fromisoformat(concert.get("date", ""))
+            if concert_date.year != year:
+                continue
+            
+            # Filter by type
+            if type == "guso" and not concert.get("is_guso"):
+                continue
+            elif type == "classic" and concert.get("is_guso"):
+                continue
+            
+            # Only include concerts with invoice_url
+            if concert.get("invoice_url"):
+                filtered_concerts.append(concert)
+        except Exception:
+            continue
+    
+    if not filtered_concerts:
+        raise HTTPException(status_code=404, detail="Aucune facture trouvée pour ce filtre")
+    
+    # Create ZIP file in memory
+    zip_buffer = io.BytesIO()
+    
+    async with aiohttp.ClientSession() as session:
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for idx, concert in enumerate(filtered_concerts, 1):
+                invoice_url = concert.get("invoice_url")
+                if not invoice_url:
+                    continue
+                
+                try:
+                    # Download invoice file
+                    async with session.get(invoice_url) as response:
+                        if response.status == 200:
+                            file_content = await response.read()
+                            
+                            # Generate filename
+                            venue_name = concert.get("venue_name", "etablissement").replace("/", "-")
+                            date_str = concert.get("date", "")[:10]  # YYYY-MM-DD
+                            invoice_number = concert.get("invoice_number", f"INV{idx:03d}")
+                            guso_label = "_GUSO" if concert.get("is_guso") else ""
+                            
+                            # Get file extension from URL or default to .pdf
+                            ext = ".pdf"
+                            if "." in invoice_url:
+                                ext = "." + invoice_url.split(".")[-1].split("?")[0]
+                            
+                            filename = f"{date_str}_{venue_name}_{invoice_number}{guso_label}{ext}"
+                            
+                            # Add to ZIP
+                            zip_file.writestr(filename, file_content)
+                except Exception as e:
+                    logger.error(f"Error downloading invoice {invoice_url}: {e}")
+                    continue
+    
+    # Prepare ZIP for download
+    zip_buffer.seek(0)
+    
+    filter_label = type if type != "all" else "toutes"
+    filename = f"factures_{filter_label}_{year}.zip"
+    
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )
+
+
+
 @router.patch("/musicians/me/concerts/{concert_id}")
 async def update_concert(
     concert_id: str,

@@ -175,15 +175,25 @@ const GeneralAccountingContent = ({
 }) => {
   const [invoiceFilter, setInvoiceFilter] = useState('all');
   const [downloadingZip, setDownloadingZip] = useState(false);
+  const [usePeriod, setUsePeriod] = useState(false);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   const downloadInvoicesZip = async () => {
     try {
       setDownloadingZip(true);
+      
+      const params = { type: invoiceFilter };
+      
+      if (usePeriod && startDate && endDate) {
+        params.start_date = startDate;
+        params.end_date = endDate;
+      } else {
+        params.year = filters.year;
+      }
+      
       const response = await axios.get(`${API}/musicians/me/accounting/invoices/download`, {
-        params: { 
-          year: filters.year,
-          type: invoiceFilter // 'all', 'guso', 'classic'
-        },
+        params,
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'
       });
@@ -193,7 +203,10 @@ const GeneralAccountingContent = ({
       const link = document.createElement('a');
       link.href = url;
       const filterLabel = invoiceFilter === 'all' ? 'toutes' : invoiceFilter === 'guso' ? 'guso' : 'normales';
-      link.setAttribute('download', `factures_${filterLabel}_${filters.year}.zip`);
+      const periodLabel = usePeriod && startDate && endDate 
+        ? `${startDate}_au_${endDate}` 
+        : filters.year;
+      link.setAttribute('download', `factures_${filterLabel}_${periodLabel}.zip`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -204,6 +217,8 @@ const GeneralAccountingContent = ({
       console.error('Error downloading invoices:', error);
       if (error.response?.status === 404) {
         toast.error('Aucune facture trouvée pour ce filtre');
+      } else if (error.response?.status === 403) {
+        toast.error('Abonnement PRO requis pour cette fonctionnalité');
       } else {
         toast.error('Erreur lors du téléchargement des factures');
       }
@@ -272,36 +287,70 @@ const GeneralAccountingContent = ({
           
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Télécharger factures ZIP */}
-            <div className="flex gap-2">
-              <Select value={invoiceFilter} onValueChange={setInvoiceFilter}>
-                <SelectTrigger className="rounded-full w-[180px]">
-                  <SelectValue placeholder="Type de facture" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">📄 Toutes les factures</SelectItem>
-                  <SelectItem value="guso">🎵 Factures GUSO</SelectItem>
-                  <SelectItem value="classic">💰 Factures normales</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex flex-col gap-2 p-3 glassmorphism rounded-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <input
+                  type="checkbox"
+                  id="use-period"
+                  checked={usePeriod}
+                  onChange={(e) => setUsePeriod(e.target.checked)}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="use-period" className="text-sm cursor-pointer">
+                  Filtrer par période personnalisée
+                </label>
+              </div>
               
-              <Button 
-                onClick={downloadInvoicesZip} 
-                variant="default" 
-                className="rounded-full gap-2 bg-gradient-to-r from-purple-500 to-pink-500"
-                disabled={downloadingZip}
-              >
-                {downloadingZip ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Téléchargement...
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4" />
-                    ZIP
-                  </>
-                )}
-              </Button>
+              {usePeriod && (
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="rounded-lg px-3 py-1.5 bg-black/20 border border-white/10 text-sm"
+                    placeholder="Date début"
+                  />
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="rounded-lg px-3 py-1.5 bg-black/20 border border-white/10 text-sm"
+                    placeholder="Date fin"
+                  />
+                </div>
+              )}
+              
+              <div className="flex gap-2">
+                <Select value={invoiceFilter} onValueChange={setInvoiceFilter}>
+                  <SelectTrigger className="rounded-full w-[180px]">
+                    <SelectValue placeholder="Type de facture" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">📄 Toutes les factures</SelectItem>
+                    <SelectItem value="guso">🎵 Factures GUSO</SelectItem>
+                    <SelectItem value="classic">💰 Factures normales</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Button 
+                  onClick={downloadInvoicesZip} 
+                  variant="default" 
+                  className="rounded-full gap-2 bg-gradient-to-r from-purple-500 to-pink-500"
+                  disabled={downloadingZip || (usePeriod && (!startDate || !endDate))}
+                >
+                  {downloadingZip ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Téléchargement...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      ZIP
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
 
             {/* Exporter CSV */}

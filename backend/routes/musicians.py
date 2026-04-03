@@ -2070,11 +2070,14 @@ async def export_accounting_csv(
 async def download_invoices_zip(
     year: int = None,
     type: str = "all",  # 'all', 'guso', 'classic'
+    start_date: str = None,  # Format: YYYY-MM-DD
+    end_date: str = None,    # Format: YYYY-MM-DD
     current_user: dict = Depends(get_current_user)
 ):
     """
     Download all invoices as ZIP file (PRO feature)
     Filters: all, guso, classic
+    Period: year OR start_date/end_date
     """
     import zipfile
     import io
@@ -2088,20 +2091,38 @@ async def download_invoices_zip(
     if not musician:
         raise HTTPException(status_code=404, detail="Musician profile not found")
     
-    # Check PRO status (optional, remove if you want it available for all)
-    # if musician.get("subscription_tier") != "pro":
-    #     raise HTTPException(status_code=403, detail="PRO subscription required")
+    # Check PRO status - Feature reserved for PRO subscribers
+    if musician.get("subscription_tier") != "pro":
+        raise HTTPException(status_code=403, detail="Abonnement PRO requis pour télécharger les factures")
     
     concerts = musician.get("concerts", [])
-    if not year:
-        year = datetime.now(timezone.utc).year
     
-    # Filter concerts by year and type
+    # Determine date range
+    if start_date and end_date:
+        # Use custom period
+        date_start = datetime.fromisoformat(start_date)
+        date_end = datetime.fromisoformat(end_date)
+        period_label = f"{start_date}_au_{end_date}"
+    elif year:
+        # Use specific year
+        date_start = datetime(year, 1, 1)
+        date_end = datetime(year, 12, 31, 23, 59, 59)
+        period_label = str(year)
+    else:
+        # Default to current year
+        current_year = datetime.now(timezone.utc).year
+        date_start = datetime(current_year, 1, 1)
+        date_end = datetime(current_year, 12, 31, 23, 59, 59)
+        period_label = str(current_year)
+    
+    # Filter concerts by date range and type
     filtered_concerts = []
     for concert in concerts:
         try:
             concert_date = datetime.fromisoformat(concert.get("date", ""))
-            if concert_date.year != year:
+            
+            # Check if in date range
+            if not (date_start <= concert_date <= date_end):
                 continue
             
             # Filter by type
@@ -2158,7 +2179,7 @@ async def download_invoices_zip(
     zip_buffer.seek(0)
     
     filter_label = type if type != "all" else "toutes"
-    filename = f"factures_{filter_label}_{year}.zip"
+    filename = f"factures_{filter_label}_{period_label}.zip"
     
     return StreamingResponse(
         zip_buffer,

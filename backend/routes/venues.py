@@ -1509,3 +1509,147 @@ async def delete_all_broadcast_history(current_user: dict = Depends(get_current_
         logger.error(f"Error deleting all broadcast history: {e}")
         raise HTTPException(status_code=500, detail="Error deleting broadcast history")
 
+
+
+@router.get("/venues/me/accounting/invoices/download")
+async def download_venue_invoices_zip(
+    year: int = None,
+    event_type: str = "all",  # 'all', 'jam', 'concert', 'karaoke', 'spectacle'
+    payment_status: str = "all",  # 'all', 'paid', 'pending', 'cancelled'
+    start_date: str = None,  # Format: YYYY-MM-DD
+    end_date: str = None,    # Format: YYYY-MM-DD
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Download all venue invoices as ZIP file (included in venue subscription)
+    Filters: event_type, payment_status, period
+    """
+    import zipfile
+    import io
+    import aiohttp
+    from fastapi.responses import StreamingResponse
+    
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can download invoices")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Get all events (jams, concerts, karaokes, spectacles)
+    jams = venue.get("jams", [])
+    concerts = venue.get("concerts", [])
+    karaokes = venue.get("karaokes", [])
+    spectacles = venue.get("spectacles", [])
+    
+    # Combine all events with their type
+    all_events = []
+    for event in jams:
+        event['event_type_label'] = 'jam'
+        all_events.append(event)
+    for event in concerts:
+        event['event_type_label'] = 'concert'
+        all_events.append(event)
+    for event in karaokes:
+        event['event_type_label'] = 'karaoke'
+        all_events.append(event)
+    for event in spectacles:
+        event['event_type_label'] = 'spectacle'
+        all_events.append(event)
+    
+    # Determine date range
+    if start_date and end_date:
+        date_start = datetime.fromisoformat(start_date)
+        date_end = datetime.fromisoformat(end_date)
+        period_label = f"{start_date}_au_{end_date}"
+    elif year:
+        date_start = datetime(year, 1, 1)
+        date_end = datetime(year, 12, 31, 23, 59, 59)
+        period_label = str(year)
+    else:
+        current_year = datetime.now(timezone.utc).year
+        date_start = datetime(current_year, 1, 1)
+        date_end = datetime(current_year, 12, 31, 23, 59, 59)
+        period_label = str(current_year)
+    
+    # Filter events
+    filtered_events = []
+    for event in all_events:
+        try:
+            event_date = datetime.fromisoformat(event.get("date", ""))
+            
+            # Check date range
+            if not (date_start <= event_date <= date_end):
+                continue
+            
+            # Filter by event type
+            if event_type != "all" and event.get('event_type_label') != event_type:
+                continue
+            
+            # Filter by payment status
+            if payment_status != "all" and event.get('payment_status') != payment_status:
+                continue
+            
+            # Only include events with invoice_url
+            if event.get("invoice_url"):
+                filtered_events.append(event)
+        except Exception:
+            continue
+    
+    if not filtered_events:
+        raise HTTPException(status_code=404, detail="Aucune facture trouvée pour ce filtre")
+    
+    # Create ZIP file in memory
+    zip_buffer = io.BytesIO()
+    
+    async with aiohttp.ClientSession() as session:
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for idx, event in enumerate(filtered_events, 1):
+                invoice_url = event.get("invoice_url")
+                if not invoice_url:
+                    continue
+                
+                try:
+                    # Download invoice file
+                    async with session.get(invoice_url) as response:
+                        if response.status == 200:
+                            file_content = await response.read()
+                            
+                            # Generate filename
+                            date_str = event.get("date", "")[:10]
+                            event_type_label = event.get('event_type_label', 'event').upper()
+                            invoice_number = event.get("invoice_number", f"INV{idx:03d}")
+                            payment_status_label = event.get("payment_status", "").upper()
+                            
+                            # Get file extension
+                            ext = ".pdf"
+                            if "." in invoice_url:
+                                ext = "." + invoice_url.split(".")[-1].split("?")[0]
+                            
+                            filename = f"{date_str}_{event_type_label}_{invoice_number}_{payment_status_label}{ext}"
+                            
+                            # Add to ZIP
+                            zip_file.writestr(filename, file_content)
+                except Exception as e:
+                    logger.error(f"Error downloading invoice {invoice_url}: {e}")
+                    continue
+    
+    # Prepare ZIP for download
+    zip_buffer.seek(0)
+    
+    type_label = event_type if event_type != "all" else "tous"
+    status_label = payment_status if payment_status != "all" else ""
+    filename_parts = ["factures", type_label]
+    if status_label:
+        filename_parts.append(status_label)
+    filename_parts.append(period_label)
+    filename = "_".join(filename_parts) + ".zip"
+    
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )
+

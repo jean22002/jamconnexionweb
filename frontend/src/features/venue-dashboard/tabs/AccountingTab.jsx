@@ -1,21 +1,80 @@
 import { useState } from "react";
 import { Label } from "../../../components/ui/label";
-import { Check, Clock, X, CreditCard, Eye, Download, FileText } from "lucide-react";
+import { Check, Clock, X, CreditCard, Eye, Download, FileText, Loader2 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 import { toast } from "sonner";
+import axios from "axios";
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function AccountingTab({ 
   jams = [], 
   concerts = [], 
   karaokes = [], 
   spectacles = [],
-  onViewEventDetails
+  onViewEventDetails,
+  token
 }) {
   const [accountingFilters, setAccountingFilters] = useState({
     payment_method: 'all',
     payment_status: 'all',
     event_type: 'all'
   });
+
+  // ZIP download states
+  const [downloadingZip, setDownloadingZip] = useState(false);
+  const [zipEventType, setZipEventType] = useState('all');
+  const [zipPaymentStatus, setZipPaymentStatus] = useState('all');
+  const [usePeriod, setUsePeriod] = useState(false);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
+  // Download invoices ZIP
+  const downloadInvoicesZip = async () => {
+    try {
+      setDownloadingZip(true);
+      
+      const params = {
+        event_type: zipEventType,
+        payment_status: zipPaymentStatus
+      };
+      
+      if (usePeriod && startDate && endDate) {
+        params.start_date = startDate;
+        params.end_date = endDate;
+      } else {
+        params.year = new Date().getFullYear();
+      }
+      
+      const response = await axios.get(`${API}/venues/me/accounting/invoices/download`, {
+        params,
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+      
+      // Download file
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `factures_${zipEventType}_${zipPaymentStatus}.zip`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Factures téléchargées avec succès');
+    } catch (error) {
+      console.error('Error downloading invoices:', error);
+      if (error.response?.status === 404) {
+        toast.error('Aucune facture trouvée pour ce filtre');
+      } else {
+        toast.error('Erreur lors du téléchargement des factures');
+      }
+    } finally {
+      setDownloadingZip(false);
+    }
+  };
 
   // Combine all events and filter to past events only (to match Historique tab)
   const today = new Date().toISOString().split('T')[0];
@@ -153,12 +212,104 @@ export default function AccountingTab({
 
   return (
     <div className="glassmorphism rounded-2xl p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="font-heading font-semibold text-xl mb-2">💰 Comptabilité</h2>
+          <h2 className="font-heading font-semibold text-xl mb-2 flex items-center gap-2">
+            <FileText className="w-6 h-6 text-primary" />
+            💰 Comptabilité
+          </h2>
           <p className="text-muted-foreground text-sm">
             Suivez tous vos paiements pour les événements
           </p>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          {/* Télécharger factures ZIP */}
+          <div className="flex flex-col gap-2 p-3 glassmorphism rounded-xl">
+            <div className="flex items-center gap-2 mb-2">
+              <input
+                type="checkbox"
+                id="use-period-venue"
+                checked={usePeriod}
+                onChange={(e) => setUsePeriod(e.target.checked)}
+                className="w-4 h-4"
+              />
+              <label htmlFor="use-period-venue" className="text-sm cursor-pointer">
+                Filtrer par période personnalisée
+              </label>
+            </div>
+            
+            {usePeriod && (
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="rounded-lg px-3 py-1.5 bg-black/20 border border-white/10 text-sm"
+                  placeholder="Date début"
+                />
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="rounded-lg px-3 py-1.5 bg-black/20 border border-white/10 text-sm"
+                  placeholder="Date fin"
+                />
+              </div>
+            )}
+            
+            <div className="flex gap-2">
+              <Select value={zipEventType} onValueChange={setZipEventType}>
+                <SelectTrigger className="rounded-full w-[160px]">
+                  <SelectValue placeholder="Type événement" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">📅 Tous les types</SelectItem>
+                  <SelectItem value="jam">🎵 Jams</SelectItem>
+                  <SelectItem value="concert">🎸 Concerts</SelectItem>
+                  <SelectItem value="karaoke">🎤 Karaoké</SelectItem>
+                  <SelectItem value="spectacle">🎭 Spectacles</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={zipPaymentStatus} onValueChange={setZipPaymentStatus}>
+                <SelectTrigger className="rounded-full w-[150px]">
+                  <SelectValue placeholder="Statut" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">💰 Tous statuts</SelectItem>
+                  <SelectItem value="paid">✅ Payées</SelectItem>
+                  <SelectItem value="pending">⏳ En attente</SelectItem>
+                  <SelectItem value="cancelled">❌ Annulées</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Button 
+                onClick={downloadInvoicesZip} 
+                variant="default" 
+                className="rounded-full gap-2 bg-gradient-to-r from-purple-500 to-pink-500"
+                disabled={downloadingZip || (usePeriod && (!startDate || !endDate))}
+              >
+                {downloadingZip ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Téléchargement...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    ZIP
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Export CSV */}
+          <Button onClick={exportToCSV} variant="outline" className="rounded-full gap-2">
+            <Download className="w-4 h-4" />
+            Exporter CSV
+          </Button>
         </div>
       </div>
 

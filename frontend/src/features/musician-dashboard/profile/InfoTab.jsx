@@ -15,17 +15,32 @@ export default function InfoTab({
 }) {
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <Label>Photo de profil</Label>
-        <MusicianImageUpload
-          value={profileForm.profile_image}
-          onChange={(url) => {
-            console.log('📸 Musician profile image updated:', url);
-            setProfileForm(prev => ({ ...prev, profile_image: url }));
-          }}
-          token={token}
-          photoType="profile"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Photo de profil</Label>
+          <MusicianImageUpload
+            value={profileForm.profile_image}
+            onChange={(url) => {
+              console.log('📸 Musician profile image updated:', url);
+              setProfileForm(prev => ({ ...prev, profile_image: url }));
+            }}
+            token={token}
+            photoType="profile"
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label>Photo de couverture</Label>
+          <MusicianImageUpload
+            value={profileForm.cover_image}
+            onChange={(url) => {
+              console.log('📸 Musician cover image updated:', url);
+              setProfileForm(prev => ({ ...prev, cover_image: url }));
+            }}
+            token={token}
+            photoType="cover"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">

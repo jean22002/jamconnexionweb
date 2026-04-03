@@ -3563,12 +3563,10 @@ export default function VenueDashboard() {
           {/* Reviews Tab */}
           <TabsContent value="reviews">
             <ReviewsTab
-              reviews={reviews}
+              venueId={profile?.id}
+              token={token}
               showReviews={showReviews}
               toggleReviewsVisibility={toggleReviewsVisibility}
-              totalReviews={totalReviews}
-              averageRating={averageRating}
-              respondToReview={respondToReview}
             />
           </TabsContent>
 

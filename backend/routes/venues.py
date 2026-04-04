@@ -1537,11 +1537,18 @@ async def download_venue_invoices_zip(
     if not venue:
         raise HTTPException(status_code=404, detail="Venue profile not found")
     
-    # Get all events (jams, concerts, karaokes, spectacles)
-    jams = venue.get("jams", [])
-    concerts = venue.get("concerts", [])
-    karaokes = venue.get("karaokes", [])
-    spectacles = venue.get("spectacles", [])
+    venue_id = venue.get("id")
+    
+    # Get all events from separate collections (not from venue document)
+    jams_cursor = db.jams.find({"venue_id": venue_id}, {"_id": 0})
+    concerts_cursor = db.concerts.find({"venue_id": venue_id}, {"_id": 0})
+    karaokes_cursor = db.karaoke.find({"venue_id": venue_id}, {"_id": 0})
+    spectacles_cursor = db.spectacle.find({"venue_id": venue_id}, {"_id": 0})
+    
+    jams = await jams_cursor.to_list(1000)
+    concerts = await concerts_cursor.to_list(1000)
+    karaokes = await karaokes_cursor.to_list(1000)
+    spectacles = await spectacles_cursor.to_list(1000)
     
     # Combine all events with their type
     all_events = []

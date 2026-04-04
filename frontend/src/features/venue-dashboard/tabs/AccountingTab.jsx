@@ -321,6 +321,23 @@ export default function AccountingTab({
           )}
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+            {/* MÉTHODE DE PAIEMENT - EN PREMIER (À GAUCHE) */}
+            <Select value={zipPaymentMethod} onValueChange={setZipPaymentMethod}>
+              <SelectTrigger className="rounded-full">
+                <SelectValue placeholder="Méthode paiement" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">💳 Toutes méthodes</SelectItem>
+                <SelectItem value="GUSO">GUSO</SelectItem>
+                <SelectItem value="Facture">Facture</SelectItem>
+                <SelectItem value="Espèces">Espèces</SelectItem>
+                <SelectItem value="Virement">Virement</SelectItem>
+                <SelectItem value="Chèque">Chèque</SelectItem>
+                <SelectItem value="Promotion">Promotion</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            {/* TYPE ÉVÉNEMENT - AU MILIEU */}
             <Select value={zipEventType} onValueChange={setZipEventType}>
               <SelectTrigger className="rounded-full">
                 <SelectValue placeholder="Type événement" />
@@ -334,6 +351,7 @@ export default function AccountingTab({
               </SelectContent>
             </Select>
             
+            {/* STATUT PAIEMENT - À DROITE */}
             <Select value={zipPaymentStatus} onValueChange={setZipPaymentStatus}>
               <SelectTrigger className="rounded-full">
                 <SelectValue placeholder="Statut paiement" />
@@ -343,21 +361,6 @@ export default function AccountingTab({
                 <SelectItem value="paid">✅ Payées</SelectItem>
                 <SelectItem value="pending">⏳ En attente</SelectItem>
                 <SelectItem value="cancelled">❌ Annulées</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Select value={zipPaymentMethod} onValueChange={setZipPaymentMethod}>
-              <SelectTrigger className="rounded-full">
-                <SelectValue placeholder="Méthode paiement" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">💳 Toutes méthodes</SelectItem>
-                <SelectItem value="GUSO">GUSO</SelectItem>
-                <SelectItem value="Facture">Facture</SelectItem>
-                <SelectItem value="Espèces">Espèces</SelectItem>
-                <SelectItem value="Virement">Virement</SelectItem>
-                <SelectItem value="Chèque">Chèque</SelectItem>
-                <SelectItem value="Promotion">Promotion</SelectItem>
               </SelectContent>
             </Select>
           </div>

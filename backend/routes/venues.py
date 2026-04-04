@@ -1609,6 +1609,8 @@ async def download_venue_invoices_zip(
     
     async with aiohttp.ClientSession() as session:
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            successfully_added = 0
+            
             for idx, event in enumerate(filtered_events, 1):
                 # Support both invoice_file and invoice_url
                 invoice_url = event.get("invoice_url") or event.get("invoice_file")
@@ -1616,29 +1618,61 @@ async def download_venue_invoices_zip(
                     continue
                 
                 try:
-                    # Download invoice file
-                    async with session.get(invoice_url) as response:
+                    # Generate filename
+                    date_str = event.get("date", "")[:10]
+                    event_type_label = event.get('event_type_label', 'event').upper()
+                    invoice_number = event.get("invoice_number", f"INV{idx:03d}")
+                    payment_status_label = event.get("payment_status", "").upper()
+                    
+                    # Get file extension
+                    ext = ".pdf"
+                    if "." in invoice_url:
+                        ext = "." + invoice_url.split(".")[-1].split("?")[0]
+                    
+                    filename = f"{date_str}_{event_type_label}_{invoice_number}_{payment_status_label}{ext}"
+                    
+                    # Try to download invoice file
+                    async with session.get(invoice_url, timeout=aiohttp.ClientTimeout(total=5)) as response:
                         if response.status == 200:
                             file_content = await response.read()
-                            
-                            # Generate filename
-                            date_str = event.get("date", "")[:10]
-                            event_type_label = event.get('event_type_label', 'event').upper()
-                            invoice_number = event.get("invoice_number", f"INV{idx:03d}")
-                            payment_status_label = event.get("payment_status", "").upper()
-                            
-                            # Get file extension
-                            ext = ".pdf"
-                            if "." in invoice_url:
-                                ext = "." + invoice_url.split(".")[-1].split("?")[0]
-                            
-                            filename = f"{date_str}_{event_type_label}_{invoice_number}_{payment_status_label}{ext}"
-                            
-                            # Add to ZIP
                             zip_file.writestr(filename, file_content)
+                            successfully_added += 1
+                        else:
+                            # If file doesn't exist, create a dummy placeholder
+                            placeholder_content = f"""FACTURE FICTIVE - {invoice_number}
+                            
+Date: {event.get('date', 'N/A')}
+Type: {event_type_label}
+Montant: {event.get('amount', 'N/A')} €
+Statut: {payment_status_label}
+Méthode: {event.get('payment_method', 'N/A')}
+
+Cette facture est un placeholder généré automatiquement.
+Le fichier original ({invoice_url}) n'a pas pu être récupéré.
+""".encode('utf-8')
+                            zip_file.writestr(filename.replace(ext, '.txt'), placeholder_content)
+                            successfully_added += 1
+                            
                 except Exception as e:
-                    logger.error(f"Error downloading invoice {invoice_url}: {e}")
-                    continue
+                    logger.warning(f"Could not process invoice {invoice_url}: {e}")
+                    # Create placeholder even on error
+                    try:
+                        placeholder_content = f"""FACTURE - Erreur de récupération
+                        
+Événement: {event.get('title', 'Sans titre')}
+Date: {event.get('date', 'N/A')}
+Type: {event_type_label}
+
+Le fichier de facture n'a pas pu être récupéré.
+""".encode('utf-8')
+                        filename = f"{date_str}_{event_type_label}_ERROR.txt"
+                        zip_file.writestr(filename, placeholder_content)
+                        successfully_added += 1
+                    except:
+                        continue
+            
+            if successfully_added == 0:
+                raise HTTPException(status_code=404, detail="Aucune facture n'a pu être ajoutée au ZIP")
     
     # Prepare ZIP for download
     zip_buffer.seek(0)

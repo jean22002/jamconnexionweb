@@ -1595,8 +1595,8 @@ async def download_venue_invoices_zip(
             if payment_method != "all" and event.get('payment_method') != payment_method:
                 continue
             
-            # Only include events with invoice_url
-            if event.get("invoice_url"):
+            # Only include events with invoice_file or invoice_url
+            if event.get("invoice_file") or event.get("invoice_url"):
                 filtered_events.append(event)
         except Exception:
             continue
@@ -1610,7 +1610,8 @@ async def download_venue_invoices_zip(
     async with aiohttp.ClientSession() as session:
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             for idx, event in enumerate(filtered_events, 1):
-                invoice_url = event.get("invoice_url")
+                # Support both invoice_file and invoice_url
+                invoice_url = event.get("invoice_url") or event.get("invoice_file")
                 if not invoice_url:
                     continue
                 

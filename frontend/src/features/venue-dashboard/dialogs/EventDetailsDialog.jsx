@@ -99,7 +99,7 @@ export function EventDetailsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="glassmorphism border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="glassmorphism border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby="event-details-description">
         <DialogHeader>
           <DialogTitle className="font-heading">
             {isEditing ? 'Modifier' : 'Détails'} {
@@ -112,6 +112,9 @@ export function EventDetailsDialog({
               'de l\'événement'
             }
           </DialogTitle>
+          <p id="event-details-description" className="sr-only">
+            Détails et modification de l'événement sélectionné
+          </p>
         </DialogHeader>
 
         {selectedEvent && (

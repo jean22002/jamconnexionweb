@@ -26,6 +26,7 @@ export default function AccountingTab({
   const [downloadingZip, setDownloadingZip] = useState(false);
   const [zipEventType, setZipEventType] = useState('all');
   const [zipPaymentStatus, setZipPaymentStatus] = useState('all');
+  const [zipPaymentMethod, setZipPaymentMethod] = useState('all');
   const [usePeriod, setUsePeriod] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -37,7 +38,8 @@ export default function AccountingTab({
       
       const params = {
         event_type: zipEventType,
-        payment_status: zipPaymentStatus
+        payment_status: zipPaymentStatus,
+        payment_method: zipPaymentMethod
       };
       
       if (usePeriod && startDate && endDate) {
@@ -341,6 +343,21 @@ export default function AccountingTab({
                 <SelectItem value="paid">✅ Payées</SelectItem>
                 <SelectItem value="pending">⏳ En attente</SelectItem>
                 <SelectItem value="cancelled">❌ Annulées</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={zipPaymentMethod} onValueChange={setZipPaymentMethod}>
+              <SelectTrigger className="rounded-full w-[180px]">
+                <SelectValue placeholder="Méthode paiement" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">💳 Toutes les méthodes</SelectItem>
+                <SelectItem value="GUSO">GUSO</SelectItem>
+                <SelectItem value="Facture">Facture</SelectItem>
+                <SelectItem value="Espèces">Espèces</SelectItem>
+                <SelectItem value="Virement">Virement</SelectItem>
+                <SelectItem value="Chèque">Chèque</SelectItem>
+                <SelectItem value="Promotion">Promotion</SelectItem>
               </SelectContent>
             </Select>
             

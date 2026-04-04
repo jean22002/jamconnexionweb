@@ -3895,6 +3895,7 @@ export default function VenueDashboard() {
               karaokes={karaokes}
               spectacles={spectacles}
               onViewEventDetails={handleViewEventDetails}
+              token={token}
             />
           </TabsContent>
 

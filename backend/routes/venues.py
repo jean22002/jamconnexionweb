@@ -1538,6 +1538,7 @@ async def download_venue_invoices_zip(
         raise HTTPException(status_code=404, detail="Venue profile not found")
     
     venue_id = venue.get("id")
+    logger.info(f"📦 ZIP Download: Venue {venue_id} | Filters: event_type={event_type}, payment_status={payment_status}, payment_method={payment_method}")
     
     # Get all events from separate collections (not from venue document)
     jams_cursor = db.jams.find({"venue_id": venue_id}, {"_id": 0})
@@ -1549,6 +1550,8 @@ async def download_venue_invoices_zip(
     concerts = await concerts_cursor.to_list(1000)
     karaokes = await karaokes_cursor.to_list(1000)
     spectacles = await spectacles_cursor.to_list(1000)
+    
+    logger.info(f"📊 Events found: {len(jams)} jams, {len(concerts)} concerts, {len(karaokes)} karaokes, {len(spectacles)} spectacles")
     
     # Combine all events with their type
     all_events = []
@@ -1609,7 +1612,10 @@ async def download_venue_invoices_zip(
             continue
     
     if not filtered_events:
+        logger.warning(f"❌ No invoices found after filtering for venue {venue_id}")
         raise HTTPException(status_code=404, detail="Aucune facture trouvée pour ce filtre")
+    
+    logger.info(f"✅ {len(filtered_events)} events with invoices found after filtering")
     
     # Create ZIP file in memory
     zip_buffer = io.BytesIO()

@@ -320,9 +320,9 @@ export default function AccountingTab({
             </div>
           )}
           
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
             <Select value={zipEventType} onValueChange={setZipEventType}>
-              <SelectTrigger className="rounded-full w-[180px]">
+              <SelectTrigger className="rounded-full">
                 <SelectValue placeholder="Type événement" />
               </SelectTrigger>
               <SelectContent>
@@ -335,7 +335,7 @@ export default function AccountingTab({
             </Select>
             
             <Select value={zipPaymentStatus} onValueChange={setZipPaymentStatus}>
-              <SelectTrigger className="rounded-full w-[180px]">
+              <SelectTrigger className="rounded-full">
                 <SelectValue placeholder="Statut paiement" />
               </SelectTrigger>
               <SelectContent>
@@ -347,11 +347,11 @@ export default function AccountingTab({
             </Select>
             
             <Select value={zipPaymentMethod} onValueChange={setZipPaymentMethod}>
-              <SelectTrigger className="rounded-full w-[180px]">
+              <SelectTrigger className="rounded-full">
                 <SelectValue placeholder="Méthode paiement" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">💳 Toutes les méthodes</SelectItem>
+                <SelectItem value="all">💳 Toutes méthodes</SelectItem>
                 <SelectItem value="GUSO">GUSO</SelectItem>
                 <SelectItem value="Facture">Facture</SelectItem>
                 <SelectItem value="Espèces">Espèces</SelectItem>
@@ -360,7 +360,9 @@ export default function AccountingTab({
                 <SelectItem value="Promotion">Promotion</SelectItem>
               </SelectContent>
             </Select>
-            
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
             <Button 
               onClick={downloadInvoicesZip} 
               variant="default" 

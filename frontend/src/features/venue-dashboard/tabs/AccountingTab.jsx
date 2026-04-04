@@ -284,7 +284,7 @@ export default function AccountingTab({
       <div className="mb-6 p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl">
         <h3 className="font-semibold text-base mb-4 flex items-center gap-2">
           <Download className="w-5 h-5 text-purple-400" />
-          📦 Télécharger les factures (ZIP)
+          📦 Télécharger les factures (ZIP) - VERSION 2.0
         </h3>
         
         <div className="flex flex-col gap-3">

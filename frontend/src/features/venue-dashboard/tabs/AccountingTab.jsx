@@ -212,105 +212,15 @@ export default function AccountingTab({
 
   return (
     <div className="glassmorphism rounded-2xl p-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-        <div>
-          <h2 className="font-heading font-semibold text-xl mb-2 flex items-center gap-2">
-            <FileText className="w-6 h-6 text-primary" />
-            💰 Comptabilité
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            Suivez tous vos paiements pour les événements
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-3">
-          {/* Télécharger factures ZIP */}
-          <div className="flex flex-col gap-2 p-3 glassmorphism rounded-xl">
-            <div className="flex items-center gap-2 mb-2">
-              <input
-                type="checkbox"
-                id="use-period-venue"
-                checked={usePeriod}
-                onChange={(e) => setUsePeriod(e.target.checked)}
-                className="w-4 h-4"
-              />
-              <label htmlFor="use-period-venue" className="text-sm cursor-pointer">
-                Filtrer par période personnalisée
-              </label>
-            </div>
-            
-            {usePeriod && (
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="rounded-lg px-3 py-1.5 bg-black/20 border border-white/10 text-sm"
-                  placeholder="Date début"
-                />
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="rounded-lg px-3 py-1.5 bg-black/20 border border-white/10 text-sm"
-                  placeholder="Date fin"
-                />
-              </div>
-            )}
-            
-            <div className="flex gap-2">
-              <Select value={zipEventType} onValueChange={setZipEventType}>
-                <SelectTrigger className="rounded-full w-[160px]">
-                  <SelectValue placeholder="Type événement" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">📅 Tous les types</SelectItem>
-                  <SelectItem value="jam">🎵 Jams</SelectItem>
-                  <SelectItem value="concert">🎸 Concerts</SelectItem>
-                  <SelectItem value="karaoke">🎤 Karaoké</SelectItem>
-                  <SelectItem value="spectacle">🎭 Spectacles</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Select value={zipPaymentStatus} onValueChange={setZipPaymentStatus}>
-                <SelectTrigger className="rounded-full w-[150px]">
-                  <SelectValue placeholder="Statut" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">💰 Tous statuts</SelectItem>
-                  <SelectItem value="paid">✅ Payées</SelectItem>
-                  <SelectItem value="pending">⏳ En attente</SelectItem>
-                  <SelectItem value="cancelled">❌ Annulées</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Button 
-                onClick={downloadInvoicesZip} 
-                variant="default" 
-                className="rounded-full gap-2 bg-gradient-to-r from-purple-500 to-pink-500"
-                disabled={downloadingZip || (usePeriod && (!startDate || !endDate))}
-              >
-                {downloadingZip ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Téléchargement...
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4" />
-                    ZIP
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-
-          {/* Export CSV */}
-          <Button onClick={exportToCSV} variant="outline" className="rounded-full gap-2">
-            <Download className="w-4 h-4" />
-            Exporter CSV
-          </Button>
-        </div>
+      {/* Header */}
+      <div className="mb-6">
+        <h2 className="font-heading font-semibold text-xl mb-2 flex items-center gap-2">
+          <FileText className="w-6 h-6 text-primary" />
+          💰 Comptabilité
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Suivez tous vos paiements pour les événements
+        </p>
       </div>
 
       {/* Statistiques rapides */}
@@ -365,6 +275,99 @@ export default function AccountingTab({
           <p className="text-xs text-muted-foreground mt-1">
             {allEventsWithAmount.length} événement(s)
           </p>
+        </div>
+      </div>
+
+      {/* Section Téléchargement Factures ZIP - VISIBLE */}
+      <div className="mb-6 p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl">
+        <h3 className="font-semibold text-base mb-4 flex items-center gap-2">
+          <Download className="w-5 h-5 text-purple-400" />
+          📦 Télécharger les factures (ZIP)
+        </h3>
+        
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="use-period-venue"
+              checked={usePeriod}
+              onChange={(e) => setUsePeriod(e.target.checked)}
+              className="w-4 h-4"
+            />
+            <label htmlFor="use-period-venue" className="text-sm cursor-pointer">
+              Filtrer par période personnalisée
+            </label>
+          </div>
+          
+          {usePeriod && (
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="rounded-lg px-3 py-2 bg-black/20 border border-white/10 text-sm"
+                placeholder="Date début"
+              />
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="rounded-lg px-3 py-2 bg-black/20 border border-white/10 text-sm"
+                placeholder="Date fin"
+              />
+            </div>
+          )}
+          
+          <div className="flex flex-wrap gap-2">
+            <Select value={zipEventType} onValueChange={setZipEventType}>
+              <SelectTrigger className="rounded-full w-[180px]">
+                <SelectValue placeholder="Type événement" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">📅 Tous les types</SelectItem>
+                <SelectItem value="jam">🎵 Jams</SelectItem>
+                <SelectItem value="concert">🎸 Concerts</SelectItem>
+                <SelectItem value="karaoke">🎤 Karaoké</SelectItem>
+                <SelectItem value="spectacle">🎭 Spectacles</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={zipPaymentStatus} onValueChange={setZipPaymentStatus}>
+              <SelectTrigger className="rounded-full w-[180px]">
+                <SelectValue placeholder="Statut paiement" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">💰 Tous statuts</SelectItem>
+                <SelectItem value="paid">✅ Payées</SelectItem>
+                <SelectItem value="pending">⏳ En attente</SelectItem>
+                <SelectItem value="cancelled">❌ Annulées</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Button 
+              onClick={downloadInvoicesZip} 
+              variant="default" 
+              className="rounded-full gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              disabled={downloadingZip || (usePeriod && (!startDate || !endDate))}
+            >
+              {downloadingZip ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Téléchargement...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  Télécharger ZIP
+                </>
+              )}
+            </Button>
+
+            <Button onClick={exportToCSV} variant="outline" className="rounded-full gap-2">
+              <Download className="w-4 h-4" />
+              Exporter CSV
+            </Button>
+          </div>
         </div>
       </div>
 

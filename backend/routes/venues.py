@@ -1598,13 +1598,19 @@ async def download_venue_invoices_zip(
             if event_type != "all" and event.get('event_type_label') != event_type:
                 continue
             
-            # Filter by payment status
-            if payment_status != "all" and event.get('payment_status') != payment_status:
-                continue
+            # Filter by payment status (case-insensitive)
+            if payment_status != "all":
+                event_status = str(event.get('payment_status', '')).lower()
+                filter_status = payment_status.lower()
+                if event_status != filter_status:
+                    continue
             
-            # Filter by payment method
-            if payment_method != "all" and event.get('payment_method') != payment_method:
-                continue
+            # Filter by payment method (case-insensitive)
+            if payment_method != "all":
+                event_method = str(event.get('payment_method', '')).lower()
+                filter_method = payment_method.lower()
+                if event_method != filter_method:
+                    continue
             
             # Only include events with invoice_file or invoice_url
             if event.get("invoice_file") or event.get("invoice_url"):

@@ -1516,13 +1516,14 @@ async def download_venue_invoices_zip(
     year: int = None,
     event_type: str = "all",  # 'all', 'jam', 'concert', 'karaoke', 'spectacle'
     payment_status: str = "all",  # 'all', 'paid', 'pending', 'cancelled'
+    payment_method: str = "all",  # 'all', 'GUSO', 'Facture', 'Espèces', 'Virement', 'Chèque', 'Promotion'
     start_date: str = None,  # Format: YYYY-MM-DD
     end_date: str = None,    # Format: YYYY-MM-DD
     current_user: dict = Depends(get_current_user)
 ):
     """
     Download all venue invoices as ZIP file (included in venue subscription)
-    Filters: event_type, payment_status, period
+    Filters: event_type, payment_status, payment_method, period
     """
     import zipfile
     import io
@@ -1588,6 +1589,10 @@ async def download_venue_invoices_zip(
             
             # Filter by payment status
             if payment_status != "all" and event.get('payment_status') != payment_status:
+                continue
+            
+            # Filter by payment method
+            if payment_method != "all" and event.get('payment_method') != payment_method:
                 continue
             
             # Only include events with invoice_url

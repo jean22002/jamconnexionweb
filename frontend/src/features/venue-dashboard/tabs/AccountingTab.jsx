@@ -328,12 +328,12 @@ export default function AccountingTab({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">💳 Toutes méthodes</SelectItem>
-                <SelectItem value="GUSO">GUSO</SelectItem>
-                <SelectItem value="Facture">Facture</SelectItem>
-                <SelectItem value="Espèces">Espèces</SelectItem>
-                <SelectItem value="Virement">Virement</SelectItem>
-                <SelectItem value="Chèque">Chèque</SelectItem>
-                <SelectItem value="Promotion">Promotion</SelectItem>
+                <SelectItem value="guso">GUSO</SelectItem>
+                <SelectItem value="facture">Facture</SelectItem>
+                <SelectItem value="especes">Espèces</SelectItem>
+                <SelectItem value="virement">Virement</SelectItem>
+                <SelectItem value="cheque">Chèque</SelectItem>
+                <SelectItem value="promotion">Promotion</SelectItem>
               </SelectContent>
             </Select>
             

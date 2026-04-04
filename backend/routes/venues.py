@@ -16,6 +16,7 @@ from models import (
     VenueSubscription, NearbySearchRequest
 )
 from utils import haversine_distance, save_upload_file
+from utils.invoice_generator import generate_invoice_pdf
 
 router = APIRouter()
 
@@ -1637,51 +1638,40 @@ async def download_venue_invoices_zip(
                     invoice_number = event.get("invoice_number", f"INV{idx:03d}")
                     payment_status_label = event.get("payment_status", "").upper()
                     
-                    # Get file extension
-                    ext = ".pdf"
-                    if "." in invoice_url:
-                        ext = "." + invoice_url.split(".")[-1].split("?")[0]
+                    filename = f"{date_str}_{event_type_label}_{invoice_number}_{payment_status_label}.pdf"
                     
-                    filename = f"{date_str}_{event_type_label}_{invoice_number}_{payment_status_label}{ext}"
+                    # Try to download invoice file if URL exists
+                    file_downloaded = False
+                    if invoice_url.startswith('http'):
+                        async with session.get(invoice_url, timeout=aiohttp.ClientTimeout(total=5)) as response:
+                            if response.status == 200:
+                                file_content = await response.read()
+                                zip_file.writestr(filename, file_content)
+                                successfully_added += 1
+                                file_downloaded = True
                     
-                    # Try to download invoice file
-                    async with session.get(invoice_url, timeout=aiohttp.ClientTimeout(total=5)) as response:
-                        if response.status == 200:
-                            file_content = await response.read()
-                            zip_file.writestr(filename, file_content)
-                            successfully_added += 1
-                        else:
-                            # If file doesn't exist, create a dummy placeholder
-                            placeholder_content = f"""FACTURE FICTIVE - {invoice_number}
-                            
-Date: {event.get('date', 'N/A')}
-Type: {event_type_label}
-Montant: {event.get('amount', 'N/A')} €
-Statut: {payment_status_label}
-Méthode: {event.get('payment_method', 'N/A')}
-
-Cette facture est un placeholder généré automatiquement.
-Le fichier original ({invoice_url}) n'a pas pu être récupéré.
-""".encode('utf-8')
-                            zip_file.writestr(filename.replace(ext, '.txt'), placeholder_content)
-                            successfully_added += 1
+                    # If file doesn't exist or couldn't be downloaded, generate PDF
+                    if not file_downloaded:
+                        logger.info(f"📄 Generating PDF invoice for {event.get('id', 'unknown')}")
+                        pdf_content = generate_invoice_pdf(event, venue)
+                        zip_file.writestr(filename, pdf_content)
+                        successfully_added += 1
                             
                 except Exception as e:
                     logger.warning(f"Could not process invoice {invoice_url}: {e}")
-                    # Create placeholder even on error
+                    # Generate PDF even on error
                     try:
-                        placeholder_content = f"""FACTURE - Erreur de récupération
+                        date_str = event.get("date", "")[:10]
+                        event_type_label = event.get('event_type_label', 'event').upper()
+                        invoice_number = event.get("invoice_number", f"INV{idx:03d}")
+                        payment_status_label = event.get("payment_status", "").upper()
+                        filename = f"{date_str}_{event_type_label}_{invoice_number}_{payment_status_label}.pdf"
                         
-Événement: {event.get('title', 'Sans titre')}
-Date: {event.get('date', 'N/A')}
-Type: {event_type_label}
-
-Le fichier de facture n'a pas pu être récupéré.
-""".encode('utf-8')
-                        filename = f"{date_str}_{event_type_label}_ERROR.txt"
-                        zip_file.writestr(filename, placeholder_content)
+                        pdf_content = generate_invoice_pdf(event, venue)
+                        zip_file.writestr(filename, pdf_content)
                         successfully_added += 1
-                    except:
+                    except Exception as pdf_error:
+                        logger.error(f"Failed to generate PDF: {pdf_error}")
                         continue
             
             if successfully_added == 0:

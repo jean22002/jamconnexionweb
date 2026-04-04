@@ -62,19 +62,28 @@ async def test_payment_methods():
     print("-" * 70)
     
     # Tester le filtrage (comme dans l'API)
-    print("\n🧪 Test du filtrage (case-insensitive):")
+    print("\n🧪 Test du filtrage (case-insensitive + accent-insensitive):")
     print("-" * 70)
     
     test_filters = ["GUSO", "Facture", "Espèces", "Virement", "Chèque", "Promotion"]
     
+    def normalize(text):
+        text = text.lower()
+        text = text.replace('è', 'e').replace('é', 'e').replace('ê', 'e')
+        text = text.replace('à', 'a').replace('â', 'a')
+        text = text.replace('ù', 'u').replace('û', 'u')
+        text = text.replace('ô', 'o')
+        text = text.replace('î', 'i').replace('ï', 'i')
+        return text
+    
     for filter_method in test_filters:
         count = 0
         for event in all_events:
-            event_method = str(event.get('payment_method', '')).lower()
-            filter_lower = filter_method.lower()
+            event_method = normalize(str(event.get('payment_method', '')))
+            filter_normalized = normalize(filter_method)
             has_invoice = event.get('invoice_file') or event.get('invoice_url')
             
-            if event_method == filter_lower and has_invoice:
+            if event_method == filter_normalized and has_invoice:
                 count += 1
         
         status = "✅" if count > 0 else "❌"

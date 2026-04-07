@@ -20,103 +20,18 @@ export default function ConcertsTab({
   setConcertForm,
   handleCreateConcert,
   handleEditEvent,
-  handleDeleteEvent
+  handleDeleteEvent,
+  // Nouvelles props pour la gestion des groupes
+  searchBandQuery,
+  setSearchBandQuery,
+  searchedBands,
+  loadingBands,
+  manualBandName,
+  setManualBandName,
+  addBandFromDB,
+  addManualBand,
+  removeBandFromConcert
 }) {
-  // État local pour la recherche et l'ajout de groupes
-  const [searchBandQuery, setSearchBandQuery] = useState("");
-  const [searchedBands, setSearchedBands] = useState([]);
-  const [loadingBands, setLoadingBands] = useState(false);
-  const [manualBandName, setManualBandName] = useState("");
-
-  // Rechercher des groupes dans la base de données
-  const searchBands = async (query) => {
-    if (!query || query.trim().length < 2) {
-      setSearchedBands([]);
-      return;
-    }
-    
-    setLoadingBands(true);
-    try {
-      const response = await axios.get(`${API}/bands/search?q=${encodeURIComponent(query)}`);
-      setSearchedBands(response.data.slice(0, 10)); // Limiter à 10 résultats
-    } catch (error) {
-      console.error("Erreur lors de la recherche de groupes:", error);
-      setSearchedBands([]);
-    } finally {
-      setLoadingBands(false);
-    }
-  };
-
-  // Ajouter un groupe depuis la BDD
-  const addBandFromDB = (band) => {
-    // S'assurer que concertForm et bands existent
-    if (!concertForm) {
-      console.error("concertForm is undefined");
-      return;
-    }
-    
-    const existingBands = Array.isArray(concertForm.bands) ? concertForm.bands : [];
-    
-    // Vérifier si le groupe n'est pas déjà ajouté (par nom)
-    if (existingBands.some(b => b && b.name === band.name)) {
-      return; // Déjà ajouté
-    }
-    
-    setConcertForm({
-      ...concertForm,
-      bands: [...existingBands, {
-        name: band.name,
-        musician_id: band.admin_id || null,
-        members_count: band.members_count || null,
-        photo: band.photo || null
-      }]
-    });
-    setSearchBandQuery("");
-    setSearchedBands([]);
-  };
-
-  // Ajouter un groupe manuellement (non inscrit)
-  const addManualBand = () => {
-    if (!manualBandName.trim()) return;
-    
-    // S'assurer que concertForm existe
-    if (!concertForm) {
-      console.error("concertForm is undefined");
-      return;
-    }
-    
-    const existingBands = Array.isArray(concertForm.bands) ? concertForm.bands : [];
-    
-    setConcertForm({
-      ...concertForm,
-      bands: [...existingBands, {
-        name: manualBandName.trim(),
-        musician_id: null // Non inscrit dans la BDD
-      }]
-    });
-    setManualBandName("");
-  };
-
-  // Supprimer un groupe de la liste
-  const removeBand = (index) => {
-    if (!concertForm || !Array.isArray(concertForm.bands)) {
-      console.error("concertForm.bands is not an array");
-      return;
-    }
-    
-    const updatedBands = [...concertForm.bands];
-    updatedBands.splice(index, 1);
-    setConcertForm({ ...concertForm, bands: updatedBands });
-  };
-
-  // Debounce pour la recherche
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      searchBands(searchBandQuery);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchBandQuery]);
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -229,7 +144,7 @@ export default function ConcertsTab({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => removeBand(index)}
+                          onClick={() => removeBandFromConcert(index)}
                           className="h-8 w-8 p-0 hover:bg-red-500/20"
                         >
                           <X className="w-4 h-4 text-red-400" />

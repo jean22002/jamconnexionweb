@@ -315,7 +315,7 @@ export default function MapTab({
     <>
       {/* Collapsible header */}
       <div className="glassmorphism rounded-xl p-4 mb-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
               <MapPin className="w-5 h-5 text-white" />
@@ -341,60 +341,62 @@ export default function MapTab({
             )}
           </Button>
         </div>
-
-        {/* Bouton Localisation - Visible et en haut */}
-        <div className="flex flex-wrap gap-3">
-          <Button 
-            onClick={toggleGeolocation} 
-            variant={geoEnabled ? "default" : "outline"}
-            size="lg"
-            className={`rounded-full gap-2 ${geoEnabled ? 'bg-green-500 hover:bg-green-600' : 'border-white/20'}`}
-            data-testid="geolocation-toggle"
-          >
-            {geoEnabled ? (
-              <>
-                <Radio className="w-5 h-5 animate-pulse" />
-                <span className="font-semibold">GPS Actif</span>
-              </>
-            ) : (
-              <>
-                <MapPinOff className="w-5 h-5" />
-                <span className="font-semibold">Activer le GPS</span>
-              </>
-            )}
-          </Button>
-
-          {geoEnabled && geoPosition && (
-            <Button 
-              onClick={centerOnUser} 
-              variant="outline" 
-              size="lg"
-              className="rounded-full gap-2 border-white/20"
-            >
-              <Locate className="w-5 h-5" />
-              Centrer sur ma position
-            </Button>
-          )}
-
-          {isTracking && (
-            <div className="flex items-center gap-2 text-green-400 text-sm px-3">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="font-medium">Suivi en temps réel</span>
-            </div>
-          )}
-          
-          {geoLoading && (
-            <div className="flex items-center gap-2 text-muted-foreground text-sm px-3">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Localisation...</span>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Collapsible content */}
       {isMapExpanded && (
         <>
+          {/* Geolocation Controls - Boutons GPS */}
+          <div className="glassmorphism rounded-xl p-4 mb-6">
+            <div className="flex flex-wrap gap-3">
+              <Button 
+                onClick={toggleGeolocation} 
+                variant={geoEnabled ? "default" : "outline"}
+                size="lg"
+                className={`rounded-full gap-2 ${geoEnabled ? 'bg-green-500 hover:bg-green-600' : 'border-white/20'}`}
+                data-testid="geolocation-toggle"
+              >
+                {geoEnabled ? (
+                  <>
+                    <Radio className="w-5 h-5 animate-pulse" />
+                    <span className="font-semibold">GPS Actif</span>
+                  </>
+                ) : (
+                  <>
+                    <MapPinOff className="w-5 h-5" />
+                    <span className="font-semibold">Activer le GPS</span>
+                  </>
+                )}
+              </Button>
+
+              {geoEnabled && geoPosition && (
+                <Button 
+                  onClick={centerOnUser} 
+                  variant="outline" 
+                  size="lg"
+                  className="rounded-full gap-2 border-white/20"
+                >
+                  <Locate className="w-5 h-5" />
+                  Centrer sur ma position
+                </Button>
+              )}
+
+              {isTracking && (
+                <div className="flex items-center gap-2 text-green-400 text-sm px-3">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="font-medium">Suivi en temps réel</span>
+                </div>
+              )}
+              
+              {geoLoading && (
+                <div className="flex items-center gap-2 text-muted-foreground text-sm px-3">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Localisation...</span>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Geolocation Controls - Contrôles avancés */}
           <div className="glassmorphism rounded-xl p-4 mb-6">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4">

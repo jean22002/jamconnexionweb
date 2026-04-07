@@ -215,22 +215,6 @@ export default function VenueDashboard() {
   
   const [musicians, setMusicians] = useState([]);
   
-  // ============================================================================
-  // HOOK - GESTION DES GROUPES (Concerts)
-  // ============================================================================
-  const bandsHook = useVenueBands(token, concertForm, setConcertForm);
-  const {
-    searchBandQuery,
-    setSearchBandQuery,
-    searchedBands,
-    loadingBands,
-    manualBandName,
-    setManualBandName,
-    addBandFromDB,
-    addManualBand,
-    removeBandFromConcert
-  } = bandsHook;
-  
   // Dialogs
   const [showJamDialog, setShowJamDialog] = useState(false);
   const [showConcertDialog, setShowConcertDialog] = useState(false);
@@ -457,6 +441,22 @@ export default function VenueDashboard() {
   });
 
   const [newBand, setNewBand] = useState({ name: "", musician_id: "", members_count: 0, photo: "", facebook: "", instagram: "" });
+
+  // ============================================================================
+  // HOOK - GESTION DES GROUPES (Concerts)
+  // ============================================================================
+  const bandsHook = useVenueBands(token, concertForm, setConcertForm);
+  const {
+    searchBandQuery,
+    setSearchBandQuery,
+    searchedBands,
+    loadingBands,
+    manualBandName,
+    setManualBandName,
+    addBandFromDB,
+    addManualBand,
+    removeBandFromConcert
+  } = bandsHook;
 
   const fetchProfile = useCallback(async () => {
     console.log('🔄 fetchProfile: Starting profile fetch...');

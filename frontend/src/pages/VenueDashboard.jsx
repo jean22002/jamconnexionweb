@@ -55,7 +55,8 @@ import { useWebSocket } from "../hooks/useWebSocket";
 import { 
   useVenueProfile, 
   useVenueEvents, 
-  useVenuePlanning 
+  useVenuePlanning,
+  useVenueBands 
 } from "../features/venue-dashboard/hooks";
 // Refactored tabs
 import ReviewsTab from "../features/venue-dashboard/tabs/ReviewsTab";
@@ -213,6 +214,22 @@ export default function VenueDashboard() {
   const applications = applicationsFromHook;
   
   const [musicians, setMusicians] = useState([]);
+  
+  // ============================================================================
+  // HOOK - GESTION DES GROUPES (Concerts)
+  // ============================================================================
+  const bandsHook = useVenueBands(token, concertForm, setConcertForm);
+  const {
+    searchBandQuery,
+    setSearchBandQuery,
+    searchedBands,
+    loadingBands,
+    manualBandName,
+    setManualBandName,
+    addBandFromDB,
+    addManualBand,
+    removeBandFromConcert
+  } = bandsHook;
   
   // Dialogs
   const [showJamDialog, setShowJamDialog] = useState(false);
@@ -440,12 +457,6 @@ export default function VenueDashboard() {
   });
 
   const [newBand, setNewBand] = useState({ name: "", musician_id: "", members_count: 0, photo: "", facebook: "", instagram: "" });
-
-  // États pour la recherche et l'ajout de groupes (Concert)
-  const [searchBandQuery, setSearchBandQuery] = useState("");
-  const [searchedBands, setSearchedBands] = useState([]);
-  const [loadingBands, setLoadingBands] = useState(false);
-  const [manualBandName, setManualBandName] = useState("");
 
   const fetchProfile = useCallback(async () => {
     console.log('🔄 fetchProfile: Starting profile fetch...');
@@ -2337,110 +2348,6 @@ export default function VenueDashboard() {
       toast.error("Erreur");
     }
   };
-
-  // ============================================================================
-  // GESTION DES GROUPES POUR LES CONCERTS
-  // ============================================================================
-  
-  // Rechercher des groupes dans la base de données pour les ajouter à un concert
-  const searchConcertBands = async (query) => {
-    if (!query || query.trim().length < 2) {
-      setSearchedBands([]);
-      return;
-    }
-    
-    setLoadingBands(true);
-    try {
-      const response = await axios.get(`${API}/musicians/bands/search?query=${encodeURIComponent(query)}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setSearchedBands(response.data.slice(0, 10)); // Limiter à 10 résultats
-    } catch (error) {
-      console.error("Erreur lors de la recherche de groupes:", error);
-      setSearchedBands([]);
-    } finally {
-      setLoadingBands(false);
-    }
-  };
-
-  // Ajouter un groupe depuis la BDD au concert
-  const addBandFromDB = (band) => {
-    // S'assurer que concertForm et bands existent
-    if (!concertForm) {
-      console.error("concertForm is undefined");
-      return;
-    }
-    
-    const existingBands = Array.isArray(concertForm.bands) ? concertForm.bands : [];
-    
-    // Vérifier si le groupe n'est pas déjà ajouté (par nom)
-    if (existingBands.some(b => b && b.name === band.name)) {
-      toast.info("Ce groupe est déjà ajouté");
-      return;
-    }
-    
-    setConcertForm({
-      ...concertForm,
-      bands: [...existingBands, {
-        name: band.name,
-        musician_id: band.admin_id || null,
-        members_count: band.members_count || null,
-        photo: band.photo || null
-      }]
-    });
-    setSearchBandQuery("");
-    setSearchedBands([]);
-    toast.success(`Groupe "${band.name}" ajouté`);
-  };
-
-  // Ajouter un groupe manuellement (non inscrit)
-  const addManualBand = () => {
-    if (!manualBandName.trim()) return;
-    
-    // S'assurer que concertForm existe
-    if (!concertForm) {
-      console.error("concertForm is undefined");
-      return;
-    }
-    
-    const existingBands = Array.isArray(concertForm.bands) ? concertForm.bands : [];
-    
-    // Vérifier si le groupe n'est pas déjà ajouté
-    if (existingBands.some(b => b && b.name === manualBandName.trim())) {
-      toast.info("Ce groupe est déjà ajouté");
-      return;
-    }
-    
-    setConcertForm({
-      ...concertForm,
-      bands: [...existingBands, {
-        name: manualBandName.trim(),
-        musician_id: null // Non inscrit dans la BDD
-      }]
-    });
-    setManualBandName("");
-    toast.success("Groupe ajouté");
-  };
-
-  // Supprimer un groupe de la liste du concert
-  const removeBandFromConcert = (index) => {
-    if (!concertForm || !Array.isArray(concertForm.bands)) {
-      console.error("concertForm.bands is not an array");
-      return;
-    }
-    
-    const updatedBands = [...concertForm.bands];
-    updatedBands.splice(index, 1);
-    setConcertForm({ ...concertForm, bands: updatedBands });
-  };
-
-  // Debounce pour la recherche de groupes de concert
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      searchConcertBands(searchBandQuery);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchBandQuery]);
 
   const addToList = (field, value, form, setForm) => {
     if (value && !form[field].includes(value)) {

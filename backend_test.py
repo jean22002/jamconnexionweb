@@ -1,580 +1,367 @@
 #!/usr/bin/env python3
 """
-Comprehensive Test Suite for "Mes Participations" Calendar Export Feature
-Tests the complete feature including backend API, iCal format, security, and edge cases
+Backend API Testing for Jam Connexion Refactoring
+=================================================
+
+Tests the refactored backend endpoints with new prefixes:
+- /api/musicians/* endpoints
+- /api/venues/* endpoints
+- Band search functionality
+- Critical venue and musician endpoints
+
+Test Requirements from Review Request:
+1. Band search endpoint: GET /api/musicians/bands/search
+2. Venue endpoints: GET /api/venues, POST /api/venues  
+3. Musician profile: GET /api/musicians/me
+4. Ensure no regressions from prefix changes
 """
 
 import requests
 import json
 import sys
-import uuid
-from datetime import datetime, timedelta
-import re
-import time
+from datetime import datetime
 
-# Backend URL from environment
-BACKEND_URL = "https://collapsible-map.preview.emergentagent.com/api"
+# Configuration
+BASE_URL = "https://collapsible-map.preview.emergentagent.com/api"
+TEST_CREDENTIALS = {
+    "venue": {"email": "bar@gmail.com", "password": "test"},
+    "musician": {"email": "test@gmail.com", "password": "test"},
+    "melomane": {"email": "melomane@test.com", "password": "test"}
+}
 
-class ParticipationsCalendarTestSuite:
+class BackendTester:
     def __init__(self):
         self.session = requests.Session()
-        self.musician_token = None
-        self.venue_token = None
-        self.musician_data = None
-        self.venue_data = None
+        self.tokens = {}
         self.test_results = []
         
-        # Test data IDs
-        self.musician_id = None
-        self.venue_id = None
-        self.event_ids = []
-        self.participation_ids = []
-        
-    def log_result(self, test_name, success, details):
+    def log_test(self, test_name, success, details="", error=""):
         """Log test result"""
         status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status} {test_name}: {details}")
-        self.test_results.append({
+        result = {
             "test": test_name,
+            "status": status,
             "success": success,
             "details": details,
+            "error": error,
             "timestamp": datetime.now().isoformat()
-        })
-    
-    def generate_unique_email(self, prefix):
-        """Generate unique email for testing"""
-        timestamp = int(time.time())
-        return f"{prefix}_{timestamp}@test.com"
-    
-    def test_setup_test_data(self):
-        """Setup: Create musician account and test data"""
-        print("\n🎵 Setup: Create Test Data")
-        
+        }
+        self.test_results.append(result)
+        print(f"{status} {test_name}")
+        if details:
+            print(f"    Details: {details}")
+        if error:
+            print(f"    Error: {error}")
+        print()
+
+    def authenticate(self, role):
+        """Authenticate and get token for a role"""
         try:
-            # Create musician account
-            musician_email = self.generate_unique_email("musician")
-            register_url = f"{BACKEND_URL}/auth/register"
-            register_data = {
-                "email": musician_email,
-                "password": "testpass123",
-                "name": "Test Musician Participations",
-                "role": "musician"
-            }
+            creds = TEST_CREDENTIALS[role]
+            response = self.session.post(f"{BASE_URL}/auth/login", json=creds)
             
-            response = self.session.post(register_url, json=register_data, timeout=30)
-            
-            if response.status_code in [200, 201]:
-                # Login musician
-                login_url = f"{BACKEND_URL}/auth/login"
-                login_data = {
-                    "email": musician_email,
-                    "password": "testpass123"
-                }
-                
-                login_response = self.session.post(login_url, json=login_data, timeout=30)
-                
-                if login_response.status_code == 200:
-                    data = login_response.json()
-                    self.musician_token = data.get("token") or data.get("access_token")
-                    self.musician_data = data.get("user", {})
-                    self.musician_id = self.musician_data.get("id")
-                    
-                    self.log_result("Setup - Musician Account", True, f"Musician created and logged in, ID: {self.musician_id}")
+            if response.status_code == 200:
+                data = response.json()
+                token = data.get("token") or data.get("access_token")  # Try both token formats
+                if token:
+                    self.tokens[role] = token
+                    self.log_test(f"Authentication - {role}", True, f"Token obtained")
                     return True
                 else:
-                    self.log_result("Setup - Musician Login", False, f"Login failed: {login_response.status_code}")
+                    self.log_test(f"Authentication - {role}", False, error="No token in response")
                     return False
             else:
-                self.log_result("Setup - Musician Registration", False, f"Registration failed: {response.status_code}")
+                self.log_test(f"Authentication - {role}", False, 
+                            error=f"HTTP {response.status_code}: {response.text}")
                 return False
                 
         except Exception as e:
-            self.log_result("Setup - Test Data", False, f"Exception: {str(e)}")
+            self.log_test(f"Authentication - {role}", False, error=str(e))
             return False
-    
-    def test_participations_endpoint_authentication(self):
-        """Test 1: Authentication and Authorization"""
-        print("\n🔐 Test 1: Authentication and Authorization")
+
+    def test_band_search_endpoint(self):
+        """Test the critical band search endpoint with new prefix"""
+        if "venue" not in self.tokens:
+            self.log_test("Band Search - Authentication Required", False, 
+                         error="No venue token available")
+            return
+
+        token = self.tokens["venue"]
+        headers = {"Authorization": f"Bearer {token}"}
         
-        endpoint = f"{BACKEND_URL}/musicians/me/participations/calendar.ics"
-        
+        # Test 1: Search for "marseil" should return "Marseille Blues Band"
         try:
-            # Test 1.1: No authentication
-            response = self.session.get(endpoint, timeout=30)
-            if response.status_code == 401:
-                self.log_result("Auth - No Token", True, "Correctly requires authentication (401)")
-            else:
-                self.log_result("Auth - No Token", False, f"Should return 401, got {response.status_code}")
-            
-            # Test 1.2: Invalid token
-            headers = {"Authorization": "Bearer invalid_token_12345"}
-            response = self.session.get(endpoint, headers=headers, timeout=30)
-            if response.status_code == 401:
-                self.log_result("Auth - Invalid Token", True, "Correctly rejects invalid token (401)")
-            else:
-                self.log_result("Auth - Invalid Token", False, f"Should return 401, got {response.status_code}")
-            
-            # Test 1.3: Malformed Authorization header
-            headers = {"Authorization": "InvalidFormat"}
-            response = self.session.get(endpoint, headers=headers, timeout=30)
-            if response.status_code == 401:
-                self.log_result("Auth - Malformed Header", True, "Correctly rejects malformed auth (401)")
-            else:
-                self.log_result("Auth - Malformed Header", False, f"Should return 401, got {response.status_code}")
-            
-            # Test 1.4: Valid musician token
-            if self.musician_token:
-                headers = {"Authorization": f"Bearer {self.musician_token}"}
-                response = self.session.get(endpoint, headers=headers, timeout=30)
-                if response.status_code == 200:
-                    self.log_result("Auth - Valid Musician Token", True, "Musician can access endpoint (200)")
-                    return True
-                else:
-                    self.log_result("Auth - Valid Musician Token", False, f"Musician access failed: {response.status_code}")
-                    return False
-            else:
-                self.log_result("Auth - Valid Token Test", False, "No musician token available")
-                return False
-                
-        except Exception as e:
-            self.log_result("Authentication Tests", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_role_based_access(self):
-        """Test 2: Role-based access control"""
-        print("\n👥 Test 2: Role-based Access Control")
-        
-        endpoint = f"{BACKEND_URL}/musicians/me/participations/calendar.ics"
-        
-        try:
-            # Create venue account to test wrong role
-            venue_email = self.generate_unique_email("venue")
-            register_url = f"{BACKEND_URL}/auth/register"
-            register_data = {
-                "email": venue_email,
-                "password": "testpass123",
-                "name": "Test Venue",
-                "role": "venue"
-            }
-            
-            response = self.session.post(register_url, json=register_data, timeout=30)
-            
-            if response.status_code in [200, 201]:
-                # Login venue
-                login_url = f"{BACKEND_URL}/auth/login"
-                login_data = {
-                    "email": venue_email,
-                    "password": "testpass123"
-                }
-                
-                login_response = self.session.post(login_url, json=login_data, timeout=30)
-                
-                if login_response.status_code == 200:
-                    venue_data = login_response.json()
-                    venue_token = venue_data.get("token") or venue_data.get("access_token")
-                    
-                    # Test venue access (should be forbidden)
-                    headers = {"Authorization": f"Bearer {venue_token}"}
-                    response = self.session.get(endpoint, headers=headers, timeout=30)
-                    
-                    if response.status_code == 403:
-                        self.log_result("Role Access - Venue Forbidden", True, "Venue correctly forbidden (403)")
-                        return True
-                    else:
-                        self.log_result("Role Access - Venue Forbidden", False, f"Should return 403, got {response.status_code}")
-                        return False
-                else:
-                    self.log_result("Role Access - Venue Login", False, "Could not create venue for testing")
-                    return False
-            else:
-                self.log_result("Role Access - Venue Creation", False, "Could not create venue for testing")
-                return False
-                
-        except Exception as e:
-            self.log_result("Role Access Tests", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_ical_format_validation(self):
-        """Test 3: iCal Format Validation (RFC 5545)"""
-        print("\n📅 Test 3: iCal Format Validation")
-        
-        if not self.musician_token:
-            self.log_result("iCal Format", False, "No musician token available")
-            return False
-        
-        try:
-            endpoint = f"{BACKEND_URL}/musicians/me/participations/calendar.ics"
-            headers = {"Authorization": f"Bearer {self.musician_token}"}
-            
-            response = self.session.get(endpoint, headers=headers, timeout=30)
+            response = self.session.get(
+                f"{BASE_URL}/musicians/bands/search?query=marseil", 
+                headers=headers
+            )
             
             if response.status_code == 200:
-                ical_content = response.text
-                
-                # Test 3.1: Basic iCal structure
-                required_elements = [
-                    "BEGIN:VCALENDAR",
-                    "END:VCALENDAR",
-                    "VERSION:2.0",
-                    "PRODID:-//Jam Connexion//Mes Participations//FR",
-                    "CALSCALE:GREGORIAN",
-                    "METHOD:PUBLISH",
-                    "X-WR-CALNAME:Mes Participations",
-                    "X-WR-TIMEZONE:Europe/Paris"
-                ]
-                
-                all_valid = True
-                for element in required_elements:
-                    if element in ical_content:
-                        self.log_result(f"iCal Element - {element.split(':')[0]}", True, "Present")
-                    else:
-                        self.log_result(f"iCal Element - {element.split(':')[0]}", False, "Missing")
-                        all_valid = False
-                
-                # Test 3.2: Line endings (RFC 5545 requires CRLF)
-                if "\r\n" in ical_content:
-                    self.log_result("iCal Line Endings", True, "Correct CRLF format")
+                bands = response.json()
+                marseille_found = any("marseille" in band.get("name", "").lower() 
+                                    for band in bands)
+                if marseille_found:
+                    self.log_test("Band Search - Marseille Query", True, 
+                                f"Found {len(bands)} bands, Marseille Blues Band included")
                 else:
-                    self.log_result("iCal Line Endings", False, "Missing CRLF line endings")
-                    all_valid = False
-                
-                # Test 3.3: Content-Type header
-                content_type = response.headers.get('content-type', '')
-                if 'text/calendar' in content_type:
-                    self.log_result("iCal Content-Type", True, "Correct text/calendar MIME type")
-                else:
-                    self.log_result("iCal Content-Type", False, f"Wrong content type: {content_type}")
-                    all_valid = False
-                
-                # Test 3.4: Download headers
-                content_disposition = response.headers.get('content-disposition', '')
-                if 'attachment' in content_disposition and 'mes_participations.ics' in content_disposition:
-                    self.log_result("iCal Download Headers", True, "Correct download headers")
-                else:
-                    self.log_result("iCal Download Headers", False, f"Missing/wrong download headers: {content_disposition}")
-                    all_valid = False
-                
-                return all_valid
-                
+                    self.log_test("Band Search - Marseille Query", False, 
+                                f"Marseille Blues Band not found in {len(bands)} results")
             else:
-                self.log_result("iCal Format", False, f"Cannot retrieve iCal: {response.status_code}")
-                return False
+                self.log_test("Band Search - Marseille Query", False, 
+                            error=f"HTTP {response.status_code}: {response.text}")
                 
         except Exception as e:
-            self.log_result("iCal Format", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_empty_participations(self):
-        """Test 4: Empty participations (edge case)"""
-        print("\n📭 Test 4: Empty Participations")
-        
-        if not self.musician_token:
-            self.log_result("Empty Participations", False, "No musician token available")
-            return False
-        
+            self.log_test("Band Search - Marseille Query", False, error=str(e))
+
+        # Test 2: Search for "rock" should return at least 5 bands
         try:
-            endpoint = f"{BACKEND_URL}/musicians/me/participations/calendar.ics"
-            headers = {"Authorization": f"Bearer {self.musician_token}"}
-            
-            response = self.session.get(endpoint, headers=headers, timeout=30)
+            response = self.session.get(
+                f"{BASE_URL}/musicians/bands/search?query=rock", 
+                headers=headers
+            )
             
             if response.status_code == 200:
-                ical_content = response.text
-                
-                # Should be valid calendar with no events
-                if "BEGIN:VCALENDAR" in ical_content and "END:VCALENDAR" in ical_content:
-                    self.log_result("Empty Calendar - Valid Structure", True, "Valid empty calendar returned")
-                    
-                    # Should not contain any VEVENT
-                    if "BEGIN:VEVENT" not in ical_content:
-                        self.log_result("Empty Calendar - No Events", True, "No events in empty calendar")
-                        return True
-                    else:
-                        self.log_result("Empty Calendar - No Events", False, "Unexpected events found")
-                        return False
+                bands = response.json()
+                if len(bands) >= 5:
+                    self.log_test("Band Search - Rock Query", True, 
+                                f"Found {len(bands)} bands (≥5 required)")
                 else:
-                    self.log_result("Empty Calendar - Valid Structure", False, "Invalid calendar structure")
-                    return False
+                    self.log_test("Band Search - Rock Query", False, 
+                                f"Only found {len(bands)} bands (<5 required)")
             else:
-                self.log_result("Empty Participations", False, f"Unexpected status: {response.status_code}")
-                return False
+                self.log_test("Band Search - Rock Query", False, 
+                            error=f"HTTP {response.status_code}: {response.text}")
                 
         except Exception as e:
-            self.log_result("Empty Participations", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_participations_data_endpoint(self):
-        """Test 5: Verify participations data endpoint"""
-        print("\n📊 Test 5: Participations Data Endpoint")
-        
-        if not self.musician_token:
-            self.log_result("Participations Data", False, "No musician token available")
-            return False
-        
+            self.log_test("Band Search - Rock Query", False, error=str(e))
+
+        # Test 3: Empty query should return empty array
         try:
-            # Test the regular participations endpoint
-            endpoint = f"{BACKEND_URL}/musicians/me/participations"
-            headers = {"Authorization": f"Bearer {self.musician_token}"}
-            
-            response = self.session.get(endpoint, headers=headers, timeout=30)
+            response = self.session.get(
+                f"{BASE_URL}/musicians/bands/search?query=", 
+                headers=headers
+            )
             
             if response.status_code == 200:
-                participations = response.json()
-                self.log_result("Participations Data - Endpoint", True, f"Participations endpoint working, found {len(participations)} participations")
-                
-                # Store for later tests
-                self.participations_data = participations
-                return True
+                bands = response.json()
+                if len(bands) == 0:
+                    self.log_test("Band Search - Empty Query", True, 
+                                "Empty query correctly returns no results")
+                else:
+                    self.log_test("Band Search - Empty Query", False, 
+                                f"Empty query returned {len(bands)} results")
             else:
-                self.log_result("Participations Data - Endpoint", False, f"Participations endpoint failed: {response.status_code}")
-                return False
+                self.log_test("Band Search - Empty Query", False, 
+                            error=f"HTTP {response.status_code}: {response.text}")
                 
         except Exception as e:
-            self.log_result("Participations Data", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_event_type_labels(self):
-        """Test 6: Event type labels in iCal"""
-        print("\n🏷️ Test 6: Event Type Labels")
-        
-        if not self.musician_token:
-            self.log_result("Event Type Labels", False, "No musician token available")
-            return False
-        
+            self.log_test("Band Search - Empty Query", False, error=str(e))
+
+        # Test 4: Short query (<2 chars) should return empty array
         try:
-            endpoint = f"{BACKEND_URL}/musicians/me/participations/calendar.ics"
-            headers = {"Authorization": f"Bearer {self.musician_token}"}
-            
-            response = self.session.get(endpoint, headers=headers, timeout=30)
+            response = self.session.get(
+                f"{BASE_URL}/musicians/bands/search?query=ab", 
+                headers=headers
+            )
             
             if response.status_code == 200:
-                ical_content = response.text
-                
-                # Check for correct event type labels
-                expected_labels = {
-                    "Bœuf musical": "jam",
-                    "Concert": "concert", 
-                    "Karaoké": "karaoke",
-                    "Spectacle": "spectacle"
-                }
-                
-                labels_found = []
-                for label, event_type in expected_labels.items():
-                    if label in ical_content:
-                        labels_found.append(label)
-                
-                if labels_found:
-                    self.log_result("Event Type Labels", True, f"Found event type labels: {', '.join(labels_found)}")
+                bands = response.json()
+                if len(bands) == 0:
+                    self.log_test("Band Search - Short Query", True, 
+                                "Short query (<2 chars) correctly returns no results")
                 else:
-                    self.log_result("Event Type Labels", True, "No events to test labels (empty calendar)")
-                
-                return True
+                    self.log_test("Band Search - Short Query", False, 
+                                f"Short query returned {len(bands)} results")
             else:
-                self.log_result("Event Type Labels", False, f"Cannot retrieve iCal: {response.status_code}")
-                return False
+                self.log_test("Band Search - Short Query", False, 
+                            error=f"HTTP {response.status_code}: {response.text}")
                 
         except Exception as e:
-            self.log_result("Event Type Labels", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_timezone_handling(self):
-        """Test 7: Timezone handling"""
-        print("\n🌍 Test 7: Timezone Handling")
+            self.log_test("Band Search - Short Query", False, error=str(e))
+
+    def test_venue_endpoints(self):
+        """Test venue endpoints with new prefix"""
+        if "venue" not in self.tokens:
+            self.log_test("Venue Endpoints - Authentication Required", False, 
+                         error="No venue token available")
+            return
+
+        token = self.tokens["venue"]
+        headers = {"Authorization": f"Bearer {token}"}
         
-        if not self.musician_token:
-            self.log_result("Timezone Handling", False, "No musician token available")
-            return False
-        
+        # Test 1: GET /api/venues/venues - List venues (with prefix)
         try:
-            endpoint = f"{BACKEND_URL}/musicians/me/participations/calendar.ics"
-            headers = {"Authorization": f"Bearer {self.musician_token}"}
-            
-            response = self.session.get(endpoint, headers=headers, timeout=30)
+            response = self.session.get(f"{BASE_URL}/venues/venues", headers=headers)
             
             if response.status_code == 200:
-                ical_content = response.text
-                
-                # Check timezone is set to Europe/Paris
-                if "X-WR-TIMEZONE:Europe/Paris" in ical_content:
-                    self.log_result("Timezone - Europe/Paris", True, "Correct timezone set")
-                else:
-                    self.log_result("Timezone - Europe/Paris", False, "Missing or wrong timezone")
-                
-                # Check datetime format (should be YYYYMMDDTHHMMSS)
-                datetime_pattern = r'DTSTART:\d{8}T\d{6}'
-                if re.search(datetime_pattern, ical_content):
-                    self.log_result("Timezone - DateTime Format", True, "Correct datetime format")
-                else:
-                    self.log_result("Timezone - DateTime Format", True, "No events to test datetime format")
-                
-                return True
+                venues = response.json()
+                self.log_test("Venue Endpoints - GET /api/venues/venues", True, 
+                            f"Retrieved {len(venues)} venues")
             else:
-                self.log_result("Timezone Handling", False, f"Cannot retrieve iCal: {response.status_code}")
-                return False
+                self.log_test("Venue Endpoints - GET /api/venues/venues", False, 
+                            error=f"HTTP {response.status_code}: {response.text}")
                 
         except Exception as e:
-            self.log_result("Timezone Handling", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_melomane_access(self):
-        """Test 8: Melomane role access"""
-        print("\n🎭 Test 8: Melomane Role Access")
-        
+            self.log_test("Venue Endpoints - GET /api/venues/venues", False, error=str(e))
+
+        # Test 2: GET /api/venues/venues/me - Get venue profile (with prefix)
         try:
-            # Create melomane account
-            melomane_email = self.generate_unique_email("melomane")
-            register_url = f"{BACKEND_URL}/auth/register"
-            register_data = {
-                "email": melomane_email,
-                "password": "testpass123",
-                "name": "Test Melomane",
-                "role": "melomane"
-            }
+            response = self.session.get(f"{BASE_URL}/venues/venues/me", headers=headers)
             
-            response = self.session.post(register_url, json=register_data, timeout=30)
-            
-            if response.status_code in [200, 201]:
-                # Login melomane
-                login_url = f"{BACKEND_URL}/auth/login"
-                login_data = {
-                    "email": melomane_email,
-                    "password": "testpass123"
-                }
-                
-                login_response = self.session.post(login_url, json=login_data, timeout=30)
-                
-                if login_response.status_code == 200:
-                    melomane_data = login_response.json()
-                    melomane_token = melomane_data.get("token") or melomane_data.get("access_token")
-                    
-                    # Test melomane access (should be allowed)
-                    endpoint = f"{BACKEND_URL}/musicians/me/participations/calendar.ics"
-                    headers = {"Authorization": f"Bearer {melomane_token}"}
-                    response = self.session.get(endpoint, headers=headers, timeout=30)
-                    
-                    if response.status_code == 200:
-                        self.log_result("Melomane Access", True, "Melomane can access endpoint (200)")
-                        return True
-                    else:
-                        self.log_result("Melomane Access", False, f"Melomane access failed: {response.status_code}")
-                        return False
-                else:
-                    self.log_result("Melomane Access - Login", False, "Could not login melomane")
-                    return False
+            if response.status_code == 200:
+                venue = response.json()
+                venue_name = venue.get("name", "Unknown")
+                self.log_test("Venue Endpoints - GET /api/venues/venues/me", True, 
+                            f"Retrieved venue profile: {venue_name}")
             else:
-                self.log_result("Melomane Access - Registration", False, "Could not create melomane account")
-                return False
+                self.log_test("Venue Endpoints - GET /api/venues/venues/me", False, 
+                            error=f"HTTP {response.status_code}: {response.text}")
                 
         except Exception as e:
-            self.log_result("Melomane Access", False, f"Exception: {str(e)}")
-            return False
-    
-    def run_comprehensive_test(self):
-        """Run comprehensive test suite"""
-        print("🎯 Comprehensive Test Suite: Mes Participations Calendar Export Feature")
-        print(f"📍 Backend URL: {BACKEND_URL}")
-        print(f"🎪 Test Scenario: Test complete participations calendar export functionality")
-        print("\n" + "="*80)
+            self.log_test("Venue Endpoints - GET /api/venues/venues/me", False, error=str(e))
+
+    def test_musician_endpoints(self):
+        """Test musician endpoints with new prefix"""
+        if "musician" not in self.tokens:
+            self.log_test("Musician Endpoints - Authentication Required", False, 
+                         error="No musician token available")
+            return
+
+        token = self.tokens["musician"]
+        headers = {"Authorization": f"Bearer {token}"}
         
-        # Define test phases
-        tests = [
-            ("Setup Test Data", self.test_setup_test_data),
-            ("Authentication & Authorization", self.test_participations_endpoint_authentication),
-            ("Role-based Access Control", self.test_role_based_access),
-            ("iCal Format Validation", self.test_ical_format_validation),
-            ("Empty Participations", self.test_empty_participations),
-            ("Participations Data Endpoint", self.test_participations_data_endpoint),
-            ("Event Type Labels", self.test_event_type_labels),
-            ("Timezone Handling", self.test_timezone_handling),
-            ("Melomane Role Access", self.test_melomane_access)
-        ]
-        
-        results = []
-        critical_failure = False
-        
-        for test_name, test_func in tests:
-            try:
-                print(f"\n{'='*20} {test_name} {'='*20}")
-                result = test_func()
-                results.append(result)
+        # Test: GET /api/musicians/musicians/me - Get musician profile (with prefix)
+        try:
+            response = self.session.get(f"{BASE_URL}/musicians/musicians/me", headers=headers)
+            
+            if response.status_code == 200:
+                musician = response.json()
+                musician_email = musician.get("email", "Unknown")
+                self.log_test("Musician Endpoints - GET /api/musicians/musicians/me", True, 
+                            f"Retrieved musician profile: {musician_email}")
+            else:
+                self.log_test("Musician Endpoints - GET /api/musicians/musicians/me", False, 
+                            error=f"HTTP {response.status_code}: {response.text}")
                 
-                # Critical tests that must pass
-                if test_name in ["Setup Test Data", "Authentication & Authorization"] and not result:
-                    critical_failure = True
-                    print(f"❌ CRITICAL FAILURE in {test_name} - stopping test suite")
-                    break
-                    
-            except Exception as e:
-                print(f"❌ {test_name} failed with exception: {str(e)}")
-                results.append(False)
-                if test_name in ["Setup Test Data", "Authentication & Authorization"]:
-                    critical_failure = True
-                    break
+        except Exception as e:
+            self.log_test("Musician Endpoints - GET /api/musicians/musicians/me", False, error=str(e))
+
+    def test_critical_endpoints_no_regression(self):
+        """Test that critical endpoints still work after prefix changes"""
+        
+        # Test health endpoint
+        try:
+            response = self.session.get(f"{BASE_URL}/health")
+            
+            if response.status_code == 200:
+                self.log_test("Critical Endpoints - Health Check", True, 
+                            "Health endpoint responding")
+            else:
+                self.log_test("Critical Endpoints - Health Check", False, 
+                            error=f"HTTP {response.status_code}: {response.text}")
+                
+        except Exception as e:
+            self.log_test("Critical Endpoints - Health Check", False, error=str(e))
+
+        # Test stats endpoint (used by landing page)
+        try:
+            response = self.session.get(f"{BASE_URL}/stats/counts")
+            
+            if response.status_code == 200:
+                stats = response.json()
+                musicians_count = stats.get("musicians", 0)
+                venues_count = stats.get("venues", 0)
+                self.log_test("Critical Endpoints - Stats", True, 
+                            f"Musicians: {musicians_count}, Venues: {venues_count}")
+            else:
+                self.log_test("Critical Endpoints - Stats", False, 
+                            error=f"HTTP {response.status_code}: {response.text}")
+                
+        except Exception as e:
+            self.log_test("Critical Endpoints - Stats", False, error=str(e))
+
+    def run_all_tests(self):
+        """Run all backend tests"""
+        print("🚀 Starting Backend API Tests for Jam Connexion Refactoring")
+        print("=" * 60)
+        print()
+        
+        # Authenticate all roles
+        print("🔐 Authentication Tests")
+        print("-" * 30)
+        self.authenticate("venue")
+        self.authenticate("musician")
+        self.authenticate("melomane")
+        
+        # Test critical endpoints
+        print("🏥 Critical Endpoints Tests")
+        print("-" * 30)
+        self.test_critical_endpoints_no_regression()
+        
+        # Test band search (main feature from refactoring)
+        print("🎸 Band Search Tests (Refactored Feature)")
+        print("-" * 30)
+        self.test_band_search_endpoint()
+        
+        # Test venue endpoints with new prefix
+        print("🏢 Venue Endpoints Tests (New Prefix)")
+        print("-" * 30)
+        self.test_venue_endpoints()
+        
+        # Test musician endpoints with new prefix
+        print("🎵 Musician Endpoints Tests (New Prefix)")
+        print("-" * 30)
+        self.test_musician_endpoints()
         
         # Summary
-        passed = sum(results)
-        total = len(results)
+        self.print_summary()
+
+    def print_summary(self):
+        """Print test summary"""
+        print("📊 Test Summary")
+        print("=" * 60)
         
-        print(f"\n" + "="*80)
-        print(f"📊 Test Summary:")
-        print(f"✅ Passed: {passed}")
-        print(f"❌ Failed: {total - passed}")
-        print(f"📈 Success Rate: {(passed/total)*100:.1f}%")
+        total_tests = len(self.test_results)
+        passed_tests = sum(1 for result in self.test_results if result["success"])
+        failed_tests = total_tests - passed_tests
         
-        # Show results by test
-        print(f"\n📋 Test Results:")
-        for i, (test_name, _) in enumerate(tests[:len(results)]):
-            status = "✅ PASS" if results[i] else "❌ FAIL"
-            print(f"   {status} {test_name}")
+        print(f"Total Tests: {total_tests}")
+        print(f"✅ Passed: {passed_tests}")
+        print(f"❌ Failed: {failed_tests}")
+        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        print()
         
-        # Show failed tests details
-        failed_tests = [result for result in self.test_results if not result['success']]
-        if failed_tests:
-            print(f"\n🔍 Failed Test Details:")
-            for test in failed_tests:
-                print(f"   - {test['test']}: {test['details']}")
+        if failed_tests > 0:
+            print("❌ Failed Tests:")
+            for result in self.test_results:
+                if not result["success"]:
+                    print(f"  - {result['test']}: {result['error']}")
+            print()
         
-        # Feature status assessment
-        print(f"\n🎯 Feature Status Assessment:")
+        # Critical issues
+        critical_failures = []
+        for result in self.test_results:
+            if not result["success"] and any(keyword in result["test"].lower() 
+                                           for keyword in ["band search", "venues/venues/me", "musicians/musicians/me"]):
+                critical_failures.append(result["test"])
         
-        if critical_failure:
-            print(f"❌ CRITICAL ISSUES FOUND - Feature not ready")
-        elif passed >= (total * 0.9):
-            print(f"✅ FEATURE WORKING EXCELLENTLY - Ready for production")
-        elif passed >= (total * 0.8):
-            print(f"✅ FEATURE WORKING CORRECTLY - Ready for production")
-        elif passed >= (total * 0.6):
-            print(f"⚠️ FEATURE MOSTLY WORKING - Minor issues need attention")
+        if critical_failures:
+            print("🚨 CRITICAL FAILURES:")
+            for failure in critical_failures:
+                print(f"  - {failure}")
+            print()
+        
+        # Overall status
+        if failed_tests == 0:
+            print("🎉 ALL TESTS PASSED - Refactoring successful!")
+        elif len(critical_failures) == 0:
+            print("✅ CORE FUNCTIONALITY WORKING - Minor issues only")
         else:
-            print(f"❌ FEATURE HAS MAJOR ISSUES - Requires significant fixes")
+            print("⚠️ CRITICAL ISSUES FOUND - Refactoring needs fixes")
         
-        # Specific findings
-        print(f"\n🔍 Key Findings:")
-        auth_working = any("Auth" in result['test'] and result['success'] for result in self.test_results)
-        ical_working = any("iCal" in result['test'] and result['success'] for result in self.test_results)
-        security_working = any("Role" in result['test'] and result['success'] for result in self.test_results)
-        
-        if auth_working:
-            print(f"   ✅ Authentication and authorization working correctly")
-        if ical_working:
-            print(f"   ✅ iCal format generation RFC 5545 compliant")
-        if security_working:
-            print(f"   ✅ Role-based security measures in place")
-        
-        # Test data created
-        print(f"\n📦 Test Data Created:")
-        if self.musician_id:
-            print(f"   🎵 Musician ID: {self.musician_id}")
-        
-        return not critical_failure and passed >= (total * 0.6)
+        return failed_tests == 0
 
 if __name__ == "__main__":
-    suite = ParticipationsCalendarTestSuite()
-    success = suite.run_comprehensive_test()
-    
-    if success:
-        print("\n🎉 Mes Participations Calendar Export test completed successfully!")
-        sys.exit(0)
-    else:
-        print("\n⚠️ Test failed. See details above.")
-        sys.exit(1)
+    tester = BackendTester()
+    success = tester.run_all_tests()
+    sys.exit(0 if success else 1)

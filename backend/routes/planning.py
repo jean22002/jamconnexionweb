@@ -535,12 +535,35 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
             f"Votre candidature pour le {slot['date']} chez {venue['name']} a été acceptée!",
             f"/venue/{venue['id']}"
         )
+        
+        # 🎵 ADD CONCERT TO MUSICIAN'S PLANNING
+        # Create concert entry for the accepted application
+        concert_entry = {
+            "id": app_id + "_concert",  # Unique ID based on application
+            "venue_name": venue.get("name"),
+            "venue_id": venue.get("id"),
+            "city": venue.get("city", ""),
+            "date": slot.get("date"),
+            "time": slot.get("time"),
+            "title": slot.get("title", "Concert"),
+            "description": slot.get("description"),
+            "payment": slot.get("payment"),
+            "is_guso": slot.get("is_guso", False),
+            "source": "application_accepted",
+            "planning_slot_id": slot["id"]
+        }
+        
+        # Add to musician's upcoming concerts/events
+        await db.musicians.update_one(
+            {"id": app["musician_id"]},
+            {"$push": {"upcoming_concerts": concert_entry}}
+        )
     
     # Find and notify the band admin if applicable
     band_name = app.get("band_name")
     if band_name:
         # Search for the band across all musicians
-        all_musicians = await db.musicians.find({}, {"_id": 0, "bands": 1, "user_id": 1, "pseudo": 1}).to_list(1000)
+        all_musicians = await db.musicians.find({}, {"_id": 0, "bands": 1, "user_id": 1, "pseudo": 1, "id": 1}).to_list(1000)
         
         for m in all_musicians:
             if m.get("bands"):
@@ -559,6 +582,29 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
                                 f"🎉 Concert confirmé pour {band_name}",
                                 f"{venue['name']} a validé votre groupe pour le {slot['date']}. Vous pouvez maintenant communiquer avec l'établissement.",
                                 f"/venue/{venue['id']}"
+                            )
+                            
+                            # 🎵 ADD CONCERT TO BAND ADMIN'S PLANNING
+                            # Also add to the band admin's upcoming concerts
+                            band_concert_entry = {
+                                "id": app_id + "_band_concert",
+                                "venue_name": venue.get("name"),
+                                "venue_id": venue.get("id"),
+                                "city": venue.get("city", ""),
+                                "date": slot.get("date"),
+                                "time": slot.get("time"),
+                                "title": slot.get("title", f"Concert {band_name}"),
+                                "description": slot.get("description"),
+                                "payment": slot.get("payment"),
+                                "is_guso": slot.get("is_guso", False),
+                                "band_name": band_name,
+                                "source": "band_application_accepted",
+                                "planning_slot_id": slot["id"]
+                            }
+                            
+                            await db.musicians.update_one(
+                                {"id": admin_id},
+                                {"$push": {"upcoming_concerts": band_concert_entry}}
                             )
                         break
     

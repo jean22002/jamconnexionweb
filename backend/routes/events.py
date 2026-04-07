@@ -21,6 +21,7 @@ from models import (
     SpectacleEvent, SpectacleEventResponse
 )
 from routes.audit import log_action  # Import audit logging
+from routes.planning import create_notification  # Import notification helper
 
 router = APIRouter()
 db = None
@@ -383,14 +384,14 @@ async def create_concert_event(data: ConcertEvent, current_user: dict = Depends(
     
     await db.concerts.insert_one(concert_doc)
     
-    # 🎵 SYNC GUSO INFO TO MUSICIANS
-    # If this is a GUSO concert, copy info to each musician's profile
-    if concert_doc.get("is_guso") and concert_doc.get("bands"):
+    # 🎵 SYNC TO MUSICIANS & SEND NOTIFICATIONS
+    # For ALL concerts (not just GUSO), notify and add to musician's planning
+    if concert_doc.get("bands"):
         for band in concert_doc["bands"]:
             musician_id = band.get("musician_id")
             if musician_id:
-                # Check if musician exists and is PRO
-                musician = await db.musicians.find_one({"user_id": musician_id}, {"_id": 0})
+                # Get musician profile
+                musician = await db.musicians.find_one({"id": musician_id}, {"_id": 0})
                 if musician:
                     # Create concert entry for musician's profile
                     musician_concert = {
@@ -399,13 +400,18 @@ async def create_concert_event(data: ConcertEvent, current_user: dict = Depends(
                         "venue_id": venue["id"],
                         "city": venue.get("city", ""),
                         "date": data.date,
-                        "is_guso": True,
+                        "start_time": data.start_time,
+                        "end_time": data.end_time,
+                        "title": data.title or f"Concert chez {venue['name']}",
+                        "band_name": band.get("name"),
+                        "is_guso": concert_doc.get("is_guso", False),
                         "cachet_type": concert_doc.get("cachet_type"),
                         "cachet": concert_doc.get("amount"),
                         "guso_contract_type": concert_doc.get("guso_contract_type"),
-                        "guso_declared": False,
-                        "payment_status": "pending",
-                        "formation_type": band.get("formation_type", "Solo")
+                        "guso_declared": False if concert_doc.get("is_guso") else None,
+                        "payment_status": concert_doc.get("payment_status", "pending"),
+                        "formation_type": band.get("formation_type", "Groupe"),
+                        "source": "venue_created_concert"
                     }
                     
                     # Check if concert already exists in musician's profile
@@ -417,10 +423,19 @@ async def create_concert_event(data: ConcertEvent, current_user: dict = Depends(
                     if not existing_concert:
                         # Add to musician's concerts
                         await db.musicians.update_one(
-                            {"user_id": musician_id},
+                            {"id": musician_id},
                             {"$push": {"concerts": musician_concert}}
                         )
-                        logger.info(f"✅ GUSO info synced to musician {musician_id} for concert {concert_id}")
+                        logger.info(f"✅ Concert synced to musician {musician_id} for concert {concert_id}")
+                        
+                        # 🔔 SEND NOTIFICATION TO MUSICIAN
+                        await create_notification(
+                            musician["user_id"],
+                            "concert_scheduled",
+                            "🎸 Concert programmé !",
+                            f"{venue['name']} vous a programmé pour un concert le {data.date}. Consultez les détails dans votre planning.",
+                            f"/venue/{venue['id']}"
+                        )
     
     # Notify subscribers
     await notify_venue_subscribers(

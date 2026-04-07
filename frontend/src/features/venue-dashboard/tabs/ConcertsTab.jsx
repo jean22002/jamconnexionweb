@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { Button } from "../../../components/ui/button";
-import { Plus, Edit, Trash2, Calendar, MapPin, Clock, Music, Users, Euro, X } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, MapPin, Clock, Music, Users, Euro, X, Search } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../../components/ui/dialog";
 import { Label } from "../../../components/ui/label";
 import { Input } from "../../../components/ui/input";
@@ -8,6 +9,8 @@ import { Textarea } from "../../../components/ui/textarea";
 import { Switch } from "../../../components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 import TimeSelect from "../../../components/TimeSelect";
+
+const API = process.env.REACT_APP_BACKEND_URL;
 
 export default function ConcertsTab({
   concerts,
@@ -19,6 +22,82 @@ export default function ConcertsTab({
   handleEditEvent,
   handleDeleteEvent
 }) {
+  // État local pour la recherche et l'ajout de groupes
+  const [searchBandQuery, setSearchBandQuery] = useState("");
+  const [searchedBands, setSearchedBands] = useState([]);
+  const [loadingBands, setLoadingBands] = useState(false);
+  const [manualBandName, setManualBandName] = useState("");
+
+  // Rechercher des groupes dans la base de données
+  const searchBands = async (query) => {
+    if (!query || query.trim().length < 2) {
+      setSearchedBands([]);
+      return;
+    }
+    
+    setLoadingBands(true);
+    try {
+      const response = await axios.get(`${API}/bands/search?q=${encodeURIComponent(query)}`);
+      setSearchedBands(response.data.slice(0, 10)); // Limiter à 10 résultats
+    } catch (error) {
+      console.error("Erreur lors de la recherche de groupes:", error);
+      setSearchedBands([]);
+    } finally {
+      setLoadingBands(false);
+    }
+  };
+
+  // Ajouter un groupe depuis la BDD
+  const addBandFromDB = (band) => {
+    const existingBands = concertForm.bands || [];
+    // Vérifier si le groupe n'est pas déjà ajouté (par nom)
+    if (existingBands.some(b => b.name === band.name)) {
+      return; // Déjà ajouté
+    }
+    
+    setConcertForm({
+      ...concertForm,
+      bands: [...existingBands, {
+        name: band.name,
+        musician_id: band.admin_id || null, // ID du musicien propriétaire du groupe
+        members_count: band.members_count || null,
+        photo: band.photo || null
+      }]
+    });
+    setSearchBandQuery("");
+    setSearchedBands([]);
+  };
+
+  // Ajouter un groupe manuellement (non inscrit)
+  const addManualBand = () => {
+    if (!manualBandName.trim()) return;
+    
+    const existingBands = concertForm.bands || [];
+    setConcertForm({
+      ...concertForm,
+      bands: [...existingBands, {
+        name: manualBandName.trim(),
+        musician_id: null // Non inscrit dans la BDD
+      }]
+    });
+    setManualBandName("");
+  };
+
+  // Supprimer un groupe de la liste
+  const removeBand = (index) => {
+    const updatedBands = [...(concertForm.bands || [])];
+    updatedBands.splice(index, 1);
+    setConcertForm({ ...concertForm, bands: updatedBands });
+  };
+
+  // Debounce pour la recherche
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchBands(searchBandQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchBandQuery]);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -103,6 +182,110 @@ export default function ConcertsTab({
                     className="bg-black/20 border-white/10"
                     placeholder="Rock, Jazz, Blues"
                   />
+                </div>
+              </div>
+
+              {/* Groupes/Artistes */}
+              <div className="space-y-3 p-4 border-2 border-purple-500/20 rounded-xl">
+                <Label className="font-medium text-purple-400">🎸 Groupes / Artistes</Label>
+                
+                {/* Liste des groupes ajoutés */}
+                {concertForm.bands && concertForm.bands.length > 0 && (
+                  <div className="space-y-2">
+                    {concertForm.bands.map((band, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-black/30 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <Music className="w-4 h-4 text-purple-400" />
+                          <span className="font-medium">{band.name}</span>
+                          {band.musician_id ? (
+                            <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">
+                              ✓ Dans la BDD
+                            </span>
+                          ) : (
+                            <span className="text-xs bg-gray-500/20 text-gray-400 px-2 py-0.5 rounded-full">
+                              Non inscrit
+                            </span>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeBand(index)}
+                          className="h-8 w-8 p-0 hover:bg-red-500/20"
+                        >
+                          <X className="w-4 h-4 text-red-400" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Recherche dans la BDD */}
+                <div className="space-y-2">
+                  <Label className="text-sm">Rechercher un groupe inscrit</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      value={searchBandQuery}
+                      onChange={(e) => setSearchBandQuery(e.target.value)}
+                      placeholder="Nom du groupe..."
+                      className="bg-black/20 border-white/10 pl-10"
+                    />
+                    {loadingBands && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Résultats de la recherche */}
+                  {searchedBands.length > 0 && (
+                    <div className="max-h-40 overflow-y-auto bg-black/40 rounded-lg border border-white/10">
+                      {searchedBands.map((band, idx) => (
+                        <button
+                          key={`${band.name}-${idx}`}
+                          onClick={() => addBandFromDB(band)}
+                          className="w-full text-left px-3 py-2 hover:bg-white/5 flex items-center justify-between transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Music className="w-4 h-4 text-purple-400" />
+                            <span>{band.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            {band.members_count && <span>{band.members_count} membres</span>}
+                            {band.musician_name && <span>• {band.musician_name}</span>}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Ajout manuel */}
+                <div className="space-y-2 pt-3 border-t border-white/10">
+                  <Label className="text-sm">Ou ajouter un groupe non inscrit</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={manualBandName}
+                      onChange={(e) => setManualBandName(e.target.value)}
+                      placeholder="Nom du groupe..."
+                      className="bg-black/20 border-white/10"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addManualBand();
+                        }
+                      }}
+                    />
+                    <Button
+                      onClick={addManualBand}
+                      variant="outline"
+                      className="rounded-full"
+                      disabled={!manualBandName.trim()}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
 

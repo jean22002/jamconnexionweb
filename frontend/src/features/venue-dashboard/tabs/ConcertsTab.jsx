@@ -9,6 +9,7 @@ import { Textarea } from "../../../components/ui/textarea";
 import { Switch } from "../../../components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 import TimeSelect from "../../../components/TimeSelect";
+import BandSearchInput from "../../../components/BandSearchInput";
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
@@ -157,32 +158,12 @@ export default function ConcertsTab({
                 {/* Recherche dans la BDD */}
                 <div className="space-y-2">
                   <Label className="text-sm">Rechercher un groupe inscrit</Label>
-                  <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
-                    {/* Hidden password field to trick Safari */}
-                    <input type="password" style={{ display: 'none' }} tabIndex={-1} />
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        value={searchBandQuery}
-                        onChange={(e) => setSearchBandQuery(e.target.value)}
-                        placeholder="Nom du groupe..."
-                        className="bg-black/20 border-white/10 pl-10"
-                        autoComplete="off"
-                        autoCorrect="off"
-                        autoCapitalize="off"
-                        spellCheck="false"
-                        type="text"
-                        name={`search-${Math.random()}`}
-                        role="combobox"
-                        aria-autocomplete="list"
-                      />
-                      {loadingBands && (
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                          <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
-                        </div>
-                      )}
-                    </div>
-                  </form>
+                  <BandSearchInput
+                    value={searchBandQuery}
+                    onChange={(e) => setSearchBandQuery(e.target.value)}
+                    loading={loadingBands}
+                    placeholder="Nom du groupe..."
+                  />
                   
                   {/* Résultats de la recherche */}
                   {searchedBands.length > 0 && (

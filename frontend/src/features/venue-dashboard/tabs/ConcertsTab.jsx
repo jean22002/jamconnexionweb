@@ -157,26 +157,32 @@ export default function ConcertsTab({
                 {/* Recherche dans la BDD */}
                 <div className="space-y-2">
                   <Label className="text-sm">Rechercher un groupe inscrit</Label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      value={searchBandQuery}
-                      onChange={(e) => setSearchBandQuery(e.target.value)}
-                      placeholder="Nom du groupe..."
-                      className="bg-black/20 border-white/10 pl-10"
-                      autoComplete="new-password"
-                      type="search"
-                      name="search-band-query"
-                      id="search-band-query"
-                      role="combobox"
-                      aria-autocomplete="list"
-                    />
-                    {loadingBands && (
-                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                        <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
-                      </div>
-                    )}
-                  </div>
+                  <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
+                    {/* Hidden password field to trick Safari */}
+                    <input type="password" style={{ display: 'none' }} tabIndex={-1} />
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        value={searchBandQuery}
+                        onChange={(e) => setSearchBandQuery(e.target.value)}
+                        placeholder="Nom du groupe..."
+                        className="bg-black/20 border-white/10 pl-10"
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="off"
+                        spellCheck="false"
+                        type="text"
+                        name={`search-${Math.random()}`}
+                        role="combobox"
+                        aria-autocomplete="list"
+                      />
+                      {loadingBands && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
+                        </div>
+                      )}
+                    </div>
+                  </form>
                   
                   {/* Résultats de la recherche */}
                   {searchedBands.length > 0 && (
@@ -204,32 +210,37 @@ export default function ConcertsTab({
                 {/* Ajout manuel */}
                 <div className="space-y-2 pt-3 border-t border-white/10">
                   <Label className="text-sm">Ou ajouter un groupe non inscrit</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={manualBandName}
-                      onChange={(e) => setManualBandName(e.target.value)}
-                      placeholder="Nom du groupe..."
-                      className="bg-black/20 border-white/10"
-                      autoComplete="new-password"
-                      type="text"
-                      name="manual-band-name"
-                      id="manual-band-name"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          addManualBand();
-                        }
-                      }}
-                    />
-                    <Button
-                      onClick={addManualBand}
-                      variant="outline"
-                      className="rounded-full"
-                      disabled={!manualBandName.trim()}
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  <form autoComplete="off" onSubmit={(e) => { e.preventDefault(); addManualBand(); }}>
+                    <input type="password" style={{ display: 'none' }} tabIndex={-1} />
+                    <div className="flex gap-2">
+                      <Input
+                        value={manualBandName}
+                        onChange={(e) => setManualBandName(e.target.value)}
+                        placeholder="Nom du groupe..."
+                        className="bg-black/20 border-white/10"
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="off"
+                        spellCheck="false"
+                        type="text"
+                        name={`manual-${Math.random()}`}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addManualBand();
+                          }
+                        }}
+                      />
+                      <Button
+                        onClick={addManualBand}
+                        variant="outline"
+                        className="rounded-full"
+                        disabled={!manualBandName.trim()}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </form>
                 </div>
               </div>
 

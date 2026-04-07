@@ -787,8 +787,8 @@ export default function VenueDetail() {
                   <div className="glassmorphism rounded-2xl p-6">
                     <h2 className="font-heading font-semibold text-lg mb-4">Styles musicaux</h2>
                     <div className="flex flex-wrap gap-2">
-                      {venue.music_styles.map((style, i) => (
-                        <span key={i} className="px-4 py-2 bg-primary/20 text-primary rounded-full">{style}</span>
+                      {venue.music_styles.map((style) => (
+                        <span key={style} className="px-4 py-2 bg-primary/20 text-primary rounded-full">{style}</span>
                       ))}
                     </div>
                   </div>
@@ -800,8 +800,8 @@ export default function VenueDetail() {
                       <Guitar className="w-5 h-5 text-primary" /> Matériel
                     </h2>
                     <div className="flex flex-wrap gap-2">
-                      {venue.equipment.map((item, i) => (
-                        <span key={i} className="px-4 py-2 bg-muted rounded-full text-muted-foreground">{item}</span>
+                      {venue.equipment.map((item) => (
+                        <span key={item} className="px-4 py-2 bg-muted rounded-full text-muted-foreground">{item}</span>
                       ))}
                     </div>
                   </div>
@@ -867,7 +867,7 @@ export default function VenueDetail() {
                       )}
                     </div>
                     <div className="flex flex-wrap gap-2 mt-3">
-                      {jam.music_styles.map((s, i) => <span key={i} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">{s}</span>)}
+                      {jam.music_styles.map((s) => <span key={s} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">{s}</span>)}
                     </div>
                     {jam.has_instruments && jam.instruments_available && jam.instruments_available.length > 0 && (
                       <p className="text-sm text-secondary mt-2">🎸 {jam.instruments_available.join(", ")}</p>
@@ -934,8 +934,8 @@ export default function VenueDetail() {
                     {concert.bands?.length > 0 && (
                       <div className="mt-3">
                         <p className="text-sm text-muted-foreground mb-1">Artistes:</p>
-                        {concert.bands.map((b, i) => (
-                          <div key={i} className="flex items-center gap-2">
+                        {concert.bands.map((b) => (
+                          <div key={b.name || b.id || Math.random()} className="flex items-center gap-2">
                             <span className="text-white font-medium">{b.name}</span>
                             {b.facebook && <a href={b.facebook} target="_blank" rel="noopener noreferrer"><Facebook className="w-4 h-4 text-blue-500" /></a>}
                             {b.instagram && <a href={b.instagram} target="_blank" rel="noopener noreferrer"><Instagram className="w-4 h-4 text-pink-500" /></a>}
@@ -1091,8 +1091,8 @@ export default function VenueDetail() {
                             
                             {selectedSlotForPreview.music_styles && selectedSlotForPreview.music_styles.length > 0 && (
                               <div className="flex flex-wrap gap-2">
-                                {selectedSlotForPreview.music_styles.map((s, i) => (
-                                  <span key={i} className="px-3 py-1 bg-secondary/20 text-secondary text-sm rounded-full">{s}</span>
+                                {selectedSlotForPreview.music_styles.map((s) => (
+                                  <span key={s} className="px-3 py-1 bg-secondary/20 text-secondary text-sm rounded-full">{s}</span>
                                 ))}
                               </div>
                             )}
@@ -1182,7 +1182,7 @@ export default function VenueDetail() {
                             
                             {slot.music_styles && slot.music_styles.length > 0 && (
                               <div className="flex flex-wrap gap-2">
-                                {slot.music_styles.map((s, i) => <span key={i} className="px-2 py-1 bg-secondary/20 text-secondary text-xs rounded-full">{s}</span>)}
+                                {slot.music_styles.map((s) => <span key={s} className="px-2 py-1 bg-secondary/20 text-secondary text-xs rounded-full">{s}</span>)}
                               </div>
                             )}
                             

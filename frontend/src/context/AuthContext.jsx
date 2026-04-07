@@ -7,6 +7,10 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  
+  // TODO: Security Enhancement - Migrate to httpOnly cookies
+  // Current: localStorage is vulnerable to XSS attacks
+  // Future: Use httpOnly cookies set by backend for better security
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [loading, setLoading] = useState(true);
 

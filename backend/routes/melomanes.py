@@ -42,7 +42,7 @@ async def create_melomane_profile(
         latitude, longitude = lat, lon
     
     # Normalize profile_picture URL
-    from server import normalize_image_url
+    from utils.db import normalize_image_url
     profile_picture_url = normalize_image_url(data.profile_picture) if data.profile_picture else None
     
     melomane_doc = {
@@ -126,7 +126,7 @@ async def update_melomane_profile(
     
     # Normalize profile_picture URL if provided
     if "profile_picture" in update_data and update_data["profile_picture"]:
-        from server import normalize_image_url
+        from utils.db import normalize_image_url
         update_data["profile_picture"] = normalize_image_url(update_data["profile_picture"])
     
     # Geocode city if changed

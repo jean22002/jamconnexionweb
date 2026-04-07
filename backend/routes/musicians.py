@@ -9,7 +9,7 @@ import jwt
 import os
 import logging
 import string
-import random
+import secrets  # Use secrets instead of random for secure tokens
 
 from models import (
     MusicianProfile, MusicianProfileResponse,
@@ -44,9 +44,9 @@ async def get_current_user(authorization: str = Header(None)):
 
 
 def generate_invite_code() -> str:
-    """Génère un code d'invitation unique de 6 caractères"""
+    """Génère un code d'invitation unique de 6 caractères (cryptographiquement sécurisé)"""
     characters = string.ascii_uppercase + string.digits
-    return ''.join(random.choices(characters, k=6))
+    return ''.join(secrets.choice(characters) for _ in range(6))
 
 
 

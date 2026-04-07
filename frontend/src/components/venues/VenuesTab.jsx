@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
@@ -61,6 +61,12 @@ export default function VenuesTab({ venues, subscriptions, onSubscribe, onUnsubs
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
 
+  // Pré-calculer les listes filtrées avec useMemo pour optimiser les performances
+  const franceVenues = useMemo(() => 
+    venues.filter(v => !v.country || v.country === 'France'),
+    [venues]
+  );
+
   return (
     <div className="glassmorphism rounded-2xl p-6">
       <h2 className="font-heading font-semibold text-2xl mb-6">Établissements</h2>
@@ -74,7 +80,7 @@ export default function VenuesTab({ venues, subscriptions, onSubscribe, onUnsubs
             Tous ({venues.length})
           </TabsTrigger>
           <TabsTrigger value="france" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
-            France ({venues.filter(v => !v.country || v.country === 'France').length})
+            France ({franceVenues.length})
           </TabsTrigger>
           <TabsTrigger value="region" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
             Par Région
@@ -102,7 +108,7 @@ export default function VenuesTab({ venues, subscriptions, onSubscribe, onUnsubs
         {/* France */}
         <TabsContent value="france" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {venues.filter(v => !v.country || v.country === 'France').map((venue) => (
+            {franceVenues.map((venue) => (
               <VenueCard 
                 key={venue.id} 
                 venue={venue}

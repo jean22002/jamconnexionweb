@@ -6,7 +6,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, timezone, timedelta
-import random
+import secrets  # Use secrets instead of random for secure tokens
 import string
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -45,8 +45,8 @@ class InvitationResponse(BaseModel):
 
 
 def generate_code() -> str:
-    """Generate a 6-character alphanumeric code"""
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    """Generate a 6-character alphanumeric code (cryptographically secure)"""
+    return ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(6))
 
 
 @router.post("/{band_id}/invite")

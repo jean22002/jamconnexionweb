@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
@@ -102,8 +102,22 @@ export default function MusiciansTab({
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
 
-  // Filtrer le musicien connecté
-  const otherMusicians = musicians.filter(m => m.user_id !== currentUserId);
+  // Filtrer le musicien connecté - Optimisé avec useMemo
+  const otherMusicians = useMemo(() => 
+    musicians.filter(m => m.user_id !== currentUserId),
+    [musicians, currentUserId]
+  );
+
+  // Pré-calculer les listes filtrées pour éviter les recalculs dans le JSX
+  const franceMusicians = useMemo(() => 
+    otherMusicians.filter(m => !m.country || m.country === 'France'),
+    [otherMusicians]
+  );
+
+  const countryMusicians = useMemo(() => 
+    otherMusicians.filter(m => m.country && m.country !== 'France'),
+    [otherMusicians]
+  );
 
   return (
     <div className="space-y-6">
@@ -120,7 +134,7 @@ export default function MusiciansTab({
               Tous ({otherMusicians.length})
             </TabsTrigger>
             <TabsTrigger value="france" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
-              France ({otherMusicians.filter(m => !m.country || m.country === 'France').length})
+              France ({franceMusicians.length})
             </TabsTrigger>
             <TabsTrigger value="region" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
               Par Région
@@ -152,9 +166,7 @@ export default function MusiciansTab({
           {/* France */}
           <TabsContent value="france" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {otherMusicians
-                .filter(m => !m.country || m.country === 'France')
-                .map((musician) => (
+              {franceMusicians.map((musician) => (
                   <MusicianCard 
                     key={musician.id} 
                     musician={musician} 
@@ -350,9 +362,7 @@ export default function MusiciansTab({
           {/* Autres Pays */}
           <TabsContent value="country" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {otherMusicians
-                .filter(m => m.country && m.country !== 'France')
-                .map((musician) => (
+              {countryMusicians.map((musician) => (
                   <MusicianCard 
                     key={musician.id} 
                     musician={musician} 

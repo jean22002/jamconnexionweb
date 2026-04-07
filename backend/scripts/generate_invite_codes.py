@@ -7,12 +7,12 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime, timezone, timedelta
 import uuid
 import string
-import random
+import secrets  # Use secrets instead of random for secure tokens
 
 def generate_invite_code() -> str:
-    """Génère un code d'invitation unique de 6 caractères"""
+    """Génère un code d'invitation unique de 6 caractères (cryptographiquement sécurisé)"""
     characters = string.ascii_uppercase + string.digits
-    return ''.join(random.choices(characters, k=6))
+    return ''.join(secrets.choice(characters) for _ in range(6))
 
 async def generate_codes_for_existing_bands():
     mongo_url = 'mongodb+srv://jean_jamconnexion:marcel22021983@customer-apps.xtch2ol.mongodb.net/test_database?retryWrites=true&w=majority'

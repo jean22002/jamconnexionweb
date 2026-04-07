@@ -25,7 +25,8 @@ def generate_cache_key(func_name: str, *args, **kwargs) -> str:
         'kwargs': kwargs
     }
     key_string = json.dumps(key_data, sort_keys=True, default=str)
-    return hashlib.md5(key_string.encode()).hexdigest()
+    # Use SHA-256 instead of MD5 for better security
+    return hashlib.sha256(key_string.encode()).hexdigest()
 
 
 def cache_result(ttl: int = 300, cache_instance: TTLCache = None):

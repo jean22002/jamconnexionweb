@@ -228,6 +228,10 @@ async def get_stats_counts():
 
 # Geocoding utility endpoint
 @api_router.post("/geocode")
+async def geocode_endpoint(data: dict):
+    """Public endpoint for geocoding addresses"""
+    return await geocode_address(data)
+
 # Include main API router
 app.include_router(api_router)
 

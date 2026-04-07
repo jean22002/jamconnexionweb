@@ -9,7 +9,7 @@ from math import radians, sin, cos, sqrt, atan2
 import jwt
 import os
 import logging
-import random
+import secrets  # Use secrets instead of random for secure tokens
 import string
 from models.band_invite import (
     BandInviteCodeResponse, 
@@ -173,9 +173,9 @@ async def get_available_departments():
 # ============= BAND INVITE CODES =============
 
 def generate_invite_code() -> str:
-    """Génère un code d'invitation unique de 6 caractères"""
+    """Génère un code d'invitation unique de 6 caractères (cryptographiquement sécurisé)"""
     characters = string.ascii_uppercase + string.digits
-    return ''.join(random.choices(characters, k=6))
+    return ''.join(secrets.choice(characters) for _ in range(6))
 
 
 @router.post("/bands/{band_id}/invite-code", response_model=BandInviteCodeResponse)

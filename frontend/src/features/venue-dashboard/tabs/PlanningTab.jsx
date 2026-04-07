@@ -1,4 +1,5 @@
-import { Loader2 } from "lucide-react";
+import { Loader2, Users, CheckCircle } from "lucide-react";
+import { useState } from "react";
 import Calendar from "../../../components/Calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog";
 import { Label } from "../../../components/ui/label";
@@ -40,8 +41,41 @@ export default function PlanningTab({
   selectedSlot,
   applications,
   handleAcceptApplication,
-  handleRejectApplication
+  handleRejectApplication,
+  onConvertToConcer// Nouveau callback
 }) {
+  // État local pour la sélection multiple
+  const [selectedApplications, setSelectedApplications] = useState([]);
+  const [showConvertModal, setShowConvertModal] = useState(false);
+
+  // Toggle sélection d'une candidature
+  const toggleApplicationSelection = (appId) => {
+    setSelectedApplications(prev => 
+      prev.includes(appId) 
+        ? prev.filter(id => id !== appId)
+        : [...prev, appId]
+    );
+  };
+
+  // Valider la sélection et proposer la conversion
+  const handleValidateSelection = () => {
+    if (selectedApplications.length === 0) {
+      alert("Veuillez sélectionner au moins un groupe");
+      return;
+    }
+    setShowConvertModal(true);
+  };
+
+  // Confirmer la conversion en concert
+  const handleConfirmConversion = () => {
+    if (onConvertToConcert) {
+      onConvertToConcert(selectedSlot, selectedApplications, applications);
+    }
+    setShowConvertModal(false);
+    setShowApplicationsModal(false);
+    setSelectedApplications([]);
+  };
+
   if (loadingEvents) {
     return (
       <div className="flex items-center justify-center py-20">

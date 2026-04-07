@@ -3,7 +3,7 @@
  * 
  * Gère toute la logique de recherche et d'ajout de groupes pour les concerts
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
 
@@ -17,7 +17,7 @@ export function useVenueBands(token, concertForm, setConcertForm) {
   const [manualBandName, setManualBandName] = useState("");
 
   // Rechercher des groupes dans la base de données pour les ajouter à un concert
-  const searchConcertBands = async (query) => {
+  const searchConcertBands = useCallback(async (query) => {
     if (!query || query.trim().length < 2) {
       setSearchedBands([]);
       return;
@@ -25,7 +25,7 @@ export function useVenueBands(token, concertForm, setConcertForm) {
     
     setLoadingBands(true);
     try {
-      const response = await axios.get(`${API}/musicians/bands/search?query=${encodeURIComponent(query)}`, {
+      const response = await axios.get(`${API}/bands/search?query=${encodeURIComponent(query)}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSearchedBands(response.data.slice(0, 10)); // Limiter à 10 résultats
@@ -35,7 +35,7 @@ export function useVenueBands(token, concertForm, setConcertForm) {
     } finally {
       setLoadingBands(false);
     }
-  };
+  }, [token]);
 
   // Ajouter un groupe depuis la BDD au concert
   const addBandFromDB = (band) => {
@@ -114,7 +114,7 @@ export function useVenueBands(token, concertForm, setConcertForm) {
       searchConcertBands(searchBandQuery);
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchBandQuery]);
+  }, [searchBandQuery, searchConcertBands]); // FIXED: Ajout de searchConcertBands dans les dépendances
 
   return {
     // États

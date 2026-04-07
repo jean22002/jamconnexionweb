@@ -164,6 +164,8 @@ export default function ConcertsTab({
                       onChange={(e) => setSearchBandQuery(e.target.value)}
                       placeholder="Nom du groupe..."
                       className="bg-black/20 border-white/10 pl-10"
+                      autoComplete="off"
+                      type="search"
                     />
                     {loadingBands && (
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -204,6 +206,8 @@ export default function ConcertsTab({
                       onChange={(e) => setManualBandName(e.target.value)}
                       placeholder="Nom du groupe..."
                       className="bg-black/20 border-white/10"
+                      autoComplete="off"
+                      type="text"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault();

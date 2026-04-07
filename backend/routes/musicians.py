@@ -1556,7 +1556,7 @@ async def set_temporary_location(
         
         # Geocode the city
         try:
-            from server import geocode_address
+            from utils.geocoding import geocode_address
             result = await geocode_address({"city": city, "postal_code": postal_code})
             
             if result and result.get("latitude"):

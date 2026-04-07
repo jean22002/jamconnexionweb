@@ -18,6 +18,7 @@ from slowapi.errors import RateLimitExceeded
 
 # Import utility functions
 from utils import geocode_city
+from utils.geocoding import geocode_address
 
 # CRITICAL: Middleware to trust Cloudflare proxy headers for WebSocket connections
 class CloudflareProxyMiddleware(BaseHTTPMiddleware):
@@ -227,32 +228,6 @@ async def get_stats_counts():
 
 # Geocoding utility endpoint
 @api_router.post("/geocode")
-async def geocode_address(data: dict):
-    """Geocode a city and postal code to get coordinates"""
-    city = data.get("city")
-    postal_code = data.get("postal_code")
-    
-    if not city:
-        raise HTTPException(status_code=400, detail="City is required")
-    
-    try:
-        latitude, longitude = await geocode_city(city)
-        
-        if not latitude or not longitude:
-            raise HTTPException(status_code=404, detail="Unable to geocode the provided address")
-        
-        return {
-            "latitude": latitude,
-            "longitude": longitude,
-            "city": city,
-            "postal_code": postal_code
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Geocoding error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error during geocoding")
-
 # Include main API router
 app.include_router(api_router)
 

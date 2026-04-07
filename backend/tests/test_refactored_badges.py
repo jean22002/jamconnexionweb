@@ -14,13 +14,13 @@ import uuid
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
-# Test credentials
-VENUE_EMAIL = "bar@gmail.com"
-VENUE_PASSWORD = "test"
-MUSICIAN_EMAIL = "musician@gmail.com"
-MUSICIAN_PASSWORD = "test"
-MELOMANE_EMAIL = "melomane@gmail.com"
-MELOMANE_PASSWORD = "test"
+# Test credentials - loaded from environment or use defaults for local testing
+VENUE_EMAIL = os.environ.get('TEST_VENUE_EMAIL', 'bar@gmail.com')
+VENUE_PASSWORD = os.environ.get('TEST_VENUE_PASSWORD', 'test')
+MUSICIAN_EMAIL = os.environ.get('TEST_MUSICIAN_EMAIL', 'musician@gmail.com')
+MUSICIAN_PASSWORD = os.environ.get('TEST_MUSICIAN_PASSWORD', 'test')
+MELOMANE_EMAIL = os.environ.get('TEST_MELOMANE_EMAIL', 'melomane@gmail.com')
+MELOMANE_PASSWORD = os.environ.get('TEST_MELOMANE_PASSWORD', 'test')
 
 
 class TestAuthentication:

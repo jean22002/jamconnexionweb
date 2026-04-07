@@ -409,8 +409,12 @@ export default function VenueDashboard() {
     has_catering: false, catering_drinks: 0, catering_respect: false, catering_tbd: false,
     // Accommodation
     has_accommodation: false, accommodation_capacity: 0, accommodation_tbd: false,
-    // Comptabilité
-    payment_method: "", amount: "", payment_status: "pending",
+    // Comptabilité & Facture
+    invoice_required: false,
+    payment_method: "", 
+    amount: null, 
+    payment_status: "pending",
+    invoice_file: null,
     // GUSO fields (for intermittent artists)
     cachet_type: "", // "isolé" or "groupé"
     guso_contract_type: "", // "CDDU", "CDD", etc.

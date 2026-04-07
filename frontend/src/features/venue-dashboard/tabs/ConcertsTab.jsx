@@ -340,6 +340,79 @@ export default function ConcertsTab({
                 )}
               </div>
 
+              {/* Facture */}
+              <div className="p-4 border-2 border-cyan-500/20 rounded-xl space-y-4">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={concertForm.invoice_required || false}
+                    onCheckedChange={(checked) => setConcertForm({ 
+                      ...concertForm, 
+                      invoice_required: checked,
+                      payment_status: checked ? (concertForm.payment_status || 'pending') : undefined
+                    })}
+                  />
+                  <Label className="font-medium text-cyan-400">📄 Facture requise</Label>
+                </div>
+
+                {concertForm.invoice_required && (
+                  <div className="pl-8 space-y-3">
+                    <div className="space-y-2">
+                      <Label>Statut de paiement</Label>
+                      <Select 
+                        value={concertForm.payment_status || 'pending'} 
+                        onValueChange={(value) => setConcertForm({ ...concertForm, payment_status: value })}
+                      >
+                        <SelectTrigger className="bg-black/20 border-white/10">
+                          <SelectValue placeholder="Sélectionner" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">⏳ En attente</SelectItem>
+                          <SelectItem value="paid">✅ Payé</SelectItem>
+                          <SelectItem value="partial">🔄 Partiel</SelectItem>
+                          <SelectItem value="cancelled">❌ Annulé</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Montant (optionnel)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={concertForm.amount || ''}
+                        onChange={(e) => setConcertForm({ ...concertForm, amount: parseFloat(e.target.value) || 0 })}
+                        className="bg-black/20 border-white/10"
+                        placeholder="ex: 150.00"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Moyen de paiement</Label>
+                      <Select 
+                        value={concertForm.payment_method || ''} 
+                        onValueChange={(value) => setConcertForm({ ...concertForm, payment_method: value })}
+                      >
+                        <SelectTrigger className="bg-black/20 border-white/10">
+                          <SelectValue placeholder="Sélectionner" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cash">💵 Espèces</SelectItem>
+                          <SelectItem value="check">📝 Chèque</SelectItem>
+                          <SelectItem value="transfer">🏦 Virement</SelectItem>
+                          <SelectItem value="card">💳 Carte bancaire</SelectItem>
+                          <SelectItem value="other">📋 Autre</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="text-xs text-muted-foreground bg-black/20 p-3 rounded-lg">
+                      💡 <strong>Note :</strong> Vous pourrez uploader la facture plus tard depuis l'onglet Comptabilité
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Restauration */}
               <div className="p-4 border-2 border-green-500/20 rounded-xl space-y-4">
                 <div className="flex items-center gap-2">

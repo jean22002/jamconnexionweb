@@ -49,9 +49,16 @@ export default function ConcertsTab({
 
   // Ajouter un groupe depuis la BDD
   const addBandFromDB = (band) => {
-    const existingBands = concertForm.bands || [];
+    // S'assurer que concertForm et bands existent
+    if (!concertForm) {
+      console.error("concertForm is undefined");
+      return;
+    }
+    
+    const existingBands = Array.isArray(concertForm.bands) ? concertForm.bands : [];
+    
     // Vérifier si le groupe n'est pas déjà ajouté (par nom)
-    if (existingBands.some(b => b.name === band.name)) {
+    if (existingBands.some(b => b && b.name === band.name)) {
       return; // Déjà ajouté
     }
     
@@ -59,7 +66,7 @@ export default function ConcertsTab({
       ...concertForm,
       bands: [...existingBands, {
         name: band.name,
-        musician_id: band.admin_id || null, // ID du musicien propriétaire du groupe
+        musician_id: band.admin_id || null,
         members_count: band.members_count || null,
         photo: band.photo || null
       }]
@@ -72,7 +79,14 @@ export default function ConcertsTab({
   const addManualBand = () => {
     if (!manualBandName.trim()) return;
     
-    const existingBands = concertForm.bands || [];
+    // S'assurer que concertForm existe
+    if (!concertForm) {
+      console.error("concertForm is undefined");
+      return;
+    }
+    
+    const existingBands = Array.isArray(concertForm.bands) ? concertForm.bands : [];
+    
     setConcertForm({
       ...concertForm,
       bands: [...existingBands, {
@@ -85,7 +99,12 @@ export default function ConcertsTab({
 
   // Supprimer un groupe de la liste
   const removeBand = (index) => {
-    const updatedBands = [...(concertForm.bands || [])];
+    if (!concertForm || !Array.isArray(concertForm.bands)) {
+      console.error("concertForm.bands is not an array");
+      return;
+    }
+    
+    const updatedBands = [...concertForm.bands];
     updatedBands.splice(index, 1);
     setConcertForm({ ...concertForm, bands: updatedBands });
   };
@@ -190,10 +209,10 @@ export default function ConcertsTab({
                 <Label className="font-medium text-purple-400">🎸 Groupes / Artistes</Label>
                 
                 {/* Liste des groupes ajoutés */}
-                {concertForm.bands && concertForm.bands.length > 0 && (
+                {concertForm && Array.isArray(concertForm.bands) && concertForm.bands.length > 0 && (
                   <div className="space-y-2">
                     {concertForm.bands.map((band, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-black/30 rounded-lg">
+                      <div key={`band-${index}-${band.name}`} className="flex items-center justify-between p-3 bg-black/30 rounded-lg">
                         <div className="flex items-center gap-2">
                           <Music className="w-4 h-4 text-purple-400" />
                           <span className="font-medium">{band.name}</span>

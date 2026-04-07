@@ -1,5 +1,4 @@
 import { Button } from "../../../components/ui/button";
-import LazyImage from "../../../components/LazyImage";
 import { Music, Loader2, Plus, Trash2 } from "lucide-react";
 
 export default function GalleryTab({
@@ -52,22 +51,26 @@ export default function GalleryTab({
             <p className="text-sm mt-2">Ajoutez des photos de vos soirées !</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
             {gallery.map((photo, index) => (
-              <div key={index} className="relative group">
-                <LazyImage 
+              <div key={index} className="relative group aspect-square overflow-hidden rounded-lg border border-white/10 hover:border-primary/50 transition-all">
+                <img 
                   src={photo} 
                   alt={`Photo ${index + 1}`} 
-                  className="w-full h-48 object-cover rounded-lg"
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  onError={(e) => {
+                    e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150"%3E%3Crect fill="%23333" width="150" height="150"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="40"%3E❌%3C/text%3E%3C/svg%3E';
+                  }}
                 />
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center">
                   <Button
                     onClick={() => deleteGalleryPhoto(photo)}
                     variant="destructive"
                     size="sm"
-                    className="rounded-full"
+                    className="rounded-full gap-1 text-xs h-8 px-3"
                   >
-                    <Trash2 className="w-4 h-4 mr-2" />
+                    <Trash2 className="w-3 h-3" />
                     Supprimer
                   </Button>
                 </div>

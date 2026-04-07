@@ -30,7 +30,7 @@ export function useVenueBands(token, concertForm, setConcertForm) {
       });
       setSearchedBands(response.data.slice(0, 10)); // Limiter à 10 résultats
     } catch (error) {
-      console.error("Erreur lors de la recherche de groupes:", error);
+      // Error handling - groups search failed
       setSearchedBands([]);
     } finally {
       setLoadingBands(false);
@@ -41,7 +41,6 @@ export function useVenueBands(token, concertForm, setConcertForm) {
   const addBandFromDB = (band) => {
     // S'assurer que concertForm et bands existent
     if (!concertForm) {
-      console.error("concertForm is undefined");
       return;
     }
     
@@ -73,7 +72,6 @@ export function useVenueBands(token, concertForm, setConcertForm) {
     
     // S'assurer que concertForm existe
     if (!concertForm) {
-      console.error("concertForm is undefined");
       return;
     }
     
@@ -99,7 +97,6 @@ export function useVenueBands(token, concertForm, setConcertForm) {
   // Supprimer un groupe de la liste du concert
   const removeBandFromConcert = (index) => {
     if (!concertForm || !Array.isArray(concertForm.bands)) {
-      console.error("concertForm.bands is not an array");
       return;
     }
     

@@ -2217,6 +2217,69 @@ export default function VenueDashboard() {
   const handleAcceptApplication = (appId) => handleApplication(appId, "accept");
   const handleRejectApplication = (appId) => handleApplication(appId, "reject");
 
+  // Convert planning slot to concert with selected applications
+  const handleConvertToConcert = async (slot, selectedAppIds, allApplications) => {
+    try {
+      // Get selected applications details
+      const selectedApps = allApplications.filter(app => selectedAppIds.includes(app.id));
+      
+      // Build bands array from selected applications
+      const bands = selectedApps.map(app => ({
+        name: app.band_name || app.musician_name,
+        musician_id: app.musician_id,
+        members_count: app.members_count || null
+      }));
+
+      // Create concert from slot data
+      const concertData = {
+        date: slot.date,
+        start_time: slot.time || "20:00",
+        end_time: null,
+        title: slot.title || `Concert ${bands.map(b => b.name).join(' & ')}`,
+        description: slot.description || "",
+        bands: bands,
+        price: "",
+        music_styles: slot.music_styles || [],
+        is_guso: slot.is_guso || false,
+        has_catering: slot.has_catering || false,
+        catering_drinks: slot.catering_drinks || 0,
+        catering_respect: slot.catering_respect || false,
+        catering_tbd: slot.catering_tbd || false,
+        has_accommodation: slot.has_accommodation || false,
+        accommodation_capacity: slot.accommodation_capacity || 0,
+        accommodation_tbd: slot.accommodation_tbd || false
+      };
+
+      // Create the concert
+      await axios.post(
+        `${API}/concerts`,
+        concertData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Accept all selected applications
+      for (const appId of selectedAppIds) {
+        await handleApplication(appId, "accept");
+      }
+
+      // Close/archive the planning slot
+      await axios.delete(
+        `${API}/planning/${slot.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success(`Concert créé avec ${bands.length} groupe${bands.length > 1 ? 's' : ''} !`);
+      
+      // Refresh data
+      await fetchPlanningSlots();
+      await fetchEvents();
+      
+    } catch (error) {
+      console.error("Error converting to concert:", error);
+      toast.error(error.response?.data?.detail || "Erreur lors de la conversion");
+    }
+  };
+
   const handleUpdateEvent = async () => {
     try {
       if (selectedEventType === 'concert') {
@@ -3370,6 +3433,7 @@ export default function VenueDashboard() {
               applications={selectedSlot ? (applications[selectedSlot.id] || []) : []}
               handleAcceptApplication={handleAcceptApplication}
               handleRejectApplication={handleRejectApplication}
+              onConvertToConcert={handleConvertToConcert}
             />
           </TabsContent>
 

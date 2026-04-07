@@ -164,8 +164,12 @@ export default function ConcertsTab({
                       onChange={(e) => setSearchBandQuery(e.target.value)}
                       placeholder="Nom du groupe..."
                       className="bg-black/20 border-white/10 pl-10"
-                      autoComplete="off"
+                      autoComplete="new-password"
                       type="search"
+                      name="search-band-query"
+                      id="search-band-query"
+                      role="combobox"
+                      aria-autocomplete="list"
                     />
                     {loadingBands && (
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -206,8 +210,10 @@ export default function ConcertsTab({
                       onChange={(e) => setManualBandName(e.target.value)}
                       placeholder="Nom du groupe..."
                       className="bg-black/20 border-white/10"
-                      autoComplete="off"
+                      autoComplete="new-password"
                       type="text"
+                      name="manual-band-name"
+                      id="manual-band-name"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault();

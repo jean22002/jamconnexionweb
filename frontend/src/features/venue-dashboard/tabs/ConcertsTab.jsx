@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Button } from "../../../components/ui/button";
-import { Plus, Edit, Trash2, Calendar, MapPin, Clock, Music, Users, Euro } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, MapPin, Clock, Music, Users, Euro, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../../components/ui/dialog";
 import { Label } from "../../../components/ui/label";
 import { Input } from "../../../components/ui/input";
 import { Textarea } from "../../../components/ui/textarea";
+import { Switch } from "../../../components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 import TimeSelect from "../../../components/TimeSelect";
 
 export default function ConcertsTab({
@@ -27,14 +29,15 @@ export default function ConcertsTab({
               <Plus className="w-4 h-4" /> Nouveau concert
             </Button>
           </DialogTrigger>
-          <DialogContent className="glassmorphism border-white/10 max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogContent className="glassmorphism border-white/10 max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Créer un concert</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 mt-4">
+            <div className="space-y-6 mt-4">
+              {/* Date & Heures */}
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Date</Label>
+                  <Label>Date *</Label>
                   <Input 
                     type="date" 
                     value={concertForm.date} 
@@ -59,12 +62,15 @@ export default function ConcertsTab({
                   />
                 </div>
               </div>
+
+              {/* Titre & Description */}
               <div className="space-y-2">
                 <Label>Titre</Label>
                 <Input 
                   value={concertForm.title} 
                   onChange={(e) => setConcertForm({ ...concertForm, title: e.target.value })} 
-                  className="bg-black/20 border-white/10" 
+                  className="bg-black/20 border-white/10"
+                  placeholder="Soirée Rock"
                 />
               </div>
               <div className="space-y-2">
@@ -74,8 +80,158 @@ export default function ConcertsTab({
                   onChange={(e) => setConcertForm({ ...concertForm, description: e.target.value })} 
                   className="bg-black/20 border-white/10" 
                   rows={3}
+                  placeholder="Décrivez le concert..."
                 />
               </div>
+
+              {/* Prix & Styles musicaux */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Prix d'entrée</Label>
+                  <Input 
+                    value={concertForm.price} 
+                    onChange={(e) => setConcertForm({ ...concertForm, price: e.target.value })} 
+                    className="bg-black/20 border-white/10"
+                    placeholder="ex: 10€, Gratuit, PAF"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Styles musicaux</Label>
+                  <Input 
+                    value={concertForm.music_styles?.join(", ") || ""} 
+                    onChange={(e) => setConcertForm({ ...concertForm, music_styles: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })} 
+                    className="bg-black/20 border-white/10"
+                    placeholder="Rock, Jazz, Blues"
+                  />
+                </div>
+              </div>
+
+              {/* GUSO */}
+              <div className="p-4 border-2 border-amber-500/20 rounded-xl space-y-4">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={concertForm.is_guso || concertForm.payment_method === 'guso'}
+                    onCheckedChange={(checked) => setConcertForm({ 
+                      ...concertForm, 
+                      is_guso: checked,
+                      payment_method: checked ? 'guso' : ''
+                    })}
+                  />
+                  <Label className="font-medium text-amber-400">📋 Concert avec contrat GUSO</Label>
+                </div>
+
+                {(concertForm.is_guso || concertForm.payment_method === 'guso') && (
+                  <div className="pl-8 space-y-3">
+                    <div className="space-y-2">
+                      <Label>Type de cachet</Label>
+                      <Select 
+                        value={concertForm.cachet_type} 
+                        onValueChange={(value) => setConcertForm({ ...concertForm, cachet_type: value })}
+                      >
+                        <SelectTrigger className="bg-black/20 border-white/10">
+                          <SelectValue placeholder="Sélectionner" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="isolé">Cachet isolé</SelectItem>
+                          <SelectItem value="groupé">Cachet groupé</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Type de contrat</Label>
+                      <Select 
+                        value={concertForm.guso_contract_type} 
+                        onValueChange={(value) => setConcertForm({ ...concertForm, guso_contract_type: value })}
+                      >
+                        <SelectTrigger className="bg-black/20 border-white/10">
+                          <SelectValue placeholder="Sélectionner" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="CDDU">CDDU</SelectItem>
+                          <SelectItem value="CDD">CDD</SelectItem>
+                          <SelectItem value="autre">Autre</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Restauration */}
+              <div className="p-4 border-2 border-green-500/20 rounded-xl space-y-4">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={concertForm.has_catering}
+                    onCheckedChange={(checked) => setConcertForm({ ...concertForm, has_catering: checked })}
+                  />
+                  <Label className="font-medium text-green-400">🍽️ Restauration proposée</Label>
+                </div>
+
+                {concertForm.has_catering && (
+                  <div className="pl-8 space-y-3">
+                    <div className="space-y-2">
+                      <Label>Nombre de boissons offertes</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={concertForm.catering_drinks}
+                        onChange={(e) => setConcertForm({ ...concertForm, catering_drinks: parseInt(e.target.value) || 0 })}
+                        className="bg-black/20 border-white/10"
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={concertForm.catering_respect}
+                        onCheckedChange={(checked) => setConcertForm({ ...concertForm, catering_respect: checked })}
+                      />
+                      <Label className="text-sm">Repas respectueux (végétarien/vegan)</Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={concertForm.catering_tbd}
+                        onCheckedChange={(checked) => setConcertForm({ ...concertForm, catering_tbd: checked })}
+                      />
+                      <Label className="text-sm">À définir avec l'artiste</Label>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Hébergement */}
+              <div className="p-4 border-2 border-blue-500/20 rounded-xl space-y-4">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={concertForm.has_accommodation}
+                    onCheckedChange={(checked) => setConcertForm({ ...concertForm, has_accommodation: checked })}
+                  />
+                  <Label className="font-medium text-blue-400">🏠 Hébergement proposé</Label>
+                </div>
+
+                {concertForm.has_accommodation && (
+                  <div className="pl-8 space-y-3">
+                    <div className="space-y-2">
+                      <Label>Capacité d'hébergement (personnes)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={concertForm.accommodation_capacity}
+                        onChange={(e) => setConcertForm({ ...concertForm, accommodation_capacity: parseInt(e.target.value) || 0 })}
+                        className="bg-black/20 border-white/10"
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={concertForm.accommodation_tbd}
+                        onCheckedChange={(checked) => setConcertForm({ ...concertForm, accommodation_tbd: checked })}
+                      />
+                      <Label className="text-sm">À définir avec l'artiste</Label>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <Button 
                 onClick={handleCreateConcert} 
                 className="w-full bg-primary hover:bg-primary/90 rounded-full"

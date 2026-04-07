@@ -427,7 +427,11 @@ export default function VenueDashboard() {
     date: "", start_time: "", end_time: "", type: "", artist_name: "",
     description: "", price: "",
     // Comptabilité
-    payment_method: "", amount: "", payment_status: "pending"
+    payment_method: "", amount: "", payment_status: "pending",
+    // Restauration
+    has_catering: false, catering_drinks: 0, catering_respect: false, catering_tbd: false,
+    // Hébergement
+    has_accommodation: false, accommodation_capacity: 0, accommodation_tbd: false
   });
 
   const [newBand, setNewBand] = useState({ name: "", musician_id: "", members_count: 0, photo: "", facebook: "", instagram: "" });
@@ -3187,6 +3191,81 @@ export default function VenueDashboard() {
                               {spectacleForm.payment_method === "promotion" && " • Gratuit"}
                               {spectacleForm.payment_method === "etablissement" && " • Montant à négocier"}
                             </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Restauration */}
+                      <div className="space-y-4 p-4 border-2 border-green-500/20 rounded-xl">
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={spectacleForm.has_catering}
+                            onCheckedChange={(checked) => setSpectacleForm({ ...spectacleForm, has_catering: checked })}
+                          />
+                          <Label className="font-medium text-green-400">🍽️ Restauration proposée</Label>
+                        </div>
+
+                        {spectacleForm.has_catering && (
+                          <div className="space-y-3 pl-8">
+                            <div className="space-y-2">
+                              <Label>Nombre de boissons offertes</Label>
+                              <Input
+                                type="number"
+                                min="0"
+                                value={spectacleForm.catering_drinks}
+                                onChange={(e) => setSpectacleForm({ ...spectacleForm, catering_drinks: parseInt(e.target.value) || 0 })}
+                                className="bg-black/20 border-white/10"
+                                placeholder="0"
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                checked={spectacleForm.catering_respect}
+                                onCheckedChange={(checked) => setSpectacleForm({ ...spectacleForm, catering_respect: checked })}
+                              />
+                              <Label className="text-sm">Repas respectueux (végétarien/vegan)</Label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                checked={spectacleForm.catering_tbd}
+                                onCheckedChange={(checked) => setSpectacleForm({ ...spectacleForm, catering_tbd: checked })}
+                              />
+                              <Label className="text-sm">À définir avec l'artiste</Label>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Hébergement */}
+                      <div className="space-y-4 p-4 border-2 border-blue-500/20 rounded-xl">
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={spectacleForm.has_accommodation}
+                            onCheckedChange={(checked) => setSpectacleForm({ ...spectacleForm, has_accommodation: checked })}
+                          />
+                          <Label className="font-medium text-blue-400">🏠 Hébergement proposé</Label>
+                        </div>
+
+                        {spectacleForm.has_accommodation && (
+                          <div className="space-y-3 pl-8">
+                            <div className="space-y-2">
+                              <Label>Capacité d'hébergement (personnes)</Label>
+                              <Input
+                                type="number"
+                                min="0"
+                                value={spectacleForm.accommodation_capacity}
+                                onChange={(e) => setSpectacleForm({ ...spectacleForm, accommodation_capacity: parseInt(e.target.value) || 0 })}
+                                className="bg-black/20 border-white/10"
+                                placeholder="0"
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                checked={spectacleForm.accommodation_tbd}
+                                onCheckedChange={(checked) => setSpectacleForm({ ...spectacleForm, accommodation_tbd: checked })}
+                              />
+                              <Label className="text-sm">À définir avec l'artiste</Label>
+                            </div>
                           </div>
                         )}
                       </div>

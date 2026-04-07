@@ -9,15 +9,9 @@ from datetime import datetime, timezone, timedelta
 import secrets  # Use secrets instead of random for secure tokens
 import string
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from utils.db import get_db  # Import from utils to avoid circular dependency
 
 router = APIRouter(prefix="/bands", tags=["bands"])
-
-# Database will be injected
-db: AsyncIOMotorDatabase = None
-
-def get_db():
-    from server import db as database
-    return database
 
 # Dependency to get current user
 async def get_current_user_local(authorization: str = Header(None)):

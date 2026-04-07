@@ -1362,8 +1362,8 @@ export default function VenueDetail() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {bandsPlayed.map((band, index) => (
-                    <div key={index} className="card-venue p-5 hover:border-primary/30 transition-all">
+                  {bandsPlayed.map((band) => (
+                    <div key={band.name || band.id || Math.random()} className="card-venue p-5 hover:border-primary/30 transition-all">
                       <div className="flex flex-col items-center text-center">
                         {band.photo ? (
                           <LazyImage 
@@ -1586,8 +1586,8 @@ export default function VenueDetail() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {venue.gallery.map((photo, index) => (
-                    <div key={index} className="group cursor-pointer">
+                  {venue.gallery.map((photo) => (
+                    <div key={photo} className="group cursor-pointer">
                       <LazyImage 
                         src={photo} 
                         alt={`${venue.name} - Photo ${index + 1}`}

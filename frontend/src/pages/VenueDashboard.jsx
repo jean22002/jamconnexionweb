@@ -2351,7 +2351,7 @@ export default function VenueDashboard() {
     
     setLoadingBands(true);
     try {
-      const response = await axios.get(`${API}/musicians/bands/search?q=${encodeURIComponent(query)}`, {
+      const response = await axios.get(`${API}/musicians/bands/search?query=${encodeURIComponent(query)}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSearchedBands(response.data.slice(0, 10)); // Limiter à 10 résultats

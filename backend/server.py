@@ -198,8 +198,8 @@ chat.set_db(db)
 
 # Include domain-specific routers
 api_router.include_router(melomanes.router)
-api_router.include_router(musicians.router)
-api_router.include_router(venues.router)
+api_router.include_router(musicians.router, prefix="/musicians")
+api_router.include_router(venues.router, prefix="/venues")
 api_router.include_router(events.router)
 api_router.include_router(planning.router)
 api_router.include_router(bands.router)

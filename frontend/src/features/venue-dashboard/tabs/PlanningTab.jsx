@@ -275,6 +275,21 @@ export default function PlanningTab({
               </Select>
             </div>
 
+            {/* GUSO - Contrat GUSO */}
+            <div className="space-y-3 p-4 bg-purple-500/5 rounded-lg border border-purple-500/20">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="is_guso"
+                  checked={planningForm.is_guso || false}
+                  onCheckedChange={(checked) => setPlanningForm({ ...planningForm, is_guso: checked })}
+                />
+                <label htmlFor="is_guso" className="text-sm font-semibold cursor-pointer flex items-center gap-2">
+                  💼 Concert avec contrat GUSO
+                  <span className="text-xs text-muted-foreground font-normal">(affiché sur la carte)</span>
+                </label>
+              </div>
+            </div>
+
             {/* Restauration (Catering) */}
             <div className="space-y-3 p-4 bg-primary/5 rounded-lg border border-primary/20">
               <div className="flex items-center space-x-2">

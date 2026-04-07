@@ -254,6 +254,7 @@ export default function VenueDashboard() {
     artist_categories: [],
     num_bands_needed: 1,
     application_type: 'bands', // 'bands', 'solo', or 'both'
+    is_guso: false, // GUSO contract
     // Catering
     has_catering: false,
     catering_drinks: 0,
@@ -1706,6 +1707,8 @@ export default function VenueDashboard() {
           expected_attendance: parseInt(planningForm.expectedAttendance) || 0,
           payment: planningForm.payment,
           num_bands_needed: planningForm.num_bands_needed || 1,
+          application_type: planningForm.application_type || 'bands',
+          is_guso: planningForm.is_guso || false,
           has_catering: planningForm.has_catering || false,
           catering_drinks: planningForm.catering_drinks || 0,
           catering_respect: planningForm.catering_respect || false,
@@ -1724,12 +1727,16 @@ export default function VenueDashboard() {
         time: '',
         title: '',
         description: '',
+        music_styles: [],
+        artist_categories: [],
         expectedBandStyle: '',
         expectedAttendance: '',
         payment: '',
         payment_type: 'manual',
         payment_base: '',
         num_bands_needed: 1,
+        application_type: 'bands',
+        is_guso: false,
         has_catering: false,
         catering_drinks: 0,
         catering_respect: false,

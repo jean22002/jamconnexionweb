@@ -233,6 +233,7 @@ class PlanningSlot(BaseModel):
     artist_categories: List[str] = []
     num_bands_needed: int = 1
     application_type: str = "bands"  # "bands" or "solo"
+    is_guso: bool = False  # GUSO contract
     # Catering
     has_catering: bool = False
     catering_drinks: int = 0
@@ -273,6 +274,7 @@ class PlanningSlotResponse(BaseModel):
     has_accommodation: bool = False
     accommodation_capacity: int = 0
     accommodation_tbd: bool = False
+    is_guso: bool = False  # GUSO contract
     created_at: str
 
 # Modèle pour les candidatures de concerts

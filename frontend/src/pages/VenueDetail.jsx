@@ -1187,6 +1187,11 @@ export default function VenueDetail() {
                             )}
                             
                             <div className="space-y-1 text-sm">
+                              {slot.is_guso && (
+                                <p className="font-semibold text-purple-400 flex items-center gap-1">
+                                  💼 Concert avec contrat GUSO
+                                </p>
+                              )}
                               {slot.expected_band_style && (
                                 <p className="text-muted-foreground">🎸 Style recherché: {slot.expected_band_style}</p>
                               )}

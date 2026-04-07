@@ -136,6 +136,7 @@ export default function MapTab({
   const [showOffersFilter, setShowOffersFilter] = useState(false);
   const [selectedOfferDate, setSelectedOfferDate] = useState('all');
   const [selectedOfferStyle, setSelectedOfferStyle] = useState('all');
+  const [filterGusoOnly, setFilterGusoOnly] = useState(false); // Nouveau filtre GUSO
   
   const isPro = musicianProfile?.tier === 'pro';
 
@@ -207,9 +208,14 @@ export default function MapTab({
 
   // Get venue IDs from filtered available slots/offers
   const filteredOfferVenueIds = useMemo(() => {
-    if (!showOffersFilter) return null;
+    if (!showOffersFilter && !filterGusoOnly) return null;
     
     const filtered = (availableSlots || []).filter(slot => {
+      // Filter by GUSO
+      if (filterGusoOnly && !slot.is_guso) {
+        return false;
+      }
+      
       // Filter by date
       if (selectedOfferDate !== 'all' && slot.date !== selectedOfferDate) {
         return false;
@@ -231,7 +237,7 @@ export default function MapTab({
     // Extract venue names
     const venueNames = new Set(filtered.map(slot => slot.venue_name).filter(Boolean));
     return venueNames;
-  }, [availableSlots, showOffersFilter, selectedOfferDate, selectedOfferStyle]);
+  }, [availableSlots, showOffersFilter, filterGusoOnly, selectedOfferDate, selectedOfferStyle]);
 
   // Extract all unique styles from venues (normalize case to avoid duplicates)
   const allStyles = useMemo(() => {
@@ -592,14 +598,25 @@ export default function MapTab({
                 <p className="text-xs text-muted-foreground">Réservé Musicien PRO</p>
               </div>
             </div>
-            <Button
-              onClick={() => setShowOffersFilter(!showOffersFilter)}
-              variant={showOffersFilter ? "default" : "outline"}
-              size="sm"
-              className="rounded-full"
-            >
-              {showOffersFilter ? 'Actif' : 'Désactivé'}
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* Filtre GUSO rapide */}
+              <Button
+                onClick={() => setFilterGusoOnly(!filterGusoOnly)}
+                variant={filterGusoOnly ? "default" : "outline"}
+                size="sm"
+                className={`rounded-full ${filterGusoOnly ? 'bg-gradient-to-r from-purple-500 to-pink-500' : ''}`}
+              >
+                💼 GUSO
+              </Button>
+              <Button
+                onClick={() => setShowOffersFilter(!showOffersFilter)}
+                variant={showOffersFilter ? "default" : "outline"}
+                size="sm"
+                className="rounded-full"
+              >
+                {showOffersFilter ? 'Actif' : 'Désactivé'}
+              </Button>
+            </div>
           </div>
           
           {showOffersFilter && (

@@ -40,16 +40,16 @@ def decode_token(token: str) -> dict:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 async def get_current_user(request: Request = None, authorization: str = Header(None), db=None):
-    """Get current user from httpOnly cookie or Authorization header (fallback)"""
+    """Get current user from httpOnly cookie OR Authorization header (hybrid approach)"""
     token = None
     
-    # Try to get token from cookie first (httpOnly - more secure)
-    if request:
-        token = request.cookies.get("access_token")
-    
-    # Fallback to Authorization header for backward compatibility
-    if not token and authorization:
+    # Try Authorization header FIRST (for cross-domain - jamconnexion.com)
+    if authorization and authorization.startswith("Bearer "):
         token = authorization.replace("Bearer ", "")
+    
+    # Fallback to cookie (for same-domain - preview.emergentagent.com)
+    if not token and request:
+        token = request.cookies.get("access_token")
     
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")

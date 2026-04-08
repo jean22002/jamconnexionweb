@@ -177,7 +177,7 @@ async def login(request: Request, response: Response, data: UserLogin):
     
     token = create_token(user["id"], user["email"], user["role"])
     
-    # Set httpOnly cookie for security
+    # Set httpOnly cookie for security (for same-domain access)
     is_production = os.environ.get('ENVIRONMENT') == 'production'
     response.set_cookie(
         key="access_token",
@@ -189,8 +189,9 @@ async def login(request: Request, response: Response, data: UserLogin):
         path="/"
     )
     
-    # Return user info without token (token is in httpOnly cookie)
+    # Return user info WITH token for cross-domain compatibility (jamconnexion.com)
     return {
+        "token": token,  # ← Token returned for localStorage (cross-domain compatibility)
         "user": {
             "id": user["id"],
             "email": user["email"],

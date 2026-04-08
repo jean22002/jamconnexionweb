@@ -17,9 +17,7 @@ export const useOnlineStatus = () => {
   // Récupérer le mode actuel
   const fetchMode = useCallback(async () => {
     try {
-      const response = await axios.get(`${API}/api/online-status/mode`, {
-        withCredentials: true
-      });
+      const response = await axios.get(`${API}/api/online-status/mode`);
       
       setMode(response.data.mode);
       setManualStatus(response.data.manual_status);
@@ -39,8 +37,7 @@ export const useOnlineStatus = () => {
       setLoading(true);
       const response = await axios.put(
         `${API}/api/online-status/mode`,
-        { mode: newMode },
-        { withCredentials: true }
+        { mode: newMode }
       );
       
       setMode(response.data.mode);
@@ -65,8 +62,7 @@ export const useOnlineStatus = () => {
       const newStatus = !manualStatus;
       const response = await axios.put(
         `${API}/api/online-status/manual`,
-        { is_online: newStatus },
-        { withCredentials: true }
+        { is_online: newStatus }
       );
       
       setManualStatus(newStatus);

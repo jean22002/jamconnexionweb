@@ -8,16 +8,24 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // Try to get user from httpOnly cookie
-        const response = await axios.get(`${API}/auth/me`, {
-          withCredentials: true
-        });
-        setUser(response.data);
+        const savedToken = localStorage.getItem("token");
+        if (savedToken) {
+          // Try to get user with saved token
+          const response = await axios.get(`${API}/auth/me`, {
+            headers: { Authorization: `Bearer ${savedToken}` }
+          });
+          setUser(response.data);
+          setToken(savedToken);
+        }
       } catch (error) {
+        // Token invalid, clear it
+        localStorage.removeItem("token");
+        setToken(null);
         setUser(null);
       }
       setLoading(false);
@@ -29,10 +37,13 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const response = await axios.post(
       `${API}/auth/login`, 
-      { email, password },
-      { withCredentials: true }
+      { email, password }
     );
-    const { user: userData } = response.data;
+    const { token, user: userData } = response.data;
+    
+    // Store token in localStorage for cross-domain compatibility
+    localStorage.setItem("token", token);
+    setToken(token);
     setUser(userData);
     return userData;
   };
@@ -40,31 +51,46 @@ export const AuthProvider = ({ children }) => {
   const register = async (email, password, name, role) => {
     const response = await axios.post(
       `${API}/auth/register`, 
-      { email, password, name, role },
-      { withCredentials: true }
+      { email, password, name, role }
     );
-    const { user: userData } = response.data;
+    const { token, user: userData } = response.data;
+    
+    // Store token in localStorage
+    localStorage.setItem("token", token);
+    setToken(token);
     setUser(userData);
     return userData;
   };
 
   const logout = async () => {
     try {
-      await axios.post(`${API}/auth/logout`, {}, { withCredentials: true });
+      // Call logout endpoint (clears cookie if any)
+      await axios.post(`${API}/auth/logout`, {}, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
     } catch (error) {
-      // Silently fail - cookie will be deleted anyway
+      // Silently fail
     } finally {
+      localStorage.removeItem("token");
+      setToken(null);
       setUser(null);
     }
   };
 
   const refreshUser = async () => {
     try {
-      const response = await axios.get(`${API}/auth/me`, {
-        withCredentials: true
-      });
-      setUser(response.data);
+      const savedToken = localStorage.getItem("token");
+      if (savedToken) {
+        const response = await axios.get(`${API}/auth/me`, {
+          headers: { Authorization: `Bearer ${savedToken}` }
+        });
+        setUser(response.data);
+      } else {
+        setUser(null);
+      }
     } catch (error) {
+      localStorage.removeItem("token");
+      setToken(null);
       setUser(null);
     }
   };
@@ -72,6 +98,7 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{ 
       user, 
+      token,
       loading, 
       login, 
       register, 

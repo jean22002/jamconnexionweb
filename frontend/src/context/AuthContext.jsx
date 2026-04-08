@@ -7,28 +7,18 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  
-  // TODO: Security Enhancement - Migrate to httpOnly cookies
-  // Current: localStorage is vulnerable to XSS attacks
-  // Future: Use httpOnly cookies set by backend for better security
-  const [token, setToken] = useState(localStorage.getItem("token"));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const initAuth = async () => {
-      const storedToken = localStorage.getItem("token");
-      if (storedToken) {
-        try {
-          const response = await axios.get(`${API}/auth/me`, {
-            headers: { Authorization: `Bearer ${storedToken}` }
-          });
-          setUser(response.data);
-          setToken(storedToken);
-        } catch (error) {
-          localStorage.removeItem("token");
-          setToken(null);
-          setUser(null);
-        }
+      try {
+        // Try to get user from httpOnly cookie
+        const response = await axios.get(`${API}/auth/me`, {
+          withCredentials: true
+        });
+        setUser(response.data);
+      } catch (error) {
+        setUser(null);
       }
       setLoading(false);
     };
@@ -37,51 +27,55 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const response = await axios.post(`${API}/auth/login`, { email, password });
-    const { token: newToken, user: userData } = response.data;
-    localStorage.setItem("token", newToken);
-    setToken(newToken);
+    const response = await axios.post(
+      `${API}/auth/login`, 
+      { email, password },
+      { withCredentials: true }
+    );
+    const { user: userData } = response.data;
     setUser(userData);
     return userData;
   };
 
   const register = async (email, password, name, role) => {
-    const response = await axios.post(`${API}/auth/register`, { 
-      email, 
-      password, 
-      name, 
-      role 
-    });
-    const { token: newToken, user: userData } = response.data;
-    localStorage.setItem("token", newToken);
-    setToken(newToken);
+    const response = await axios.post(
+      `${API}/auth/register`, 
+      { email, password, name, role },
+      { withCredentials: true }
+    );
+    const { user: userData } = response.data;
     setUser(userData);
     return userData;
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    setToken(null);
-    setUser(null);
+  const logout = async () => {
+    try {
+      await axios.post(`${API}/auth/logout`, {}, { withCredentials: true });
+    } catch (error) {
+      // Silently fail - cookie will be deleted anyway
+    } finally {
+      setUser(null);
+    }
   };
 
   const refreshUser = async () => {
-    if (token) {
+    try {
       const response = await axios.get(`${API}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` }
+        withCredentials: true
       });
       setUser(response.data);
+    } catch (error) {
+      setUser(null);
     }
   };
 
   return (
     <AuthContext.Provider value={{ 
       user, 
-      token, 
       loading, 
       login, 
       register, 
-      logout,
+      logout, 
       refreshUser 
     }}>
       {children}

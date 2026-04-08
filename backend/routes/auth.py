@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends, Request, Response
 from datetime import datetime, timezone, timedelta
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
@@ -121,9 +121,9 @@ async def register(request: Request, data: UserRegister):
         )
     )
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login")
 @limiter.limit("10/5minutes")
-async def login(request: Request, data: UserLogin):
+async def login(request: Request, response: Response, data: UserLogin):
     user = await db.users.find_one({"email": data.email}, {"_id": 0})
     
     if not user:
@@ -177,15 +177,30 @@ async def login(request: Request, data: UserLogin):
     
     token = create_token(user["id"], user["email"], user["role"])
     
-    return TokenResponse(
-        token=token,
-        user=UserResponse(
-            id=user["id"], email=user["email"], name=user.get("name", user["email"]), role=user["role"],
-            created_at=user["created_at"].isoformat() if isinstance(user["created_at"], datetime) else user["created_at"],
-            subscription_status=user.get("subscription_status"),
-            trial_end=user.get("trial_end").isoformat() if isinstance(user.get("trial_end"), datetime) else user.get("trial_end")
-        )
+    # Set httpOnly cookie for security
+    is_production = os.environ.get('ENVIRONMENT') == 'production'
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=is_production,  # HTTPS only in production
+        samesite="lax",
+        max_age=3600 * 24 * 7,  # 7 days
+        path="/"
     )
+    
+    # Return user info without token (token is in httpOnly cookie)
+    return {
+        "user": {
+            "id": user["id"],
+            "email": user["email"],
+            "name": user.get("name", user["email"]),
+            "role": user["role"],
+            "created_at": user["created_at"].isoformat() if isinstance(user["created_at"], datetime) else user["created_at"],
+            "subscription_status": user.get("subscription_status"),
+            "trial_end": user.get("trial_end").isoformat() if isinstance(user.get("trial_end"), datetime) else user.get("trial_end")
+        }
+    }
 
 @router.get("/me", response_model=UserResponse)
 async def get_me(current_user: dict = Depends(get_current_user)):
@@ -196,6 +211,12 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         subscription_status=current_user.get("subscription_status"),
         trial_end=current_user.get("trial_end").isoformat() if isinstance(current_user.get("trial_end"), datetime) else current_user.get("trial_end")
     )
+
+@router.post("/logout")
+async def logout(response: Response):
+    """Logout - Delete httpOnly cookie"""
+    response.delete_cookie(key="access_token", path="/")
+    return {"message": "Déconnexion réussie"}
 
 
 @router.get("/verify-email")

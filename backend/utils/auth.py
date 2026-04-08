@@ -1,7 +1,7 @@
 import bcrypt
 import jwt
 import os
-from fastapi import HTTPException, Header
+from fastapi import HTTPException, Header, Request
 from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 from pathlib import Path
@@ -39,9 +39,19 @@ def decode_token(token: str) -> dict:
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-async def get_current_user(authorization: str = Header(None), db=None):
-    """Get current user from JWT token. DB instance must be passed from route."""
-    if not authorization:
+async def get_current_user(request: Request = None, authorization: str = Header(None), db=None):
+    """Get current user from httpOnly cookie or Authorization header (fallback)"""
+    token = None
+    
+    # Try to get token from cookie first (httpOnly - more secure)
+    if request:
+        token = request.cookies.get("access_token")
+    
+    # Fallback to Authorization header for backward compatibility
+    if not token and authorization:
+        token = authorization.replace("Bearer ", "")
+    
+    if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
     
     if db is None:
@@ -54,7 +64,6 @@ async def get_current_user(authorization: str = Header(None), db=None):
         db = client[os.environ['DB_NAME']]
     
     try:
-        token = authorization.replace("Bearer ", "")
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         user_id = payload.get("user_id")
         

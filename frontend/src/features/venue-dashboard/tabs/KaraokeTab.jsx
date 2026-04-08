@@ -88,6 +88,29 @@ export default function KaraokeTab({
                   className="bg-black/20 border-white/10" 
                 />
               </div>
+
+              {/* Nouveaux champs : Conditions & Tarif */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Conditions</Label>
+                  <Input 
+                    value={karaokeForm.conditions} 
+                    onChange={(e) => setKaraokeForm({ ...karaokeForm, conditions: e.target.value })} 
+                    placeholder="Ex: Animateur, DJ, Matériel fourni"
+                    className="bg-black/20 border-white/10" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tarif</Label>
+                  <Input 
+                    value={karaokeForm.price} 
+                    onChange={(e) => setKaraokeForm({ ...karaokeForm, price: e.target.value })} 
+                    placeholder="Ex: Gratuit, 5€, PAF"
+                    className="bg-black/20 border-white/10" 
+                  />
+                </div>
+              </div>
+
               <Button 
                 onClick={handleCreateKaraoke} 
                 className="w-full bg-primary hover:bg-primary/90 rounded-full"
@@ -126,6 +149,19 @@ export default function KaraokeTab({
                   <Clock className="w-4 h-4" />
                   <span>{karaoke.start_time} - {karaoke.end_time}</span>
                 </div>
+                {karaoke.conditions && (
+                  <div className="flex items-center gap-2">
+                    <Mic className="w-4 h-4" />
+                    <span className="text-xs">{karaoke.conditions}</span>
+                  </div>
+                )}
+                {karaoke.price && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full font-medium">
+                      {karaoke.price}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="flex gap-2">
                 <Button

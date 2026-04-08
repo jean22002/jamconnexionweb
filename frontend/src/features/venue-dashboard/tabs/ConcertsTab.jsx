@@ -9,7 +9,6 @@ import { Textarea } from "../../../components/ui/textarea";
 import { Switch } from "../../../components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 import TimeSelect from "../../../components/TimeSelect";
-import BandSearchInput from "../../../components/BandSearchInput";
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
@@ -158,12 +157,20 @@ export default function ConcertsTab({
                 {/* Recherche dans la BDD */}
                 <div className="space-y-2">
                   <Label className="text-sm">Rechercher un groupe inscrit</Label>
-                  <BandSearchInput
-                    value={searchBandQuery}
-                    onChange={(e) => setSearchBandQuery(e.target.value)}
-                    loading={loadingBands}
-                    placeholder="Nom du groupe..."
-                  />
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
+                    <Input
+                      value={searchBandQuery}
+                      onChange={(e) => setSearchBandQuery(e.target.value)}
+                      placeholder="Nom du groupe..."
+                      className="bg-black/20 border-white/10 pl-10"
+                    />
+                    {loadingBands && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
+                      </div>
+                    )}
+                  </div>
                   
                   {/* Résultats de la recherche */}
                   {searchedBands.length > 0 && (
@@ -191,37 +198,28 @@ export default function ConcertsTab({
                 {/* Ajout manuel */}
                 <div className="space-y-2 pt-3 border-t border-white/10">
                   <Label className="text-sm">Ou ajouter un groupe non inscrit</Label>
-                  <form autoComplete="off" onSubmit={(e) => { e.preventDefault(); addManualBand(); }}>
-                    <input type="password" style={{ display: 'none' }} tabIndex={-1} />
-                    <div className="flex gap-2">
-                      <Input
-                        value={manualBandName}
-                        onChange={(e) => setManualBandName(e.target.value)}
-                        placeholder="Nom du groupe..."
-                        className="bg-black/20 border-white/10"
-                        autoComplete="off"
-                        autoCorrect="off"
-                        autoCapitalize="off"
-                        spellCheck="false"
-                        type="text"
-                        name={`manual-${Math.random()}`}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            addManualBand();
-                          }
-                        }}
-                      />
-                      <Button
-                        onClick={addManualBand}
-                        variant="outline"
-                        className="rounded-full"
-                        disabled={!manualBandName.trim()}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </form>
+                  <div className="flex gap-2">
+                    <Input
+                      value={manualBandName}
+                      onChange={(e) => setManualBandName(e.target.value)}
+                      placeholder="Nom du groupe..."
+                      className="bg-black/20 border-white/10"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addManualBand();
+                        }
+                      }}
+                    />
+                    <Button
+                      onClick={addManualBand}
+                      variant="outline"
+                      className="rounded-full"
+                      disabled={!manualBandName.trim()}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
 

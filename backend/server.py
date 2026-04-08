@@ -113,9 +113,13 @@ app.add_middleware(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "*",  # Keep wildcard for backward compatibility
+        "https://collapsible-map.preview.emergentagent.com",  # Preview domain
         "https://*.preview.emergentagent.com",  # Mobile development
-        "https://preview.emergentagent.com"
+        "https://preview.emergentagent.com",
+        "https://jamconnexion.com",  # Production domain
+        "https://www.jamconnexion.com",  # Production domain with www
+        "http://localhost:3000",  # Local development
+        "http://127.0.0.1:3000"  # Local development
     ],
     allow_credentials=True,
     allow_methods=["*"],

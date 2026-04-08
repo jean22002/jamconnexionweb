@@ -120,9 +120,46 @@ export default function ConcertsTab({
                 </div>
               </div>
 
+              {/* Option Plateau (plusieurs groupes) */}
+              <div className="flex items-center justify-between p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                <div className="space-y-1">
+                  <Label className="text-base font-medium text-purple-400">🎭 Concert plateau (plusieurs groupes)</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Activez cette option si vous souhaitez programmer plusieurs groupes sur scène
+                  </p>
+                </div>
+                <Switch
+                  checked={concertForm.is_plateau || false}
+                  onCheckedChange={(checked) => {
+                    // Si on désactive le plateau et qu'il y a plus d'1 groupe, garder seulement le premier
+                    if (!checked && concertForm.bands && concertForm.bands.length > 1) {
+                      setConcertForm({ 
+                        ...concertForm, 
+                        is_plateau: checked,
+                        bands: [concertForm.bands[0]] // Garder seulement le premier groupe
+                      });
+                    } else {
+                      setConcertForm({ ...concertForm, is_plateau: checked });
+                    }
+                  }}
+                />
+              </div>
+
               {/* Groupes/Artistes */}
               <div className="space-y-3 p-4 border-2 border-purple-500/20 rounded-xl">
-                <Label className="font-medium text-purple-400">🎸 Groupes / Artistes</Label>
+                <div className="flex items-center justify-between">
+                  <Label className="font-medium text-purple-400">🎸 Groupes / Artistes</Label>
+                  {!concertForm.is_plateau && (
+                    <span className="text-xs bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full">
+                      Concert solo : 1 groupe maximum
+                    </span>
+                  )}
+                  {concertForm.is_plateau && (
+                    <span className="text-xs bg-green-500/20 text-green-400 px-3 py-1 rounded-full">
+                      Plateau : Plusieurs groupes autorisés
+                    </span>
+                  )}
+                </div>
                 
                 {/* Liste des groupes ajoutés */}
                 {concertForm && Array.isArray(concertForm.bands) && concertForm.bands.length > 0 && (

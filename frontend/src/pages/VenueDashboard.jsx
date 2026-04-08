@@ -406,6 +406,7 @@ export default function VenueDashboard() {
   const [concertForm, setConcertForm] = useState({
     date: "", start_time: "", end_time: "", title: "", description: "",
     bands: [], price: "", music_styles: [],
+    is_plateau: false, // Nouveau champ : plusieurs groupes sur scène
     // Catering
     has_catering: false, catering_drinks: 0, catering_respect: false, catering_tbd: false,
     // Accommodation

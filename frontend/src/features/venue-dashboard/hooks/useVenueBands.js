@@ -46,6 +46,12 @@ export function useVenueBands(token, concertForm, setConcertForm) {
     
     const existingBands = Array.isArray(concertForm.bands) ? concertForm.bands : [];
     
+    // ⚠️ NOUVEAU : Si ce n'est pas un plateau, limiter à 1 seul groupe
+    if (!concertForm.is_plateau && existingBands.length >= 1) {
+      toast.error("Concert solo : Un seul groupe autorisé. Cochez 'Plateau' pour ajouter plusieurs groupes.");
+      return;
+    }
+    
     // Vérifier si le groupe n'est pas déjà ajouté (par nom)
     if (existingBands.some(b => b && b.name === band.name)) {
       toast.info("Ce groupe est déjà ajouté");
@@ -76,6 +82,12 @@ export function useVenueBands(token, concertForm, setConcertForm) {
     }
     
     const existingBands = Array.isArray(concertForm.bands) ? concertForm.bands : [];
+    
+    // ⚠️ NOUVEAU : Si ce n'est pas un plateau, limiter à 1 seul groupe
+    if (!concertForm.is_plateau && existingBands.length >= 1) {
+      toast.error("Concert solo : Un seul groupe autorisé. Cochez 'Plateau' pour ajouter plusieurs groupes.");
+      return;
+    }
     
     // Vérifier si le groupe n'est pas déjà ajouté
     if (existingBands.some(b => b && b.name === manualBandName.trim())) {

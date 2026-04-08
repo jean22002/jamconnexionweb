@@ -20,7 +20,6 @@ export default function AdminAnalytics() {
   const [participationStats, setParticipationStats] = useState([]);
   const [geography, setGeography] = useState([]);
   const [period, setPeriod] = useState('30d');
-  const token = localStorage.getItem('token');
 
   useEffect(() => {
     fetchAnalytics();
@@ -30,15 +29,13 @@ export default function AdminAnalytics() {
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      const headers = { Authorization: `Bearer ${token}` };
-      
       // Charger toutes les données analytics
       const [overviewRes, growthRes, eventsRes, partRes, geoRes] = await Promise.all([
-        axios.get(`${API}/api/analytics/overview?period=${period}`, { headers }),
-        axios.get(`${API}/api/analytics/timeseries?metric=users&period=${period}`, { headers }),
-        axios.get(`${API}/api/analytics/timeseries?metric=events&period=${period}`, { headers }),
-        axios.get(`${API}/api/analytics/engagement?period=${period}`, { headers }),
-        axios.get(`${API}/api/analytics/overview?period=${period}`, { headers }) // Temporaire
+        axios.get(`${API}/api/analytics/overview?period=${period}`, { withCredentials: true }),
+        axios.get(`${API}/api/analytics/timeseries?metric=users&period=${period}`, { withCredentials: true }),
+        axios.get(`${API}/api/analytics/timeseries?metric=events&period=${period}`, { withCredentials: true }),
+        axios.get(`${API}/api/analytics/engagement?period=${period}`, { withCredentials: true }),
+        axios.get(`${API}/api/analytics/overview?period=${period}`, { withCredentials: true }) // Temporaire
       ]);
 
       setOverview(overviewRes.data);

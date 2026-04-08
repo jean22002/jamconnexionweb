@@ -14,18 +14,11 @@ export const useOnlineStatus = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const token = localStorage.getItem('token');
-
   // Récupérer le mode actuel
   const fetchMode = useCallback(async () => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
     try {
       const response = await axios.get(`${API}/api/online-status/mode`, {
-        headers: { Authorization: `Bearer ${token}` }
+        withCredentials: true
       });
       
       setMode(response.data.mode);
@@ -38,18 +31,16 @@ export const useOnlineStatus = () => {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
   // Mettre à jour le mode
   const updateMode = useCallback(async (newMode) => {
-    if (!token) return;
-
     try {
       setLoading(true);
       const response = await axios.put(
         `${API}/api/online-status/mode`,
         { mode: newMode },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { withCredentials: true }
       );
       
       setMode(response.data.mode);
@@ -64,18 +55,18 @@ export const useOnlineStatus = () => {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
   // Toggle manuel du statut (uniquement en mode manual)
   const toggleManualStatus = useCallback(async () => {
-    if (!token || mode !== 'manual') return;
+    if (mode !== 'manual') return;
 
     try {
       const newStatus = !manualStatus;
       const response = await axios.put(
         `${API}/api/online-status/manual`,
         { is_online: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { withCredentials: true }
       );
       
       setManualStatus(newStatus);
@@ -87,23 +78,23 @@ export const useOnlineStatus = () => {
       setError(err.response?.data?.detail || 'Erreur lors du changement de statut');
       throw err;
     }
-  }, [token, mode, manualStatus]);
+  }, [mode, manualStatus]);
 
   // Envoyer un heartbeat (pour le mode auto)
   const sendHeartbeat = useCallback(async () => {
-    if (!token || mode !== 'auto') return;
+    if (mode !== 'auto') return;
 
     try {
       await axios.post(
         `${API}/api/online-status/heartbeat`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { withCredentials: true }
       );
       setIsOnline(true);
     } catch (err) {
       console.error('Error sending heartbeat:', err);
     }
-  }, [token, mode]);
+  }, [mode]);
 
   // Récupérer le statut d'un autre utilisateur
   const getUserStatus = useCallback(async (userId) => {
@@ -123,7 +114,7 @@ export const useOnlineStatus = () => {
 
   // Heartbeat automatique en mode auto (toutes les 2 minutes)
   useEffect(() => {
-    if (mode !== 'auto' || !token) return;
+    if (mode !== 'auto') return;
 
     // Envoyer immédiatement
     sendHeartbeat();
@@ -134,11 +125,11 @@ export const useOnlineStatus = () => {
     }, 2 * 60 * 1000); // 2 minutes
 
     return () => clearInterval(interval);
-  }, [mode, token, sendHeartbeat]);
+  }, [mode, sendHeartbeat]);
 
   // Heartbeat lors des interactions utilisateur (en mode auto)
   useEffect(() => {
-    if (mode !== 'auto' || !token) return;
+    if (mode !== 'auto') return;
 
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
     let lastHeartbeat = Date.now();
@@ -161,7 +152,7 @@ export const useOnlineStatus = () => {
         window.removeEventListener(event, handleActivity);
       });
     };
-  }, [mode, token, sendHeartbeat]);
+  }, [mode, sendHeartbeat]);
 
   return {
     mode,

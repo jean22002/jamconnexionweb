@@ -202,6 +202,13 @@ async def login(request: Request, response: Response, data: UserLogin):
         }
     }
 
+
+@router.post("/logout")
+async def logout(response: Response):
+    """Logout - Delete httpOnly cookie"""
+    response.delete_cookie(key="access_token", path="/")
+    return {"message": "Déconnexion réussie"}
+
 @router.get("/me", response_model=UserResponse)
 async def get_me(request: Request, current_user: dict = Depends(get_current_user)):
     return UserResponse(

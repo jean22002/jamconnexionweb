@@ -20,7 +20,6 @@ export default function VenueAccounting() {
     payment_status: 'all'
   });
   const [uploadingEventId, setUploadingEventId] = useState(null);
-  const token = localStorage.getItem('token');
 
   useEffect(() => {
     fetchAccountingData();
@@ -36,7 +35,7 @@ export default function VenueAccounting() {
       if (filters.payment_status !== 'all') params.append('payment_status', filters.payment_status);
 
       const response = await axios.get(`${API}/api/accounting/events?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        withCredentials: true
       });
 
       setEvents(response.data.events);
@@ -59,8 +58,8 @@ export default function VenueAccounting() {
 
     try {
       await axios.post(`${API}/api/accounting/upload-invoice`, formData, {
+        withCredentials: true,
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
         }
       });
@@ -80,7 +79,7 @@ export default function VenueAccounting() {
       await axios.put(
         `${API}/api/accounting/events/${eventId}/payment-status?event_type=${eventType}&payment_status=${newStatus}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { withCredentials: true }
       );
 
       toast.success('Statut mis à jour');

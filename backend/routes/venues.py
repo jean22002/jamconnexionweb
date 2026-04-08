@@ -69,7 +69,7 @@ async def get_current_user(authorization: str = Header(None)):
 # ============= VENUE PROFILES =============
 
 @router.post("/venues", response_model=VenueProfileResponse)
-async def create_venue_profile(data: VenueProfile, current_user: dict = Depends(get_current_user)):
+async def create_venue_profile(data: VenueProfile, , request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venue accounts can create venue profiles")
     
@@ -110,7 +110,7 @@ async def create_venue_profile(data: VenueProfile, current_user: dict = Depends(
 
 
 @router.put("/venues", response_model=VenueProfileResponse)
-async def update_venue_profile(data: VenueProfile, current_user: dict = Depends(get_current_user)):
+async def update_venue_profile(data: VenueProfile, , request: Request, current_user: dict = Depends(get_current_user)):
     # Permettre aux venues ET aux admins de modifier
     if current_user["role"] not in ["venue", "admin"]:
         raise HTTPException(status_code=403, detail="Only venue accounts can update venue profiles")
@@ -150,7 +150,7 @@ async def update_venue_profile(data: VenueProfile, current_user: dict = Depends(
 
 
 @router.put("/venues/me/reviews-visibility")
-async def toggle_reviews_visibility(show_reviews: bool, current_user: dict = Depends(get_current_user)):
+async def toggle_reviews_visibility(show_reviews: bool, , request: Request, current_user: dict = Depends(get_current_user)):
     """Toggle the visibility of reviews for a venue"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venue accounts can modify review visibility")
@@ -169,7 +169,7 @@ async def toggle_reviews_visibility(show_reviews: bool, current_user: dict = Dep
 
 
 @router.get("/venues/me", response_model=VenueProfileResponse)
-async def get_my_venue(current_user: dict = Depends(get_current_user)):
+async def get_my_venue(request: Request, current_user: dict = Depends(get_current_user)):
     # Permettre aux venues ET aux admins d'accéder
     if current_user["role"] not in ["venue", "admin"]:
         raise HTTPException(status_code=403, detail="Only venue accounts can access this")
@@ -219,7 +219,7 @@ async def get_my_venue(current_user: dict = Depends(get_current_user)):
 
 # Alias route for mobile apps (PUT /venues/me)
 @router.put("/venues/me", response_model=VenueProfileResponse)
-async def update_my_venue_profile(data: VenueProfile, current_user: dict = Depends(get_current_user)):
+async def update_my_venue_profile(data: VenueProfile, , request: Request, current_user: dict = Depends(get_current_user)):
     """Alias for PUT /venues - mobile-friendly endpoint"""
     return await update_venue_profile(data, current_user)
 
@@ -403,7 +403,7 @@ async def find_nearby_venues(request: NearbySearchRequest):
 # ============= VENUE SUBSCRIPTIONS =============
 
 @router.post("/venues/{venue_id}/subscribe")
-async def subscribe_to_venue(venue_id: str, current_user: dict = Depends(get_current_user)):
+async def subscribe_to_venue(venue_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     """Subscribe to a venue (musicians and melomanes can subscribe)"""
     if current_user["role"] not in ["musician", "melomane"]:
         raise HTTPException(status_code=403, detail="Only musicians and melomanes can subscribe to venues")
@@ -446,7 +446,7 @@ async def subscribe_to_venue(venue_id: str, current_user: dict = Depends(get_cur
 
 
 @router.delete("/venues/{venue_id}/unsubscribe")
-async def unsubscribe_from_venue(venue_id: str, current_user: dict = Depends(get_current_user)):
+async def unsubscribe_from_venue(venue_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     """Unsubscribe from a venue"""
     result = await db.venue_subscriptions.delete_one({
         "venue_id": venue_id,
@@ -460,7 +460,7 @@ async def unsubscribe_from_venue(venue_id: str, current_user: dict = Depends(get
 
 
 @router.get("/venues/{venue_id}/subscription-status")
-async def get_subscription_status(venue_id: str, current_user: dict = Depends(get_current_user)):
+async def get_subscription_status(venue_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     """Check if current user is subscribed to a venue"""
     subscription = await db.venue_subscriptions.find_one({
         "venue_id": venue_id,
@@ -471,7 +471,7 @@ async def get_subscription_status(venue_id: str, current_user: dict = Depends(ge
 
 
 @router.get("/my-subscriptions")
-async def get_my_subscriptions(current_user: dict = Depends(get_current_user)):
+async def get_my_subscriptions(request: Request, current_user: dict = Depends(get_current_user)):
     """Get all venues the current user is subscribed to with full venue details"""
     pipeline = [
         # Match subscriptions for current user
@@ -552,7 +552,7 @@ async def add_gallery_photo(file: UploadFile = File(...), current_user: dict = D
 
 
 @router.delete("/venues/me/gallery")
-async def remove_gallery_photo(photo_url: str, current_user: dict = Depends(get_current_user)):
+async def remove_gallery_photo(photo_url: str, , request: Request, current_user: dict = Depends(get_current_user)):
     """Remove a photo from venue gallery"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can manage gallery")
@@ -571,7 +571,7 @@ async def remove_gallery_photo(photo_url: str, current_user: dict = Depends(get_
 # ============= VENUE SUBSCRIBERS =============
 
 @router.get("/venues/me/subscribers")
-async def get_venue_subscribers(current_user: dict = Depends(get_current_user)):
+async def get_venue_subscribers(request: Request, current_user: dict = Depends(get_current_user)):
     """Get list of subscribers (musicians and melomanes) for current venue"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can view their subscribers")
@@ -622,7 +622,7 @@ async def get_venue_subscribers(current_user: dict = Depends(get_current_user)):
 
 
 @router.get("/venues/me/nearby-musicians-count")
-async def get_nearby_musicians_count(radius_km: float = 50, current_user: dict = Depends(get_current_user)):
+async def get_nearby_musicians_count(radius_km: float = 50, , request: Request, current_user: dict = Depends(get_current_user)):
     """Count musicians within a radius of the venue"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can access this")
@@ -867,7 +867,7 @@ async def get_bands_played(venue_id: str):
 # ============= MY VENUE EVENTS =============
 
 @router.get("/venues/me/jams")
-async def get_my_venue_jams(current_user: dict = Depends(get_current_user)):
+async def get_my_venue_jams(request: Request, current_user: dict = Depends(get_current_user)):
     """Get all jams for my venue"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venue accounts can access this")
@@ -881,7 +881,7 @@ async def get_my_venue_jams(current_user: dict = Depends(get_current_user)):
 
 
 @router.get("/venues/me/concerts")
-async def get_my_venue_concerts(current_user: dict = Depends(get_current_user)):
+async def get_my_venue_concerts(request: Request, current_user: dict = Depends(get_current_user)):
     """Get all concerts for my venue"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venue accounts can access this")
@@ -907,7 +907,7 @@ async def get_my_venue_concerts(current_user: dict = Depends(get_current_user)):
 
 
 @router.get("/venues/me/karaoke")
-async def get_my_venue_karaoke(current_user: dict = Depends(get_current_user)):
+async def get_my_venue_karaoke(request: Request, current_user: dict = Depends(get_current_user)):
     """Get all karaoke events for my venue"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venue accounts can access this")
@@ -921,7 +921,7 @@ async def get_my_venue_karaoke(current_user: dict = Depends(get_current_user)):
 
 
 @router.get("/venues/me/spectacle")
-async def get_my_venue_spectacle(current_user: dict = Depends(get_current_user)):
+async def get_my_venue_spectacle(request: Request, current_user: dict = Depends(get_current_user)):
     """Get all spectacle events for my venue"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venue accounts can access this")
@@ -937,7 +937,7 @@ async def get_my_venue_spectacle(current_user: dict = Depends(get_current_user))
 # ============= VENUE STATISTICS =============
 
 @router.get("/venues/me/jams/profitability")
-async def get_jams_profitability(current_user: dict = Depends(get_current_user)):
+async def get_jams_profitability(request: Request, current_user: dict = Depends(get_current_user)):
     """Get profitability stats for venue's jams"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venue accounts can access this")
@@ -982,7 +982,7 @@ async def get_jams_profitability(current_user: dict = Depends(get_current_user))
 
 
 @router.get("/venues/me/concerts/profitability")
-async def get_concerts_profitability(current_user: dict = Depends(get_current_user)):
+async def get_concerts_profitability(request: Request, current_user: dict = Depends(get_current_user)):
     """Get profitability stats for venue's concerts"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venue accounts can access this")
@@ -1029,7 +1029,7 @@ async def get_concerts_profitability(current_user: dict = Depends(get_current_us
 @router.post("/venues/me/notify-subscribers")
 async def notify_subscribers(
     message: dict,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Send notification to venue subscribers (Jacks)
@@ -1129,7 +1129,7 @@ async def notify_subscribers(
 
 
 @router.get("/venues/me/notifications-quota")
-async def get_notifications_quota(current_user: dict = Depends(get_current_user)):
+async def get_notifications_quota(request: Request, current_user: dict = Depends(get_current_user)):
     """
     Get the remaining notification quota for the current week
     Returns: remaining notifications and reset date
@@ -1180,7 +1180,7 @@ async def get_notifications_quota(current_user: dict = Depends(get_current_user)
 @router.post("/venues/me/broadcast-notification")
 async def broadcast_notification(
     message: dict,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Send notification to nearby musicians
@@ -1319,7 +1319,7 @@ async def broadcast_notification(
 @router.post("/venues/me/notify-all")
 async def notify_all(
     message: dict,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """Send notification to both subscribers AND nearby musicians"""
     if current_user["role"] != "venue":
@@ -1415,7 +1415,7 @@ async def notify_all(
 
 
 @router.get("/venues/me/broadcast-history")
-async def get_broadcast_history(current_user: dict = Depends(get_current_user)):
+async def get_broadcast_history(request: Request, current_user: dict = Depends(get_current_user)):
     """Get broadcast notification history for this venue"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can view broadcast history")
@@ -1451,7 +1451,7 @@ async def get_broadcast_history(current_user: dict = Depends(get_current_user)):
 
 
 @router.delete("/venues/me/broadcast-history/{broadcast_id}")
-async def delete_broadcast_from_history(broadcast_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_broadcast_from_history(broadcast_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     """Delete a broadcast notification from history (deletes all notifications with matching message and time)"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can delete broadcast history")
@@ -1489,7 +1489,7 @@ async def delete_broadcast_from_history(broadcast_id: str, current_user: dict = 
 
 
 @router.delete("/venues/me/broadcast-history")
-async def delete_all_broadcast_history(current_user: dict = Depends(get_current_user)):
+async def delete_all_broadcast_history(request: Request, current_user: dict = Depends(get_current_user)):
     """Delete ALL broadcast notifications from history for this venue"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can delete broadcast history")
@@ -1520,7 +1520,7 @@ async def download_venue_invoices_zip(
     payment_method: str = "all",  # 'all', 'GUSO', 'Facture', 'Espèces', 'Virement', 'Chèque', 'Promotion'
     start_date: str = None,  # Format: YYYY-MM-DD
     end_date: str = None,    # Format: YYYY-MM-DD
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Download all venue invoices as ZIP file (included in venue subscription)

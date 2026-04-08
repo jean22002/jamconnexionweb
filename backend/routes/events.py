@@ -318,7 +318,7 @@ async def delete_jam_event(jam_id: str, request: Request, current_user: dict = D
 
 
 @router.put("/jams/{jam_id}", response_model=JamEventResponse)
-async def update_jam_event(jam_id: str, data: JamEvent, current_user: dict = Depends(get_current_user)):
+async def update_jam_event(jam_id: str, data: JamEvent, , request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can update jam events")
     
@@ -358,7 +358,7 @@ async def update_jam_event(jam_id: str, data: JamEvent, current_user: dict = Dep
 # ============= CONCERT EVENTS =============
 
 @router.post("/concerts", response_model=ConcertEventResponse)
-async def create_concert_event(data: ConcertEvent, current_user: dict = Depends(get_current_user)):
+async def create_concert_event(data: ConcertEvent, , request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can create concert events")
     
@@ -583,7 +583,7 @@ async def get_venue_concerts(venue_id: str):
 
 
 @router.delete("/concerts/{concert_id}")
-async def delete_concert(concert_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_concert(concert_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can delete concerts")
     
@@ -605,7 +605,7 @@ async def delete_concert(concert_id: str, current_user: dict = Depends(get_curre
 
 
 @router.put("/concerts/{concert_id}", response_model=ConcertEventResponse)
-async def update_concert(concert_id: str, data: ConcertEvent, current_user: dict = Depends(get_current_user)):
+async def update_concert(concert_id: str, data: ConcertEvent, , request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can update concerts")
     
@@ -668,7 +668,7 @@ async def update_concert(concert_id: str, data: ConcertEvent, current_user: dict
 # ============= KARAOKE EVENTS =============
 
 @router.post("/karaoke", response_model=KaraokeEventResponse)
-async def create_karaoke_event(data: KaraokeEvent, current_user: dict = Depends(get_current_user)):
+async def create_karaoke_event(data: KaraokeEvent, , request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can create karaoke events")
     
@@ -709,7 +709,7 @@ async def get_venue_karaoke(venue_id: str):
 
 
 @router.delete("/karaoke/{karaoke_id}")
-async def delete_karaoke(karaoke_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_karaoke(karaoke_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can delete karaoke events")
     
@@ -725,7 +725,7 @@ async def delete_karaoke(karaoke_id: str, current_user: dict = Depends(get_curre
 
 
 @router.put("/karaoke/{karaoke_id}", response_model=KaraokeEventResponse)
-async def update_karaoke(karaoke_id: str, data: KaraokeEvent, current_user: dict = Depends(get_current_user)):
+async def update_karaoke(karaoke_id: str, data: KaraokeEvent, , request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can update karaoke events")
     
@@ -752,7 +752,7 @@ async def update_karaoke(karaoke_id: str, data: KaraokeEvent, current_user: dict
 # ============= SPECTACLE EVENTS =============
 
 @router.post("/spectacle", response_model=SpectacleEventResponse)
-async def create_spectacle_event(data: SpectacleEvent, current_user: dict = Depends(get_current_user)):
+async def create_spectacle_event(data: SpectacleEvent, , request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can create spectacle events")
     
@@ -793,7 +793,7 @@ async def get_venue_spectacle(venue_id: str):
 
 
 @router.delete("/spectacle/{spectacle_id}")
-async def delete_spectacle(spectacle_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_spectacle(spectacle_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can delete spectacle events")
     
@@ -809,7 +809,7 @@ async def delete_spectacle(spectacle_id: str, current_user: dict = Depends(get_c
 
 
 @router.put("/spectacle/{spectacle_id}", response_model=SpectacleEventResponse)
-async def update_spectacle(spectacle_id: str, data: SpectacleEvent, current_user: dict = Depends(get_current_user)):
+async def update_spectacle(spectacle_id: str, data: SpectacleEvent, , request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can update spectacle events")
     
@@ -836,7 +836,7 @@ async def update_spectacle(spectacle_id: str, data: SpectacleEvent, current_user
 # ============= EVENT PARTICIPATIONS =============
 
 @router.post("/events/{event_id}/join")
-async def join_event(event_id: str, event_type: str, current_user: dict = Depends(get_current_user)):
+async def join_event(event_id: str, event_type: str, , request: Request, current_user: dict = Depends(get_current_user)):
     """Join an event (for musicians and melomanes)"""
     if current_user["role"] not in ["musician", "melomane"]:
         raise HTTPException(status_code=403, detail="Only musicians and melomanes can join events")
@@ -977,7 +977,7 @@ async def join_event(event_id: str, event_type: str, current_user: dict = Depend
 
 
 @router.post("/events/{event_id}/leave")
-async def leave_event(event_id: str, current_user: dict = Depends(get_current_user)):
+async def leave_event(event_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     """Leave an event"""
     result = await db.event_participations.update_one(
         {"event_id": event_id, "user_id": current_user["id"], "active": True},
@@ -1002,7 +1002,7 @@ async def get_event_participants(event_id: str):
 
 
 @router.get("/musicians/me/participations")
-async def get_my_participations(current_user: dict = Depends(get_current_user)):
+async def get_my_participations(request: Request, current_user: dict = Depends(get_current_user)):
     """Get all my event participations with enriched data"""
     if current_user["role"] not in ["musician", "melomane"]:
         raise HTTPException(status_code=403, detail="Only musicians and melomanes can access this")
@@ -1051,7 +1051,7 @@ async def get_my_participations(current_user: dict = Depends(get_current_user)):
 
 
 @router.get("/musicians/me/participations/calendar.ics")
-async def export_my_participations_calendar(current_user: dict = Depends(get_current_user)):
+async def export_my_participations_calendar(request: Request, current_user: dict = Depends(get_current_user)):
     """
     Export all my participations as .ics file
     Compatible with Google Calendar, iOS Calendar, Outlook, etc.
@@ -1213,7 +1213,7 @@ class PaymentStatusUpdate(BaseModel):
 async def update_jam_payment_status(
     jam_id: str,
     data: PaymentStatusUpdate,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """Update only the payment status of a jam event"""
     if current_user["role"] != "venue":
@@ -1245,7 +1245,7 @@ async def update_jam_payment_status(
 async def update_concert_payment_status(
     concert_id: str,
     data: PaymentStatusUpdate,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """Update only the payment status of a concert event"""
     if current_user["role"] != "venue":
@@ -1277,7 +1277,7 @@ async def update_concert_payment_status(
 async def update_karaoke_payment_status(
     karaoke_id: str,
     data: PaymentStatusUpdate,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """Update only the payment status of a karaoke event"""
     if current_user["role"] != "venue":
@@ -1309,7 +1309,7 @@ async def update_karaoke_payment_status(
 async def update_spectacle_payment_status(
     spectacle_id: str,
     data: PaymentStatusUpdate,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """Update only the payment status of a spectacle event"""
     if current_user["role"] != "venue":
@@ -1645,7 +1645,7 @@ async def download_all_invoices(
 @router.delete("/jams/{jam_id}/invoice")
 async def delete_jam_invoice(
     jam_id: str,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """Delete invoice file for a jam event"""
     if current_user["role"] != "venue":
@@ -1677,7 +1677,7 @@ async def delete_jam_invoice(
 @router.delete("/concerts/{concert_id}/invoice")
 async def delete_concert_invoice(
     concert_id: str,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """Delete invoice file for a concert event"""
     if current_user["role"] != "venue":
@@ -1709,7 +1709,7 @@ async def delete_concert_invoice(
 @router.delete("/karaoke/{karaoke_id}/invoice")
 async def delete_karaoke_invoice(
     karaoke_id: str,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """Delete invoice file for a karaoke event"""
     if current_user["role"] != "venue":
@@ -1741,7 +1741,7 @@ async def delete_karaoke_invoice(
 @router.delete("/spectacle/{spectacle_id}/invoice")
 async def delete_spectacle_invoice(
     spectacle_id: str,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """Delete invoice file for a spectacle event"""
     if current_user["role"] != "venue":

@@ -70,7 +70,7 @@ async def notify_venue_subscribers(venue_id: str, notif_type: str, title: str, m
 # ============= PLANNING SLOTS =============
 
 @router.post("/planning", response_model=PlanningSlotResponse)
-async def create_planning_slot(data: PlanningSlot, current_user: dict = Depends(get_current_user)):
+async def create_planning_slot(data: PlanningSlot, , request: Request, current_user: dict = Depends(get_current_user)):
     """Create a planning slot (venue only)"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can create planning slots")
@@ -244,7 +244,7 @@ async def get_venue_planning(venue_id: str):
 
 
 @router.put("/planning/{slot_id}", response_model=PlanningSlotResponse)
-async def update_planning_slot(slot_id: str, data: PlanningSlot, current_user: dict = Depends(get_current_user)):
+async def update_planning_slot(slot_id: str, data: PlanningSlot, , request: Request, current_user: dict = Depends(get_current_user)):
     """Update a planning slot (venue only)"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can update planning slots")
@@ -284,7 +284,7 @@ async def update_planning_slot(slot_id: str, data: PlanningSlot, current_user: d
 
 
 @router.delete("/planning/{slot_id}")
-async def delete_planning_slot(slot_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_planning_slot(slot_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     """Delete a planning slot (venue only)"""
     venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
     if not venue:
@@ -300,7 +300,7 @@ async def delete_planning_slot(slot_id: str, current_user: dict = Depends(get_cu
 # ============= CONCERT APPLICATIONS =============
 
 @router.post("/planning/{slot_id}/apply")
-async def apply_to_slot(slot_id: str, current_user: dict = Depends(get_current_user)):
+async def apply_to_slot(slot_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     """Quick apply to a planning slot (auto-detects solo/band)"""
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can apply")
@@ -358,7 +358,7 @@ async def apply_to_slot(slot_id: str, current_user: dict = Depends(get_current_u
 
 
 @router.post("/applications", response_model=ConcertApplicationResponse)
-async def create_application(data: ConcertApplication, current_user: dict = Depends(get_current_user)):
+async def create_application(data: ConcertApplication, , request: Request, current_user: dict = Depends(get_current_user)):
     """Create an application to a planning slot (musician only)"""
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can apply")
@@ -424,7 +424,7 @@ async def create_application(data: ConcertApplication, current_user: dict = Depe
 
 
 @router.get("/applications/my")
-async def get_my_applications(current_user: dict = Depends(get_current_user)):
+async def get_my_applications(request: Request, current_user: dict = Depends(get_current_user)):
     """Get all my applications (musician only)"""
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can view their applications")
@@ -458,7 +458,7 @@ async def get_my_applications(current_user: dict = Depends(get_current_user)):
 
 
 @router.get("/planning/{slot_id}/applications", response_model=List[ConcertApplicationResponse])
-async def get_slot_applications(slot_id: str, current_user: dict = Depends(get_current_user)):
+async def get_slot_applications(slot_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     """Get all applications for a planning slot (venue only)"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can view applications")
@@ -662,7 +662,7 @@ async def reject_application(app_id: str, request: Request, current_user: dict =
 
 
 @router.delete("/applications/my/{app_id}")
-async def cancel_my_application(app_id: str, current_user: dict = Depends(get_current_user)):
+async def cancel_my_application(app_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     """Cancel own application (musician only, pending status only)"""
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can cancel their applications")
@@ -693,7 +693,7 @@ async def cancel_my_application(app_id: str, current_user: dict = Depends(get_cu
 
 
 @router.delete("/applications/{app_id}")
-async def delete_application(app_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_application(app_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     """Delete an application (venue can cancel an accepted application)"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can delete applications")
@@ -743,7 +743,7 @@ async def delete_application(app_id: str, current_user: dict = Depends(get_curre
 
 
 @router.get("/musician/calendar-events")
-async def get_musician_calendar_events(current_user: dict = Depends(get_current_user)):
+async def get_musician_calendar_events(request: Request, current_user: dict = Depends(get_current_user)):
     """Get all calendar events for a musician (accepted applications + confirmed concerts)"""
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can view their calendar")

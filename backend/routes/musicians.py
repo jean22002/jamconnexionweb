@@ -165,7 +165,7 @@ def calculate_concert_hours_official(concert: dict) -> float:
 # ============= MUSICIAN PROFILES =============
 
 @router.post("/musicians", response_model=MusicianProfileResponse)
-async def create_musician_profile(data: MusicianProfile, current_user: dict = Depends(get_current_user)):
+async def create_musician_profile(data: MusicianProfile, , request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musician accounts can create musician profiles")
     
@@ -202,7 +202,7 @@ async def create_musician_profile(data: MusicianProfile, current_user: dict = De
 
 
 @router.put("/musicians", response_model=MusicianProfileResponse)
-async def update_musician_profile(data: MusicianProfile, current_user: dict = Depends(get_current_user)):
+async def update_musician_profile(data: MusicianProfile, , request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musician accounts can update musician profiles")
     
@@ -327,7 +327,7 @@ async def update_musician_profile(data: MusicianProfile, current_user: dict = De
 
 
 @router.get("/musicians/me", response_model=MusicianProfileResponse)
-async def get_my_musician_profile(current_user: dict = Depends(get_current_user)):
+async def get_my_musician_profile(request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musician accounts can access this")
     
@@ -345,7 +345,7 @@ async def get_my_musician_profile(current_user: dict = Depends(get_current_user)
 
 # Alias route for mobile apps (PUT /musicians/me)
 @router.put("/musicians/me", response_model=MusicianProfileResponse)
-async def update_my_musician_profile(data: MusicianProfile, current_user: dict = Depends(get_current_user)):
+async def update_my_musician_profile(data: MusicianProfile, , request: Request, current_user: dict = Depends(get_current_user)):
     """
     Alias de PUT /musicians pour les apps mobiles
     Identique à update_musician_profile mais avec /me au lieu de /{musician_id}
@@ -359,7 +359,7 @@ async def update_my_musician_profile(data: MusicianProfile, current_user: dict =
 @router.post("/musicians/me/restore")
 async def restore_musician_profile_from_history(
     timestamp: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Restaure le profil musicien depuis l'historique
@@ -417,7 +417,7 @@ async def restore_musician_profile_from_history(
 
 # 🛡️ Endpoint pour voir l'historique
 @router.get("/musicians/me/history")
-async def get_musician_profile_history(current_user: dict = Depends(get_current_user)):
+async def get_musician_profile_history(request: Request, current_user: dict = Depends(get_current_user)):
     """
     Récupère l'historique des modifications du profil
     """
@@ -635,7 +635,7 @@ async def search_bands(query: str = "", limit: int = 10):
 # ============= FRIENDS SYSTEM =============
 
 @router.post("/friends/request")
-async def send_friend_request(request: FriendRequest, current_user: dict = Depends(get_current_user)):
+async def send_friend_request(request: FriendRequest, , request: Request, current_user: dict = Depends(get_current_user)):
     # Vérifier que l'utilisateur cible existe
     target_user = await db.users.find_one({"id": request.to_user_id}, {"_id": 0})
     if not target_user:
@@ -700,7 +700,7 @@ async def send_friend_request(request: FriendRequest, current_user: dict = Depen
 
 
 @router.get("/friends/requests")
-async def get_friend_requests(current_user: dict = Depends(get_current_user)):
+async def get_friend_requests(request: Request, current_user: dict = Depends(get_current_user)):
     """Get incoming friend requests with enriched sender data (optimized with aggregation)"""
     # Utiliser une agrégation pour éviter le problème N+1
     pipeline = [
@@ -910,7 +910,7 @@ async def get_friend_requests(current_user: dict = Depends(get_current_user)):
 
 
 @router.get("/friends/sent")
-async def get_sent_requests(current_user: dict = Depends(get_current_user)):
+async def get_sent_requests(request: Request, current_user: dict = Depends(get_current_user)):
     """Get sent friend requests (optimized with aggregation)"""
     # Utiliser une agrégation pour éviter le problème N+1
     pipeline = [
@@ -1060,7 +1060,7 @@ async def get_sent_requests(current_user: dict = Depends(get_current_user)):
 
 
 @router.delete("/friends/cancel/{request_id}")
-async def cancel_friend_request(request_id: str, current_user: dict = Depends(get_current_user)):
+async def cancel_friend_request(request_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     """Cancel a sent friend request"""
     # Vérifier que la demande existe et appartient à l'utilisateur
     request = await db.friends.find_one({
@@ -1085,7 +1085,7 @@ async def cancel_friend_request(request_id: str, current_user: dict = Depends(ge
 
 
 @router.post("/friends/accept/{request_id}")
-async def accept_friend_request(request_id: str, current_user: dict = Depends(get_current_user)):
+async def accept_friend_request(request_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     request = await db.friends.find_one({"id": request_id, "to_user_id": current_user["id"], "status": "pending"})
     if not request:
         raise HTTPException(status_code=404, detail="Demande d'ami introuvable")
@@ -1121,7 +1121,7 @@ async def accept_friend_request(request_id: str, current_user: dict = Depends(ge
 
 
 @router.post("/friends/reject/{request_id}")
-async def reject_friend_request(request_id: str, current_user: dict = Depends(get_current_user)):
+async def reject_friend_request(request_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     request = await db.friends.find_one({"id": request_id, "to_user_id": current_user["id"]})
     if not request:
         raise HTTPException(status_code=404, detail="Friend request not found")
@@ -1131,7 +1131,7 @@ async def reject_friend_request(request_id: str, current_user: dict = Depends(ge
 
 
 @router.get("/friends")
-async def list_friends(current_user: dict = Depends(get_current_user)):
+async def list_friends(request: Request, current_user: dict = Depends(get_current_user)):
     """List all friends of the current user (optimized with aggregation)"""
     # Utiliser une agrégation pour éviter le problème N+1
     pipeline = [
@@ -1321,7 +1321,7 @@ async def list_friends(current_user: dict = Depends(get_current_user)):
 
 
 @router.delete("/friends/{friend_user_id}")
-async def remove_friend(friend_user_id: str, current_user: dict = Depends(get_current_user)):
+async def remove_friend(friend_user_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     """Remove a friend"""
     result = await db.friends.delete_one({
         "$or": [
@@ -1339,7 +1339,7 @@ async def remove_friend(friend_user_id: str, current_user: dict = Depends(get_cu
 # ============= BLOCK SYSTEM =============
 
 @router.post("/users/block/{user_id}")
-async def block_user(user_id: str, current_user: dict = Depends(get_current_user)):
+async def block_user(user_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     """Block a user"""
     # Vérifier que l'utilisateur ne se bloque pas lui-même
     if current_user["id"] == user_id:
@@ -1388,7 +1388,7 @@ async def block_user(user_id: str, current_user: dict = Depends(get_current_user
 
 
 @router.delete("/users/unblock/{user_id}")
-async def unblock_user(user_id: str, current_user: dict = Depends(get_current_user)):
+async def unblock_user(user_id: str, , request: Request, current_user: dict = Depends(get_current_user)):
     """Unblock a user"""
     result = await db.blocked_users.delete_one({
         "blocker_id": current_user["id"],
@@ -1402,7 +1402,7 @@ async def unblock_user(user_id: str, current_user: dict = Depends(get_current_us
 
 
 @router.get("/users/blocked")
-async def get_blocked_users(current_user: dict = Depends(get_current_user)):
+async def get_blocked_users(request: Request, current_user: dict = Depends(get_current_user)):
     """Get list of blocked users"""
     blocks = await db.blocked_users.find({
         "blocker_id": current_user["id"]
@@ -1448,7 +1448,7 @@ async def get_blocked_users(current_user: dict = Depends(get_current_user)):
 # ============= MUSICIAN PARTICIPATIONS =============
 
 @router.get("/musicians/me/current-participation")
-async def get_current_participation(current_user: dict = Depends(get_current_user)):
+async def get_current_participation(request: Request, current_user: dict = Depends(get_current_user)):
     """Get current/upcoming event participation for the musician"""
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can access this")
@@ -1505,7 +1505,7 @@ async def get_current_participation(current_user: dict = Depends(get_current_use
 @router.post("/musicians/me/temporary-location")
 async def set_temporary_location(
     data: dict,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Activate temporary location for 24 hours (hybrid geolocation system)
@@ -1586,7 +1586,7 @@ async def set_temporary_location(
 
 
 @router.delete("/musicians/me/temporary-location")
-async def disable_temporary_location(current_user: dict = Depends(get_current_user)):
+async def disable_temporary_location(request: Request, current_user: dict = Depends(get_current_user)):
     """Disable temporary location (return to profile city)"""
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can disable temporary location")
@@ -1606,7 +1606,7 @@ async def disable_temporary_location(current_user: dict = Depends(get_current_us
 
 
 @router.get("/musicians/me/temporary-location")
-async def get_temporary_location_status(current_user: dict = Depends(get_current_user)):
+async def get_temporary_location_status(request: Request, current_user: dict = Depends(get_current_user)):
     """Get temporary location status"""
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can access this")
@@ -1654,7 +1654,7 @@ async def get_temporary_location_status(current_user: dict = Depends(get_current
 # ============================================================================
 
 @router.post("/musicians/me/subscribe-pro")
-async def create_pro_subscription(current_user: dict = Depends(get_current_user)):
+async def create_pro_subscription(request: Request, current_user: dict = Depends(get_current_user)):
     """
     Create Stripe Checkout session for Musicien PRO subscription
     - FREE TRIAL: 7 days
@@ -1751,7 +1751,7 @@ async def create_pro_subscription(current_user: dict = Depends(get_current_user)
 
 
 @router.get("/musicians/me/subscription-status")
-async def get_subscription_status(current_user: dict = Depends(get_current_user)):
+async def get_subscription_status(request: Request, current_user: dict = Depends(get_current_user)):
     """Get current subscription status with trial information"""
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can access subscription")
@@ -1795,7 +1795,7 @@ async def get_subscription_status(current_user: dict = Depends(get_current_user)
 
 
 @router.post("/musicians/me/cancel-subscription")
-async def cancel_pro_subscription(current_user: dict = Depends(get_current_user)):
+async def cancel_pro_subscription(request: Request, current_user: dict = Depends(get_current_user)):
     """Cancel PRO subscription (will remain active until end of period)"""
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can cancel subscription")
@@ -1840,7 +1840,7 @@ async def cancel_pro_subscription(current_user: dict = Depends(get_current_user)
 @router.get("/musicians/me/accounting/summary")
 async def get_accounting_summary(
     year: int = None,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Get accounting summary (PRO feature)
@@ -1893,7 +1893,7 @@ async def get_accounting_concerts(
     region: str = None,
     formation_type: str = None,
     payment_status: str = None,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Get detailed concerts list with filters (PRO feature)
@@ -1934,7 +1934,7 @@ async def get_accounting_concerts(
 async def export_accounting_data(
     year: int,
     format: str = "csv",  # "csv" or "pdf"
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Export accounting data (PRO feature)
@@ -2003,7 +2003,7 @@ async def export_accounting_data(
 @router.get("/musicians/me/accounting/export/csv")
 async def export_accounting_csv(
     year: int = None,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Export accounting data as CSV file (PRO feature)
@@ -2072,7 +2072,7 @@ async def download_invoices_zip(
     type: str = "all",  # 'all', 'guso', 'classic'
     start_date: str = None,  # Format: YYYY-MM-DD
     end_date: str = None,    # Format: YYYY-MM-DD
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Download all invoices as ZIP file (PRO feature)
@@ -2195,7 +2195,7 @@ async def download_invoices_zip(
 async def update_concert(
     concert_id: str,
     data: ConcertUpdateRequest,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """Update concert payment information (PRO feature)"""
     if current_user["role"] != "musician":
@@ -2264,7 +2264,7 @@ async def update_concert(
 @router.get("/musicians/me/guso/summary")
 async def get_guso_summary(
     year: int = None,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Get GUSO accounting summary (PRO feature)
@@ -2357,7 +2357,7 @@ async def get_guso_summary(
 @router.put("/musicians/me/guso/manual")
 async def update_guso_manual_values(
     data: dict,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Update manual GUSO hours and cachet values (PRO feature)
@@ -2395,7 +2395,7 @@ async def update_guso_manual_values(
 async def get_guso_concerts(
     year: int = None,
     declared: bool = None,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Get GUSO concerts list with filters (PRO feature)
@@ -2432,7 +2432,7 @@ async def get_guso_concerts(
 @router.patch("/musicians/me/guso/concerts/{concert_id}/declare")
 async def mark_concert_as_declared(
     concert_id: str,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """Mark a GUSO concert as declared"""
     if current_user["role"] != "musician":
@@ -2472,7 +2472,7 @@ async def mark_concert_as_declared(
 async def update_concert_guso_declaration(
     concert_id: str,
     data: dict,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Update GUSO declaration status for a concert
@@ -2518,7 +2518,7 @@ async def update_concert_guso_declaration(
 @router.get("/musicians/me/guso/export/csv")
 async def export_guso_csv(
     year: int = None,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Export GUSO data as CSV file (PRO feature)
@@ -2667,7 +2667,7 @@ async def upload_invoice(
 @router.get("/musicians/me/concerts/{concert_id}/invoice")
 async def get_invoice(
     concert_id: str,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Download/view invoice for a concert
@@ -2712,7 +2712,7 @@ async def get_invoice(
 @router.delete("/musicians/me/concerts/{concert_id}/invoice")
 async def delete_invoice(
     concert_id: str,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Delete invoice for a concert (soft delete - removes reference from DB)
@@ -2755,7 +2755,7 @@ async def delete_invoice(
 @router.get("/musicians/me/analytics")
 async def get_analytics(
     year: int = None,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Get advanced analytics for PRO musicians
@@ -2911,7 +2911,7 @@ async def contact_band(
     band_name: str,
     subject: str,
     content: str,
-    current_user: dict = Depends(get_current_user)
+    , request: Request, current_user: dict = Depends(get_current_user)
 ):
     """
     Permet à un musicien de contacter un groupe via email

@@ -203,7 +203,7 @@ async def login(request: Request, response: Response, data: UserLogin):
     }
 
 @router.get("/me", response_model=UserResponse)
-async def get_me(current_user: dict = Depends(get_current_user)):
+async def get_me(request: Request, current_user: dict = Depends(get_current_user)):
     return UserResponse(
         id=current_user["id"], email=current_user["email"], name=current_user.get("name", current_user["email"]),
         role=current_user["role"], 

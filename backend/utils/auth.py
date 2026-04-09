@@ -44,7 +44,7 @@ async def get_current_user(request: Request = None, authorization: str = Header(
     token = None
     
     # Try Authorization header FIRST (for cross-domain - jamconnexion.com)
-    if authorization and authorization.startswith("Bearer "):
+    if authorization and isinstance(authorization, str) and authorization.startswith("Bearer "):
         token = authorization.replace("Bearer ", "")
     
     # Fallback to cookie (for same-domain - preview.emergentagent.com)

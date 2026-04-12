@@ -2071,17 +2071,24 @@ export default function VenueDashboard() {
   };
 
   // Update venue profile
+  // FONCTION SAUVEGARDE TEMPORAIREMENT DÉSACTIVÉE
   const updateProfile = async () => {
-    try {
-      await axios.put(`${API}/venues/me`, formData, { 
-        headers: { Authorization: `Bearer ${token}` } 
-      });
-      toast.success("✅ Profil mis à jour !");
-      setEditingProfile(false);
-      await fetchProfile(); // Reload profile
-    } catch (error) {
-      toast.error(error.response?.data?.detail || "Erreur lors de la mise à jour du profil");
-    }
+    // Fonction désactivée - à réactiver plus tard
+    console.log("Sauvegarde du profil désactivée temporairement");
+    toast.info("Sauvegarde temporairement désactivée");
+    return;
+    
+    // Code original (commenté)
+    // try {
+    //   await axios.put(`${API}/venues/me`, formData, { 
+    //     headers: { Authorization: `Bearer ${token}` } 
+    //   });
+    //   toast.success("✅ Profil mis à jour !");
+    //   setEditingProfile(false);
+    //   await fetchProfile(); // Reload profile
+    // } catch (error) {
+    //   toast.error(error.response?.data?.detail || "Erreur lors de la mise à jour du profil");
+    // }
   };
 
 

@@ -89,12 +89,17 @@ export function ImageUpload({
       });
 
       // Construct full image URL
-      const imageUrl = `${API}${response.data.url}`;
+      // If response.data.url is already a complete URL (starts with http), use it as-is
+      // Otherwise, prepend the API base URL
+      const imageUrl = response.data.url.startsWith('http') 
+        ? response.data.url 
+        : `${API}${response.data.url}`;
       console.log('🎉🎉🎉 IMAGE UPLOADED SUCCESSFULLY 🎉🎉🎉');
       console.log('📸 Image upload successful:', {
         backendResponse: response.data.url,
         constructedUrl: imageUrl,
-        API: API
+        API: API,
+        isAbsoluteUrl: response.data.url.startsWith('http')
       });
       console.log('🔥 Calling onChange with:', imageUrl);
       onChange?.(imageUrl);

@@ -33,6 +33,7 @@ class VenueProfile(BaseModel):
     show_reviews: bool = True
     allow_messages_from: str = "everyone"
     gallery: List[str] = []
+    is_guso: bool = False  # Établissement affilié au GUSO
 
 class VenueProfileResponse(BaseModel):
     id: str
@@ -73,6 +74,7 @@ class VenueProfileResponse(BaseModel):
     show_reviews: bool = True
     allow_messages_from: str = "everyone"
     gallery: List[str] = []
+    is_guso: bool = False  # Établissement affilié au GUSO
 
 class VenueSubscription(BaseModel):
     venue_id: str

@@ -272,6 +272,11 @@ export default function MapTab({
       );
     }
     
+    // Apply GUSO filter - filter venues directly
+    if (filterGusoOnly) {
+      filtered = filtered.filter(v => v.is_guso === true);
+    }
+    
     // Apply application filter (PRO only) - show venues where user applied
     if (showApplicationFilter && filteredApplicationVenueIds) {
       filtered = filtered.filter(v => filteredApplicationVenueIds.has(v.name));
@@ -283,7 +288,7 @@ export default function MapTab({
     }
     
     return filtered;
-  }, [venues, selectedStyles, showApplicationFilter, filteredApplicationVenueIds, showOffersFilter, filteredOfferVenueIds]);
+  }, [venues, selectedStyles, filterGusoOnly, showApplicationFilter, filteredApplicationVenueIds, showOffersFilter, filteredOfferVenueIds]);
 
   const styleFilteredNearby = useMemo(() => {
     let filtered = nearbyVenues || [];
@@ -298,6 +303,11 @@ export default function MapTab({
       );
     }
     
+    // Apply GUSO filter
+    if (filterGusoOnly) {
+      filtered = filtered.filter(v => v.is_guso === true);
+    }
+    
     // Apply application filter (PRO only)
     if (showApplicationFilter && filteredApplicationVenueIds) {
       filtered = filtered.filter(v => filteredApplicationVenueIds.has(v.name));
@@ -309,7 +319,7 @@ export default function MapTab({
     }
     
     return filtered;
-  }, [nearbyVenues, selectedStyles, showApplicationFilter, filteredApplicationVenueIds, showOffersFilter, filteredOfferVenueIds]);
+  }, [nearbyVenues, selectedStyles, filterGusoOnly, showApplicationFilter, filteredApplicationVenueIds, showOffersFilter, filteredOfferVenueIds]);
 
   return (
     <>
@@ -506,6 +516,28 @@ export default function MapTab({
         </div>
       )}
 
+      {/* GUSO Filter - Available for ALL users */}
+      <div className="glassmorphism rounded-xl p-3 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Afficher uniquement les établissements au GUSO</span>
+          </div>
+          <Button
+            onClick={() => setFilterGusoOnly(!filterGusoOnly)}
+            variant={filterGusoOnly ? "default" : "outline"}
+            size="sm"
+            className={`rounded-full ${filterGusoOnly ? 'bg-gradient-to-r from-purple-500 to-pink-500' : ''}`}
+          >
+            💼 GUSO
+          </Button>
+        </div>
+        {filterGusoOnly && (
+          <p className="text-xs text-muted-foreground mt-2">
+            {styleFilteredVenues.length} établissement{styleFilteredVenues.length > 1 ? 's' : ''} GUSO trouvé{styleFilteredVenues.length > 1 ? 's' : ''}
+          </p>
+        )}
+      </div>
+
       {/* PRO Application Filter */}
       {isPro && myApplications && myApplications.length > 0 && (
         <div className="glassmorphism rounded-xl p-4 mb-6 border-2 border-primary/30">
@@ -601,15 +633,6 @@ export default function MapTab({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {/* Filtre GUSO rapide */}
-              <Button
-                onClick={() => setFilterGusoOnly(!filterGusoOnly)}
-                variant={filterGusoOnly ? "default" : "outline"}
-                size="sm"
-                className={`rounded-full ${filterGusoOnly ? 'bg-gradient-to-r from-purple-500 to-pink-500' : ''}`}
-              >
-                💼 GUSO
-              </Button>
               <Button
                 onClick={() => setShowOffersFilter(!showOffersFilter)}
                 variant={showOffersFilter ? "default" : "outline"}

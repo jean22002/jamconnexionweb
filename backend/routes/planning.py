@@ -879,3 +879,52 @@ async def get_musician_calendar_events(request: Request, current_user: dict = De
         "eventsByDate": events_by_date
     }
 
+
+
+
+@router.delete("/venues/me/cleanup-old-applications")
+async def cleanup_old_applications(request: Request, current_user: dict = Depends(get_current_user)):
+    """
+    Delete all applications for planning slots with past dates (venue only)
+    Returns the number of applications deleted
+    """
+    from datetime import datetime, timezone
+    
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can cleanup applications")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Get today's date
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    # Find all planning slots from this venue with past dates
+    past_slots = await db.planning_slots.find({
+        "venue_id": venue["id"],
+        "date": {"$lt": today}
+    }, {"_id": 0, "id": 1}).to_list(1000)
+    
+    if not past_slots:
+        return {
+            "message": "Aucune candidature obsolète à supprimer",
+            "deleted_count": 0,
+            "past_slots_count": 0
+        }
+    
+    # Get all slot IDs
+    past_slot_ids = [slot["id"] for slot in past_slots]
+    
+    # Delete all applications for these past slots
+    delete_result = await db.applications.delete_many({
+        "planning_slot_id": {"$in": past_slot_ids}
+    })
+    
+    deleted_count = delete_result.deleted_count
+    
+    return {
+        "message": f"{deleted_count} candidature(s) obsolète(s) supprimée(s) avec succès",
+        "deleted_count": deleted_count,
+        "past_slots_count": len(past_slots)
+    }

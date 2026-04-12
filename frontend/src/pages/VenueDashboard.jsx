@@ -1936,6 +1936,28 @@ export default function VenueDashboard() {
     }
   };
 
+  // Cleanup old applications (past dates)
+  const cleanupOldApplications = async () => {
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer toutes les candidatures pour les créneaux passés ? Cette action est irréversible.")) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(`${API}/venues/me/cleanup-old-applications`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      toast.success(response.data.message);
+      
+      // Refresh planning slots to update the UI
+      fetchPlanningSlots();
+    } catch (error) {
+      const errorMsg = error.response?.data?.detail || "Erreur lors du nettoyage des candidatures";
+      toast.error(errorMsg);
+      console.error("Error cleaning up old applications:", error);
+    }
+  };
+
   // Create Jam
   const createJam = async () => {
     try {
@@ -3462,6 +3484,19 @@ export default function VenueDashboard() {
 
           {/* Candidatures Tab - Créneaux ouverts aux groupes */}
           <TabsContent value="candidatures">
+            {/* Cleanup Button */}
+            <div className="mb-6 flex justify-end">
+              <Button
+                onClick={cleanupOldApplications}
+                variant="outline"
+                size="sm"
+                className="gap-2 text-red-400 border-red-400/50 hover:bg-red-400/10"
+              >
+                <Trash2 className="w-4 h-4" />
+                Supprimer les candidatures obsolètes
+              </Button>
+            </div>
+            
             <CandidaturesTab
               planningSlots={planningSlots}
               applications={applications}

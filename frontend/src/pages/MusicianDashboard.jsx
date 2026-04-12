@@ -1023,8 +1023,21 @@ export default function MusicianDashboard() {
     setLoadingCandidatures(true);
     try {
       const params = new URLSearchParams();
-      if (candidatureFilters.dateFrom) params.append('date_from', candidatureFilters.dateFrom);
-      if (candidatureFilters.dateTo) params.append('date_to', candidatureFilters.dateTo);
+      
+      // Convert dates from DD/MM/YYYY to YYYY-MM-DD for MongoDB compatibility
+      if (candidatureFilters.dateFrom) {
+        const [day, month, year] = candidatureFilters.dateFrom.split('/');
+        if (day && month && year) {
+          params.append('date_from', `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+        }
+      }
+      if (candidatureFilters.dateTo) {
+        const [day, month, year] = candidatureFilters.dateTo.split('/');
+        if (day && month && year) {
+          params.append('date_to', `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+        }
+      }
+      
       if (candidatureFilters.region) params.append('region', candidatureFilters.region);
       if (candidatureFilters.department) params.append('department', candidatureFilters.department);
       if (candidatureFilters.musicStyle) params.append('music_style', candidatureFilters.musicStyle);

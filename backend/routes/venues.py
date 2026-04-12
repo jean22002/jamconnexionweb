@@ -221,7 +221,7 @@ async def get_my_venue(request: Request, current_user: dict = Depends(get_curren
 @router.put("/venues/me", response_model=VenueProfileResponse)
 async def update_my_venue_profile(data: VenueProfile, request: Request, current_user: dict = Depends(get_current_user)):
     """Alias for PUT /venues - mobile-friendly endpoint"""
-    return await update_venue_profile(data, current_user)
+    return await update_venue_profile(data, request, current_user)
 
 
 @router.get("/venues", response_model=List[VenueProfileResponse])

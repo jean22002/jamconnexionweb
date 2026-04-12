@@ -352,7 +352,7 @@ async def update_my_musician_profile(data: MusicianProfile, request: Request, cu
     Inclut les mêmes protections contre l'écrasement accidentel
     """
     # Réutiliser la logique de update_musician_profile (qui inclut les protections)
-    return await update_musician_profile(data, current_user)
+    return await update_musician_profile(data, request, current_user)
 
 
 # 🛡️ Endpoint de restauration depuis l'historique

@@ -123,11 +123,18 @@ async def create_planning_slot(data: PlanningSlot, request: Request, current_use
 
 
 @router.get("/planning", response_model=List[PlanningSlotResponse])
-async def list_planning_slots(venue_id: Optional[str] = None, is_open: bool = True):
-    """List planning slots"""
+async def list_planning_slots(venue_id: Optional[str] = None, is_open: bool = True, include_past: bool = False):
+    """List planning slots (only future slots by default)"""
+    from datetime import datetime, timezone
+    
     query = {"is_open": is_open}
     if venue_id:
         query["venue_id"] = venue_id
+    
+    # By default, only show future slots
+    if not include_past:
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        query["date"] = {"$gte": today}
     
     slots = await db.planning_slots.find(query, {"_id": 0}).sort("date", 1).to_list(100)
     
@@ -157,17 +164,28 @@ async def search_planning_slots(
     is_open: bool = True
 ):
     """Search planning slots with filters (for musicians)"""
+    from datetime import datetime, timezone
+    
     query = {"is_open": is_open}
+    
+    # Always filter out past dates - only show future slots
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     # Date filters
     if date_from or date_to:
         date_query = {}
+        # Ensure date_from is at least today
         if date_from:
-            date_query["$gte"] = date_from
+            date_query["$gte"] = max(date_from, today) if date_from else today
+        else:
+            date_query["$gte"] = today
         if date_to:
             date_query["$lte"] = date_to
         if date_query:
             query["date"] = date_query
+    else:
+        # No date filter specified - only show future slots
+        query["date"] = {"$gte": today}
     
     # Get all matching slots
     slots = await db.planning_slots.find(query, {"_id": 0}).sort("date", 1).to_list(500)
@@ -223,9 +241,18 @@ async def search_planning_slots(
 
 
 @router.get("/venues/{venue_id}/planning", response_model=List[PlanningSlotResponse])
-async def get_venue_planning(venue_id: str):
-    """Get planning slots for a specific venue"""
-    slots = await db.planning_slots.find({"venue_id": venue_id}, {"_id": 0}).sort("date", 1).to_list(100)
+async def get_venue_planning(venue_id: str, include_past: bool = False):
+    """Get planning slots for a specific venue (only future slots by default)"""
+    from datetime import datetime, timezone
+    
+    query = {"venue_id": venue_id}
+    
+    # By default, only show future slots
+    if not include_past:
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        query["date"] = {"$gte": today}
+    
+    slots = await db.planning_slots.find(query, {"_id": 0}).sort("date", 1).to_list(100)
     
     result = []
     for s in slots:

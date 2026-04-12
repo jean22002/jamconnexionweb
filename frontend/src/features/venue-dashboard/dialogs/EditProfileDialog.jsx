@@ -500,21 +500,20 @@ export function EditProfileDialog({ open, onOpenChange, formData, setFormData, u
 
           {/* Boutons d'action */}
           <div className="flex gap-3 pt-6 border-t border-white/10">
-            {/* BOUTON SAUVEGARDER TEMPORAIREMENT DÉSACTIVÉ */}
-            {/* <Button
+            <Button
               onClick={updateProfile}
               className="flex-1 bg-primary hover:bg-primary/90"
             >
               <Save className="w-4 h-4 mr-2" />
               Sauvegarder
-            </Button> */}
+            </Button>
             
             <Button
               onClick={handleClose}
               variant="outline"
-              className="w-full border-white/20"
+              className="flex-1 border-white/20"
             >
-              Fermer
+              Annuler
             </Button>
           </div>
         </div>

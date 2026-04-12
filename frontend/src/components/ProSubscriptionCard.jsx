@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import axios from 'axios';
-import { Check, Crown, TrendingUp, FileText, BarChart3, Loader2, Sparkles, ChevronDown, ChevronUp, AlertCircle, Camera, Music, MapPin, Users } from 'lucide-react';
+import { Check, Crown, TrendingUp, FileText, BarChart3, Loader2, Sparkles, ChevronDown, ChevronUp, AlertCircle, Camera, Music, MapPin, Users, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 
@@ -213,6 +213,16 @@ const ProSubscriptionCard = ({ token, currentTier, onSuccess, profile }) => {
           <div>
             <p className="font-semibold">Badge GUSO visible</p>
             <p className="text-sm text-muted-foreground">Trouvez facilement les établissements au GUSO</p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center mt-0.5">
+            <Filter className="w-4 h-4 text-green-400" />
+          </div>
+          <div>
+            <p className="font-semibold">Filtres avancés sur la carte</p>
+            <p className="text-sm text-muted-foreground">Filtrez par candidatures et offres disponibles</p>
           </div>
         </div>
       </div>

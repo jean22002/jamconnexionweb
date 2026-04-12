@@ -16,7 +16,7 @@ router = APIRouter(prefix="/bands", tags=["bands"])
 # Dependency to get current user
 async def get_current_user_local(authorization: str = Header(None)):
     from utils import get_current_user
-    return await get_current_user(authorization, get_db())
+    return await get_current_user(request=None, authorization=authorization, db=get_db())
 
 
 class InviteMemberRequest(BaseModel):

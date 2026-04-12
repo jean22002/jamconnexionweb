@@ -17,7 +17,7 @@ def set_db(database):
 async def get_current_user_local(authorization: str = Header(None)):
     """Import get_current_user locally to avoid circular imports"""
     from utils import get_current_user
-    return await get_current_user(authorization, db)
+    return await get_current_user(request=None, authorization=authorization, db=db)
 
 @router.post("", response_model=ReviewResponse)
 async def create_review(data: ReviewCreate, current_user: dict = Depends(get_current_user_local)):

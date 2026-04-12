@@ -16,8 +16,9 @@ def set_db(database):
 
 async def get_current_user_local(authorization: str = Header(None)):
     """Import get_current_user locally to avoid circular imports"""
-    from utils import get_current_user
-    return await get_current_user(authorization, db)
+    from utils.auth import get_current_user
+    # Call with named parameters to avoid parameter order issues
+    return await get_current_user(request=None, authorization=authorization, db=db)
 
 @router.get("", response_model=List[NotificationResponse])
 async def get_notifications(current_user: dict = Depends(get_current_user_local)):

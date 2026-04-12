@@ -50,6 +50,7 @@ import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 import { MUSIC_STYLES_LIST } from "../data/music-styles";
 import DashboardNotification from "../components/DashboardNotification";
 import CandidaturesTab from "../components/candidatures/CandidaturesTab";
+import BandSelectionModal from "../components/candidatures/BandSelectionModal";
 import VenuesTab from "../components/venues/VenuesTab";
 import BandsTab from "../components/bands/BandsTab";
 import MyApplicationsTab from "../components/applications/MyApplicationsTab";
@@ -211,6 +212,10 @@ export default function MusicianDashboard() {
   // My applications states
   const [myApplications, setMyApplications] = useState([]);
   const [loadingMyApplications, setLoadingMyApplications] = useState(false);
+  
+  // Band selection modal states
+  const [showBandSelectionModal, setShowBandSelectionModal] = useState(false);
+  const [pendingSlotId, setPendingSlotId] = useState(null);
   
   // Change password states
   const [passwordForm, setPasswordForm] = useState({
@@ -1035,11 +1040,23 @@ export default function MusicianDashboard() {
   };
 
   const applyToSlot = async (slotId) => {
+    // Afficher la modale de sélection de groupe
+    setPendingSlotId(slotId);
+    setShowBandSelectionModal(true);
+  };
+
+  const handleBandSelection = async (bandId) => {
+    if (!pendingSlotId) return;
+    
     try {
-      await axios.post(`${API}/planning/${slotId}/apply`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.post(
+        `${API}/planning/${pendingSlotId}/apply`,
+        { band_id: bandId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       toast.success("Candidature envoyée !");
+      setShowBandSelectionModal(false);
+      setPendingSlotId(null);
       searchCandidatures(); // Refresh list
       fetchMyApplications(); // Refresh my applications
     } catch (error) {
@@ -3011,6 +3028,17 @@ export default function MusicianDashboard() {
 
       {/* Location Widget (Floating) */}
       <LocationWidget token={token} />
+
+      {/* Band Selection Modal for Applications */}
+      <BandSelectionModal
+        isOpen={showBandSelectionModal}
+        onClose={() => {
+          setShowBandSelectionModal(false);
+          setPendingSlotId(null);
+        }}
+        bands={profile?.bands || []}
+        onSelectBand={handleBandSelection}
+      />
     </div>
   );
 }

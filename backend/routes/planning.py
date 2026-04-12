@@ -300,8 +300,8 @@ async def delete_planning_slot(slot_id: str, request: Request, current_user: dic
 # ============= CONCERT APPLICATIONS =============
 
 @router.post("/planning/{slot_id}/apply")
-async def apply_to_slot(slot_id: str, request: Request, current_user: dict = Depends(get_current_user)):
-    """Quick apply to a planning slot (auto-detects solo/band)"""
+async def apply_to_slot(slot_id: str, band_id: Optional[str] = None, request: Request = None, current_user: dict = Depends(get_current_user)):
+    """Apply to a planning slot with optional band selection"""
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can apply")
     
@@ -324,8 +324,24 @@ async def apply_to_slot(slot_id: str, request: Request, current_user: dict = Dep
     if existing:
         raise HTTPException(status_code=400, detail="Vous avez déjà postulé à ce créneau")
     
-    # Use musician's pseudo as band name (solo application)
-    band_name = musician.get("pseudo", current_user["name"])
+    # Determine band name based on band_id or use solo profile
+    band_name = musician.get("pseudo", current_user["name"])  # Default to solo
+    band_info = None
+    
+    if band_id and band_id != "solo":
+        # Find the band in musician's bands list
+        musician_bands = musician.get("bands", [])
+        band_info = next((b for b in musician_bands if b.get("id") == band_id), None)
+        
+        if not band_info:
+            # Try to find in bands collection
+            band_doc = await db.bands.find_one({"id": band_id}, {"_id": 0})
+            if band_doc and band_doc.get("leader_id") == musician["id"]:
+                band_info = band_doc
+            else:
+                raise HTTPException(status_code=403, detail="Vous ne pouvez candidater qu'avec vos propres groupes")
+        
+        band_name = band_info.get("name", band_name)
     
     app_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
@@ -335,6 +351,7 @@ async def apply_to_slot(slot_id: str, request: Request, current_user: dict = Dep
         "planning_slot_id": slot_id,
         "musician_id": musician["id"],
         "musician_name": musician.get("pseudo", current_user["name"]),
+        "band_id": band_id if band_id and band_id != "solo" else None,
         "band_name": band_name,
         "message": f"Candidature de {band_name}",
         "status": "pending",
@@ -344,13 +361,13 @@ async def apply_to_slot(slot_id: str, request: Request, current_user: dict = Dep
     await db.applications.insert_one(app_doc)
     
     # Notify venue owner
-    venue = await db.venues.find_one({"id": slot["venue_id"]}, {"_id": 0})
-    if venue:
+    venue = await db.venues.find_one({"id": slot.get("venue_id")}, {"_id": 0})
+    if venue and venue.get("user_id"):
         await create_notification(
             venue["user_id"], 
             "application_received",
             "Nouvelle candidature",
-            f"{band_name} a postulé pour le {slot['date']}",
+            f"{band_name} a postulé pour le {slot.get('date', 'un créneau')}",
             "/venue"
         )
     

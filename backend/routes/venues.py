@@ -276,7 +276,7 @@ async def list_venues(
     from routes.online_status import is_user_online
     
     # Optimisation: Récupérer tous les utilisateurs en une seule requête
-    user_ids = [v["user_id"] for v in venues]
+    user_ids = [v.get("user_id") for v in venues if v.get("user_id")]
     users = await db.users.find(
         {"id": {"$in": user_ids}},
         {"_id": 0, "id": 1, "online_status_mode": 1, "manual_online_status": 1, "subscription_status": 1}
@@ -286,7 +286,7 @@ async def list_venues(
     # Filtrer UNIQUEMENT ceux qui sont EXPLICITEMENT hors ligne (mode disabled OU manual+offline)
     visible_venues = []
     for v in venues:
-        user = users_map.get(v["user_id"])
+        user = users_map.get(v.get("user_id"))
         if user:
             mode = user.get("online_status_mode", "auto")
             # Masquer SEULEMENT si :
@@ -305,7 +305,7 @@ async def list_venues(
         return []
     
     # Optimisation: Compter tous les abonnés en une seule agrégation
-    venue_ids = [v["id"] for v in venues]
+    venue_ids = [v.get("id") for v in venues if v.get("id")]
     subscribers_pipeline = [
         {"$match": {"venue_id": {"$in": venue_ids}}},
         {"$group": {"_id": "$venue_id", "count": {"$sum": 1}}}
@@ -316,11 +316,11 @@ async def list_venues(
     # Construire le résultat
     result = []
     for v in venues:
-        user = users_map.get(v["user_id"])
+        user = users_map.get(v.get("user_id"))
         user_subscription_status = user.get("subscription_status") if user else None
         
         if user_subscription_status in ["active", "trial"]:
-            subscribers_count = subscribers_map.get(v["id"], 0)
+            subscribers_count = subscribers_map.get(v.get("id"), 0)
             v["subscription_status"] = user_subscription_status
             v["subscribers_count"] = subscribers_count
             result.append(VenueProfileResponse(**v))
@@ -368,7 +368,7 @@ async def find_nearby_venues(request: NearbySearchRequest):
         return []
     
     # Optimisation: Récupérer tous les utilisateurs en batch
-    user_ids = [v["user_id"] for v in nearby_venues]
+    user_ids = [v.get("user_id") for v in nearby_venues if v.get("user_id")]
     users = await db.users.find(
         {"id": {"$in": user_ids}},
         {"_id": 0, "id": 1, "subscription_status": 1}
@@ -376,7 +376,7 @@ async def find_nearby_venues(request: NearbySearchRequest):
     users_map = {u["id"]: u for u in users}
     
     # Optimisation: Compter tous les abonnés en une agrégation
-    venue_ids = [v["id"] for v in nearby_venues]
+    venue_ids = [v.get("id") for v in nearby_venues if v.get("id")]
     subscribers_pipeline = [
         {"$match": {"venue_id": {"$in": venue_ids}}},
         {"$group": {"_id": "$venue_id", "count": {"$sum": 1}}}
@@ -387,7 +387,7 @@ async def find_nearby_venues(request: NearbySearchRequest):
     # Construire le résultat
     nearby = []
     for venue in nearby_venues:
-        user = users_map.get(venue["user_id"])
+        user = users_map.get(venue.get("user_id"))
         if user and user.get("subscription_status") in ["active", "trial"]:
             subscribers_count = subscribers_map.get(venue["id"], 0)
             venue_resp = VenueProfileResponse(

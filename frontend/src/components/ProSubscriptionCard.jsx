@@ -1,13 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import axios from 'axios';
-import { Check, Crown, TrendingUp, FileText, BarChart3, Loader2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, Crown, TrendingUp, FileText, BarChart3, Loader2, Sparkles, ChevronDown, ChevronUp, AlertCircle, Camera, Music, MapPin, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-const ProSubscriptionCard = ({ token, currentTier, onSuccess }) => {
+const ProSubscriptionCard = ({ token, currentTier, onSuccess, profile }) => {
   const [loading, setLoading] = useState(false);
+  
+  // Calculate missing profile fields
+  const missingFields = useMemo(() => {
+    if (!profile) return [];
+    
+    const missing = [];
+    
+    if (!profile.profile_image || profile.profile_image === '') {
+      missing.push({ icon: Camera, label: 'Photo de profil', field: 'profile_image' });
+    }
+    if (!profile.description || profile.description.trim() === '') {
+      missing.push({ icon: FileText, label: 'Biographie', field: 'description' });
+    }
+    if (!profile.styles || profile.styles.length === 0) {
+      missing.push({ icon: Music, label: 'Styles musicaux', field: 'styles' });
+    }
+    if (!profile.city || profile.city.trim() === '') {
+      missing.push({ icon: MapPin, label: 'Ville', field: 'city' });
+    }
+    if (!profile.bands || profile.bands.length === 0) {
+      missing.push({ icon: Users, label: 'Groupe(s) / Projet(s)', field: 'bands' });
+    }
+    
+    return missing;
+  }, [profile]);
   
   // State for collapsible - persist in localStorage
   const [isExpanded, setIsExpanded] = useState(() => {
@@ -117,6 +142,37 @@ const ProSubscriptionCard = ({ token, currentTier, onSuccess }) => {
           Annulable à tout moment • Sans engagement
         </p>
       </div>
+
+      {/* Missing Profile Fields Warning */}
+      {missingFields.length > 0 && (
+        <div className="mb-6 p-4 bg-orange-500/10 border-2 border-orange-500/50 rounded-xl">
+          <div className="flex items-start gap-3 mb-3">
+            <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-semibold text-orange-400 mb-2">
+                Complétez votre profil avant de passer PRO
+              </p>
+              <p className="text-sm text-muted-foreground mb-3">
+                Pour tirer le meilleur parti de votre abonnement PRO, complétez ces éléments :
+              </p>
+            </div>
+          </div>
+          <div className="space-y-2 ml-8">
+            {missingFields.map((field, index) => {
+              const Icon = field.icon;
+              return (
+                <div key={index} className="flex items-center gap-2 text-sm">
+                  <Icon className="w-4 h-4 text-orange-400" />
+                  <span className="text-muted-foreground">{field.label}</span>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-xs text-muted-foreground mt-3 ml-8">
+            💡 Rendez-vous dans l'onglet "Profil" pour compléter ces informations
+          </p>
+        </div>
+      )}
 
       {/* Features */}
       <div className="space-y-4 mb-8">

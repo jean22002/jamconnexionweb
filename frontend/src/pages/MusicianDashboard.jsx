@@ -2399,6 +2399,7 @@ export default function MusicianDashboard() {
             <ProSubscriptionCard 
               token={token} 
               currentTier={subscriptionData.tier}
+              profile={profile}
               onSuccess={() => {
                 fetchSubscriptionStatus();
                 fetchProfile();

@@ -73,10 +73,10 @@ async def send_message(request: Request, data: MessageCreate, current_user: dict
     message_doc = {
         "id": str(uuid.uuid4()),
         "sender_id": current_user["id"],
-        "sender_name": current_user["name"],
+        "sender_name": current_user.get("name", "Unknown"),
         "sender_image": sender_image,
         "recipient_id": data.recipient_id,
-        "recipient_name": recipient["name"],
+        "recipient_name": recipient.get("name", "Unknown"),
         "subject": data.subject,
         "content": data.content,
         "is_read": False,

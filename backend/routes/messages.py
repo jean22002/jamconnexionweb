@@ -122,21 +122,89 @@ async def send_message(request: Request, data: MessageCreate, current_user: dict
     return MessageResponse(**message_doc)
 
 @router.get("/inbox", response_model=List[MessageResponse])
-async def get_inbox(current_user: dict = Depends(get_current_user_local)):
-    """Get all messages received by current user"""
+async def get_inbox(
+    limit: int = 100, 
+    offset: int = 0,
+    current_user: dict = Depends(get_current_user_local)
+):
+    """Get all messages received by current user with pagination"""
     messages = await db.messages.find(
         {"recipient_id": current_user["id"]},
         {"_id": 0}
-    ).sort("created_at", -1).to_list(100)
+    ).sort("created_at", -1).skip(offset).limit(limit).to_list(limit)
     return [MessageResponse(**m) for m in messages]
 
 @router.get("/sent", response_model=List[MessageResponse])
-async def get_sent_messages(current_user: dict = Depends(get_current_user_local)):
-    """Get all messages sent by current user"""
+async def get_sent_messages(
+    limit: int = 100,
+    offset: int = 0,
+    current_user: dict = Depends(get_current_user_local)
+):
+    """Get all messages sent by current user with pagination"""
     messages = await db.messages.find(
         {"sender_id": current_user["id"]},
         {"_id": 0}
-    ).sort("created_at", -1).to_list(100)
+    ).sort("created_at", -1).skip(offset).limit(limit).to_list(limit)
+    return [MessageResponse(**m) for m in messages]
+
+@router.get("/conversation/{partner_id}", response_model=List[MessageResponse])
+async def get_conversation(
+    partner_id: str,
+    limit: int = 50,
+    offset: int = 0,
+    current_user: dict = Depends(get_current_user_local)
+):
+    """Get messages in a conversation with a specific partner (with pagination for infinite scroll)"""
+    messages = await db.messages.find(
+        {
+            "$or": [
+                {"sender_id": current_user["id"], "recipient_id": partner_id},
+                {"sender_id": partner_id, "recipient_id": current_user["id"]}
+            ]
+        },
+        {"_id": 0}
+    ).sort("created_at", -1).skip(offset).limit(limit).to_list(limit)
+    
+    # Return in chronological order (oldest first)
+    return [MessageResponse(**m) for m in reversed(messages)]
+
+
+@router.get("/search", response_model=List[MessageResponse])
+async def search_messages(
+    query: str,
+    partner_id: str = None,
+    limit: int = 50,
+    current_user: dict = Depends(get_current_user_local)
+):
+    """Search messages by content or subject"""
+    # Build search filter
+    search_filter = {
+        "$or": [
+            {"sender_id": current_user["id"]},
+            {"recipient_id": current_user["id"]}
+        ],
+        "$and": [
+            {
+                "$or": [
+                    {"content": {"$regex": query, "$options": "i"}},
+                    {"subject": {"$regex": query, "$options": "i"}}
+                ]
+            }
+        ]
+    }
+    
+    # Filter by partner if specified
+    if partner_id:
+        search_filter["$or"] = [
+            {"sender_id": current_user["id"], "recipient_id": partner_id},
+            {"sender_id": partner_id, "recipient_id": current_user["id"]}
+        ]
+    
+    messages = await db.messages.find(
+        search_filter,
+        {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    
     return [MessageResponse(**m) for m in messages]
 
 @router.put("/{message_id}/read")

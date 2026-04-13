@@ -169,6 +169,7 @@ import routes.firebase_push as firebase_push
 import routes.chat as chat
 import routes.config as config  # NEW: Configuration endpoint for mobile
 import routes.moderation as moderation  # NEW: Moderation settings
+import routes.moderation_settings as moderation_settings  # NEW: Admin moderation settings
 import routes.websocket as websocket  # NEW: WebSocket notifications
 
 # Include routers with basic functionality
@@ -199,6 +200,7 @@ audit.set_db(db)  # NEW: Audit logging
 accounting.set_db(db)
 firebase_push.set_db(db)
 chat.set_db(db)
+moderation_settings.set_db(db)  # NEW: Admin moderation settings
 
 # Include domain-specific routers
 api_router.include_router(melomanes.router)
@@ -220,6 +222,7 @@ api_router.include_router(firebase_push.router)
 api_router.include_router(chat.router)
 api_router.include_router(config.router)
 api_router.include_router(moderation.router)  # NEW: Moderation settings
+api_router.include_router(moderation_settings.router)  # NEW: Admin moderation settings  
 api_router.include_router(websocket.router)  # NEW: WebSocket  # NEW: Mobile app configuration
 
 # Import files router

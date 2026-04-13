@@ -23,7 +23,20 @@ export default function MessagesImproved() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showNewConversation, setShowNewConversation] = useState(false);
+  
+  // Infinite scroll states
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [messageOffset, setMessageOffset] = useState(0);
+  const MESSAGE_LIMIT = 50;
+  
+  // Message search states
+  const [messageSearchQuery, setMessageSearchQuery] = useState('');
+  const [searchingMessages, setSearchingMessages] = useState(false);
+  const [messageSearchResults, setMessageSearchResults] = useState([]);
+  
   const messagesEndRef = useRef(null);
+  const messagesTopRef = useRef(null);
 
   useEffect(() => {
     if (token) {
@@ -124,23 +137,79 @@ export default function MessagesImproved() {
     }
   };
 
-  const fetchMessages = async (partnerId, silent = false) => {
+  const fetchMessages = async (partnerId, silent = false, append = false) => {
     try {
-      const [inboxRes, sentRes] = await Promise.all([
-        axios.get(`${API}/messages/inbox`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API}/messages/sent`, { headers: { Authorization: `Bearer ${token}` } })
-      ]);
+      const offset = append ? messageOffset : 0;
+      const response = await axios.get(
+        `${API}/messages/conversation/${partnerId}?limit=${MESSAGE_LIMIT}&offset=${offset}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-      // Filter messages for this conversation
-      const conversationMessages = [
-        ...inboxRes.data.filter(m => m.sender_id === partnerId),
-        ...sentRes.data.filter(m => m.recipient_id === partnerId)
-      ].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      const newMessages = response.data;
+      
+      if (append) {
+        setMessages(prev => [...newMessages, ...prev]);
+        setMessageOffset(offset + MESSAGE_LIMIT);
+      } else {
+        setMessages(newMessages);
+        setMessageOffset(MESSAGE_LIMIT);
+      }
+      
 
-      setMessages(conversationMessages);
+  // Load more messages (infinite scroll)
+  const loadMoreMessages = async () => {
+    if (!selectedConversation || loadingMore || !hasMore) return;
+    
+    setLoadingMore(true);
+    await fetchMessages(selectedConversation.id, true, true);
+    setLoadingMore(false);
+  };
+
+  // Search messages in current conversation
+  const searchMessagesInConversation = async (query) => {
+    if (!query.trim() || !selectedConversation) {
+      setMessageSearchResults([]);
+      return;
+    }
+
+    setSearchingMessages(true);
+    try {
+      const response = await axios.get(
+        `${API}/messages/search?query=${encodeURIComponent(query)}&partner_id=${selectedConversation.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setMessageSearchResults(response.data);
+    } catch (error) {
+      console.error('Error searching messages:', error);
+      toast.error('Erreur lors de la recherche');
+    } finally {
+      setSearchingMessages(false);
+    }
+  };
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    if (!messagesTopRef.current || !selectedConversation) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          loadMoreMessages();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(messagesTopRef.current);
+
+    return () => observer.disconnect();
+  }, [selectedConversation, hasMore, loadingMore]);
+
+      // Check if there are more messages to load
+      setHasMore(newMessages.length === MESSAGE_LIMIT);
 
       // Mark unread messages as read
-      const unreadMessages = conversationMessages.filter(m => 
+      const unreadMessages = newMessages.filter(m => 
         m.recipient_id === user.id && !m.is_read
       );
       
@@ -150,7 +219,7 @@ export default function MessagesImproved() {
         });
       }
 
-      if (!silent) scrollToBottom();
+      if (!silent && !append) scrollToBottom();
     } catch (error) {
       console.error('Error:', error);
     }
@@ -500,9 +569,53 @@ export default function MessagesImproved() {
                   </Button>
                 </div>
 
+                {/* Message Search Bar */}
+                <div className="p-3 border-b border-white/10 bg-background/50">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      value={messageSearchQuery}
+                      onChange={(e) => {
+                        setMessageSearchQuery(e.target.value);
+                        searchMessagesInConversation(e.target.value);
+                      }}
+                      placeholder="Rechercher dans cette conversation..."
+                      className="pl-10 bg-black/20 border-white/10 text-sm"
+                    />
+                    {messageSearchQuery && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7"
+                        onClick={() => {
+                          setMessageSearchQuery('');
+                          setMessageSearchResults([]);
+                        }}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                  {messageSearchResults.length > 0 && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {messageSearchResults.length} résultat(s) trouvé(s)
+                    </p>
+                  )}
+                </div>
+
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {messages.map((msg) => {
+                  {/* Scroll Top Observer for Infinite Scroll */}
+                  <div ref={messagesTopRef} className="h-1">
+                    {loadingMore && (
+                      <div className="flex justify-center py-2">
+                        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Display search results or regular messages */}
+                  {(messageSearchQuery ? messageSearchResults : messages).map((msg) => {
                     const isMe = msg.sender_id === user.id;
                     return (
                       <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>

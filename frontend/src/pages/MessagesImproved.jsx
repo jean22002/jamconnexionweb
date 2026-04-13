@@ -50,7 +50,7 @@ export default function MessagesImproved() {
       // Auto-scroll to bottom
       setTimeout(() => scrollToBottom(), 100);
     }
-  }, [selectedConversation]);
+  }, [selectedConversation?.id]); // Only re-run when ID changes
 
   useEffect(() => {
     // Poll for new messages every 5 seconds when conversation is selected
@@ -60,7 +60,7 @@ export default function MessagesImproved() {
       }, 5000);
       return () => clearInterval(interval);
     }
-  }, [selectedConversation]);
+  }, [selectedConversation?.id]); // Only re-run when ID changes
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -175,13 +175,6 @@ export default function MessagesImproved() {
     }
   };
       
-      if (append) {
-        setMessages(prev => [...newMessages, ...prev]);
-        setMessageOffset(offset + MESSAGE_LIMIT);
-      } else {
-        setMessages(newMessages);
-        setMessageOffset(MESSAGE_LIMIT);
-      }
       
 
   // Load more messages (infinite scroll)
@@ -215,12 +208,6 @@ export default function MessagesImproved() {
     }
   };
 
-  // Load messages when conversation is selected
-  useEffect(() => {
-    if (selectedConversation) {
-      fetchMessages(selectedConversation.id);
-    }
-  }, [selectedConversation?.id]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {

@@ -222,6 +222,10 @@ api_router.include_router(config.router)
 api_router.include_router(moderation.router)  # NEW: Moderation settings
 api_router.include_router(websocket.router)  # NEW: WebSocket  # NEW: Mobile app configuration
 
+# Import files router
+from routes import files
+api_router.include_router(files.router)  # NEW: Public file proxy for Object Storage
+
 # Stats endpoint for Landing page
 @api_router.get("/stats/counts")
 async def get_stats_counts():

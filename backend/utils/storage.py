@@ -242,8 +242,9 @@ def upload_image(
     path = generate_storage_path(user_id, file_id, "webp", folder)
     result = put_object(path, optimized_data, content_type)
     
-    # Generate PUBLIC URL (no authentication required for browser access)
-    url = f"{PUBLIC_STORAGE_URL}/{path}"
+    # Generate URL via backend proxy (required because Object Storage doesn't support public access)
+    # The proxy endpoint /api/files/{path} will fetch from storage with authentication
+    url = f"/api/files/{path}"
     
     response = {
         "url": url,
@@ -256,6 +257,6 @@ def upload_image(
         thumb_data, thumb_type = optimize_image(image_data, "thumbnail")
         thumb_path = generate_storage_path(user_id, f"{file_id}_thumb", "webp", "thumbnails")
         put_object(thumb_path, thumb_data, thumb_type)
-        response["thumbnail_url"] = f"{PUBLIC_STORAGE_URL}/{thumb_path}"
+        response["thumbnail_url"] = f"/api/files/{thumb_path}"
     
     return response

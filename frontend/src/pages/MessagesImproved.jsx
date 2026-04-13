@@ -287,12 +287,19 @@ export default function MessagesImproved() {
     }
 
     try {
-      // Fetch friends list first
-      const friendsRes = await axios.get(`${API}/musicians/friends`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      const friendUserIds = new Set(friendsRes.data.map(f => f.user_id));
+      let friendUserIds = new Set();
+
+      // Fetch friends list only if user is a musician
+      if (user.role === 'musician') {
+        try {
+          const friendsRes = await axios.get(`${API}/friends`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          friendUserIds = new Set(friendsRes.data.map(f => f.user_id));
+        } catch (error) {
+          console.log('Could not fetch friends (user may not be musician):', error);
+        }
+      }
 
       // Search musicians and venues
       const [musiciansRes, venuesRes] = await Promise.all([
@@ -300,44 +307,58 @@ export default function MessagesImproved() {
         axios.get(`${API}/venues`)
       ]);
 
-      // Filter: Only friends + matching query
+      // Filter: Exclude self + matching query
+      // If user is musician with friends, prioritize friends but still show all results
       const musicians = musiciansRes.data
         .filter(m => 
           m.user_id !== user.id && 
-          friendUserIds.has(m.user_id) && 
-          m.pseudo.toLowerCase().includes(query.toLowerCase())
+          (m.pseudo || m.name || '').toLowerCase().includes(query.toLowerCase())
         )
         .map(m => ({ 
           ...m, 
           type: 'musician', 
-          name: m.pseudo,
+          name: m.pseudo || m.name,
+          isFriend: friendUserIds.has(m.user_id),
           profile_image: m.profile_image
             ? (m.profile_image.startsWith('http')
                 ? m.profile_image
                 : `${API}${m.profile_image}`)
             : ""
-        }));
+        }))
+        .sort((a, b) => {
+          // Friends first
+          if (a.isFriend && !b.isFriend) return -1;
+          if (!a.isFriend && b.isFriend) return 1;
+          return 0;
+        });
 
-      // Filter: Only friends + matching query
+      // Filter: Exclude self + matching query
       const venues = venuesRes.data
         .filter(v => 
           v.user_id !== user.id && 
-          friendUserIds.has(v.user_id) && 
-          v.name.toLowerCase().includes(query.toLowerCase())
+          (v.name || '').toLowerCase().includes(query.toLowerCase())
         )
         .map(v => ({ 
           ...v, 
           type: 'venue',
+          isFriend: friendUserIds.has(v.user_id),
           profile_image: v.profile_image
             ? (v.profile_image.startsWith('http')
                 ? v.profile_image
                 : `${API}${v.profile_image}`)
             : ""
-        }));
+        }))
+        .sort((a, b) => {
+          // Friends first
+          if (a.isFriend && !b.isFriend) return -1;
+          if (!a.isFriend && b.isFriend) return 1;
+          return 0;
+        });
 
       setSearchResults([...musicians, ...venues]);
     } catch (error) {
       console.error('Error searching users:', error);
+      toast.error('Erreur lors de la recherche');
     }
   };
 

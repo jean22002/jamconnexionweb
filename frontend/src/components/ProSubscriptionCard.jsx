@@ -117,26 +117,26 @@ const ProSubscriptionCard = ({ token, currentTier, onSuccess, profile }) => {
       </div>
 
       {/* Title */}
-      <h2 className="text-3xl font-bold mb-2">
+      <h2 className="text-2xl sm:text-3xl font-bold mb-2">
         <span className="bg-gradient-to-r from-primary via-cyan-400 to-purple-400 bg-clip-text text-transparent">
           Musicien PRO
         </span>
       </h2>
       
-      <p className="text-xl text-muted-foreground mb-6">
+      <p className="text-lg sm:text-xl text-muted-foreground mb-6">
         Boostez votre carrière musicale
       </p>
 
       {/* Pricing */}
       <div className="mb-8">
-        <div className="flex items-baseline gap-2 mb-2">
-          <span className="text-5xl font-bold text-primary">7 jours</span>
-          <span className="text-2xl font-semibold text-muted-foreground">GRATUITS</span>
+        <div className="flex items-baseline gap-2 mb-2 flex-wrap">
+          <span className="text-4xl sm:text-5xl font-bold text-primary">7 jours</span>
+          <span className="text-xl sm:text-2xl font-semibold text-muted-foreground">GRATUITS</span>
         </div>
-        <div className="flex items-baseline gap-2">
-          <span className="text-xl text-muted-foreground">puis</span>
-          <span className="text-3xl font-bold">6,99€</span>
-          <span className="text-lg text-muted-foreground">/mois</span>
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <span className="text-lg sm:text-xl text-muted-foreground">puis</span>
+          <span className="text-2xl sm:text-3xl font-bold">6,99€</span>
+          <span className="text-base sm:text-lg text-muted-foreground">/mois</span>
         </div>
         <p className="text-sm text-muted-foreground mt-2">
           Annulable à tout moment • Sans engagement

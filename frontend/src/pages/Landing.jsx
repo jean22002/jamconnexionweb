@@ -242,7 +242,7 @@ export default function Landing() {
               }
             ].map((item, index) => (
               <div 
-                key={index}
+                key={`step-${item.step}`}
                 className="relative p-8 rounded-3xl bg-gradient-to-b from-white/5 to-transparent border border-white/10 backdrop-blur-sm hover:border-primary/30 transition-all group hover:scale-105"
               >
                 {/* Step number badge */}
@@ -311,7 +311,7 @@ export default function Landing() {
                   "Création de profil musicien",
                   "Contact direct avec les venues"
                 ].map((item, index) => (
-                  <li key={index} className="flex items-center gap-3">
+                  <li key={`musician-feature-${index}`} className="flex items-center gap-3">
                     <div className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center">
                       <Check className="w-4 h-4 text-secondary" />
                     </div>
@@ -339,7 +339,7 @@ export default function Landing() {
                   "Liens réseaux sociaux",
                   "Badge établissement vérifié"
                 ].map((item, index) => (
-                  <li key={index} className="flex items-center gap-3">
+                  <li key={`musician-feature-${index}`} className="flex items-center gap-3">
                     <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
                       <Check className="w-4 h-4 text-primary" />
                     </div>
@@ -387,7 +387,7 @@ export default function Landing() {
                   "Connexion aux établissements",
                   "Suivi de vos participations"
                 ].map((item, index) => (
-                  <li key={index} className="flex items-center gap-3">
+                  <li key={`musician-feature-${index}`} className="flex items-center gap-3">
                     <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center">
                       <Check className="w-4 h-4 text-purple-400" />
                     </div>
@@ -422,7 +422,7 @@ export default function Landing() {
                   "Suivre vos établissements favoris",
                   "Recevoir des notifications (J-3 et Jour J)"
                 ].map((item, index) => (
-                  <li key={index} className="flex items-center gap-3">
+                  <li key={`musician-feature-${index}`} className="flex items-center gap-3">
                     <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center">
                       <Check className="w-4 h-4 text-purple-400" />
                     </div>
@@ -476,7 +476,7 @@ export default function Landing() {
               }
             ].map((faq, index) => (
               <div
-                key={index}
+                key={`faq-${index}`}
                 className="glassmorphism rounded-lg overflow-hidden border border-white/10 hover:border-primary/30 transition-all"
               >
                 <button

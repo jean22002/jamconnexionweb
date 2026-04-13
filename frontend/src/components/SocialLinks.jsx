@@ -24,7 +24,7 @@ const SocialLinks = ({ facebook, instagram, youtube, website, bandcamp, classNam
 
         return (
           <a
-            key={index}
+            key={`social-${link.label}`}
             href={fullUrl}
             target="_blank"
             rel="noopener noreferrer"

@@ -96,7 +96,7 @@ export default function GalleryTab({
               const isSelected = selectedPhotos.includes(photo);
               return (
                 <div 
-                  key={index} 
+                  key={`venue-gallery-${photo}-${index}`} 
                   className={`relative group aspect-square overflow-hidden rounded-lg border-2 transition-all cursor-pointer ${
                     isSelected 
                       ? 'border-primary ring-2 ring-primary/50' 

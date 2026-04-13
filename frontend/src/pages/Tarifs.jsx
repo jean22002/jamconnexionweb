@@ -96,7 +96,7 @@ export default function Tarifs() {
 
             <ul className="space-y-4 mb-8">
               {musicianFeatures.map((feature, index) => (
-                <li key={index} className="flex items-start gap-3">
+                <li key={`musician-feat-${feature.slice(0, 20)}`} className="flex items-start gap-3">
                   <div className="mt-0.5 w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
                     <Check className="w-3 h-3 text-cyan-400" />
                   </div>
@@ -143,7 +143,7 @@ export default function Tarifs() {
 
             <ul className="space-y-4 mb-8">
               {venueFeatures.map((feature, index) => (
-                <li key={index} className="flex items-start gap-3">
+                <li key={`tarifs-feature-${index}`} className="flex items-start gap-3">
                   <div className="mt-0.5 w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                     <Check className="w-3 h-3 text-primary" />
                   </div>

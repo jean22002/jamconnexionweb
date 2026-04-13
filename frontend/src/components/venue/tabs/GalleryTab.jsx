@@ -68,7 +68,7 @@ export default function GalleryTab({
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {gallery.map((photo, index) => (
-              <div key={index} className="relative group">
+              <div key={`gallery-photo-${photo}-${index}`} className="relative group">
                 <img 
                   src={photo} 
                   alt={`Photo ${index + 1}`} 

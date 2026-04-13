@@ -432,7 +432,7 @@ export default function AdminDashboard() {
                   <CardContent>
                     <div className="space-y-3">
                       {stats.by_reason.map((item, index) => (
-                        <div key={index} className="flex items-center justify-between">
+                        <div key={`reason-${item.reason}-${index}`} className="flex items-center justify-between">
                           <span className="text-sm">{item.reason}</span>
                           <Badge variant="secondary">{item.count}</Badge>
                         </div>
@@ -449,7 +449,7 @@ export default function AdminDashboard() {
                   <CardContent>
                     <div className="space-y-3">
                       {stats.top_reported_users.map((item, index) => (
-                        <div key={index} className="glassmorphism rounded-lg p-3">
+                        <div key={`reported-user-${item.email}`} className="glassmorphism rounded-lg p-3">
                           <div className="flex items-center justify-between mb-1">
                             <span className="font-semibold">{item.name}</span>
                             <Badge variant="destructive">{item.count} signalements</Badge>

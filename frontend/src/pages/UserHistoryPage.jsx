@@ -461,7 +461,7 @@ export default function UserHistoryPage() {
                 ) : (
                   <div className="space-y-2">
                     {social.friends.map((friend, index) => (
-                      <div key={index} className="glassmorphism rounded-lg p-3 flex items-center justify-between">
+                      <div key={`friend-${friend.id || index}`} className="glassmorphism rounded-lg p-3 flex items-center justify-between">
                         <span className="text-sm">
                           Ami: {friend.user1_id === userId ? friend.user2_id : friend.user1_id}
                         </span>

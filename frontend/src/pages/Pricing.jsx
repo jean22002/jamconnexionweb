@@ -87,7 +87,7 @@ export default function Pricing() {
                 "Contact direct avec les venues",
                 "Filtres par style et localisation"
               ].map((item, index) => (
-                <li key={index} className="flex items-start gap-3">
+                <li key={`pricing-feature-${index}`} className="flex items-start gap-3">
                   <div className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <Check className="w-4 h-4 text-secondary" />
                   </div>
@@ -132,7 +132,7 @@ export default function Pricing() {
                 "Suivi de vos participations",
                 "Carte interactive géolocalisée"
               ].map((item, index) => (
-                <li key={index} className="flex items-start gap-3">
+                <li key={`pricing-feature-${index}`} className="flex items-start gap-3">
                   <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <Check className="w-4 h-4 text-purple-400" />
                   </div>
@@ -193,7 +193,7 @@ export default function Pricing() {
                 "Badge établissement vérifié",
                 "Support prioritaire"
               ].map((item, index) => (
-                <li key={index} className="flex items-start gap-3">
+                <li key={`pricing-feature-${index}`} className="flex items-start gap-3">
                   <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <Check className="w-4 h-4 text-primary" />
                   </div>
@@ -253,7 +253,7 @@ export default function Pricing() {
                 a: "Les musiciens peuvent voir les établissements sur une carte interactive et filtrer par distance. Votre adresse est géolocalisée automatiquement."
               }
             ].map((faq, index) => (
-              <div key={index} className="glassmorphism rounded-2xl p-6">
+              <div key={`pricing-faq-${index}`} className="glassmorphism rounded-2xl p-6">
                 <h3 className="font-heading font-semibold mb-3">{faq.q}</h3>
                 <p className="text-muted-foreground text-sm">{faq.a}</p>
               </div>

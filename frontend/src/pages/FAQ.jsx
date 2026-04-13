@@ -217,7 +217,7 @@ export default function FAQ() {
         <div className="space-y-4">
           {currentFAQ.map((item, index) => (
             <div
-              key={index}
+              key={`faq-item-${index}`}
               className="glassmorphism rounded-xl border border-white/10 overflow-hidden transition-all hover:border-primary/30"
             >
               <button

@@ -309,7 +309,7 @@ export default function AnalyticsPage() {
                             const height = (point.value / maxValue) * 100;
                             return (
                               <div
-                                key={index}
+                                key={`chart-point-${point.date}`}
                                 className="flex-1 bg-primary/80 hover:bg-primary transition-colors rounded-t cursor-pointer"
                                 style={{ height: `${height}%` }}
                                 title={`${new Date(point.date).toLocaleDateString()}: ${point.value} nouveaux`}
@@ -333,7 +333,7 @@ export default function AnalyticsPage() {
                     <CardContent>
                       <div className="space-y-3">
                         {overview.events.by_type.map((item, index) => (
-                          <div key={index} className="flex items-center justify-between">
+                          <div key={`event-type-${item.type}`} className="flex items-center justify-between">
                             <span className="text-sm capitalize">{item.type}</span>
                             <span className="text-sm font-semibold">{item.count}</span>
                           </div>
@@ -355,7 +355,7 @@ export default function AnalyticsPage() {
                             const height = (point.value / maxValue) * 100;
                             return (
                               <div
-                                key={index}
+                                key={`event-chart-${point.date}`}
                                 className="flex-1 bg-purple-500/80 hover:bg-purple-500 transition-colors rounded-t cursor-pointer"
                                 style={{ height: `${height}%` }}
                                 title={`${new Date(point.date).toLocaleDateString()}: ${point.value} événements`}
@@ -394,7 +394,7 @@ export default function AnalyticsPage() {
                         <CardContent>
                           <div className="space-y-2">
                             {engagement.popular_events.slice(0, 5).map((event, index) => (
-                              <div key={index} className="glassmorphism rounded-lg p-2">
+                              <div key={`popular-event-${event.id || event.title}`} className="glassmorphism rounded-lg p-2">
                                 <div className="flex items-center justify-between">
                                   <span className="text-sm font-semibold line-clamp-1">{event.title}</span>
                                   <span className="text-xs text-primary">{event.participation_count} 👥</span>
@@ -413,7 +413,7 @@ export default function AnalyticsPage() {
                       <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {engagement.most_active_users.slice(0, 10).map((user, index) => (
-                            <div key={index} className="glassmorphism rounded-lg p-3">
+                            <div key={`active-user-${user.email || user.name}`} className="glassmorphism rounded-lg p-3">
                               <div className="flex items-center justify-between mb-1">
                                 <span className="font-semibold">{user.name}</span>
                                 <span className="text-sm text-primary">{user.participation_count} événements</span>
@@ -451,7 +451,7 @@ export default function AnalyticsPage() {
                     <CardContent>
                       <div className="space-y-2">
                         {overview.gamification.top_badges.slice(0, 5).map((badge, index) => (
-                          <div key={index} className="flex items-center justify-between">
+                          <div key={`top-badge-${badge.badge_id}`} className="flex items-center justify-between">
                             <span className="text-sm">{badge.badge_id}</span>
                             <span className="text-sm font-semibold">{badge.count}</span>
                           </div>
@@ -477,7 +477,7 @@ export default function AnalyticsPage() {
                             const height = (point.value / maxValue) * 100;
                             return (
                               <div
-                                key={index}
+                                key={`report-chart-${point.date}`}
                                 className="flex-1 bg-red-500/80 hover:bg-red-500 transition-colors rounded-t cursor-pointer"
                                 style={{ height: `${height}%` }}
                                 title={`${new Date(point.date).toLocaleDateString()}: ${point.value} signalements`}

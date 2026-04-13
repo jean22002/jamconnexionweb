@@ -55,7 +55,7 @@ export default function BandTab({
             const isAdmin = !band.admin_id || band.admin_id === currentUserId;
             
             return (
-              <div key={index} className="p-4 bg-black/20 rounded-xl border border-white/10 hover:border-primary/30 transition-colors">
+              <div key={`band-${band.id || band.name}-${index}`} className="p-4 bg-black/20 rounded-xl border border-white/10 hover:border-primary/30 transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h4 className="font-semibold text-lg mb-1">{band.name}</h4>

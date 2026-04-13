@@ -243,7 +243,7 @@ const AnalyticsTab = ({ token }) => {
           ) : (
             <div className="space-y-3">
               {top_cities.map((city, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
+                <div key={`top-city-${city.city}-${index}`} className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">
                       {index + 1}
@@ -271,7 +271,7 @@ const AnalyticsTab = ({ token }) => {
           ) : (
             <div className="space-y-3">
               {top_venues.map((venue, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
+                <div key={`top-venue-${venue.venue}-${index}`} className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center font-bold text-cyan-400">
                       {index + 1}

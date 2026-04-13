@@ -50,6 +50,151 @@ async def send_notification(db, user_id, notif_type, title, message, link=None):
     await db.notifications.insert_one(notification_doc)
     print(f"✅ Notification envoyée à {user_id}: {title}")
 
+
+async def notify_event_participants(db, event, event_type, days_before=0):
+    """
+    Notifier les participants d'un événement
+    
+    Args:
+        db: Database instance
+        event: Event document (jam or concert)
+        event_type: 'jam' or 'concert'
+        days_before: 0 for Jour J, 3 for J-3
+    """
+    participants = await db.event_participations.find({
+        "event_id": event["id"],
+        "event_type": event_type,
+        "active": True
+    }, {"_id": 0}).to_list(1000)
+    
+    for participant in participants:
+        user_id = participant.get("participant_id") or participant.get("musician_id")
+        
+        if days_before == 3:
+            # Notification J-3
+            title = f"Rappel : {event_type.capitalize()} dans 3 jours !"
+            message = f"Le {event_type} à {event['venue_name']} aura lieu le {event['date']} à {event['start_time']}"
+        else:
+            # Notification Jour J
+            emoji = "🎸" if event_type == "jam" else "🎤"
+            title = f"{emoji} C'est aujourd'hui : {event_type.capitalize()} à {event['start_time']} !"
+            message = f"Le {event_type} à {event['venue_name']} commence à {event['start_time']}. À ce soir !"
+        
+        notif_type = f"{event_type}_reminder"
+        await send_notification(db, user_id, notif_type, title, message, f"/venues/{event['venue_id']}")
+    
+    return len(participants)
+
+
+async def notify_nearby_musicians(db, event, venue, event_type, radius_km=70):
+    """
+    Notifier les musiciens à proximité d'un événement
+    
+    Args:
+        db: Database instance
+        event: Event document
+        venue: Venue document with GPS coordinates
+        event_type: 'jam' or 'concert'
+        radius_km: Search radius in kilometers
+    """
+    if not venue or not venue.get("latitude") or not venue.get("longitude"):
+        return 0
+    
+    venue_lat = venue["latitude"]
+    venue_lon = venue["longitude"]
+    
+    # Trouver tous les musiciens
+    musicians = await db.musicians.find({}, {"_id": 0}).to_list(10000)
+    notified_count = 0
+    
+    for musician in musicians:
+        # Vérifier que le musicien n'est pas déjà participant
+        is_participant = await db.event_participations.find_one({
+            "event_id": event["id"],
+            "musician_id": musician["user_id"]
+        })
+        
+        if is_participant:
+            continue
+        
+        # Calculer la distance si le musicien a des coordonnées GPS
+        musician_lat = musician.get("latitude")
+        musician_lon = musician.get("longitude")
+        
+        if musician_lat and musician_lon:
+            distance = haversine_distance(venue_lat, venue_lon, musician_lat, musician_lon)
+            
+            if distance <= radius_km:
+                emoji = "🎵" if event_type == "jam" else "🎸"
+                event_title = event.get('title', event_type.capitalize())
+                styles_text = '/'.join(event.get('music_styles', [])[:2]) if event.get('music_styles') else event_title
+                
+                await send_notification(
+                    db,
+                    musician["user_id"],
+                    f"{event_type}_nearby",
+                    f"{emoji} {event_type.capitalize()} ce soir près de chez vous !",
+                    f"Un {event_type} {styles_text} a lieu ce soir à {event['start_time']} à {event['venue_name']} ({venue['city']}) - À {int(distance)}km de vous",
+                    f"/venues/{event['venue_id']}"
+                )
+                notified_count += 1
+    
+    return notified_count
+
+
+async def notify_nearby_melomanes(db, event, venue):
+    """
+    Notifier les mélomanes à proximité d'un concert
+    
+    Args:
+        db: Database instance
+        event: Concert document
+        venue: Venue document with GPS coordinates
+    """
+    if not venue or not venue.get("latitude") or not venue.get("longitude"):
+        return 0
+    
+    venue_lat = venue["latitude"]
+    venue_lon = venue["longitude"]
+    
+    # Trouver tous les mélomanes avec notifications activées
+    melomanes = await db.melomanes.find({"notifications_enabled": True}, {"_id": 0}).to_list(10000)
+    notified_count = 0
+    
+    for melomane in melomanes:
+        # Vérifier que le mélomane n'est pas déjà participant
+        is_participant = await db.event_participations.find_one({
+            "event_id": event["id"],
+            "participant_id": melomane["user_id"],
+            "participant_type": "melomane"
+        })
+        
+        if is_participant:
+            continue
+        
+        # Calculer la distance si le mélomane a des coordonnées GPS
+        melomane_lat = melomane.get("latitude")
+        melomane_lon = melomane.get("longitude")
+        notification_radius = melomane.get("notification_radius_km", 50)
+        
+        if melomane_lat and melomane_lon:
+            distance = haversine_distance(venue_lat, venue_lon, melomane_lat, melomane_lon)
+            
+            if distance <= notification_radius:
+                styles_text = '/'.join(event.get('music_styles', [])[:2]) if event.get('music_styles') else event.get('title', 'Concert')
+                
+                await send_notification(
+                    db,
+                    melomane["user_id"],
+                    "concert_nearby",
+                    "🎸 Concert ce soir près de chez vous !",
+                    f"Un concert {styles_text} a lieu ce soir à {event['start_time']} à {event['venue_name']} ({venue['city']}) - À {int(distance)}km de vous",
+                    f"/venues/{event['venue_id']}"
+                )
+                notified_count += 1
+    
+    return notified_count
+
 async def check_and_send_event_notifications():
     """Vérifier et envoyer les notifications d'événements"""
     client = AsyncIOMotorClient(MONGO_URL)
@@ -83,47 +228,13 @@ async def check_and_send_event_notifications():
     # Bœufs dans 3 jours
     jams_j3 = await db.jams.find({"date": three_days_str}, {"_id": 0}).to_list(100)
     for jam in jams_j3:
-        # Trouver les participants ACTIFS (musiciens et mélomanes)
-        participants = await db.event_participations.find({
-            "event_id": jam["id"],
-            "event_type": "jam",
-            "active": True
-        }, {"_id": 0}).to_list(1000)
-        
-        for participant in participants:
-            user_id = participant.get("participant_id") or participant.get("musician_id")
-            await send_notification(
-                db,
-                user_id,
-                "jam_reminder",
-                f"Rappel : Bœuf dans 3 jours !",
-                f"Le bœuf \"{jam.get('music_styles', [''])[0] if jam.get('music_styles') else 'Jam Session'}\" à {jam['venue_name']} aura lieu le {jam['date']} à {jam['start_time']}",
-                f"/venues/{jam['venue_id']}"
-            )
-    
+        await notify_event_participants(db, jam, "jam", days_before=3)
     print(f"✅ {len(jams_j3)} bœufs J-3 traités")
     
     # Concerts dans 3 jours
     concerts_j3 = await db.concerts.find({"date": three_days_str}, {"_id": 0}).to_list(100)
     for concert in concerts_j3:
-        # Trouver les participants ACTIFS (musiciens et mélomanes)
-        participants = await db.event_participations.find({
-            "event_id": concert["id"],
-            "event_type": "concert",
-            "active": True
-        }, {"_id": 0}).to_list(1000)
-        
-        for participant in participants:
-            user_id = participant.get("participant_id") or participant.get("musician_id")
-            await send_notification(
-                db,
-                user_id,
-                "concert_reminder",
-                f"Rappel : Concert dans 3 jours !",
-                f"Le concert \"{concert.get('title', 'Concert')}\" à {concert['venue_name']} aura lieu le {concert['date']} à {concert['start_time']}",
-                f"/venues/{concert['venue_id']}"
-            )
-    
+        await notify_event_participants(db, concert, "concert", days_before=3)
     print(f"✅ {len(concerts_j3)} concerts J-3 traités")
     
     # ========== NOTIFICATIONS JOUR J ==========
@@ -132,169 +243,32 @@ async def check_and_send_event_notifications():
     # Bœufs aujourd'hui
     jams_today = await db.jams.find({"date": today_str}, {"_id": 0}).to_list(100)
     for jam in jams_today:
-        # 1. Notifier les participants ACTIFS (musiciens et mélomanes)
-        participants = await db.event_participations.find({
-            "event_id": jam["id"],
-            "event_type": "jam",
-            "active": True
-        }, {"_id": 0}).to_list(1000)
+        # 1. Notifier les participants
+        participants_count = await notify_event_participants(db, jam, "jam", days_before=0)
+        print(f"✅ {participants_count} participants notifiés pour bœuf aujourd'hui")
         
-        for participant in participants:
-            user_id = participant.get("participant_id") or participant.get("musician_id")
-            await send_notification(
-                db,
-                user_id,
-                "jam_reminder",
-                f"🎸 C'est aujourd'hui : Bœuf à {jam['start_time']} !",
-                f"Le bœuf à {jam['venue_name']} commence à {jam['start_time']}. À ce soir !",
-                f"/venues/{jam['venue_id']}"
-            )
-        
-        print(f"✅ {len(participants)} participants notifiés pour bœuf aujourd'hui")
-        
-        # 2. Notifier les musiciens dans un rayon de 70km
+        # 2. Notifier les musiciens à proximité (70km)
         venue = await db.venues.find_one({"id": jam["venue_id"]}, {"_id": 0})
-        if venue and venue.get("latitude") and venue.get("longitude"):
-            venue_lat = venue["latitude"]
-            venue_lon = venue["longitude"]
-            
-            # Trouver tous les musiciens
-            musicians = await db.musicians.find({}, {"_id": 0}).to_list(10000)
-            notified_nearby = 0
-            
-            for musician in musicians:
-                # Vérifier que le musicien n'est pas déjà participant
-                is_participant = await db.event_participations.find_one({
-                    "event_id": jam["id"],
-                    "musician_id": musician["user_id"]
-                })
-                
-                if is_participant:
-                    continue
-                
-                # Calculer la distance si le musicien a des coordonnées GPS
-                musician_lat = musician.get("latitude")
-                musician_lon = musician.get("longitude")
-                
-                if musician_lat and musician_lon:
-                    distance = haversine_distance(venue_lat, venue_lon, musician_lat, musician_lon)
-                    
-                    if distance <= 70:  # Dans un rayon de 70km
-                        await send_notification(
-                            db,
-                            musician["user_id"],
-                            "jam_nearby",
-                            f"🎵 Bœuf ce soir près de chez vous !",
-                            f"Un bœuf {'/'.join(jam.get('music_styles', [])[:2]) if jam.get('music_styles') else 'Jam Session'} a lieu ce soir à {jam['start_time']} à {jam['venue_name']} ({venue['city']}) - À {int(distance)}km de vous",
-                            f"/venues/{jam['venue_id']}"
-                        )
-                        notified_nearby += 1
-            
-            print(f"✅ {notified_nearby} musiciens à proximité (70km) notifiés")
+        nearby_count = await notify_nearby_musicians(db, jam, venue, "jam", radius_km=70)
+        print(f"✅ {nearby_count} musiciens à proximité (70km) notifiés")
     
     print(f"✅ {len(jams_today)} bœufs Jour J traités")
     
     # Concerts aujourd'hui
     concerts_today = await db.concerts.find({"date": today_str}, {"_id": 0}).to_list(100)
     for concert in concerts_today:
-        # 1. Notifier les participants ACTIFS (musiciens et mélomanes)
-        participants = await db.event_participations.find({
-            "event_id": concert["id"],
-            "event_type": "concert",
-            "active": True
-        }, {"_id": 0}).to_list(1000)
+        # 1. Notifier les participants
+        participants_count = await notify_event_participants(db, concert, "concert", days_before=0)
+        print(f"✅ {participants_count} participants notifiés pour concert aujourd'hui")
         
-        for participant in participants:
-            user_id = participant.get("participant_id") or participant.get("musician_id")
-            await send_notification(
-                db,
-                user_id,
-                "concert_reminder",
-                f"🎤 C'est aujourd'hui : Concert à {concert['start_time']} !",
-                f"Le concert \"{concert.get('title', 'Concert')}\" à {concert['venue_name']} commence à {concert['start_time']}. À ce soir !",
-                f"/venues/{concert['venue_id']}"
-            )
-        
-        print(f"✅ {len(participants)} participants notifiés pour concert aujourd'hui")
-        
-        # 2. Notifier les musiciens à proximité (même logique que les bœufs)
+        # 2. Notifier les musiciens à proximité
         venue = await db.venues.find_one({"id": concert["venue_id"]}, {"_id": 0})
-        if venue and venue.get("latitude") and venue.get("longitude"):
-            venue_lat = venue["latitude"]
-            venue_lon = venue["longitude"]
-            
-            musicians = await db.musicians.find({}, {"_id": 0}).to_list(10000)
-            notified_nearby = 0
-            
-            for musician in musicians:
-                is_participant = await db.event_participations.find_one({
-                    "event_id": concert["id"],
-                    "musician_id": musician["user_id"]
-                })
-                
-                if is_participant:
-                    continue
-                
-                # Calculer la distance si le musicien a des coordonnées GPS
-                musician_lat = musician.get("latitude")
-                musician_lon = musician.get("longitude")
-                
-                if musician_lat and musician_lon:
-                    distance = haversine_distance(venue_lat, venue_lon, musician_lat, musician_lon)
-                    
-                    if distance <= 70:  # Dans un rayon de 70km
-                        await send_notification(
-                            db,
-                            musician["user_id"],
-                            "concert_nearby",
-                            f"🎸 Concert ce soir près de chez vous !",
-                            f"Un concert {'/'.join(concert.get('music_styles', [])[:2]) if concert.get('music_styles') else concert.get('title', 'Concert')} a lieu ce soir à {concert['start_time']} à {concert['venue_name']} ({venue['city']}) - À {int(distance)}km de vous",
-                            f"/venues/{concert['venue_id']}"
-                        )
-                        notified_nearby += 1
-            
-            print(f"✅ {notified_nearby} musiciens à proximité (70km) notifiés")
+        nearby_musicians = await notify_nearby_musicians(db, concert, venue, "concert", radius_km=70)
+        print(f"✅ {nearby_musicians} musiciens à proximité (70km) notifiés")
         
-        # 3. Notifier les mélomanes dans le rayon défini par leurs préférences
-        if venue and venue.get("latitude") and venue.get("longitude"):
-            venue_lat = venue["latitude"]
-            venue_lon = venue["longitude"]
-            
-            # Trouver tous les mélomanes avec notifications activées
-            melomanes = await db.melomanes.find({"notifications_enabled": True}, {"_id": 0}).to_list(10000)
-            notified_melomanes = 0
-            
-            for melomane in melomanes:
-                # Vérifier que le mélomane n'est pas déjà participant
-                is_participant = await db.event_participations.find_one({
-                    "event_id": concert["id"],
-                    "participant_id": melomane["user_id"],
-                    "participant_type": "melomane"
-                })
-                
-                if is_participant:
-                    continue
-                
-                # Calculer la distance si le mélomane a des coordonnées GPS
-                melomane_lat = melomane.get("latitude")
-                melomane_lon = melomane.get("longitude")
-                notification_radius = melomane.get("notification_radius_km", 50)
-                
-                if melomane_lat and melomane_lon:
-                    distance = haversine_distance(venue_lat, venue_lon, melomane_lat, melomane_lon)
-                    
-                    if distance <= notification_radius:
-                        await send_notification(
-                            db,
-                            melomane["user_id"],
-                            "concert_nearby",
-                            f"🎸 Concert ce soir près de chez vous !",
-                            f"Un concert {'/'.join(concert.get('music_styles', [])[:2]) if concert.get('music_styles') else concert.get('title', 'Concert')} a lieu ce soir à {concert['start_time']} à {concert['venue_name']} ({venue['city']}) - À {int(distance)}km de vous",
-                            f"/venues/{concert['venue_id']}"
-                        )
-                        notified_melomanes += 1
-            
-            print(f"✅ {notified_melomanes} mélomanes à proximité notifiés")
+        # 3. Notifier les mélomanes à proximité
+        nearby_melomanes = await notify_nearby_melomanes(db, concert, venue)
+        print(f"✅ {nearby_melomanes} mélomanes à proximité notifiés")
     
     print(f"✅ {len(concerts_today)} concerts Jour J traités")
     

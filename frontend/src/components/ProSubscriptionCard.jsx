@@ -161,7 +161,7 @@ const ProSubscriptionCard = ({ token, currentTier, onSuccess, profile }) => {
             {missingFields.map((field, index) => {
               const Icon = field.icon;
               return (
-                <div key={index} className="flex items-center gap-2 text-sm">
+                <div key={`missing-field-${field.label}`} className="flex items-center gap-2 text-sm">
                   <Icon className="w-4 h-4 text-orange-400" />
                   <span className="text-muted-foreground">{field.label}</span>
                 </div>

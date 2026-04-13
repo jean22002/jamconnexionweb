@@ -162,3 +162,28 @@ async def upload_event_photo(
         response["thumbnail_url"] = result["thumbnail_url"]
     
     return response
+
+
+
+@router.post("/melomane-photo")
+@limiter.limit("20/hour")
+async def upload_melomane_photo(
+    request: Request,
+    file: UploadFile = File(...),
+    photo_type: str = "profile",  # 'profile' or 'cover'
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Upload melomane profile or cover photo with optimization
+    Returns URL to use in profile update
+    """
+    image_type = "profile" if photo_type == "profile" else "cover"
+    folder = "profiles" if photo_type == "profile" else "covers"
+    
+    result = await process_image_upload(file, current_user["id"], image_type, folder)
+    
+    return {
+        "url": result["url"],
+        "type": photo_type,
+        "size": result["size"]
+    }

@@ -155,6 +155,34 @@ export default function MessagesImproved() {
         setMessageOffset(MESSAGE_LIMIT);
       }
       
+      // Check if there are more messages to load
+      setHasMore(newMessages.length === MESSAGE_LIMIT);
+
+      // Mark unread messages as read
+      const unreadMessages = newMessages.filter(m => 
+        m.recipient_id === user.id && !m.is_read
+      );
+      
+      for (const msg of unreadMessages) {
+        await axios.put(`${API}/messages/${msg.id}/read`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+
+      if (!silent && !append) scrollToBottom();
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+      
+      if (append) {
+        setMessages(prev => [...newMessages, ...prev]);
+        setMessageOffset(offset + MESSAGE_LIMIT);
+      } else {
+        setMessages(newMessages);
+        setMessageOffset(MESSAGE_LIMIT);
+      }
+      
 
   // Load more messages (infinite scroll)
   const loadMoreMessages = async () => {
@@ -204,26 +232,6 @@ export default function MessagesImproved() {
 
     return () => observer.disconnect();
   }, [selectedConversation, hasMore, loadingMore]);
-
-      // Check if there are more messages to load
-      setHasMore(newMessages.length === MESSAGE_LIMIT);
-
-      // Mark unread messages as read
-      const unreadMessages = newMessages.filter(m => 
-        m.recipient_id === user.id && !m.is_read
-      );
-      
-      for (const msg of unreadMessages) {
-        await axios.put(`${API}/messages/${msg.id}/read`, {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-      }
-
-      if (!silent && !append) scrollToBottom();
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation) return;

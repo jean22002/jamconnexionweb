@@ -215,6 +215,13 @@ export default function MessagesImproved() {
     }
   };
 
+  // Load messages when conversation is selected
+  useEffect(() => {
+    if (selectedConversation) {
+      fetchMessages(selectedConversation.id);
+    }
+  }, [selectedConversation?.id]);
+
   // Intersection Observer for infinite scroll
   useEffect(() => {
     if (!messagesTopRef.current || !selectedConversation) return;

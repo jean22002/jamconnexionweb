@@ -13,6 +13,7 @@ import uuid
 logger = logging.getLogger(__name__)
 
 STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
+PUBLIC_STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storageobjects"  # Public access (no auth required)
 EMERGENT_KEY = os.environ.get("EMERGENT_LLM_KEY")
 APP_NAME = "jamconnexion"  # Prefix for all file paths
 storage_key = None  # Module-level, set once and reused globally
@@ -241,8 +242,8 @@ def upload_image(
     path = generate_storage_path(user_id, file_id, "webp", folder)
     result = put_object(path, optimized_data, content_type)
     
-    # Generate public URL
-    url = f"{STORAGE_URL}/objects/{path}"
+    # Generate PUBLIC URL (no authentication required for browser access)
+    url = f"{PUBLIC_STORAGE_URL}/{path}"
     
     response = {
         "url": url,
@@ -255,6 +256,6 @@ def upload_image(
         thumb_data, thumb_type = optimize_image(image_data, "thumbnail")
         thumb_path = generate_storage_path(user_id, f"{file_id}_thumb", "webp", "thumbnails")
         put_object(thumb_path, thumb_data, thumb_type)
-        response["thumbnail_url"] = f"{STORAGE_URL}/objects/{thumb_path}"
+        response["thumbnail_url"] = f"{PUBLIC_STORAGE_URL}/{thumb_path}"
     
     return response

@@ -263,7 +263,8 @@ async def list_venues(
         "created_at": 1,
         "phone": 1,
         "email": 1,
-        "website": 1
+        "website": 1,
+        "is_guso": 1
     }
     
     # Get paginated venues
@@ -350,7 +351,7 @@ async def find_nearby_venues(request: NearbySearchRequest):
     # Récupérer seulement les champs nécessaires pour le calcul de distance
     venues = await db.venues.find(
         {},
-        {"_id": 0, "id": 1, "user_id": 1, "latitude": 1, "longitude": 1, "name": 1, "city": 1, "venue_type": 1, "music_styles": 1, "address": 1, "photo_url": 1}
+        {"_id": 0, "id": 1, "user_id": 1, "latitude": 1, "longitude": 1, "name": 1, "city": 1, "venue_type": 1, "music_styles": 1, "address": 1, "photo_url": 1, "is_guso": 1}
     ).to_list(1000)
     
     # Filtrer les venues à proximité

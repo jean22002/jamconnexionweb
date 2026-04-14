@@ -516,27 +516,38 @@ export default function MapTab({
         </div>
       )}
 
-      {/* GUSO Filter - Available for ALL users */}
-      <div className="glassmorphism rounded-xl p-3 mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Afficher uniquement les établissements au GUSO</span>
+      {/* GUSO Filter - PRO Feature */}
+      {isPro && (
+        <div className="glassmorphism rounded-xl p-4 mb-6 border-2 border-orange-500/30">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+                <Crown className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm">Badge GUSO visible</h3>
+                <p className="text-xs text-muted-foreground">Réservé Musicien PRO</p>
+              </div>
+            </div>
+            <Button
+              onClick={() => setFilterGusoOnly(!filterGusoOnly)}
+              variant={filterGusoOnly ? "default" : "outline"}
+              size="sm"
+              className="rounded-full"
+            >
+              {filterGusoOnly ? 'Actif' : 'Désactivé'}
+            </Button>
           </div>
-          <Button
-            onClick={() => setFilterGusoOnly(!filterGusoOnly)}
-            variant={filterGusoOnly ? "default" : "outline"}
-            size="sm"
-            className={`rounded-full ${filterGusoOnly ? 'bg-gradient-to-r from-purple-500 to-pink-500' : ''}`}
-          >
-            💼 GUSO
-          </Button>
+          
+          {filterGusoOnly && (
+            <div className="pt-3 border-t border-white/10">
+              <p className="text-xs text-muted-foreground">
+                {styleFilteredVenues.length} établissement{styleFilteredVenues.length > 1 ? 's' : ''} GUSO trouvé{styleFilteredVenues.length > 1 ? 's' : ''}
+              </p>
+            </div>
+          )}
         </div>
-        {filterGusoOnly && (
-          <p className="text-xs text-muted-foreground mt-2">
-            {styleFilteredVenues.length} établissement{styleFilteredVenues.length > 1 ? 's' : ''} GUSO trouvé{styleFilteredVenues.length > 1 ? 's' : ''}
-          </p>
-        )}
-      </div>
+      )}
 
       {/* PRO Application Filter */}
       {isPro && myApplications && myApplications.length > 0 && (

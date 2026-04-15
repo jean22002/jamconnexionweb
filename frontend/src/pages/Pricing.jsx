@@ -154,13 +154,11 @@ export default function Pricing() {
 
           {/* Venue Plan */}
           <div className="glassmorphism rounded-3xl p-8 neon-border relative overflow-hidden">
-            <div className="absolute top-4 right-4">
-              <span className="px-3 py-1 bg-primary/20 text-primary text-xs rounded-full font-medium">
-                Populaire
-              </span>
+            <div className="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-pink-500 text-white px-5 py-2 rounded-bl-3xl font-bold text-sm shadow-lg">
+              🎁 OFFRE LIMITÉE
             </div>
             
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-4 mb-6 mt-4">
               <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center">
                 <Mic2 className="w-7 h-7 text-primary" />
               </div>
@@ -173,9 +171,15 @@ export default function Pricing() {
               </div>
             </div>
             
-            <div className="bg-secondary/10 rounded-xl px-4 py-3 mb-6">
-              <p className="text-secondary font-medium text-center">
-                2 mois d'essai gratuit inclus
+            <div className="bg-gradient-to-r from-orange-500/20 to-pink-500/20 rounded-xl px-4 py-4 mb-6 border border-orange-500/30">
+              <p className="text-orange-400 font-bold text-center text-lg mb-1">
+                🎁 6 mois gratuits
+              </p>
+              <p className="text-xs text-center text-muted-foreground">
+                pour les 100 premiers établissements !
+              </p>
+              <p className="text-secondary font-medium text-center text-sm mt-2">
+                puis 3 mois gratuits ensuite
               </p>
             </div>
             

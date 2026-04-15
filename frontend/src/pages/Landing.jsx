@@ -87,8 +87,17 @@ export default function Landing() {
         </div>
       </nav>
 
+      {/* 🎁 Bannière Offre Promotionnelle */}
+      <div className="fixed top-16 left-0 right-0 z-40 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white py-3 px-4 shadow-lg">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="font-semibold text-sm sm:text-base">
+            🎁 <span className="font-bold">OFFRE DE LANCEMENT</span> • Les 100 premiers établissements : <span className="underline">6 mois gratuits</span> au lieu de 3 mois !
+          </p>
+        </div>
+      </div>
+
       {/* Hero Section */}
-      <section className="relative pt-20 sm:pt-32 pb-16 sm:pb-24 overflow-hidden min-h-[80vh] sm:min-h-screen flex items-center">
+      <section className="relative pt-32 sm:pt-40 pb-16 sm:pb-24 overflow-hidden min-h-[80vh] sm:min-h-screen flex items-center">
         <div 
           className="absolute inset-0 z-0"
           style={{
@@ -321,14 +330,29 @@ export default function Landing() {
               </ul>
             </div>
             
-            <div className="glassmorphism rounded-3xl p-8 neon-border">
+            <div className="glassmorphism rounded-3xl p-8 neon-border relative overflow-hidden">
+              {/* Badge Promo */}
+              <div className="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-pink-500 text-white px-4 py-1 rounded-bl-2xl font-bold text-xs">
+                🎁 OFFRE LIMITÉE
+              </div>
+              
               <div className="text-center mb-6">
                 <p className="font-mono text-xs uppercase tracking-wider text-primary mb-2">Établissements</p>
                 <div className="flex items-baseline justify-center gap-1">
                   <span className="font-heading font-bold text-5xl">12,99€</span>
                   <span className="text-muted-foreground">/mois</span>
                 </div>
-                <p className="text-secondary mt-2 font-medium">2 mois d'essai gratuit</p>
+                <div className="mt-3 space-y-1">
+                  <p className="text-orange-400 font-bold text-lg">
+                    🎁 6 mois gratuits
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    pour les 100 premiers établissements
+                  </p>
+                  <p className="text-secondary text-sm font-medium">
+                    puis 3 mois gratuits ensuite
+                  </p>
+                </div>
               </div>
               
               <ul className="space-y-4 mb-8">
@@ -452,7 +476,7 @@ export default function Landing() {
             {[
               {
                 question: "L'inscription est-elle payante ?",
-                answer: "L'inscription est gratuite pour les musiciens. Pour les établissements, elle inclut une période d'essai de deux (2) mois, puis 12,99 € TTC par mois."
+                answer: "L'inscription est gratuite pour les musiciens. Pour les établissements : 🎁 Les 100 premiers bénéficient de 6 mois gratuits, puis 12,99 € TTC/mois. Après les 100 premiers, l'offre passe à 3 mois gratuits puis 12,99 € TTC/mois."
               },
               {
                 question: "Comment fonctionne la mise en relation ?",

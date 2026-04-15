@@ -44,7 +44,171 @@ async def get_current_user(authorization: str = Header(None)):
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
 
+# ============= HELPER FUNCTIONS =============
+
+async def is_band_member(band_id: str, user_id: str) -> bool:
+    """Vérifie si un utilisateur est membre d'un groupe"""
+    # Chercher le musicien qui possède ce groupe
+    musician = await db.musicians.find_one(
+        {"bands.band_id": band_id},
+        {"_id": 0, "user_id": 1, "bands": 1}
+    )
+    
+    if not musician:
+        return False
+    
+    # Trouver le groupe spécifique
+    band = next((b for b in musician.get("bands", []) if b.get("band_id") == band_id), None)
+    if not band:
+        return False
+    
+    # Vérifier si l'utilisateur est admin ou membre
+    if musician["user_id"] == user_id:
+        return True
+    
+    members = band.get("members", [])
+    return any(m.get("user_id") == user_id for m in members)
+
+
 # ============= BANDS DIRECTORY =============
+
+@router.get("/bands/{band_id}/events")
+async def get_band_events(
+    band_id: str,
+    month: Optional[int] = None,
+    year: Optional[int] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Récupère les événements (concerts) d'un groupe pour ses membres"""
+    
+    # Vérifier que l'utilisateur est membre du groupe
+    if not await is_band_member(band_id, current_user["id"]):
+        raise HTTPException(
+            status_code=403, 
+            detail="Vous n'êtes pas membre de ce groupe"
+        )
+    
+    # Construire le filtre de date si spécifié
+    date_filter = {}
+    if month and year:
+        # Format: "2026-04-15"
+        start_date = f"{year:04d}-{month:02d}-01"
+        # Dernier jour du mois
+        if month == 12:
+            end_date = f"{year+1:04d}-01-01"
+        else:
+            end_date = f"{year:04d}-{month+1:02d}-01"
+        
+        date_filter = {
+            "date": {
+                "$gte": start_date,
+                "$lt": end_date
+            }
+        }
+    
+    # Récupérer les concerts du groupe
+    concerts = await db.concerts.find(
+        {
+            "band_id": band_id,
+            **date_filter
+        },
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Enrichir avec les infos de l'établissement
+    for concert in concerts:
+        venue = await db.venues.find_one(
+            {"id": concert.get("venue_id")},
+            {"_id": 0, "name": 1, "city": 1}
+        )
+        if venue:
+            concert["venue_name"] = venue.get("name", "Établissement")
+            concert["venue_city"] = venue.get("city", "")
+    
+    return concerts
+
+
+@router.get("/bands/{band_id}/calendar.ics")
+async def get_band_calendar(
+    band_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Export du calendrier du groupe au format iCalendar (.ics)"""
+    from fastapi.responses import Response
+    
+    # Vérifier que l'utilisateur est membre du groupe
+    if not await is_band_member(band_id, current_user["id"]):
+        raise HTTPException(
+            status_code=403, 
+            detail="Vous n'êtes pas membre de ce groupe"
+        )
+    
+    # Récupérer le nom du groupe
+    musician = await db.musicians.find_one(
+        {"bands.band_id": band_id},
+        {"_id": 0, "bands": 1}
+    )
+    band = next((b for b in musician.get("bands", []) if b.get("band_id") == band_id), None)
+    band_name = band.get("name", "Groupe") if band else "Groupe"
+    
+    # Récupérer tous les concerts futurs
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    concerts = await db.concerts.find(
+        {
+            "band_id": band_id,
+            "date": {"$gte": today}
+        },
+        {"_id": 0}
+    ).sort("date", 1).to_list(1000)
+    
+    # Construire le fichier .ics
+    ics_lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Jam Connexion//Band Calendar//FR",
+        f"X-WR-CALNAME:{band_name} - Planning",
+        "X-WR-TIMEZONE:Europe/Paris",
+        "CALSCALE:GREGORIAN"
+    ]
+    
+    for concert in concerts:
+        # Récupérer les infos de l'établissement
+        venue = await db.venues.find_one(
+            {"id": concert.get("venue_id")},
+            {"_id": 0, "name": 1, "city": 1, "address": 1}
+        )
+        venue_name = venue.get("name", "Établissement") if venue else "Établissement"
+        venue_city = venue.get("city", "") if venue else ""
+        venue_address = venue.get("address", "") if venue else ""
+        
+        # Format date pour iCal (YYYYMMDD)
+        event_date = concert["date"].replace("-", "")
+        event_uid = f"{concert.get('id', uuid.uuid4())}@jamconnexion.com"
+        
+        ics_lines.extend([
+            "BEGIN:VEVENT",
+            f"UID:{event_uid}",
+            f"DTSTAMP:{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}",
+            f"DTSTART;VALUE=DATE:{event_date}",
+            f"SUMMARY:Concert {band_name} @ {venue_name}",
+            f"LOCATION:{venue_address}, {venue_city}",
+            f"DESCRIPTION:Concert de {band_name} à {venue_name}",
+            "STATUS:CONFIRMED",
+            "END:VEVENT"
+        ])
+    
+    ics_lines.append("END:VCALENDAR")
+    
+    ics_content = "\r\n".join(ics_lines)
+    
+    return Response(
+        content=ics_content,
+        media_type="text/calendar",
+        headers={
+            "Content-Disposition": f'attachment; filename="{band_name.replace(" ", "_")}_planning.ics"'
+        }
+    )
+
 
 @router.get("/bands")
 async def get_bands_directory(

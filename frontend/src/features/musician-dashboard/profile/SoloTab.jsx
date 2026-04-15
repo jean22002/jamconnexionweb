@@ -49,6 +49,19 @@ export default function SoloTab({ soloProfile, setSoloProfile, token, addToList,
           </div>
 
           <div className="space-y-2">
+            <Label>Nom du projet solo</Label>
+            <Input
+              value={soloProfile.solo_project_name || ''}
+              onChange={(e) => setSoloProfile({ ...soloProfile, solo_project_name: e.target.value })}
+              className="bg-black/20 border-white/10"
+              placeholder="Ex: The Midnight Sessions, Acoustic Stories..."
+            />
+            <p className="text-xs text-muted-foreground">
+              Le nom artistique de votre projet solo (différent de votre nom de scène)
+            </p>
+          </div>
+
+          <div className="space-y-2">
             <Label>Description solo</Label>
             <Textarea
               value={soloProfile.solo_description}

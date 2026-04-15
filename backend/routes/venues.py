@@ -436,6 +436,23 @@ async def subscribe_to_venue(venue_id: str, request: Request, current_user: dict
     
     await db.venue_subscriptions.insert_one(subscription_doc)
     
+    # 🔔 Notification temps réel : Nouvel abonné
+    try:
+        from websocket import notify_new_subscriber
+        # Récupérer le nom de l'abonné
+        if current_user["role"] == "musician":
+            profile = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0, "pseudo": 1})
+            subscriber_name = profile.get("pseudo", "Un musicien") if profile else "Un musicien"
+        elif current_user["role"] == "melomane":
+            profile = await db.melomanes.find_one({"user_id": current_user["id"]}, {"_id": 0, "pseudo": 1})
+            subscriber_name = profile.get("pseudo", "Un mélomane") if profile else "Un mélomane"
+        else:
+            subscriber_name = current_user.get("email", "Un utilisateur")
+        
+        await notify_new_subscriber(venue["user_id"], subscriber_name, current_user["role"])
+    except Exception as e:
+        logger.warning(f"Could not send WebSocket notification: {e}")
+    
     # Check for new badges (subscriber count for venue owner)
     try:
         from utils.badge_checker import check_and_award_badges_internal

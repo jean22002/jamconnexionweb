@@ -295,3 +295,98 @@ async def emit_to_user(user_id: str, event: str, data: dict):
     except Exception as e:
         logger.error(f"Error emitting to user {user_id}: {e}")
         return False
+
+
+# ============================================
+# Helpers de notifications temps réel
+# ============================================
+
+async def notify_new_application(venue_user_id: str, musician_name: str, event_name: str, application_id: str):
+    """Notifie un établissement d'une nouvelle candidature"""
+    await emit_to_user(venue_user_id, 'notification', {
+        'notification_type': 'new_application',
+        'data': {
+            'musician_name': musician_name,
+            'event_name': event_name,
+            'application_id': application_id,
+            'action_url': '/venue-dashboard'
+        }
+    })
+
+
+async def notify_application_status(musician_user_id: str, status: str, event_name: str, venue_name: str):
+    """Notifie un musicien du changement de statut de sa candidature"""
+    await emit_to_user(musician_user_id, 'notification', {
+        'notification_type': 'application_status',
+        'data': {
+            'status': status,
+            'event_name': event_name,
+            'venue_name': venue_name,
+            'action_url': '/musician-dashboard'
+        }
+    })
+
+
+async def notify_new_subscriber(venue_user_id: str, subscriber_name: str, subscriber_role: str):
+    """Notifie un établissement d'un nouvel abonné"""
+    await emit_to_user(venue_user_id, 'notification', {
+        'notification_type': 'new_subscriber',
+        'data': {
+            'subscriber_name': subscriber_name,
+            'subscriber_role': subscriber_role,
+            'action_url': '/venue-dashboard'
+        }
+    })
+
+
+async def notify_new_event(user_id: str, event_type: str, venue_name: str, event_date: str, event_id: str):
+    """Notifie un utilisateur d'un nouvel événement"""
+    await emit_to_user(user_id, 'notification', {
+        'notification_type': 'new_event',
+        'data': {
+            'event_type': event_type,
+            'venue_name': venue_name,
+            'event_date': event_date,
+            'event_id': event_id,
+            'action_url': f'/venue/{event_id}'
+        }
+    })
+
+
+async def notify_badge_unlocked(user_id: str, badge_name: str, badge_description: str):
+    """Notifie un utilisateur qu'il a débloqué un badge"""
+    await emit_to_user(user_id, 'notification', {
+        'notification_type': 'badge_unlocked',
+        'data': {
+            'badge_name': badge_name,
+            'badge_description': badge_description,
+            'action_url': '/musician-dashboard'
+        }
+    })
+
+
+async def broadcast_new_event(event_type: str, venue_name: str, city: str, date: str, music_styles: list):
+    """Broadcast un nouvel événement à tous les utilisateurs connectés"""
+    await sio.emit('event', {
+        'event_type': 'new_event_created',
+        'data': {
+            'type': event_type,
+            'venue_name': venue_name,
+            'city': city,
+            'date': date,
+            'music_styles': music_styles
+        }
+    })
+
+
+async def notify_new_slot(musician_user_id: str, venue_name: str, slot_date: str, slot_id: str):
+    """Notifie un musicien PRO d'une nouvelle offre disponible"""
+    await emit_to_user(musician_user_id, 'notification', {
+        'notification_type': 'new_slot_available',
+        'data': {
+            'venue_name': venue_name,
+            'slot_date': slot_date,
+            'slot_id': slot_id,
+            'action_url': '/musician-dashboard'
+        }
+    })

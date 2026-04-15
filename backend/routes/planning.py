@@ -109,7 +109,37 @@ async def create_planning_slot(data: PlanningSlot, request: Request, current_use
     # Remove MongoDB _id before returning
     slot_doc.pop("_id", None)
     
-    # Notify subscribers about open slot
+    # 🔔 Notification temps réel : Nouvelle offre disponible pour musiciens PRO
+    try:
+        from websocket import notify_new_slot
+        # Récupérer tous les abonnés de cet établissement qui sont musiciens PRO
+        subscriptions = await db.venue_subscriptions.find({
+            "venue_id": venue["id"],
+            "subscriber_role": "musician"
+        }, {"_id": 0}).to_list(1000)
+        
+        for sub in subscriptions:
+            # Vérifier si le musicien est PRO
+            musician_user = await db.users.find_one(
+                {"id": sub["subscriber_id"]},
+                {"_id": 0, "id": 1}
+            )
+            if musician_user:
+                musician_profile = await db.musicians.find_one(
+                    {"user_id": musician_user["id"]},
+                    {"_id": 0, "tier": 1}
+                )
+                if musician_profile and musician_profile.get("tier") == "pro":
+                    await notify_new_slot(
+                        musician_user["id"],
+                        venue.get("name", "un établissement"),
+                        data.date,
+                        slot_id
+                    )
+    except Exception as e:
+        logger.warning(f"Could not send WebSocket notifications for new slot: {e}")
+    
+    # Notify subscribers about open slot (legacy notification DB)
     styles = ", ".join(data.music_styles) if data.music_styles else "Tous styles"
     await notify_venue_subscribers(
         venue["id"], 
@@ -387,16 +417,27 @@ async def apply_to_slot(slot_id: str, band_id: Optional[str] = None, request: Re
     
     await db.applications.insert_one(app_doc)
     
-    # Notify venue owner
-    venue = await db.venues.find_one({"id": slot.get("venue_id")}, {"_id": 0})
-    if venue and venue.get("user_id"):
-        await create_notification(
-            venue["user_id"], 
-            "application_received",
-            "Nouvelle candidature",
-            f"{band_name} a postulé pour le {slot.get('date', 'un créneau')}",
-            "/venue"
-        )
+    # 🔔 Notification temps réel : Nouvelle candidature
+    try:
+        from websocket import notify_new_application
+        venue = await db.venues.find_one({"id": slot.get("venue_id")}, {"_id": 0})
+        if venue and venue.get("user_id"):
+            await notify_new_application(
+                venue["user_id"],
+                band_name,
+                f"Créneau du {slot.get('date', 'date inconnue')}",
+                app_id
+            )
+            # Legacy notification DB
+            await create_notification(
+                venue["user_id"], 
+                "application_received",
+                "Nouvelle candidature",
+                f"{band_name} a postulé pour le {slot.get('date', 'un créneau')}",
+                "/venue"
+            )
+    except Exception as e:
+        logger.warning(f"Could not send WebSocket notification: {e}")
     
     return {"message": "Candidature envoyée avec succès", "application_id": app_id}
 
@@ -572,6 +613,19 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
     # Notify musician
     musician = await db.musicians.find_one({"id": app["musician_id"]}, {"_id": 0})
     if musician:
+        # 🔔 Notification temps réel : Candidature acceptée
+        try:
+            from websocket import notify_application_status
+            await notify_application_status(
+                musician["user_id"],
+                "accepted",
+                f"Créneau du {slot['date']}",
+                venue.get("name", "un établissement")
+            )
+        except Exception as e:
+            logger.warning(f"Could not send WebSocket notification: {e}")
+        
+        # Legacy notification DB
         await create_notification(
             musician["user_id"], 
             "application_accepted",
@@ -694,6 +748,19 @@ async def reject_application(app_id: str, request: Request, current_user: dict =
     # Notify musician
     musician = await db.musicians.find_one({"id": app["musician_id"]}, {"_id": 0})
     if musician:
+        # 🔔 Notification temps réel : Candidature refusée
+        try:
+            from websocket import notify_application_status
+            await notify_application_status(
+                musician["user_id"],
+                "rejected",
+                f"Créneau du {slot['date']}",
+                venue.get("name", "un établissement")
+            )
+        except Exception as e:
+            logger.warning(f"Could not send WebSocket notification: {e}")
+        
+        # Legacy notification DB
         await create_notification(
             musician["user_id"], 
             "application_rejected",

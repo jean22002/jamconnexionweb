@@ -123,6 +123,19 @@ async def create_jam_event(data: JamEvent, request: Request, current_user: dict 
     
     await db.jams.insert_one(jam_doc)
     
+    # 🔔 Broadcast temps réel : Nouveau jam créé
+    try:
+        from websocket import broadcast_new_event
+        await broadcast_new_event(
+            event_type="jam",
+            venue_name=venue.get("name", "un établissement"),
+            city=venue.get("city", ""),
+            date=data.date,
+            music_styles=data.music_styles or []
+        )
+    except Exception as e:
+        logger.warning(f"Could not broadcast new jam event: {e}")
+    
     # Audit log: Jam event created
     await log_action(
         user_id=current_user["id"],
@@ -383,6 +396,19 @@ async def create_concert_event(data: ConcertEvent, request: Request, current_use
     logger.info(f"🔍 Concert doc to insert: payment_method={concert_doc.get('payment_method')}, amount={concert_doc.get('amount')}, payment_status={concert_doc.get('payment_status')}")
     
     await db.concerts.insert_one(concert_doc)
+    
+    # 🔔 Broadcast temps réel : Nouveau concert créé
+    try:
+        from websocket import broadcast_new_event
+        await broadcast_new_event(
+            event_type="concert",
+            venue_name=venue.get("name", "un établissement"),
+            city=venue.get("city", ""),
+            date=data.date,
+            music_styles=data.music_styles or []
+        )
+    except Exception as e:
+        logger.warning(f"Could not broadcast new concert event: {e}")
     
     # 🎵 SYNC TO MUSICIANS & SEND NOTIFICATIONS
     # For ALL concerts (not just GUSO), notify and add to musician's planning

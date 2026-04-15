@@ -90,6 +90,17 @@ async def check_and_award_badges_internal(db, user_id: str) -> list:
                 await db.user_badges.insert_one(user_badge_doc)
                 newly_unlocked.append(badge)
                 
+                # 🔔 Notification temps réel : Badge débloqué
+                try:
+                    from websocket import notify_badge_unlocked
+                    await notify_badge_unlocked(
+                        user_id,
+                        badge.get("name", "Badge"),
+                        badge.get("description", "")
+                    )
+                except Exception as notif_error:
+                    logger.warning(f"Could not send WebSocket notification for badge: {notif_error}")
+                
                 # Créer une notification ET envoyer push notification
                 await create_badge_notification_internal(db, user_id, badge)
         

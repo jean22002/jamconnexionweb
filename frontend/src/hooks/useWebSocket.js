@@ -167,21 +167,63 @@ export function useWebSocket(token, options = {}) {
 function handleNotification(message) {
   const { notification_type, data } = message;
 
-  // Map notification types to user-friendly messages
+  // Map notification types to user-friendly messages with emojis
   const notificationMessages = {
-    'new_invitation': `🎸 Nouvelle invitation : ${data.band_name || 'groupe'}`,
-    'new_event': `🎤 Nouvel événement : ${data.event_type || 'événement'}`,
-    'new_application': `📝 Nouvelle candidature pour ${data.event_name || 'événement'}`,
-    'new_message': `💬 Nouveau message de ${data.from_name || 'utilisateur'}`,
-    'event_reminder': `⏰ Rappel : ${data.event_name} dans ${data.hours_until}h`,
-    'band_update': `👥 ${data.band_name} : ${data.message}`,
-    'subscription_expiring': `⚠️ Votre abonnement expire dans ${data.days_remaining} jours`,
+    'new_invitation': {
+      message: `🎸 ${data.band_name || 'Un groupe'} vous invite à rejoindre leur groupe`,
+      duration: 6000
+    },
+    'new_event': {
+      message: `🎤 Nouvel événement : ${data.event_type || 'événement'}`,
+      duration: 5000
+    },
+    'new_application': {
+      message: `📝 ${data.musician_name} a postulé pour ${data.event_name}`,
+      duration: 6000
+    },
+    'application_status': {
+      message: data.status === 'accepted' 
+        ? `✅ Candidature acceptée pour ${data.event_name} chez ${data.venue_name}` 
+        : `❌ Candidature non retenue pour ${data.event_name}`,
+      duration: 7000
+    },
+    'new_message': {
+      message: `💬 Nouveau message de ${data.from_name || 'un utilisateur'}`,
+      duration: 5000
+    },
+    'new_subscriber': {
+      message: `🔔 ${data.subscriber_name} s'est abonné à votre établissement`,
+      duration: 5000
+    },
+    'new_slot_available': {
+      message: `📅 Nouvelle offre chez ${data.venue_name} le ${data.slot_date}`,
+      duration: 6000
+    },
+    'badge_unlocked': {
+      message: `🏆 Badge débloqué : ${data.badge_name}`,
+      duration: 8000
+    },
+    'event_reminder': {
+      message: `⏰ Rappel : ${data.event_name} dans ${data.hours_until}h`,
+      duration: 6000
+    },
+    'band_update': {
+      message: `👥 ${data.band_name} : ${data.message}`,
+      duration: 5000
+    },
+    'subscription_expiring': {
+      message: `⚠️ Votre abonnement expire dans ${data.days_remaining} jours`,
+      duration: 7000
+    },
   };
 
-  const message_text = notificationMessages[notification_type] || `🔔 ${notification_type}`;
+  const config = notificationMessages[notification_type] || {
+    message: `🔔 ${notification_type}`,
+    duration: 5000
+  };
 
-  toast(message_text, {
-    duration: 5000,
+  toast(config.message, {
+    duration: config.duration,
     action: data.action_url ? {
       label: 'Voir',
       onClick: () => window.location.href = data.action_url,

@@ -5,6 +5,7 @@ import { Button } from "../components/ui/button";
 import { Music, MapPin, Users, Mic2, Guitar, Radio, ArrowRight, Check, Music2, ChevronDown, ChevronUp, User, Edit } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import SkeletonLoader, { StatsSkeleton } from "../components/SkeletonLoader";
+import PromoCounter from "../components/PromoCounter";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -90,8 +91,9 @@ export default function Landing() {
       {/* 🎁 Bannière Offre Promotionnelle */}
       <div className="fixed top-16 left-0 right-0 z-40 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white py-3 px-4 shadow-lg">
         <div className="max-w-7xl mx-auto text-center">
-          <p className="font-semibold text-sm sm:text-base">
-            🎁 <span className="font-bold">OFFRE DE LANCEMENT</span> • Les 100 premiers établissements : <span className="underline">6 mois gratuits</span> au lieu de 3 mois !
+          <p className="font-semibold text-sm sm:text-base flex items-center justify-center gap-2 flex-wrap">
+            <span>🎁 <span className="font-bold">OFFRE DE LANCEMENT</span> • Les 100 premiers établissements : <span className="underline">6 mois gratuits</span> •</span>
+            <PromoCounter variant="banner" />
           </p>
         </div>
       </div>
@@ -353,6 +355,11 @@ export default function Landing() {
                     puis 3 mois gratuits ensuite
                   </p>
                 </div>
+              </div>
+              
+              {/* Compteur de places restantes */}
+              <div className="mb-6">
+                <PromoCounter variant="card" />
               </div>
               
               <ul className="space-y-4 mb-8">

@@ -237,6 +237,22 @@ async def get_stats_counts():
     venues_count = await db.venues.count_documents({})
     return {"musicians": musicians_count, "venues": venues_count}
 
+
+@api_router.get("/stats/promo")
+async def get_promo_stats():
+    """Return promo offer stats (venues count for 6-month offer)"""
+    venues_count = await db.venues.count_documents({})
+    remaining = max(0, 100 - venues_count)
+    is_available = venues_count < 100
+    
+    return {
+        "total_venues": venues_count,
+        "promo_limit": 100,
+        "remaining_slots": remaining,
+        "is_promo_available": is_available,
+        "current_offer_months": 6 if is_available else 3
+    }
+
 # Geocoding utility endpoint
 @api_router.post("/geocode")
 async def geocode_endpoint(data: dict):

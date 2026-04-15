@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "../components/ui/button";
 import { Music, Check, ArrowRight, Guitar, Mic2, Music2, Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import PromoCounter from "../components/PromoCounter";
 
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/aFa6oG9gV4d20te2uRafS02";
 
@@ -171,7 +172,7 @@ export default function Pricing() {
               </div>
             </div>
             
-            <div className="bg-gradient-to-r from-orange-500/20 to-pink-500/20 rounded-xl px-4 py-4 mb-6 border border-orange-500/30">
+            <div className="bg-gradient-to-r from-orange-500/20 to-pink-500/20 rounded-xl px-4 py-4 mb-4 border border-orange-500/30">
               <p className="text-orange-400 font-bold text-center text-lg mb-1">
                 🎁 6 mois gratuits
               </p>
@@ -181,6 +182,11 @@ export default function Pricing() {
               <p className="text-secondary font-medium text-center text-sm mt-2">
                 puis 3 mois gratuits ensuite
               </p>
+            </div>
+            
+            {/* Compteur temps réel */}
+            <div className="mb-6">
+              <PromoCounter variant="card" />
             </div>
             
             <p className="text-muted-foreground mb-8">

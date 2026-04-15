@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { MapPin, ArrowLeft, MapPinOff, User, Check, Clock, X, UserPlus, Eye } from "lucide-react";
+import { Input } from "../ui/input";
+import { MapPin, ArrowLeft, MapPinOff, User, Check, Clock, X, UserPlus, Eye, Search } from "lucide-react";
 import LazyImage from "../LazyImage";
 import ProBadge, { getBadgeType } from "../ProBadge";
 import { REGIONS_FRANCE, DEPARTEMENTS_FRANCE } from "../../data/france-locations";
@@ -32,12 +33,24 @@ function MusicianCard({ musician, onSendFriendRequest, onCancelRequest, sentRequ
           </div>
         )}
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h3 className="font-heading font-semibold">{musician.pseudo}</h3>
             {getBadgeType(musician) && (
               <ProBadge variant="compact" type={getBadgeType(musician)} showText={false} />
             )}
+            {/* Badge Projet Solo */}
+            {musician.solo_profile?.has_solo && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 text-purple-300 text-xs rounded-full font-medium">
+                🎸 Solo
+              </span>
+            )}
           </div>
+          {/* Nom du projet solo */}
+          {musician.solo_profile?.has_solo && musician.solo_profile?.solo_project_name && (
+            <p className="text-sm text-purple-300 font-medium mb-1">
+              "{musician.solo_profile.solo_project_name}"
+            </p>
+          )}
           {musician.city && (
             <p className="text-sm text-muted-foreground flex items-center gap-1">
               <MapPin className="w-3 h-3" />
@@ -101,6 +114,7 @@ export default function MusiciansTab({
 }) {
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Filtrer le musicien connecté - Optimisé avec useMemo
   const otherMusicians = useMemo(() => 
@@ -108,19 +122,75 @@ export default function MusiciansTab({
     [musicians, currentUserId]
   );
 
+  // Fonction de recherche
+  const searchMusicians = useMemo(() => {
+    if (!searchQuery.trim()) return otherMusicians;
+
+    const query = searchQuery.toLowerCase();
+    return otherMusicians.filter(m => {
+      // Recherche dans le pseudo
+      if (m.pseudo?.toLowerCase().includes(query)) return true;
+      
+      // Recherche dans le nom du projet solo
+      if (m.solo_profile?.solo_project_name?.toLowerCase().includes(query)) return true;
+      
+      // Recherche dans le nom de scène solo
+      if (m.solo_profile?.solo_name?.toLowerCase().includes(query)) return true;
+      
+      // Recherche dans les instruments
+      if (m.instruments?.some(inst => inst.toLowerCase().includes(query))) return true;
+      
+      // Recherche dans les styles musicaux
+      if (m.music_styles?.some(style => style.toLowerCase().includes(query))) return true;
+      
+      return false;
+    });
+  }, [otherMusicians, searchQuery]);
+
   // Pré-calculer les listes filtrées pour éviter les recalculs dans le JSX
   const franceMusicians = useMemo(() => 
-    otherMusicians.filter(m => !m.country || m.country === 'France'),
-    [otherMusicians]
+    searchMusicians.filter(m => !m.country || m.country === 'France'),
+    [searchMusicians]
   );
 
   const countryMusicians = useMemo(() => 
-    otherMusicians.filter(m => m.country && m.country !== 'France'),
-    [otherMusicians]
+    searchMusicians.filter(m => m.country && m.country !== 'France'),
+    [searchMusicians]
   );
 
   return (
     <div className="space-y-6">
+      {/* Barre de recherche */}
+      <div className="glassmorphism rounded-2xl p-6">
+        <h2 className="font-heading font-semibold text-xl mb-4 flex items-center gap-2">
+          <Search className="w-5 h-5 text-primary" />
+          Rechercher un musicien
+        </h2>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Nom, projet solo, instrument, style musical..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 bg-black/20 border-white/10 rounded-full"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+        {searchQuery && (
+          <p className="text-sm text-muted-foreground mt-2">
+            {searchMusicians.length} résultat{searchMusicians.length > 1 ? 's' : ''} trouvé{searchMusicians.length > 1 ? 's' : ''}
+          </p>
+        )}
+      </div>
+
       {/* Filtres de localisation */}
       <div className="glassmorphism rounded-2xl p-6">
         <h2 className="font-heading font-semibold text-xl mb-4">Filtrer par localisation</h2>
@@ -131,7 +201,7 @@ export default function MusiciansTab({
         }}>
           <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 gap-1 scrollbar-thin scrollbar-thumb-cyan-500/50 scrollbar-track-transparent">
             <TabsTrigger value="all" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
-              Tous ({otherMusicians.length})
+              Tous ({searchMusicians.length})
             </TabsTrigger>
             <TabsTrigger value="france" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
               France ({franceMusicians.length})
@@ -150,7 +220,7 @@ export default function MusiciansTab({
           {/* Tous les musiciens */}
           <TabsContent value="all" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {otherMusicians.map((musician) => (
+              {searchMusicians.map((musician) => (
                 <MusicianCard 
                   key={musician.id} 
                   musician={musician} 

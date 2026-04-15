@@ -132,12 +132,25 @@ export default function MusicianDetail() {
             )}
             
             <div className="flex-1 text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+              <div className="flex items-center justify-center md:justify-start gap-3 mb-2 flex-wrap">
                 <h1 className="font-heading font-bold text-3xl">{musician.pseudo}</h1>
                 {getBadgeType(musician) && (
                   <ProBadge variant="default" type={getBadgeType(musician)} />
                 )}
+                {/* Badge Projet Solo */}
+                {musician.solo_profile?.has_solo && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 text-purple-300 text-sm rounded-full font-medium">
+                    🎸 Projet Solo
+                  </span>
+                )}
               </div>
+              
+              {/* Nom du projet solo */}
+              {musician.solo_profile?.has_solo && musician.solo_profile?.solo_project_name && (
+                <p className="text-lg text-purple-300 font-semibold mb-2">
+                  "{musician.solo_profile.solo_project_name}"
+                </p>
+              )}
               
               {musician.age && <p className="text-muted-foreground">{musician.age} ans</p>}
               

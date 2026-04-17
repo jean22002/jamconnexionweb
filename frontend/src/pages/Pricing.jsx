@@ -64,8 +64,13 @@ export default function Pricing() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Musician Plan */}
-          <div className="glassmorphism rounded-3xl p-8 border border-secondary/30">
-            <div className="flex items-center gap-4 mb-6">
+          <div className="glassmorphism rounded-3xl p-8 border border-secondary/30 relative overflow-hidden">
+            {/* Badge Promo Musiciens */}
+            <div className="absolute top-0 right-0 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-4 py-1 rounded-bl-2xl font-bold text-xs">
+              🎁 OFFRE LIMITÉE
+            </div>
+            
+            <div className="flex items-center gap-4 mb-6 mt-4">
               <div className="w-14 h-14 rounded-2xl bg-secondary/20 flex items-center justify-center">
                 <Guitar className="w-7 h-7 text-secondary" />
               </div>
@@ -73,6 +78,20 @@ export default function Pricing() {
                 <h2 className="font-heading font-bold text-2xl">Musicien</h2>
                 <p className="text-secondary font-semibold">Gratuit</p>
               </div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl px-4 py-4 mb-6 border border-cyan-500/30">
+              <p className="text-cyan-400 font-bold text-center text-lg mb-1">
+                🎁 2 mois PRO gratuits
+              </p>
+              <p className="text-xs text-center text-muted-foreground">
+                pour les 200 premiers musiciens !
+              </p>
+            </div>
+            
+            {/* Compteur temps réel */}
+            <div className="mb-6">
+              <PromoCounter variant="card" type="musician" />
             </div>
             
             <p className="text-muted-foreground mb-8">
@@ -268,6 +287,122 @@ export default function Pricing() {
                 <p className="text-muted-foreground text-sm">{faq.a}</p>
               </div>
             ))}
+          </div>
+        </div>
+        
+        {/* Section Notifications */}
+        <div className="mt-20">
+          <div className="text-center mb-12">
+            <h2 className="font-heading font-bold text-3xl md:text-4xl mb-4">
+              🔔 Notifications en temps réel
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
+              Restez informés instantanément des événements importants grâce à notre système de notifications WebSocket
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Notifications Musiciens */}
+            <div className="glassmorphism rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center">
+                  <Guitar className="w-6 h-6 text-secondary" />
+                </div>
+                <h3 className="font-heading font-bold text-xl">Musiciens</h3>
+              </div>
+              
+              <ul className="space-y-3">
+                <li className="flex items-start gap-2 text-sm">
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Candidature acceptée/refusée</strong> - Réponse instantanée</span>
+                </li>
+                <li className="flex items-start gap-2 text-sm">
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Nouveaux messages</strong> - Avec établissements</span>
+                </li>
+                <li className="flex items-start gap-2 text-sm">
+                  <Check className="w-5 h-5 text-cyan-500 flex-shrink-0 mt-0.5" />
+                  <span><strong className="text-cyan-400">Nouvelles offres</strong> (PRO) - Opportunités exclusives</span>
+                </li>
+                <li className="flex items-start gap-2 text-sm">
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Badges débloqués</strong> - Progression</span>
+                </li>
+                <li className="flex items-start gap-2 text-sm">
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Invitations de groupe</strong> - Rejoindre des groupes</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Notifications Établissements */}
+            <div className="glassmorphism rounded-2xl p-6 border-2 border-primary/30">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <Mic2 className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-heading font-bold text-xl">Établissements</h3>
+              </div>
+              
+              <ul className="space-y-3">
+                <li className="flex items-start gap-2 text-sm">
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Nouvelles candidatures</strong> - Musiciens qui postulent</span>
+                </li>
+                <li className="flex items-start gap-2 text-sm">
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Nouveaux messages</strong> - Avec musiciens</span>
+                </li>
+                <li className="flex items-start gap-2 text-sm">
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Nouveaux abonnés</strong> - Qui vous suivent</span>
+                </li>
+                <li className="flex items-start gap-2 text-sm">
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Badges débloqués</strong> - Réputation</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Notifications Mélomanes */}
+            <div className="glassmorphism rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                  <Music2 className="w-6 h-6 text-purple-400" />
+                </div>
+                <h3 className="font-heading font-bold text-xl">Mélomanes</h3>
+              </div>
+              
+              <ul className="space-y-3">
+                <li className="flex items-start gap-2 text-sm">
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Nouveaux concerts</strong> - Établissements suivis</span>
+                </li>
+                <li className="flex items-start gap-2 text-sm">
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Nouveaux jams</strong> - Près de vous</span>
+                </li>
+                <li className="flex items-start gap-2 text-sm">
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Rappels</strong> - Ne manquez rien</span>
+                </li>
+                <li className="flex items-start gap-2 text-sm">
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span><strong>Badges débloqués</strong> - Fidélité</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-12 text-center">
+            <div className="glassmorphism rounded-xl p-6 inline-block">
+              <p className="text-sm text-muted-foreground mb-2">
+                ⚡ <strong>Technologie WebSocket</strong> pour une latence &lt; 100ms
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Notifications instantanées • Compatible mobile et web • Reconnexion automatique
+              </p>
+            </div>
           </div>
         </div>
       </main>

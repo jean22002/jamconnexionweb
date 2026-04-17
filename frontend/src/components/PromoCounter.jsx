@@ -4,14 +4,15 @@ import { Flame, TrendingDown, Zap } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-export default function PromoCounter({ variant = 'banner' }) {
+export default function PromoCounter({ variant = 'banner', type = 'venue' }) {
   const [promoData, setPromoData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPromoStats = async () => {
       try {
-        const response = await axios.get(`${API}/stats/promo`);
+        const endpoint = type === 'musician' ? '/stats/promo-musicians' : '/stats/promo';
+        const response = await axios.get(`${API}${endpoint}`);
         setPromoData(response.data);
       } catch (error) {
         console.error('Error fetching promo stats:', error);
@@ -25,7 +26,7 @@ export default function PromoCounter({ variant = 'banner' }) {
     // Refresh every 30 seconds for real-time updates
     const interval = setInterval(fetchPromoStats, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [type]);
 
   if (loading) {
     return variant === 'banner' ? (
@@ -37,6 +38,13 @@ export default function PromoCounter({ variant = 'banner' }) {
 
   if (!promoData || !promoData.is_promo_available) {
     // Offre expirée
+    if (type === 'musician') {
+      return variant === 'banner' ? null : (
+        <div className="text-center text-xs text-muted-foreground">
+          Offre 2 mois PRO terminée
+        </div>
+      );
+    }
     return variant === 'banner' ? null : (
       <div className="text-center text-xs text-muted-foreground">
         Offre 6 mois terminée • 3 mois gratuits disponibles
@@ -44,7 +52,8 @@ export default function PromoCounter({ variant = 'banner' }) {
     );
   }
 
-  const { remaining_slots, total_venues } = promoData;
+  const { remaining_slots } = promoData;
+  const limit = type === 'musician' ? 200 : 100;
   
   // Couleur selon l'urgence
   const getUrgencyColor = () => {
@@ -69,26 +78,37 @@ export default function PromoCounter({ variant = 'banner' }) {
 
   // Variant Banner (compact pour la bannière en haut)
   if (variant === 'banner') {
+    const bannerText = type === 'musician' 
+      ? `${remaining_slots}/${limit} places` 
+      : `${remaining_slots}/${limit} places`;
+    
     return (
       <span className={`inline-flex items-center gap-1.5 font-bold ${getUrgencyColor()}`}>
         {getIcon()}
-        <span className="hidden sm:inline">Plus que</span> {remaining_slots}/100 places
+        <span className="hidden sm:inline">Plus que</span> {bannerText}
       </span>
     );
   }
 
   // Variant Card (pour les cards de pricing)
   if (variant === 'card') {
+    const cardTitle = type === 'musician' 
+      ? `${remaining_slots} places restantes` 
+      : `${remaining_slots} places restantes`;
+    const cardSubtitle = type === 'musician'
+      ? `sur les ${limit} de l'offre 2 mois PRO gratuits`
+      : `sur les ${limit} de l'offre 6 mois gratuits`;
+    
     return (
       <div className={`rounded-xl px-4 py-3 border ${getUrgencyBg()} backdrop-blur-sm`}>
         <div className="flex items-center justify-center gap-2 mb-1">
           {getIcon()}
           <span className={`font-bold text-lg ${getUrgencyColor()}`}>
-            {remaining_slots} places restantes
+            {cardTitle}
           </span>
         </div>
         <p className="text-xs text-center text-muted-foreground">
-          sur les 100 de l'offre 6 mois gratuits
+          {cardSubtitle}
         </p>
       </div>
     );
@@ -100,7 +120,7 @@ export default function PromoCounter({ variant = 'banner' }) {
       <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${getUrgencyBg()}`}>
         {getIcon()}
         <span className={getUrgencyColor()}>
-          {remaining_slots}/100
+          {remaining_slots}/{limit}
         </span>
       </div>
     );

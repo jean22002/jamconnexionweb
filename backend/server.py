@@ -253,6 +253,23 @@ async def get_promo_stats():
         "current_offer_months": 6 if is_available else 3
     }
 
+
+@api_router.get("/stats/promo-musicians")
+async def get_promo_musicians_stats():
+    """Return promo offer stats for musicians (2 months free PRO for first 200)"""
+    musicians_count = await db.musicians.count_documents({})
+    remaining = max(0, 200 - musicians_count)
+    is_available = musicians_count < 200
+    
+    return {
+        "total_musicians": musicians_count,
+        "promo_limit": 200,
+        "remaining_slots": remaining,
+        "is_promo_available": is_available,
+        "free_months": 2 if is_available else 0,
+        "description": "2 mois PRO gratuits" if is_available else "Offre terminée"
+    }
+
 # Geocoding utility endpoint
 @api_router.post("/geocode")
 async def geocode_endpoint(data: dict):

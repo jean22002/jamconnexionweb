@@ -15,6 +15,12 @@ export default function Landing() {
   const [showStats, setShowStats] = useState(false);
   const [loadingStats, setLoadingStats] = useState(true);
   const [openFAQ, setOpenFAQ] = useState(null);
+  
+  // Déterminer si l'utilisateur a déjà un statut PRO
+  const isPro = user && (
+    (user.role === 'musician' && user.tier === 'pro') ||
+    (user.role === 'venue' && user.subscription_status === 'active')
+  );
 
   useEffect(() => {
     const fetchStats = async () => {

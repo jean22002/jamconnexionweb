@@ -1,8 +1,8 @@
 """
 Système de notifications automatiques pour les événements
 Vérifie et envoie les notifications selon les règles :
-- J-3 à 12h30 : notification aux participants
-- Jour J à 12h30 : notification aux participants + musiciens dans 70km
+- J-3 à 13h : notification aux participants
+- Jour J à 13h : notification aux participants + musiciens dans 70km
 """
 
 import os
@@ -35,7 +35,7 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     return R * c
 
 async def send_notification(db, user_id, notif_type, title, message, link=None):
-    """Créer une notification dans la base de données"""
+    """Créer une notification dans la base de données + WebSocket temps réel"""
     notification_doc = {
         "id": str(uuid.uuid4()),
         "user_id": user_id,
@@ -48,7 +48,23 @@ async def send_notification(db, user_id, notif_type, title, message, link=None):
     }
     
     await db.notifications.insert_one(notification_doc)
-    print(f"✅ Notification envoyée à {user_id}: {title}")
+    print(f"✅ Notification DB envoyée à {user_id}: {title}")
+    
+    # 🔔 Envoi notification WebSocket en temps réel
+    try:
+        from websocket import emit_to_user
+        await emit_to_user(user_id, 'notification', {
+            'notification_type': notif_type,
+            'data': {
+                'title': title,
+                'message': message,
+                'action_url': link or '/dashboard'
+            }
+        })
+        print(f"⚡ Notification WebSocket envoyée à {user_id}")
+    except Exception as e:
+        print(f"⚠️ Erreur WebSocket pour {user_id}: {e}")
+
 
 
 async def notify_event_participants(db, event, event_type, days_before=0):
@@ -204,13 +220,13 @@ async def check_and_send_event_notifications():
     now_paris = datetime.now(PARIS_TZ)
     print(f"\n🕐 Vérification des notifications à {now_paris.strftime('%Y-%m-%d %H:%M:%S')} (Paris)")
     
-    # Vérifier si on est à 12h30 (±5 minutes pour tolérance)
-    if not (12 <= now_paris.hour <= 12 and 25 <= now_paris.minute <= 35):
-        print("⏰ Pas dans la fenêtre 12h30 (±5min), skip")
+    # Vérifier si on est à 13h (±5 minutes pour tolérance)
+    if not (12 <= now_paris.hour <= 13 and 55 <= now_paris.minute or 13 <= now_paris.hour <= 13 and now_paris.minute <= 5):
+        print("⏰ Pas dans la fenêtre 13h (±5min), skip")
         client.close()
         return
     
-    print("✅ Dans la fenêtre 12h30, traitement des notifications...")
+    print("✅ Dans la fenêtre 13h, traitement des notifications...")
     
     # Date du jour et J-3
     today = now_paris.date()

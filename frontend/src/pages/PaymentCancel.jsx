@@ -4,7 +4,8 @@ import { Button } from "../components/ui/button";
 import { Music, AlertCircle, CreditCard, Home, Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/3cI8wOfFj5h68ZKd9vafS03";
+const STRIPE_PAYMENT_LINK_VENUE = "https://buy.stripe.com/3cI8wOfFj5h68ZKd9vafS03";
+const STRIPE_PAYMENT_LINK_MUSICIAN = "https://buy.stripe.com/5kQfZgfFjfVK0te4CZafS04";
 
 export default function PaymentCancel() {
   const navigate = useNavigate();
@@ -25,8 +26,11 @@ export default function PaymentCancel() {
 
   const handleRetryPayment = () => {
     setIsProcessing(true);
-    // Redirection directe vers le lien de paiement Stripe
-    window.location.href = STRIPE_PAYMENT_LINK;
+    // Redirection vers le bon lien Stripe selon le rôle
+    const stripeLink = user && user.role === "musician" 
+      ? STRIPE_PAYMENT_LINK_MUSICIAN 
+      : STRIPE_PAYMENT_LINK_VENUE;
+    window.location.href = stripeLink;
   };
 
   const handleBackToDashboard = () => {

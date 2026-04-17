@@ -5,21 +5,31 @@ import { Music, Check, ArrowRight, Guitar, Mic2, Music2, Loader2 } from "lucide-
 import { useAuth } from "../context/AuthContext";
 import PromoCounter from "../components/PromoCounter";
 
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/3cI8wOfFj5h68ZKd9vafS03";
+const STRIPE_PAYMENT_LINK_VENUE = "https://buy.stripe.com/3cI8wOfFj5h68ZKd9vafS03";
+const STRIPE_PAYMENT_LINK_MUSICIAN = "https://buy.stripe.com/5kQfZgfFjfVK0te4CZafS04";
 
 export default function Pricing() {
   const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleSubscribe = () => {
+  const handleSubscribeVenue = () => {
     if (!user) {
       window.location.href = "/auth?role=venue";
       return;
     }
 
     setIsProcessing(true);
-    // Redirection directe vers le lien de paiement Stripe
-    window.location.href = STRIPE_PAYMENT_LINK;
+    window.location.href = STRIPE_PAYMENT_LINK_VENUE;
+  };
+
+  const handleSubscribeMusician = () => {
+    if (!user) {
+      window.location.href = "/auth?role=musician";
+      return;
+    }
+
+    setIsProcessing(true);
+    window.location.href = STRIPE_PAYMENT_LINK_MUSICIAN;
   };
 
   return (
@@ -122,15 +132,24 @@ export default function Pricing() {
               ))}
             </ul>
             
-            <Link to="/auth?role=musician">
-              <Button 
-                className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground rounded-full py-6 font-heading font-semibold transition-all"
-                data-testid="musician-signup-btn"
-              >
-                Essayer 2 mois gratuitement
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
+            <Button 
+              onClick={handleSubscribeMusician}
+              disabled={isProcessing}
+              className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground rounded-full py-6 font-heading font-semibold transition-all"
+              data-testid="musician-signup-btn"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Redirection...
+                </>
+              ) : (
+                <>
+                  Essayer 2 mois gratuitement
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </>
+              )}
+            </Button>
             <p className="text-xs text-center text-muted-foreground mt-3">
               Accès gratuit de base • PRO à 6,99€/mois après l'essai
             </p>
@@ -241,7 +260,7 @@ export default function Pricing() {
             </ul>
             
             <Button 
-              onClick={handleSubscribe}
+              onClick={handleSubscribeVenue}
               disabled={isProcessing}
               className="w-full bg-primary hover:bg-primary/90 rounded-full py-6 font-heading font-semibold hover:shadow-[0_0_20px_rgba(217,70,239,0.5)] transition-all"
               data-testid="venue-signup-btn"

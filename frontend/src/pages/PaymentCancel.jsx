@@ -4,7 +4,7 @@ import { Button } from "../components/ui/button";
 import { Music, AlertCircle, CreditCard, Home, Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/aFa6oG9gV4d20te2uRafS02";
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/3cI8wOfFj5h68ZKd9vafS03";
 
 export default function PaymentCancel() {
   const navigate = useNavigate();

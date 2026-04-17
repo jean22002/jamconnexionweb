@@ -78,7 +78,7 @@ import { EditProfileDialog } from "../features/venue-dashboard/dialogs/EditProfi
 import { EventDetailsDialog } from "../features/venue-dashboard/dialogs/EventDetailsDialog";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/aFa6oG9gV4d20te2uRafS02";
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/3cI8wOfFj5h68ZKd9vafS03";
 
 // Liste des instruments de base pour les bœufs
 const INSTRUMENTS_BASE = [

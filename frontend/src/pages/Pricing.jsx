@@ -5,7 +5,7 @@ import { Music, Check, ArrowRight, Guitar, Mic2, Music2, Loader2 } from "lucide-
 import { useAuth } from "../context/AuthContext";
 import PromoCounter from "../components/PromoCounter";
 
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/aFa6oG9gV4d20te2uRafS02";
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/3cI8wOfFj5h68ZKd9vafS03";
 
 export default function Pricing() {
   const { user } = useAuth();

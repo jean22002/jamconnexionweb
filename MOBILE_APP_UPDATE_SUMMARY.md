@@ -1,7 +1,26 @@
 # 📱 Récapitulatif des développements récents - Jam Connexion
 **Destinataire** : Équipe développement application mobile  
-**Date** : 15 avril 2026  
+**Date de dernière mise à jour** : 17 avril 2026  
 **Version Backend/Frontend** : Dernière version en production
+
+---
+
+## 🆕 Nouveautés du 17 avril 2026
+
+### 🎸 Offre Promotionnelle Musiciens
+- **200 premiers musiciens** : 2 mois PRO gratuits
+- Compteur temps réel avec endpoint dédié
+- Badge "🎁 OFFRE LIMITÉE" cyan/bleu distinctif
+
+### 🔔 Section Notifications sur page Tarifs
+- Liste complète des notifications par rôle (Musiciens, Établissements, Mélomanes)
+- Design glassmorphism avec icônes
+- Mise en avant des notifications PRO exclusives
+
+### ⏰ Système de Rappels corrigé
+- Horaire modifié : 12h30 → **13h00** (heure de Paris)
+- Fréquence corrigée : 1 seule fois par jour au lieu de plusieurs
+- WebSocket ajouté pour notifications temps réel
 
 ---
 
@@ -76,7 +95,7 @@ PUT  /api/notifications/read-all     - Tout marquer lu
 
 ### Compteur temps réel
 
-**Nouvel endpoint** :
+**Endpoint** :
 ```
 GET /api/stats/promo
 ```
@@ -101,6 +120,53 @@ GET /api/stats/promo
 - Afficher l'offre lors de l'inscription établissement
 - Intégrer le compteur de places restantes
 - Adapter le tunnel d'inscription
+
+---
+
+## 2️⃣ bis - Offre Promotionnelle Musiciens (NOUVEAU ✨)
+
+### Nouvelle offre de lancement
+
+**Les 200 premiers musiciens** :
+- 🎁 **2 mois PRO gratuits**
+- Accès à toutes les fonctionnalités PRO
+
+**Après les 200 premiers** :
+- Reste gratuit (Free tier standard)
+
+### Compteur temps réel
+
+**Endpoint** :
+```
+GET /api/stats/promo-musicians
+```
+
+**Réponse** :
+```json
+{
+  "total_musicians": 125,
+  "promo_limit": 200,
+  "remaining_slots": 75,
+  "is_promo_available": true,
+  "free_months": 2,
+  "description": "2 mois PRO gratuits"
+}
+```
+
+### UI Web
+- Badge "🎁 OFFRE LIMITÉE" cyan/bleu sur la card Musicien
+- Compteur dynamique avec urgence visuelle
+- Affiché sur Landing page et page Pricing
+
+### État actuel
+- ~125 musiciens inscrits
+- **75 places restantes** pour l'offre 2 mois PRO
+
+**Action requise pour l'app mobile** :
+- Afficher l'offre lors de l'inscription musicien
+- Badge distinctif (cyan/bleu, différent des établissements)
+- Compteur de places restantes
+- Activation automatique des 2 mois PRO à l'inscription
 
 ---
 
@@ -264,7 +330,8 @@ GET  /api/events/{page_id}             - Événements d'une page
 
 ### Stats & Promo
 ```
-GET /api/stats/promo                    - Offre promotionnelle
+GET /api/stats/promo                    - Offre établissements (100 premiers)
+GET /api/stats/promo-musicians          - Offre musiciens (200 premiers) ✨ NOUVEAU
 GET /api/stats/counts                   - Compteurs généraux
 ```
 
@@ -282,6 +349,16 @@ PUT  /api/notifications/{id}/read       - Marquer comme lu
 PUT  /api/notifications/read-all        - Tout marquer lu
 WebSocket: wss://jamconnexion.com/api/socket.io
 ```
+
+**Types de notifications WebSocket** :
+- `new_message`
+- `new_application`
+- `application_status` (accepted/rejected)
+- `new_subscriber`
+- `badge_unlocked`
+- `new_slot_available` (PRO)
+- `new_event_created` (jam/concert)
+- `event_reminder` ✨ NOUVEAU (J-3 et Jour J à 13h)
 
 ### Établissements GUSO
 ```
@@ -354,14 +431,18 @@ Emails :
 
 ### Phase 1 : Notifications (Prioritaire)
 - [ ] Intégrer Socket.IO client
-- [ ] Implémenter les 9 types de notifications
+- [ ] Implémenter les 9 types de notifications (incluant `event_reminder`)
 - [ ] Afficher les toasts/notifications push
 - [ ] Badge compteur sur icônes
+- [ ] Gérer les rappels J-3 et Jour J
 
-### Phase 2 : Offre promotionnelle
-- [ ] Afficher le compteur de places restantes
+### Phase 2 : Offres promotionnelles
+- [ ] Afficher le compteur établissements (100 premiers)
+- [ ] **Afficher le compteur musiciens (200 premiers)** ✨ NOUVEAU
 - [ ] Adapter le tunnel d'inscription établissement
-- [ ] Texte dynamique selon l'offre (6 mois / 3 mois)
+- [ ] Adapter le tunnel d'inscription musicien
+- [ ] Texte dynamique selon l'offre (6 mois / 3 mois / 2 mois PRO)
+- [ ] Activation automatique 2 mois PRO pour musiciens
 
 ### Phase 3 : GUSO
 - [ ] Badge GUSO sur établissements
@@ -378,14 +459,38 @@ Emails :
 - [ ] Export calendrier .ics
 - [ ] Vérification appartenance groupe
 
-### Phase 6 : Facebook Events (Future)
+### Phase 6 : Section Notifications
+- [ ] **Page "Notifications" dans paramètres** ✨ NOUVEAU
+- [ ] Liste exhaustive par rôle (Musiciens, Établissements, Mélomanes)
+- [ ] Distinction notifications PRO (cyan)
+
+### Phase 7 : Facebook Events (Future)
 - [ ] Prévoir UI "Connecter Facebook"
 - [ ] Badge "Synchronisé avec Facebook"
 - [ ] À implémenter quand backend finalisé
 
 ---
 
-**Dernière mise à jour** : 15 avril 2026  
-**Version** : 2.4.0
+**Dernière mise à jour** : 17 avril 2026  
+**Version** : 2.5.0
 
 🎸 **Bon développement !**
+
+---
+
+## 📝 Changelog
+
+**17 avril 2026** :
+- ✨ Ajout offre promotionnelle musiciens (2 mois PRO / 200 premiers)
+- ✨ Section notifications complète sur page Tarifs
+- 🔧 Correction système rappels : 12h30 → 13h, 1x/jour uniquement
+- ⚡ WebSocket ajouté aux rappels J-3 et Jour J
+- 📊 Nouvel endpoint `/api/stats/promo-musicians`
+
+**15 avril 2026** :
+- ✨ Système notifications temps réel (9 types)
+- ✨ Offre promotionnelle établissements (6 mois / 100 premiers)
+- ✨ Filtre GUSO
+- ✨ Projet solo pour musiciens
+- 🐛 Fix planning de groupe (erreur 403)
+- 📄 Documentation complète WebSocket

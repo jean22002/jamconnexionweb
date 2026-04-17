@@ -21,6 +21,7 @@ import LocationWidget from "../components/LocationWidget";
 import ProSubscriptionCard from "../components/ProSubscriptionCard";
 import ProSubscriptionManager from "../components/ProSubscriptionManager";
 import AnalyticsTab from "../components/accounting/AnalyticsTab";
+import GuideModal from "../components/GuideModal";
 // NEW: Import refactored utilities
 import { buildImageUrl } from "../utils/urlBuilder";
 // Refactored tabs
@@ -37,7 +38,7 @@ import {
   Music, MapPin, LogOut, Search, Guitar, Users,
   Globe, Instagram, Facebook, Phone, User, Loader2, Navigation, X,
   Bell, Youtube, UserPlus, Check, Calendar as CalendarIcon, Heart,
-  Radio, MapPinOff, Locate, Settings2, Send, ArrowLeft, MessageSquare, Clock, Eye, Plus, Edit, Trash2, Award, Trophy, Menu, Ban, UserMinus
+  Radio, MapPinOff, Locate, Settings2, Send, ArrowLeft, MessageSquare, Clock, Eye, Plus, Edit, Trash2, Award, Trophy, Menu, Ban, UserMinus, HelpCircle
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useBadgeAutoCheck } from "../hooks/useBadgeAutoCheck";
@@ -216,6 +217,9 @@ export default function MusicianDashboard() {
   // Band selection modal states
   const [showBandSelectionModal, setShowBandSelectionModal] = useState(false);
   const [pendingSlotId, setPendingSlotId] = useState(null);
+  
+  // Guide modal state
+  const [showGuideModal, setShowGuideModal] = useState(false);
   
   // Change password states
   const [passwordForm, setPasswordForm] = useState({
@@ -1420,6 +1424,19 @@ export default function MusicianDashboard() {
             
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-4">
+              {/* Guide Button */}
+              <Button 
+                variant="ghost" 
+                onClick={() => setShowGuideModal(true)}
+                className="relative"
+                title="Guide d'utilisation"
+              >
+                <HelpCircle className="w-5 h-5" />
+              </Button>
+
+              {/* Location Widget (Compact Mode) */}
+              <LocationWidget token={token} compact={true} />
+
               {/* Leaderboard */}
               <Link to="/leaderboard">
                 <Button variant="ghost" className="relative">
@@ -2242,6 +2259,14 @@ export default function MusicianDashboard() {
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[300px] sm:w-[400px] glassmorphism border-white/10">
                   <div className="flex flex-col gap-4 mt-6">
+                    <button 
+                      onClick={() => setShowGuideModal(true)}
+                      className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors w-full text-left"
+                    >
+                      <HelpCircle className="w-5 h-5 text-primary" />
+                      <span className="font-medium">Guide d'utilisation</span>
+                    </button>
+
                     <Link to="/leaderboard" className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors">
                       <Trophy className="w-5 h-5 text-primary" />
                       <span className="font-medium">Trophées</span>
@@ -3034,8 +3059,15 @@ export default function MusicianDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Location Widget (Floating) */}
-      <LocationWidget token={token} />
+      {/* Location Widget (Floating) - Désactivé car maintenant dans le header en mode compact */}
+      {/* <LocationWidget token={token} /> */}
+
+      {/* Guide Modal */}
+      <GuideModal 
+        isOpen={showGuideModal} 
+        onClose={() => setShowGuideModal(false)} 
+        userRole="musician" 
+      />
 
       {/* Band Selection Modal for Applications */}
       <BandSelectionModal

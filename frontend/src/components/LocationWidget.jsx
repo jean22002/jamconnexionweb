@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-const LocationWidget = ({ token }) => {
+const LocationWidget = ({ token, compact = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [locationStatus, setLocationStatus] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -142,6 +142,192 @@ const LocationWidget = ({ token }) => {
 
   if (!locationStatus) return null;
 
+  // Mode compact pour le header (juste un bouton icône)
+  if (compact) {
+    return (
+      <>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`relative p-2 rounded-lg transition-all ${
+            locationStatus.enabled
+              ? 'bg-gradient-to-r from-primary to-cyan-500 text-white'
+              : 'hover:bg-white/10'
+          }`}
+          title={locationStatus.enabled ? 'En déplacement' : 'Mode Localisation'}
+        >
+          <MapPin className={`w-5 h-5 ${locationStatus.enabled ? 'animate-pulse' : ''}`} />
+          {locationStatus.enabled && (
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+          )}
+        </button>
+
+        {/* Modal/Panel */}
+        {isOpen && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+            <div className="bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Mode En déplacement</h3>
+                    <p className="text-xs text-muted-foreground">Système hybride de géolocalisation</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 space-y-4">
+                {locationStatus.enabled ? (
+                  <>
+                    {/* Active Status */}
+                    <div className="flex items-start gap-3 p-4 bg-primary/10 border border-primary/30 rounded-xl">
+                      <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-semibold text-primary mb-1">Localisation active</p>
+                        <p className="text-sm text-muted-foreground">
+                          Vous êtes visible à : <span className="font-medium text-white">{locationStatus.city}</span>
+                        </p>
+                        {timeRemaining && (
+                          <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            Expire dans {timeRemaining}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Profile Location Info */}
+                    <div className="text-sm text-muted-foreground p-3 bg-white/5 rounded-lg">
+                      <p>
+                        <span className="opacity-60">Ville d'origine :</span>{' '}
+                        <span className="font-medium">{locationStatus.profile_city || 'Non renseignée'}</span>
+                      </p>
+                    </div>
+
+                    {/* Deactivate Button */}
+                    <button
+                      onClick={deactivateTemporaryLocation}
+                      disabled={loading}
+                      className="w-full py-3 px-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 rounded-xl font-medium transition flex items-center justify-center gap-2"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Désactivation...
+                        </>
+                      ) : (
+                        <>
+                          <X className="w-4 h-4" />
+                          Désactiver le mode en déplacement
+                        </>
+                      )}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* Activation Options */}
+                    <div>
+                      <label className="block text-sm font-medium mb-3">Choisissez une méthode :</label>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setMethod('manual')}
+                          className={`flex-1 py-2 px-3 rounded-xl text-sm font-medium transition ${
+                            method === 'manual'
+                              ? 'bg-primary text-white'
+                              : 'bg-white/5 hover:bg-white/10'
+                          }`}
+                        >
+                          📍 Saisie manuelle
+                        </button>
+                        <button
+                          onClick={() => setMethod('gps')}
+                          className={`flex-1 py-2 px-3 rounded-xl text-sm font-medium transition ${
+                            method === 'gps'
+                              ? 'bg-primary text-white'
+                              : 'bg-white/5 hover:bg-white/10'
+                          }`}
+                        >
+                          🛰️ GPS automatique
+                        </button>
+                      </div>
+                    </div>
+
+                    {method === 'manual' ? (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Ville</label>
+                          <input
+                            type="text"
+                            value={manualCity}
+                            onChange={(e) => setManualCity(e.target.value)}
+                            placeholder="Ex: Paris"
+                            className="w-full px-4 py-2 bg-black/20 border border-white/10 rounded-xl focus:outline-none focus:border-primary"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Code postal (optionnel)</label>
+                          <input
+                            type="text"
+                            value={manualPostalCode}
+                            onChange={(e) => setManualPostalCode(e.target.value)}
+                            placeholder="Ex: 75001"
+                            className="w-full px-4 py-2 bg-black/20 border border-white/10 rounded-xl focus:outline-none focus:border-primary"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl text-sm">
+                        <p className="font-medium text-cyan-400 mb-1">GPS automatique</p>
+                        <p className="text-muted-foreground text-xs">
+                          Votre navigateur va vous demander l'autorisation d'accéder à votre position.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Info */}
+                    <div className="text-xs text-muted-foreground p-3 bg-white/5 rounded-lg">
+                      ⏱️ La localisation temporaire sera active pendant <span className="font-semibold text-white">24 heures</span>.
+                      Vous apparaîtrez dans les recherches d'établissements à proximité.
+                    </div>
+
+                    {/* Activate Button */}
+                    <button
+                      onClick={activateTemporaryLocation}
+                      disabled={loading || (method === 'manual' && !manualCity.trim())}
+                      className="w-full py-3 px-4 bg-gradient-to-r from-primary to-cyan-500 hover:opacity-90 text-white rounded-xl font-medium transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Activation...
+                        </>
+                      ) : (
+                        <>
+                          <MapPin className="w-4 h-4" />
+                          Activer pour 24h
+                        </>
+                      )}
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  // Mode normal (floating widget en bas à droite)
   return (
     <>
       {/* Floating Widget Button */}

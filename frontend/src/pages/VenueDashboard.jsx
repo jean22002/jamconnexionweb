@@ -36,7 +36,7 @@ import {
 import { 
   Music, LogOut, MapPin, MapPinOff, Globe, Instagram, Facebook, Phone, Edit, Save, Menu, 
   Loader2, CreditCard, Check, Clock, AlertCircle, X, Plus, CalendarIcon, 
-  Users, Bell, Trash2, Eye, FileText, User, Youtube, Send, Heart, Plug, Award, MessageSquare, Trophy, Paperclip, Upload, Download, Camera
+  Users, Bell, Trash2, Eye, FileText, User, Youtube, Send, Heart, Plug, Award, MessageSquare, Trophy, Paperclip, Upload, Download, Camera, HelpCircle
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useBadgeAutoCheck } from "../hooks/useBadgeAutoCheck";
@@ -44,6 +44,7 @@ import { useOnlineStatus } from "../hooks/useOnlineStatus";
 import SocialLinks from "../components/SocialLinks";
 import { StarRating } from "../components/StarRating";
 import { toast } from "sonner";
+import GuideModal from "../components/GuideModal";
 import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 import { MUSIC_STYLES_LIST } from "../data/music-styles";
 import { useNotifications } from "../hooks/useNotifications";
@@ -274,6 +275,7 @@ export default function VenueDashboard() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [showNotificationsDialog, setShowNotificationsDialog] = useState(false);
+  const [showGuideModal, setShowGuideModal] = useState(false);
   
   // Event details modal states
   const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
@@ -2502,6 +2504,23 @@ export default function VenueDashboard() {
             
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-4">
+              {/* Guide Button */}
+              <Button 
+                variant="ghost" 
+                onClick={() => setShowGuideModal(true)}
+                className="relative"
+                title="Guide d'utilisation"
+              >
+                <HelpCircle className="w-5 h-5" />
+              </Button>
+
+              {/* Trophy */}
+              <Link to="/leaderboard">
+                <Button variant="ghost" className="relative">
+                  <Trophy className="w-5 h-5" />
+                </Button>
+              </Link>
+              
               {profile && (
                 <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-muted/50 text-muted-foreground">
                   <Users className="w-4 h-4" />
@@ -2757,6 +2776,15 @@ export default function VenueDashboard() {
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[300px] sm:w-[400px] glassmorphism border-white/10">
                   <div className="flex flex-col gap-4 mt-6">
+                    {/* Guide Button */}
+                    <button 
+                      onClick={() => setShowGuideModal(true)}
+                      className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors w-full text-left"
+                    >
+                      <HelpCircle className="w-5 h-5 text-primary" />
+                      <span className="font-medium">Guide d'utilisation</span>
+                    </button>
+
                     {/* Status */}
                     <div className="flex flex-col gap-3 pb-4 border-b border-white/10">
                       {profile && (
@@ -4333,6 +4361,13 @@ export default function VenueDashboard() {
           setFormData={setFormData}
           updateProfile={updateProfile}
           token={token}
+        />
+
+        {/* Guide Modal */}
+        <GuideModal 
+          isOpen={showGuideModal} 
+          onClose={() => setShowGuideModal(false)} 
+          userRole="venue" 
         />
 
       </main>

@@ -5,7 +5,58 @@
 
 ---
 
+## ⚠️ ACTIONS IMMÉDIATES REQUISES
+
+### 💰 1. TARIFICATION - PRIORITÉ ABSOLUE
+L'abonnement **Musicien PRO** est maintenant **payant** à **6,99€/mois** après 2 mois gratuits. Vous devez :
+- ✅ Afficher le prix 6,99€/mois sur la page Tarifs mobile
+- ✅ Configurer le lien Stripe : `https://buy.stripe.com/5kQfZgfFjfVK0te4CZafS04`
+- ✅ Gérer les redirections Success/Cancel
+- ✅ Afficher clairement : "2 mois gratuits • Aucun prélèvement pendant l'essai"
+- ✅ Préciser : "Abonnement débute à la fin de l'essai • Annulable sans frais"
+
+### 📖 2. Guide Utilisateur
+Créer un guide interactif step-by-step pour :
+- Musiciens (6 étapes)
+- Établissements (5 étapes)  
+- Mélomanes (5 étapes)
+
+Bouton d'accès : Header (icône `?`)
+
+### 📍 3. Bouton Localisation
+Déplacer le bouton "Mode en déplacement" du floating bottom vers le header (à côté des trophées).
+
+---
+
 ## 🆕 Nouveautés du 17 avril 2026
+
+### 💰 TARIFICATION - CHANGEMENTS MAJEURS ⚠️
+
+#### 🎸 Abonnement Musicien PRO (NOUVEAU)
+- **Prix** : **6,99€/mois**
+- **Offre de lancement** : 2 mois PRO gratuits pour les 200 premiers inscrits
+- **Début facturation** : Automatique à la fin de l'essai (aucun prélèvement pendant les 2 mois)
+- **Lien Stripe** : `https://buy.stripe.com/5kQfZgfFjfVK0te4CZafS04`
+- **URLs de redirection Stripe** :
+  - Success : `https://jamconnexion.preview.emergentagent.com/payment/success`
+  - Cancel : `https://jamconnexion.preview.emergentagent.com/payment/cancel`
+
+#### 🎤 Abonnement Établissement (MIS À JOUR)
+- **Prix** : **12,99€/mois** (inchangé)
+- **Offre de lancement** : 
+  - 100 premiers établissements : **6 mois gratuits**, puis 12,99€/mois à partir du 7ᵉ mois
+  - Après les 100 premiers : **3 mois gratuits**, puis 12,99€/mois à partir du 4ᵉ mois
+- **Début facturation** : Automatique à la fin de l'essai (aucun prélèvement pendant la période gratuite)
+- **Lien Stripe** : `https://buy.stripe.com/3cI8wOfFj5h68ZKd9vafS03`
+- **URLs de redirection Stripe** : (identiques aux musiciens)
+
+**📱 Action requise app mobile** :
+- Afficher les prix et périodes d'essai clairement sur la page Tarifs
+- Implémenter le flux d'abonnement Stripe pour les musiciens PRO
+- Préciser "Aucun prélèvement pendant l'essai" et "Annulable à tout moment sans frais"
+- Gérer la redirection vers `/payment/success` ou `/payment/cancel`
+
+---
 
 ### 📖 Guide Utilisateur Interactif (NOUVEAU ✨)
 - **Nouveau composant** : `GuideModal.jsx`
@@ -23,11 +74,6 @@
 - Mode compact : Bouton icône avec indicateur d'état (point vert si actif)
 - Modal identique qui s'ouvre au clic
 - Amélioration UX : Plus accessible et cohérent visuellement
-
-### 🎸 Offre Promotionnelle Musiciens
-- **200 premiers musiciens** : 2 mois PRO gratuits
-- Compteur temps réel avec endpoint dédié
-- Badge "🎁 OFFRE LIMITÉE" cyan/bleu distinctif
 
 ### 🎭 Masquage Bannière Promotionnelle
 - La bannière d'offre de lancement ne s'affiche plus pour les utilisateurs ayant déjà un statut PRO
@@ -464,8 +510,16 @@ Frontend:
 - /app/frontend/src/components/LocationWidget.jsx (MODIFIÉ - mode compact)
 - /app/frontend/src/pages/MusicianDashboard.jsx (MODIFIÉ - boutons Guide + Localisation)
 - /app/frontend/src/pages/VenueDashboard.jsx (MODIFIÉ - bouton Guide)
-- /app/frontend/src/pages/Landing.jsx (MODIFIÉ - masquage bannière PRO)
+- /app/frontend/src/pages/Landing.jsx (MODIFIÉ - prix PRO, clarifications)
+- /app/frontend/src/pages/Pricing.jsx (MODIFIÉ - prix PRO, liens Stripe, clarifications)
+- /app/frontend/src/pages/PaymentCancel.jsx (MODIFIÉ - liens Stripe musicien + établissement)
 ```
+
+### Liens Stripe (Configuration paiements)
+- **Musicien PRO** : `https://buy.stripe.com/5kQfZgfFjfVK0te4CZafS04`
+- **Établissement** : `https://buy.stripe.com/3cI8wOfFj5h68ZKd9vafS03`
+- **Success URL** : `https://jamconnexion.preview.emergentagent.com/payment/success`
+- **Cancel URL** : `https://jamconnexion.preview.emergentagent.com/payment/cancel`
 
 ### Stats & Promo
 ```
@@ -635,6 +689,9 @@ Emails :
 ## 📝 Changelog
 
 **17 avril 2026** :
+- 💰 **TARIFICATION MUSICIEN PRO** : Abonnement à 6,99€/mois avec 2 mois gratuits
+- 💰 **CLARIFICATION ÉTABLISSEMENTS** : Précisions sur début facturation (7ᵉ ou 4ᵉ mois)
+- 💳 **STRIPE** : Liens de paiement configurés pour musiciens et établissements
 - ✨ **Guide utilisateur interactif** adapté à chaque profil (Musiciens, Établissements, Mélomanes)
 - ✨ **Déplacement bouton Localisation** dans le header (mode compact)
 - ✨ Masquage bannière promotionnelle pour utilisateurs PRO

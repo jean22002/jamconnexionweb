@@ -295,7 +295,7 @@ export default function Landing() {
               </Button>
             </Link>
             <p className="text-muted-foreground text-sm mt-4">
-              🎁 2 mois PRO gratuits • Puis 6,99€/mois
+              🎁 2 mois PRO gratuits • Abonnement à 6,99€/mois après l'essai
             </p>
           </div>
         </div>
@@ -322,8 +322,11 @@ export default function Landing() {
                 <p className="text-cyan-400 font-bold text-lg mb-1">
                   🎁 2 mois gratuits pour les 200 premiers !
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  Puis 6,99€/mois • Annulable à tout moment
+                <p className="text-sm text-cyan-300 font-medium">
+                  L'abonnement débute à la fin de l'essai
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Puis 6,99€/mois • Annulable à tout moment sans frais
                 </p>
               </div>
               <p className="text-muted-foreground text-lg">

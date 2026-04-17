@@ -101,7 +101,10 @@ export default function Pricing() {
                 pour les 200 premiers musiciens !
               </p>
               <p className="text-xs text-center text-cyan-300 mt-2 font-medium">
-                Puis 6,99€/mois • Annulable à tout moment
+                L'abonnement débute à la fin de l'essai • 6,99€/mois
+              </p>
+              <p className="text-xs text-center text-muted-foreground mt-1">
+                Annulable à tout moment sans frais
               </p>
             </div>
             
@@ -151,7 +154,7 @@ export default function Pricing() {
               )}
             </Button>
             <p className="text-xs text-center text-muted-foreground mt-3">
-              Accès gratuit de base • PRO à 6,99€/mois après l'essai
+              Aucun prélèvement pendant l'essai • Abonnement 6,99€/mois après 2 mois
             </p>
           </div>
 
@@ -226,8 +229,14 @@ export default function Pricing() {
               <p className="text-xs text-center text-muted-foreground">
                 pour les 100 premiers établissements !
               </p>
+              <p className="text-xs text-center text-orange-300 mt-2 font-medium">
+                L'abonnement débute à la fin de l'essai • 12,99€/mois
+              </p>
               <p className="text-secondary font-medium text-center text-sm mt-2">
                 puis 3 mois gratuits ensuite
+              </p>
+              <p className="text-xs text-center text-muted-foreground mt-1">
+                Annulable à tout moment sans frais
               </p>
             </div>
             

@@ -504,7 +504,7 @@ export default function Landing() {
             {[
               {
                 question: "L'inscription est-elle payante ?",
-                answer: "Les musiciens bénéficient d'une offre d'essai PRO : 🎁 Les 200 premiers musiciens inscrits obtiennent 2 mois PRO gratuits, puis 6,99€/mois. Un accès gratuit de base reste toujours disponible. Pour les établissements : 🎁 Les 100 premiers bénéficient de 6 mois gratuits, puis 12,99€/mois. Après les 100 premiers, l'offre passe à 3 mois gratuits puis 12,99€/mois."
+                answer: "🎸 Musiciens : Les 200 premiers obtiennent 2 mois PRO gratuits, puis 6,99€/mois (annulable à tout moment). Un accès gratuit de base reste toujours disponible. 🎤 Établissements : • Les 100 premiers : 6 mois gratuits, puis 12,99€/mois à partir du 7ᵉ mois. • Après les 100 premiers : 3 mois gratuits, puis 12,99€/mois à partir du 4ᵉ mois. Tous les abonnements sont annulables sans frais."
               },
               {
                 question: "Comment fonctionne la mise en relation ?",

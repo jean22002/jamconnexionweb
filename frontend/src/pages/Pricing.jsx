@@ -226,18 +226,19 @@ export default function Pricing() {
               <p className="text-orange-400 font-bold text-center text-lg mb-1">
                 🎁 6 mois gratuits
               </p>
-              <p className="text-xs text-center text-muted-foreground">
+              <p className="text-xs text-center text-muted-foreground mb-2">
                 pour les 100 premiers établissements !
               </p>
-              <p className="text-xs text-center text-orange-300 mt-2 font-medium">
-                L'abonnement débute à la fin de l'essai • 12,99€/mois
+              <p className="text-xs text-center text-orange-300 font-medium">
+                Puis 12,99€/mois à partir du 7ᵉ mois
               </p>
-              <p className="text-secondary font-medium text-center text-sm mt-2">
-                puis 3 mois gratuits ensuite
-              </p>
-              <p className="text-xs text-center text-muted-foreground mt-1">
+              <p className="text-xs text-center text-muted-foreground mt-2">
                 Annulable à tout moment sans frais
               </p>
+            </div>
+            
+            <div className="text-xs text-center text-muted-foreground mb-4 px-2">
+              <span className="opacity-70">Après les 100 premiers : 3 mois gratuits puis 12,99€/mois</span>
             </div>
             
             {/* Compteur temps réel */}

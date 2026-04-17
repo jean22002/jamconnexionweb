@@ -7,10 +7,31 @@
 
 ## 🆕 Nouveautés du 17 avril 2026
 
+### 📖 Guide Utilisateur Interactif (NOUVEAU ✨)
+- **Nouveau composant** : `GuideModal.jsx`
+- Guide adapté à chaque profil utilisateur :
+  - 🎸 **Musiciens** : 6 étapes (Bienvenue, Carte, Localisation, Groupes, Badges, Notifications)
+  - 🎤 **Établissements** : 5 étapes (Bienvenue, Visibilité, Événements, Candidatures, Notifications)
+  - 🎵 **Mélomanes** : 5 étapes (Bienvenue, Carte, Suivre, Participer, Notifications)
+- **Bouton dédié** (icône `?`) dans le header à côté des trophées
+- Navigation par étapes avec indicateurs de progression
+- Explications détaillées avec icônes et exemples pratiques
+
+### 📍 Bouton Localisation déplacé dans Header (NOUVEAU ✨)
+- **Ancienne position** : Floating widget en bas à droite
+- **Nouvelle position** : Header à côté des trophées (desktop + mobile)
+- Mode compact : Bouton icône avec indicateur d'état (point vert si actif)
+- Modal identique qui s'ouvre au clic
+- Amélioration UX : Plus accessible et cohérent visuellement
+
 ### 🎸 Offre Promotionnelle Musiciens
 - **200 premiers musiciens** : 2 mois PRO gratuits
 - Compteur temps réel avec endpoint dédié
 - Badge "🎁 OFFRE LIMITÉE" cyan/bleu distinctif
+
+### 🎭 Masquage Bannière Promotionnelle
+- La bannière d'offre de lancement ne s'affiche plus pour les utilisateurs ayant déjà un statut PRO
+- Logique : Musiciens `tier === "pro"` et Établissements `subscription_status === "active"`
 
 ### 🔔 Section Notifications sur page Tarifs
 - Liste complète des notifications par rôle (Musiciens, Établissements, Mélomanes)
@@ -277,6 +298,114 @@ Jean Martin 🎸 Solo 💎 PRO
 
 ---
 
+## 7️⃣ Guide Utilisateur Interactif ✨ NOUVEAU
+
+### Fonctionnalité
+Guide interactif step-by-step adapté au rôle de l'utilisateur pour onboarder et expliquer les fonctionnalités principales de l'application.
+
+### Composants Web
+- **Fichier** : `/app/frontend/src/components/GuideModal.jsx`
+- **Intégration** : `MusicianDashboard.jsx`, `VenueDashboard.jsx`
+
+### Bouton d'accès
+- **Position** : Header, à côté des trophées (icône `?`)
+- **Desktop** : Visible dans la barre de navigation
+- **Mobile** : Dans le menu hamburger
+
+### Contenu du Guide
+
+#### 🎸 Pour les Musiciens (6 étapes)
+1. **Bienvenue** : Présentation de la plateforme
+2. **Carte Interactive** : Filtres, recherche géographique
+3. **Mode En Déplacement** : Explication complète de la fonction Localisation
+4. **Groupes Musicaux** : Création, invitation, codes
+5. **Badges & Trophées** : Gamification
+6. **Notifications** : Types de notifications reçues
+
+#### 🎤 Pour les Établissements (5 étapes)
+1. **Bienvenue** : Offre de lancement
+2. **Visibilité** : Carte, recherche, filtres
+3. **Créer des Événements** : Types, rémunération
+4. **Candidatures** : Accepter/refuser, messagerie
+5. **Notifications** : Types de notifications reçues
+
+#### 🎵 Pour les Mélomanes (5 étapes)
+1. **Bienvenue** : Découverte gratuite
+2. **Carte des Événements** : Filtres, calendrier
+3. **Suivre des Établissements** : Notifications, favoris
+4. **Participer aux Événements** : Rappels J-3 et Jour J
+5. **Notifications** : Types de notifications reçues
+
+### Structure technique
+```javascript
+// Appel du modal
+<GuideModal 
+  isOpen={showGuideModal} 
+  onClose={() => setShowGuideModal(false)} 
+  userRole="musician" // ou "venue" ou "melomane"
+/>
+```
+
+### Navigation
+- Boutons "Précédent" / "Suivant"
+- Indicateurs de progression (dots)
+- Compteur "X / Y"
+- Bouton "Terminer" sur la dernière étape
+
+**Action requise pour l'app mobile** :
+- Créer un composant Guide similaire adapté au mobile
+- 3 versions de contenu selon le rôle (musician/venue/melomane)
+- Bouton d'accès dans le header ou menu principal
+- Possibilité de relancer le guide depuis les paramètres
+
+---
+
+## 8️⃣ Bouton Localisation dans Header ✨ NOUVEAU
+
+### Modification UX
+Le bouton "Localisation" (mode en déplacement) a été **déplacé** pour améliorer l'accessibilité.
+
+### Ancienne version
+- **Position** : Floating widget en bas à droite de l'écran
+- **Style** : Bouton flottant avec texte "Localisation" / "En déplacement"
+
+### Nouvelle version
+- **Position** : Header, à côté du bouton Guide et des Trophées
+- **Mode** : Compact (icône uniquement)
+- **Indicateur** : Point vert si localisation active
+- **Modal** : Identique à l'ancienne version (s'ouvre au clic)
+
+### Composant Web
+- **Fichier** : `/app/frontend/src/components/LocationWidget.jsx`
+- **Prop** : `compact={true}` pour le mode header
+
+```javascript
+// Mode header (nouveau)
+<LocationWidget token={token} compact={true} />
+
+// Mode floating (ancien, désactivé)
+<LocationWidget token={token} />
+```
+
+### États visuels
+- **Inactif** : Icône `MapPin` grise
+- **Actif** : Icône `MapPin` avec gradient primary + point vert pulsant
+- **Modal ouvert** : Overlay fond noir avec blur
+
+### Fonctionnalité (inchangée)
+- Activer/désactiver la localisation temporaire (24h)
+- Deux méthodes : GPS automatique ou saisie manuelle
+- Affichage du temps restant
+- Ville d'origine vs ville temporaire
+
+**Action requise pour l'app mobile** :
+- Déplacer le bouton Localisation dans le header
+- Mode compact : Icône uniquement avec badge si actif
+- Garder la même fonctionnalité (modal/bottom sheet identique)
+- S'assurer de la cohérence avec le bouton Guide
+
+---
+
 ## 6️⃣ Intégration Facebook Events (EN COURS)
 
 ### Statut
@@ -327,6 +456,16 @@ GET  /api/events/{page_id}             - Événements d'une page
 ---
 
 ## 📊 Résumé des nouveaux endpoints
+
+### Fichiers Web modifiés (17 avril 2026)
+```
+Frontend:
+- /app/frontend/src/components/GuideModal.jsx (CRÉÉ)
+- /app/frontend/src/components/LocationWidget.jsx (MODIFIÉ - mode compact)
+- /app/frontend/src/pages/MusicianDashboard.jsx (MODIFIÉ - boutons Guide + Localisation)
+- /app/frontend/src/pages/VenueDashboard.jsx (MODIFIÉ - bouton Guide)
+- /app/frontend/src/pages/Landing.jsx (MODIFIÉ - masquage bannière PRO)
+```
 
 ### Stats & Promo
 ```
@@ -464,7 +603,22 @@ Emails :
 - [ ] Liste exhaustive par rôle (Musiciens, Établissements, Mélomanes)
 - [ ] Distinction notifications PRO (cyan)
 
-### Phase 7 : Facebook Events (Future)
+### Phase 7 : Guide Utilisateur ✨ NOUVEAU
+- [ ] Créer composant Guide interactif
+- [ ] Version Musiciens (6 étapes)
+- [ ] Version Établissements (5 étapes)
+- [ ] Version Mélomanes (5 étapes)
+- [ ] Bouton d'accès dans header (icône `?`)
+- [ ] Navigation avec indicateurs de progression
+- [ ] Possibilité de relancer depuis paramètres
+
+### Phase 8 : Bouton Localisation Header ✨ NOUVEAU
+- [ ] Déplacer bouton Localisation dans header
+- [ ] Mode compact (icône uniquement)
+- [ ] Indicateur d'état (point vert si actif)
+- [ ] Modal/bottom sheet au clic (fonctionnalité inchangée)
+
+### Phase 9 : Facebook Events (Future)
 - [ ] Prévoir UI "Connecter Facebook"
 - [ ] Badge "Synchronisé avec Facebook"
 - [ ] À implémenter quand backend finalisé
@@ -481,6 +635,9 @@ Emails :
 ## 📝 Changelog
 
 **17 avril 2026** :
+- ✨ **Guide utilisateur interactif** adapté à chaque profil (Musiciens, Établissements, Mélomanes)
+- ✨ **Déplacement bouton Localisation** dans le header (mode compact)
+- ✨ Masquage bannière promotionnelle pour utilisateurs PRO
 - ✨ Ajout offre promotionnelle musiciens (2 mois PRO / 200 premiers)
 - ✨ Section notifications complète sur page Tarifs
 - 🔧 Correction système rappels : 12h30 → 13h, 1x/jour uniquement

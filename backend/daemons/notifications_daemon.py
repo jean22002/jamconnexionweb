@@ -23,19 +23,25 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # MongoDB
-MONGO_URL = os.environ.get('MONGO_URL')
+MONGO_URL = os.environ.get('MONGO_URL_PRODUCTION') or os.environ.get('MONGO_URL')
 DB_NAME = os.environ.get('DB_NAME', 'jamconnexion')
 
 if not MONGO_URL:
-    logger.error("MONGO_URL not set")
-    sys.exit(1)
+    logger.error("MONGO_URL not set, loading from .env...")
+    from dotenv import load_dotenv
+    load_dotenv('/app/backend/.env')
+    MONGO_URL = os.environ.get('MONGO_URL_PRODUCTION') or os.environ.get('MONGO_URL')
+    if not MONGO_URL:
+        logger.error("Still no MONGO_URL, exiting")
+        sys.exit(1)
+    logger.info("✓ MONGO_URL loaded")
 
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
 
 
 async def create_notification(user_id: str, notification_type: str, title: str, message: str, related_id: str = None):
-    """Créer une notification dans la base de données et envoyer push si possible"""
+    """Créer une notification dans la base de données et envoyer via WebSocket"""
     notification = {
         "id": str(uuid4()),
         "user_id": user_id,
@@ -49,30 +55,26 @@ async def create_notification(user_id: str, notification_type: str, title: str, 
     
     try:
         await db.notifications.insert_one(notification)
-        logger.info(f"✓ Notification created for user {user_id}: {title}")
+        logger.info(f"✓ Notification DB created for user {user_id}: {title}")
         
-        # 🔔 Envoyer notification push en temps réel
+        # 🔔 Envoyer notification WebSocket en temps réel
         try:
-            # Import dynamique pour éviter les dépendances circulaires
             import sys
             sys.path.insert(0, '/app/backend')
-            from routes.push_notifications import send_push_notification
+            from websocket import emit_to_user
             
-            await send_push_notification(
-                user_id=user_id,
-                notification_data={
-                    "title": title,
-                    "message": message,
-                    "link": "/",  # Lien par défaut
-                    "data": {
-                        "type": notification_type,
-                        "related_id": related_id
-                    }
+            await emit_to_user(user_id, 'notification', {
+                'notification_type': notification_type,
+                'data': {
+                    'title': title,
+                    'message': message,
+                    'related_id': related_id,
+                    'action_url': '/'
                 }
-            )
-            logger.info(f"✓ Push notification sent to user {user_id}")
-        except Exception as push_error:
-            logger.debug(f"Push notification skipped (user may not have subscription): {push_error}")
+            })
+            logger.info(f"⚡ WebSocket notification sent to user {user_id}")
+        except Exception as ws_error:
+            logger.debug(f"WebSocket notification skipped (user may not be connected): {ws_error}")
         
         return True
     except Exception as e:
@@ -365,9 +367,27 @@ async def suggest_friends():
 
 
 async def run_notification_cycle():
-    """Exécuter un cycle complet de notifications"""
+    """Exécuter un cycle complet de notifications (uniquement à 13h)"""
+    import pytz
+    
+    # Vérifier l'heure actuelle (Paris)
+    now = datetime.now(timezone.utc)
+    paris_tz = pytz.timezone('Europe/Paris')
+    now_paris = now.astimezone(paris_tz)
+    
+    current_hour = now_paris.hour
+    current_minute = now_paris.minute
+    
+    # Exécuter UNIQUEMENT entre 12h55 et 13h05 (heure de Paris)
+    is_in_window = (current_hour == 12 and current_minute >= 55) or \
+                   (current_hour == 13 and current_minute <= 5)
+    
+    if not is_in_window:
+        logger.info(f"⏰ Hors fenêtre 13h (actuel: {current_hour}h{current_minute:02d} Paris), skip notifications")
+        return
+    
     logger.info("="*60)
-    logger.info("🚀 Starting notification cycle")
+    logger.info(f"🚀 Starting notification cycle at {current_hour}h{current_minute:02d} (Paris)")
     logger.info("="*60)
     
     try:

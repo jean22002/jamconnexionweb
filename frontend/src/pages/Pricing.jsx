@@ -75,8 +75,11 @@ export default function Pricing() {
                 <Guitar className="w-7 h-7 text-secondary" />
               </div>
               <div>
-                <h2 className="font-heading font-bold text-2xl">Musicien</h2>
-                <p className="text-secondary font-semibold">Gratuit</p>
+                <h2 className="font-heading font-bold text-2xl">Musicien PRO</h2>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-secondary font-bold text-xl">6,99€</span>
+                  <span className="text-muted-foreground text-sm">/mois</span>
+                </div>
               </div>
             </div>
             
@@ -86,6 +89,9 @@ export default function Pricing() {
               </p>
               <p className="text-xs text-center text-muted-foreground">
                 pour les 200 premiers musiciens !
+              </p>
+              <p className="text-xs text-center text-cyan-300 mt-2 font-medium">
+                Puis 6,99€/mois • Annulable à tout moment
               </p>
             </div>
             
@@ -121,10 +127,13 @@ export default function Pricing() {
                 className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground rounded-full py-6 font-heading font-semibold transition-all"
                 data-testid="musician-signup-btn"
               >
-                Créer mon compte gratuit
+                Essayer 2 mois gratuitement
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
+            <p className="text-xs text-center text-muted-foreground mt-3">
+              Accès gratuit de base • PRO à 6,99€/mois après l'essai
+            </p>
           </div>
 
           {/* Melomane Plan */}

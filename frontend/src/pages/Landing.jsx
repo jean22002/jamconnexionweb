@@ -295,7 +295,7 @@ export default function Landing() {
               </Button>
             </Link>
             <p className="text-muted-foreground text-sm mt-4">
-              Gratuit pour les musiciens
+              🎁 2 mois PRO gratuits • Puis 6,99€/mois
             </p>
           </div>
         </div>
@@ -316,19 +316,29 @@ export default function Landing() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <h2 className="font-heading font-semibold text-3xl md:text-5xl tracking-tight">
-                Gratuit pour les <span className="text-gradient">musiciens</span>
+                <span className="text-gradient">Musicien PRO</span> à 6,99€/mois
               </h2>
+              <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl px-6 py-4 border border-cyan-500/30">
+                <p className="text-cyan-400 font-bold text-lg mb-1">
+                  🎁 2 mois gratuits pour les 200 premiers !
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Puis 6,99€/mois • Annulable à tout moment
+                </p>
+              </div>
               <p className="text-muted-foreground text-lg">
-                Les musiciens ont un accès gratuit et illimité à la plateforme. 
-                Trouvez des spots, consultez les profils et connectez-vous avec les établissements.
+                Accédez aux fonctionnalités PRO : filtres avancés, badges exclusifs, 
+                visibilité prioritaire auprès des établissements.
               </p>
               
               <ul className="space-y-4">
                 {[
                   "Accès à tous les établissements",
                   "Géolocalisation en temps réel",
-                  "Création de profil musicien",
-                  "Contact direct avec les venues"
+                  "Filtres GUSO et avancés",
+                  "Badge PRO sur votre profil",
+                  "Contact direct avec les venues",
+                  "Notifications prioritaires"
                 ].map((item, index) => (
                   <li key={`musician-feature-${index}`} className="flex items-center gap-3">
                     <div className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center">
@@ -491,7 +501,7 @@ export default function Landing() {
             {[
               {
                 question: "L'inscription est-elle payante ?",
-                answer: "L'inscription est gratuite pour les musiciens. Pour les établissements : 🎁 Les 100 premiers bénéficient de 6 mois gratuits, puis 12,99 € TTC/mois. Après les 100 premiers, l'offre passe à 3 mois gratuits puis 12,99 € TTC/mois."
+                answer: "Les musiciens bénéficient d'une offre d'essai PRO : 🎁 Les 200 premiers musiciens inscrits obtiennent 2 mois PRO gratuits, puis 6,99€/mois. Un accès gratuit de base reste toujours disponible. Pour les établissements : 🎁 Les 100 premiers bénéficient de 6 mois gratuits, puis 12,99€/mois. Après les 100 premiers, l'offre passe à 3 mois gratuits puis 12,99€/mois."
               },
               {
                 question: "Comment fonctionne la mise en relation ?",

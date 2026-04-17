@@ -88,18 +88,20 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* 🎁 Bannière Offre Promotionnelle */}
-      <div className="fixed top-16 left-0 right-0 z-40 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white py-3 px-4 shadow-lg">
-        <div className="max-w-7xl mx-auto text-center">
-          <p className="font-semibold text-sm sm:text-base flex items-center justify-center gap-2 flex-wrap">
-            <span>🎁 <span className="font-bold">OFFRE DE LANCEMENT</span> • Les 100 premiers établissements : <span className="underline">6 mois gratuits</span> •</span>
-            <PromoCounter variant="banner" />
-          </p>
+      {/* 🎁 Bannière Offre Promotionnelle - Cachée si utilisateur PRO */}
+      {!isPro && (
+        <div className="fixed top-16 left-0 right-0 z-40 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white py-3 px-4 shadow-lg">
+          <div className="max-w-7xl mx-auto text-center">
+            <p className="font-semibold text-sm sm:text-base flex items-center justify-center gap-2 flex-wrap">
+              <span>🎁 <span className="font-bold">OFFRE DE LANCEMENT</span> • Les 100 premiers établissements : <span className="underline">6 mois gratuits</span> •</span>
+              <PromoCounter variant="banner" />
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Hero Section */}
-      <section className="relative pt-32 sm:pt-40 pb-16 sm:pb-24 overflow-hidden min-h-[80vh] sm:min-h-screen flex items-center">
+      {/* Hero Section - Ajuster padding-top si bannière masquée */}
+      <section className={`relative ${isPro ? 'pt-20 sm:pt-32' : 'pt-32 sm:pt-40'} pb-16 sm:pb-24 overflow-hidden min-h-[80vh] sm:min-h-screen flex items-center`}>
         <div 
           className="absolute inset-0 z-0"
           style={{

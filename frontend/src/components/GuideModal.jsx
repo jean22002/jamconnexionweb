@@ -5,7 +5,7 @@ import {
   MapPin, Search, Calendar, Users, Bell, Trophy, 
   Award, MessageSquare, Heart, Music, Building2, 
   ChevronRight, ChevronLeft, HelpCircle, Locate,
-  Radio, Filter, Share2, Star, UserPlus, Music2
+  Radio, Filter, Share2, Star, UserPlus, Music2, Plus
 } from 'lucide-react';
 
 const GuideModal = ({ isOpen, onClose, userRole }) => {

@@ -22,6 +22,9 @@ import ProSubscriptionCard from "../components/ProSubscriptionCard";
 import ProSubscriptionManager from "../components/ProSubscriptionManager";
 import AnalyticsTab from "../components/accounting/AnalyticsTab";
 import GuideModal from "../components/GuideModal";
+import PromoBanner from "../components/PromoBanner";
+import NotificationBadge from "../components/NotificationBadge";
+import { useUnreadNotifications } from "../hooks/useUnreadNotifications";
 // NEW: Import refactored utilities
 import { buildImageUrl } from "../utils/urlBuilder";
 // Refactored tabs
@@ -220,6 +223,15 @@ export default function MusicianDashboard() {
   
   // Guide modal state
   const [showGuideModal, setShowGuideModal] = useState(false);
+  
+  // Promo banner state
+  const [showPromoBanner, setShowPromoBanner] = useState(true);
+  
+  // Notifications hook (temps réel avec fallback)
+  const { 
+    unreadCount: hookUnreadCount, 
+    reset: resetHookUnreadCount 
+  } = useUnreadNotifications(token);
   
   // Change password states
   const [passwordForm, setPasswordForm] = useState({
@@ -1405,6 +1417,14 @@ export default function MusicianDashboard() {
 
   return (
     <div className="min-h-screen bg-background" data-testid="musician-dashboard">
+      {/* Bannière Promo */}
+      {showPromoBanner && profile?.tier !== 'pro' && (
+        <PromoBanner 
+          userRole="musician"
+          onClose={() => setShowPromoBanner(false)}
+        />
+      )}
+      
       {/* Dashboard Notifications */}
       <DashboardNotification />
       
@@ -1460,20 +1480,19 @@ export default function MusicianDashboard() {
 
               {/* Notifications */}
               <Dialog onOpenChange={(open) => {
-                if (open && unreadCount > 0) {
+                if (open && (hookUnreadCount || unreadCount) > 0) {
                   // Marquer toutes les notifications comme lues quand on ouvre le panneau
                   markAllRead();
+                  resetHookUnreadCount(); // Reset le compteur du hook
                 }
               }}>
                 <DialogTrigger asChild>
-                  <Button variant="ghost" className="relative" data-testid="notifications-btn">
-                    <Bell className="w-5 h-5" />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive rounded-full text-xs flex items-center justify-center">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </Button>
+                  <div>
+                    <NotificationBadge 
+                      count={hookUnreadCount || unreadCount}
+                      onClick={() => {}}
+                    />
+                  </div>
                 </DialogTrigger>
                 <DialogContent className="glassmorphism border-white/10 max-w-md max-h-[80vh] overflow-y-auto">
                   <DialogHeader>

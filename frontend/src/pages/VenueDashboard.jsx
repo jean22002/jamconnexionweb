@@ -45,6 +45,9 @@ import SocialLinks from "../components/SocialLinks";
 import { StarRating } from "../components/StarRating";
 import { toast } from "sonner";
 import GuideModal from "../components/GuideModal";
+import PromoBanner from "../components/PromoBanner";
+import NotificationBadge from "../components/NotificationBadge";
+import { useUnreadNotifications } from "../hooks/useUnreadNotifications";
 import { DEPARTEMENTS_FRANCE, REGIONS_FRANCE } from "../data/france-locations";
 import { MUSIC_STYLES_LIST } from "../data/music-styles";
 import { useNotifications } from "../hooks/useNotifications";
@@ -276,6 +279,13 @@ export default function VenueDashboard() {
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [showNotificationsDialog, setShowNotificationsDialog] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
+  const [showPromoBanner, setShowPromoBanner] = useState(true);
+  
+  // Notifications hook (temps réel)
+  const { 
+    unreadCount: hookUnreadCount, 
+    reset: resetUnreadCount 
+  } = useUnreadNotifications(token);
   
   // Event details modal states
   const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
@@ -2485,6 +2495,14 @@ export default function VenueDashboard() {
 
   return (
     <div className="min-h-screen bg-background" data-testid="venue-dashboard">
+      {/* Bannière Promo */}
+      {showPromoBanner && profile?.subscription_status !== 'active' && (
+        <PromoBanner 
+          userRole="venue"
+          onClose={() => setShowPromoBanner(false)}
+        />
+      )}
+      
       {/* Dashboard Notifications */}
       <DashboardNotification />
       
@@ -2585,14 +2603,12 @@ export default function VenueDashboard() {
                 }
               }}>
                 <DialogTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10 relative">
-                    <Bell className="w-4 h-4" />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                      </span>
-                    )}
-                  </Button>
+                  <div>
+                    <NotificationBadge 
+                      count={hookUnreadCount || unreadCount}
+                      onClick={() => {}}
+                    />
+                  </div>
                 </DialogTrigger>
                 <DialogContent className="glassmorphism border-white/10 max-w-lg max-h-[80vh] overflow-y-auto">
                   <DialogHeader>

@@ -1565,8 +1565,10 @@ export default function VenueDashboard() {
   // Fonction pour ouvrir les candidatures d'un créneau depuis l'onglet Candidatures
   const handleSlotCardClick = (slot) => {
     console.log('👥 Affichage des candidatures pour le créneau:', slot);
+    setSelectedSlot(slot);
     setViewingApplications(slot.id);
     fetchApplications(slot.id);
+    setShowApplicationsModal(true);
   };
 
   const handleDateClick = async (eventOrDate) => {

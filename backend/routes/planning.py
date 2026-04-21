@@ -800,6 +800,27 @@ async def cancel_my_application(app_id: str, request: Request, current_user: dic
     # Delete the application
     await db.applications.delete_one({"id": app_id})
     
+    # Notify venue about cancellation
+    slot = await db.planning_slots.find_one({"id": app["planning_slot_id"]}, {"_id": 0})
+    if slot:
+        venue = await db.venues.find_one({"id": slot["venue_id"]}, {"_id": 0})
+        if venue and venue.get("user_id"):
+            # Check notification preferences
+            from utils.notification_preferences import should_send_notification
+            should_notify = await should_send_notification(venue["user_id"], "application_cancellation", "venue")
+            
+            if should_notify:
+                await create_notification(
+                    venue["user_id"],
+                    "application_cancelled",
+                    "Candidature annulée",
+                    f"{app.get('musician_name', 'Un musicien')} a annulé sa candidature pour le créneau du {slot.get('date', 'TBD')}",
+                    None
+                )
+                logger.info(f"✓ Cancellation notification sent to venue {venue['user_id']}")
+            else:
+                logger.info(f"Notification skipped for venue {venue['user_id']} (application_cancellation disabled)")
+    
     return {"message": "Candidature annulée avec succès"}
 
 

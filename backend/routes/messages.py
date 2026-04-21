@@ -99,20 +99,28 @@ async def send_message(request: Request, data: MessageCreate, current_user: dict
         "read": False,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
-    await db.notifications.insert_one(notification_doc)
     
-    # Send push notification
-    try:
-        from routes.push_notifications import send_push_notification
-        await send_push_notification(
-            user_id=data.recipient_id,
-            notification_data={
-                "title": f"💬 {current_user['name']}",
-                "message": data.subject[:100] if data.subject else "Nouveau message",
-                "link": "/messages-improved",
-                "type": "message",
-                "id": message_doc["id"],
-                "icon": sender_image
+    # Check notification preferences if recipient is a venue
+    from utils.notification_preferences import should_send_notification
+    should_notify = True
+    if recipient.get("role") == "venue":
+        should_notify = await should_send_notification(data.recipient_id, "new_messages", "venue")
+    
+    if should_notify:
+        await db.notifications.insert_one(notification_doc)
+        
+        # Send push notification
+        try:
+            from routes.push_notifications import send_push_notification
+            await send_push_notification(
+                user_id=data.recipient_id,
+                notification_data={
+                    "title": f"💬 {current_user['name']}",
+                    "message": data.subject[:100] if data.subject else "Nouveau message",
+                    "link": "/messages-improved",
+                    "type": "message",
+                    "id": message_doc["id"],
+                    "icon": sender_image
             }
         )
     except Exception as e:

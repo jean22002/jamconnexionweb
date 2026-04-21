@@ -303,6 +303,12 @@ async def emit_to_user(user_id: str, event: str, data: dict):
 
 async def notify_new_application(venue_user_id: str, musician_name: str, event_name: str, application_id: str):
     """Notifie un établissement d'une nouvelle candidature"""
+    # Check notification preferences
+    from utils.notification_preferences import should_send_notification
+    if not await should_send_notification(venue_user_id, "new_applications", "venue"):
+        logger.info(f"Notification skipped for venue {venue_user_id} (new_applications disabled)")
+        return
+    
     await emit_to_user(venue_user_id, 'notification', {
         'notification_type': 'new_application',
         'data': {
@@ -329,6 +335,12 @@ async def notify_application_status(musician_user_id: str, status: str, event_na
 
 async def notify_new_subscriber(venue_user_id: str, subscriber_name: str, subscriber_role: str):
     """Notifie un établissement d'un nouvel abonné"""
+    # Check notification preferences
+    from utils.notification_preferences import should_send_notification
+    if not await should_send_notification(venue_user_id, "new_followers", "venue"):
+        logger.info(f"Notification skipped for venue {venue_user_id} (new_followers disabled)")
+        return
+    
     await emit_to_user(venue_user_id, 'notification', {
         'notification_type': 'new_subscriber',
         'data': {

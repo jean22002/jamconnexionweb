@@ -954,39 +954,46 @@ async def join_event(event_id: str, event_type: str, request: Request, current_u
             notification_title = f"🎵 Nouvelle participation : {participant_name}"
             notification_message = f"{participant_name} ({participant_type}) a rejoint votre {event_type_label.get(event_type, 'événement')} du {event.get('date', 'TBD')}"
             
-            notification = {
-                "id": str(uuid.uuid4()),
-                "user_id": venue["user_id"],
-                "type": "new_participation",
-                "title": notification_title,
-                "message": notification_message,
-                "related_id": event_id,
-                "read": False,
-                "created_at": datetime.now(timezone.utc).isoformat()
-            }
+            # Check notification preferences
+            from utils.notification_preferences import should_send_notification
+            should_notify = await should_send_notification(venue["user_id"], "new_participants", "venue")
             
-            await db.notifications.insert_one(notification)
-            logger.info(f"✓ Notification sent to venue {venue['user_id']} for participation in event {event_id}")
-            
-            # 🔔 NOUVEAU : Envoyer notification push en temps réel
-            try:
-                from routes.push_notifications import send_push_notification
-                await send_push_notification(
-                    user_id=venue["user_id"],
-                    notification_data={
-                        "title": notification_title,
-                        "message": notification_message,
-                        "link": "/venue-dashboard?tab=planning",
-                        "data": {
-                            "type": "new_participation",
-                            "event_id": event_id,
-                            "event_type": event_type
+            if should_notify:
+                notification = {
+                    "id": str(uuid.uuid4()),
+                    "user_id": venue["user_id"],
+                    "type": "new_participation",
+                    "title": notification_title,
+                    "message": notification_message,
+                    "related_id": event_id,
+                    "read": False,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                
+                await db.notifications.insert_one(notification)
+                logger.info(f"✓ Notification sent to venue {venue['user_id']} for participation in event {event_id}")
+                
+                # 🔔 NOUVEAU : Envoyer notification push en temps réel
+                try:
+                    from routes.push_notifications import send_push_notification
+                    await send_push_notification(
+                        user_id=venue["user_id"],
+                        notification_data={
+                            "title": notification_title,
+                            "message": notification_message,
+                            "link": "/venue-dashboard?tab=planning",
+                            "data": {
+                                "type": "new_participation",
+                                "event_id": event_id,
+                                "event_type": event_type
+                            }
                         }
-                    }
-                )
-                logger.info(f"✓ Push notification sent to venue {venue['user_id']}")
-            except Exception as push_error:
-                logger.warning(f"Push notification failed (non-blocking): {push_error}")
+                    )
+                    logger.info(f"✓ Push notification sent to venue {venue['user_id']}")
+                except Exception as push_error:
+                    logger.warning(f"Push notification failed (non-blocking): {push_error}")
+            else:
+                logger.info(f"Notification skipped for venue {venue['user_id']} (new_participants disabled)")
             
     except Exception as e:
         logger.error(f"Failed to create venue notification: {e}")

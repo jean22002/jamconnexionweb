@@ -2346,13 +2346,8 @@ export default function VenueDashboard() {
 
   // View applications
   const viewApplications = async (slotId) => {
-    try {
-      const response = await axios.get(`${API}/planning/${slotId}/applications`, { headers: { Authorization: `Bearer ${token}` } });
-      setApplications({ ...applications, [slotId]: response.data });
-      setViewingApplications(slotId);
-    } catch (error) {
-      toast.error("Erreur");
-    }
+    await fetchApplications(slotId);
+    setViewingApplications(slotId);
   };
 
   const handleApplication = async (appId, action) => {

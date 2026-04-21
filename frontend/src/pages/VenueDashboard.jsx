@@ -218,6 +218,8 @@ export default function VenueDashboard() {
   const setPlanningSlots = setPlanningSlotsFromHook;
   const applications = applicationsFromHook;
   const setApplications = setApplicationsFromHook;
+  const fetchApplications = fetchApplicationsFromHook;
+  const fetchPlanningSlots = fetchPlanningSlotsFromHook;
   
   const [musicians, setMusicians] = useState([]);
   
@@ -1910,16 +1912,6 @@ export default function VenueDashboard() {
   };
 
   // Fetch planning slots
-  const fetchPlanningSlots = async () => {
-    if (!profile) return;
-    try {
-      const response = await axios.get(`${API}/venues/${profile.id}/planning`);
-      setPlanningSlots(response.data);
-    } catch (error) {
-      console.error("Error fetching planning slots:", error);
-    }
-  };
-
   // ⚠️ VALIDATION: Vérifier qu'il n'y a pas déjà un événement à cette date
   const checkEventConflict = (date) => {
     const existingJam = jams.find(j => j.date === date);
@@ -1936,22 +1928,6 @@ export default function VenueDashboard() {
   };
 
   // Fetch applications for a specific slot
-  const fetchApplications = async (slotId) => {
-    try {
-      const response = await axios.get(`${API}/planning/${slotId}/applications`, { 
-        headers: { Authorization: `Bearer ${token}` } 
-      });
-      // Transform image URLs before setting state
-      const applicationsWithUrls = (response.data || []).map(app => ({
-        ...app,
-        band_photo: app.band_photo ? buildImageUrl(app.band_photo) : null
-      }));
-      setApplications({ ...applications, [slotId]: applicationsWithUrls });
-    } catch (error) {
-      console.error("Error fetching applications:", error);
-    }
-  };
-
   // Cleanup old applications (past dates)
   const cleanupOldApplications = async () => {
     if (!window.confirm("Êtes-vous sûr de vouloir supprimer toutes les candidatures pour les créneaux passés ? Cette action est irréversible.")) {

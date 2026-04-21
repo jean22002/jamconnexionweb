@@ -147,6 +147,7 @@ export function useVenuePlanning(token) {
     setSelectedDate,
     setCurrentMonth,
     setPlanningSlots,
+    setApplications,
     fetchPlanningSlots,
     fetchApplications,
     createPlanningSlot,

@@ -166,6 +166,7 @@ export default function VenueDashboard() {
     planningSlots: planningSlotsFromHook,
     setPlanningSlots: setPlanningSlotsFromHook,
     applications: applicationsFromHook,
+    setApplications: setApplicationsFromHook,
     fetchPlanningSlots: fetchPlanningSlotsFromHook,
     fetchApplications: fetchApplicationsFromHook,
   } = planningHook;
@@ -216,6 +217,7 @@ export default function VenueDashboard() {
   const planningSlots = planningSlotsFromHook;
   const setPlanningSlots = setPlanningSlotsFromHook;
   const applications = applicationsFromHook;
+  const setApplications = setApplicationsFromHook;
   
   const [musicians, setMusicians] = useState([]);
   

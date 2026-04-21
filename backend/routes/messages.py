@@ -121,11 +121,11 @@ async def send_message(request: Request, data: MessageCreate, current_user: dict
                     "type": "message",
                     "id": message_doc["id"],
                     "icon": sender_image
-            }
-        )
-    except Exception as e:
-        # Don't fail the request if push notification fails
-        print(f"Failed to send push notification: {e}")
+                }
+            )
+        except Exception as e:
+            # Don't fail the request if push notification fails
+            print(f"Failed to send push notification: {e}")
     
     return MessageResponse(**message_doc)
 

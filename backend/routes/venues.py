@@ -1731,3 +1731,96 @@ async def download_venue_invoices_zip(
         }
     )
 
+
+# ============================================================================
+# NOTIFICATION PREFERENCES
+# ============================================================================
+
+@router.get("/venues/me/notification-preferences")
+async def get_notification_preferences(authorization: str = Header(None)):
+    """Get venue's notification preferences"""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Token manquant")
+    
+    token = authorization.replace("Bearer ", "")
+    try:
+        payload = jwt.decode(token, os.environ.get("JWT_SECRET"), algorithms=["HS256"])
+        if payload.get("role") != "venue":
+            raise HTTPException(status_code=403, detail="Accès réservé aux établissements")
+        
+        venue_id = payload.get("user_id")
+        venue = await db.venues.find_one({"id": venue_id}, {"_id": 0})
+        
+        if not venue:
+            raise HTTPException(status_code=404, detail="Établissement non trouvé")
+        
+        # Default preferences if not set
+        default_preferences = {
+            "new_participants": True,
+            "new_applications": True,
+            "application_cancellation": True,
+            "new_messages": True,
+            "new_followers": True
+        }
+        
+        preferences = venue.get("notification_preferences", default_preferences)
+        return {"notification_preferences": preferences}
+        
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expiré")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Token invalide")
+
+
+@router.put("/venues/me/notification-preferences")
+async def update_notification_preferences(
+    preferences: dict,
+    authorization: str = Header(None)
+):
+    """Update venue's notification preferences"""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Token manquant")
+    
+    token = authorization.replace("Bearer ", "")
+    try:
+        payload = jwt.decode(token, os.environ.get("JWT_SECRET"), algorithms=["HS256"])
+        if payload.get("role") != "venue":
+            raise HTTPException(status_code=403, detail="Accès réservé aux établissements")
+        
+        venue_id = payload.get("user_id")
+        
+        # Validate preferences structure
+        valid_keys = [
+            "new_participants",
+            "new_applications", 
+            "application_cancellation",
+            "new_messages",
+            "new_followers"
+        ]
+        
+        notification_preferences = {}
+        for key in valid_keys:
+            if key in preferences:
+                notification_preferences[key] = bool(preferences[key])
+        
+        # Update in database
+        result = await db.venues.update_one(
+            {"id": venue_id},
+            {"$set": {"notification_preferences": notification_preferences}}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Établissement non trouvé")
+        
+        logger.info(f"✅ Notification preferences updated for venue {venue_id}")
+        return {
+            "message": "Préférences de notifications mises à jour",
+            "notification_preferences": notification_preferences
+        }
+        
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expiré")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Token invalide")
+
+

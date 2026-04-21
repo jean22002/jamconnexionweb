@@ -1,8 +1,10 @@
 import { Button } from "../../../components/ui/button";
 import { Edit, MapPin, Phone, Mail, Globe, Facebook, Instagram, Clock, Music, Mic, Speaker, Lightbulb, Guitar } from "lucide-react";
+import NotificationPreferences from "../../../components/NotificationPreferences";
 
 export default function ProfileTab({ 
-  venue, 
+  venue,
+  token,
   handleOpenProfileDialog 
 }) {
   if (!venue) {
@@ -229,6 +231,11 @@ export default function ProfileTab({
             </div>
           )}
         </div>
+      </div>
+
+      {/* Notification Preferences */}
+      <div className="mt-8 pt-6 border-t border-white/10">
+        <NotificationPreferences token={token} />
       </div>
     </div>
   );

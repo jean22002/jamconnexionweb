@@ -58,20 +58,22 @@ else:
     mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
     logger.info("💻 Using DEVELOPMENT MongoDB: localhost:27017")
 
-# MongoDB Connection with Optimized Pooling
+# MongoDB Connection with Optimized Pooling and Production Timeouts
 client = AsyncIOMotorClient(
     mongo_url,
     maxPoolSize=100,           # Maximum 100 concurrent connections
     minPoolSize=10,            # Keep 10 connections always open
     maxIdleTimeMS=45000,       # Close idle connections after 45s
-    serverSelectionTimeoutMS=5000,  # Timeout for server selection
-    connectTimeoutMS=10000,    # Connection timeout
-    socketTimeoutMS=45000,     # Socket timeout
+    serverSelectionTimeoutMS=30000,  # 30s timeout for server selection (increased for K8s)
+    connectTimeoutMS=20000,    # 20s connection timeout (increased for production)
+    socketTimeoutMS=60000,     # 60s socket timeout
     retryWrites=True,          # Retry failed writes
-    retryReads=True            # Retry failed reads
+    retryReads=True,           # Retry failed reads
+    heartbeatFrequencyMS=10000,  # Check server health every 10s
+    appName="JamConnexion"     # Identify app in MongoDB Atlas logs
 )
 db = client[os.environ['DB_NAME']]
-logger.info("✅ MongoDB Connection Pool configured: maxPoolSize=100, minPoolSize=10")
+logger.info("✅ MongoDB Connection Pool configured: maxPoolSize=100, minPoolSize=10, serverSelectionTimeout=30s")
 
 # Stripe configuration
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')

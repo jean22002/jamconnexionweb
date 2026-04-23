@@ -205,3 +205,4 @@ credentials.json
 *.pem
 *.key
 .credentials
+push_to_github.sh

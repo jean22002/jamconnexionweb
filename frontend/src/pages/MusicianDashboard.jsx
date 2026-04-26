@@ -2486,7 +2486,17 @@ export default function MusicianDashboard() {
             </TabsTrigger>
             <TabsTrigger value="musicians" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[85px] sm:min-w-auto">Musiciens</TabsTrigger>
             <TabsTrigger value="venues" className="rounded-full whitespace-nowrap flex-shrink-0 px-2 sm:px-4 text-xs sm:text-sm snap-center min-w-[100px] sm:min-w-auto">Établissements</TabsTrigger>
-            <TabsTrigger value="friends" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[85px] sm:min-w-auto">Amis ({friends.length})</TabsTrigger>
+            <TabsTrigger value="friends" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[85px] sm:min-w-auto relative" data-testid="friends-tab-trigger">
+              Amis ({friends.length})
+              {friendRequests.length > 0 && (
+                <span 
+                  className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 border-2 border-background animate-pulse"
+                  data-testid="friend-requests-badge"
+                >
+                  {friendRequests.length}
+                </span>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="subscriptions" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[90px] sm:min-w-auto">Connexions</TabsTrigger>
             <TabsTrigger value="bands" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[75px] sm:min-w-auto">Groupes</TabsTrigger>
           </TabsList>

@@ -177,6 +177,29 @@ export const useNotifications = (token, user) => {
       const notifications = response.data || [];
       if (notifications.length === 0) return;
 
+      // Au premier chargement (remount du composant), marquer TOUTES les notifs existantes
+      // comme "déjà affichées" pour éviter qu'elles redéclenchent des toasts.
+      // Les vraies nouvelles notifs (créées après ce moment) seront détectées au polling suivant.
+      if (isInitialLoadRef.current) {
+        const shownNotifications = getShownNotifications();
+        const newIds = notifications
+          .map(n => n.id)
+          .filter(id => !shownNotifications.includes(id));
+        if (newIds.length > 0) {
+          try {
+            const updated = [...shownNotifications, ...newIds].slice(-100);
+            localStorage.setItem(SHOWN_NOTIFICATIONS_KEY, JSON.stringify(updated));
+          } catch (error) {
+            console.error('Erreur écriture localStorage:', error);
+          }
+        }
+        // Mémoriser l'ID de la plus récente pour la comparaison future
+        if (notifications.length > 0) {
+          lastNotificationIdRef.current = notifications[0].id;
+        }
+        return; // Ne pas afficher de toast au premier chargement
+      }
+
       // Récupérer les notifications déjà affichées
       const shownNotifications = getShownNotifications();
 

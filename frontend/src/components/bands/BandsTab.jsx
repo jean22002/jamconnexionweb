@@ -97,7 +97,7 @@ export default function BandsTab({
       }
 
       // Filtre : Type de groupe
-      if (bandFilters.bandType && band.type !== bandFilters.bandType) {
+      if (bandFilters.bandType && band.band_type !== bandFilters.bandType && band.type !== bandFilters.bandType) {
         return false;
       }
 

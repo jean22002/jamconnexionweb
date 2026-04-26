@@ -1,6 +1,61 @@
 import { Button } from "../ui/button";
-import { Users, User, Eye, UserMinus, Ban } from "lucide-react";
+import { Users, User, Eye, UserMinus, Ban, Check, X, MapPin } from "lucide-react";
 import LazyImage from "../LazyImage";
+
+function FriendRequestCard({ request, onAccept, onReject }) {
+  return (
+    <div className="card-venue p-5 border-2 border-primary/30" data-testid={`friend-request-card-${request.id}`}>
+      <div className="flex items-start gap-4 mb-3">
+        {request.from_user_image ? (
+          <LazyImage 
+            src={request.from_user_image} 
+            alt={request.from_user_name} 
+            className="w-14 h-14 rounded-full object-cover" 
+          />
+        ) : (
+          <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center">
+            <User className="w-7 h-7 text-primary" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <h3 className="font-heading font-semibold truncate">{request.from_user_name}</h3>
+          {request.from_user_city && (
+            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+              <MapPin className="w-3 h-3" />
+              {request.from_user_city}
+            </p>
+          )}
+          {request.from_user_instruments && (
+            <p className="text-xs text-muted-foreground truncate mt-1">{request.from_user_instruments}</p>
+          )}
+        </div>
+      </div>
+      
+      {/* Actions */}
+      <div className="flex gap-2">
+        <Button 
+          size="sm"
+          className="flex-1 rounded-full bg-primary hover:bg-primary/80 gap-2"
+          onClick={() => onAccept(request.id)}
+          data-testid={`accept-friend-request-${request.id}`}
+        >
+          <Check className="w-4 h-4" />
+          Accepter
+        </Button>
+        <Button 
+          variant="outline"
+          size="sm"
+          className="flex-1 rounded-full border-red-500/30 text-red-500 hover:bg-red-500/10 hover:border-red-500/50 gap-2"
+          onClick={() => onReject(request.id)}
+          data-testid={`reject-friend-request-${request.id}`}
+        >
+          <X className="w-4 h-4" />
+          Refuser
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function FriendCard({ friend, onViewProfile, onRemove, onBlock }) {
   return (
@@ -94,14 +149,40 @@ function BlockedUserCard({ blocked, onUnblock }) {
 
 export default function FriendsTab({ 
   friends, 
+  friendRequests = [],
   blockedUsers,
+  onAcceptRequest,
+  onRejectRequest,
   onViewProfile,
   onRemoveFriend, 
   onBlockUser,
   onUnblockUser 
 }) {
   return (
-    <div>
+    <div data-testid="friends-tab">
+      {/* Section Demandes reçues */}
+      {friendRequests.length > 0 && (
+        <div className="mb-8" data-testid="friend-requests-section">
+          <h3 className="font-heading font-semibold text-lg mb-4">
+            Demandes reçues ({friendRequests.length})
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {friendRequests.map((request) => (
+              <FriendRequestCard 
+                key={request.id} 
+                request={request}
+                onAccept={onAcceptRequest}
+                onReject={onRejectRequest}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Section Mes amis */}
+      <h3 className="font-heading font-semibold text-lg mb-4">
+        Mes amis {friends.length > 0 && `(${friends.length})`}
+      </h3>
       {friends.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />

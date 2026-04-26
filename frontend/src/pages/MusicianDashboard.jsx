@@ -1338,6 +1338,17 @@ export default function MusicianDashboard() {
     }
   };
 
+  const rejectFriendRequest = async (requestId) => {
+    try {
+      await axios.post(`${API}/friends/reject/${requestId}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Demande refusée");
+      fetchFriends();
+      fetchNotifications();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur lors du refus");
+    }
+  };
+
   const removeFriend = async (friendUserId) => {
     if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet ami ?")) {
       return;
@@ -2620,7 +2631,10 @@ export default function MusicianDashboard() {
           <TabsContent value="friends">
             <FriendsTab
               friends={friends}
+              friendRequests={friendRequests}
               blockedUsers={blockedUsers}
+              onAcceptRequest={acceptFriendRequest}
+              onRejectRequest={rejectFriendRequest}
               onViewProfile={(friend) => {
                 const profilePath = friend.friend_role === "musician" ? "musician" 
                   : friend.friend_role === "venue" ? "venue" 

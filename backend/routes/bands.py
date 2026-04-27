@@ -658,3 +658,216 @@ async def get_invite_code_members(
             ))
     
     return members
+
+
+
+# ============= BAND CRUD ENDPOINTS (mobile + web) =============
+
+def _parse_band_id(band_id: str):
+    """
+    Parse a composite band_id of the form '{musician_uuid}-{band_name}'.
+    UUID is 36 chars (8-4-4-4-12), followed by '-' then the band name (which may contain dashes).
+    Returns (musician_id, band_name).
+    """
+    if not band_id or len(band_id) < 38 or band_id[36] != "-":
+        return None, None
+    return band_id[:36], band_id[37:]
+
+
+def _build_band_payload(data: dict) -> dict:
+    """Whitelist of fields a user can set on a band, with defaults."""
+    return {
+        "name": data.get("name", "").strip(),
+        "photo": data.get("photo", ""),
+        "description": data.get("description", ""),
+        "members_count": data.get("members_count", 1),
+        "music_styles": data.get("music_styles", []),
+        "band_type": data.get("band_type", ""),
+        "repertoire_type": data.get("repertoire_type", ""),
+        "show_duration": data.get("show_duration", ""),
+        "city": data.get("city", ""),
+        "postal_code": data.get("postal_code", ""),
+        "department": data.get("department", ""),
+        "department_name": data.get("department_name", ""),
+        "region": data.get("region", ""),
+        "latitude": data.get("latitude"),
+        "longitude": data.get("longitude"),
+        "facebook": data.get("facebook", ""),
+        "instagram": data.get("instagram", ""),
+        "youtube": data.get("youtube", ""),
+        "website": data.get("website", ""),
+        "bandcamp": data.get("bandcamp", ""),
+        "looking_for_concerts": data.get("looking_for_concerts", True),
+        "looking_for_members": data.get("looking_for_members", False),
+        "looking_for_profiles": data.get("looking_for_profiles", []),
+        "has_sound_engineer": data.get("has_sound_engineer", False),
+        "is_association": data.get("is_association", False),
+        "association_name": data.get("association_name"),
+        "has_label": data.get("has_label", False),
+        "label_name": data.get("label_name"),
+        "label_city": data.get("label_city"),
+        "payment_methods": data.get("payment_methods", []),
+        "equipment": data.get("equipment", []),
+        "is_public": data.get("is_public", True),
+    }
+
+
+def _serialize_band(musician: dict, band: dict) -> dict:
+    """Build the public band representation expected by the clients."""
+    band_id = f"{musician['id']}-{band.get('name', '')}"
+    return {
+        "id": band_id,
+        "musician_id": musician["id"],
+        "musician_user_id": musician["user_id"],
+        "musician_name": musician.get("pseudo", ""),
+        "name": band.get("name"),
+        "photo": band.get("photo"),
+        "description": band.get("description"),
+        "members_count": band.get("members_count"),
+        "music_styles": band.get("music_styles", []),
+        "band_type": band.get("band_type"),
+        "repertoire_type": band.get("repertoire_type"),
+        "show_duration": band.get("show_duration"),
+        "city": band.get("city"),
+        "postal_code": band.get("postal_code"),
+        "department": band.get("department"),
+        "department_name": band.get("department_name"),
+        "region": band.get("region"),
+        "latitude": band.get("latitude"),
+        "longitude": band.get("longitude"),
+        "facebook": band.get("facebook"),
+        "instagram": band.get("instagram"),
+        "youtube": band.get("youtube"),
+        "website": band.get("website"),
+        "bandcamp": band.get("bandcamp"),
+        "looking_for_concerts": band.get("looking_for_concerts", True),
+        "looking_for_members": band.get("looking_for_members", False),
+        "looking_for_profiles": band.get("looking_for_profiles", []),
+        "has_sound_engineer": band.get("has_sound_engineer", False),
+        "admin_id": band.get("admin_id"),
+        "invite_code": band.get("invite_code"),
+        "is_association": band.get("is_association", False),
+        "association_name": band.get("association_name"),
+        "has_label": band.get("has_label", False),
+        "label_name": band.get("label_name"),
+        "label_city": band.get("label_city"),
+        "payment_methods": band.get("payment_methods", []),
+        "equipment": band.get("equipment", []),
+        "is_public": band.get("is_public", True),
+    }
+
+
+@router.post("/bands", status_code=201)
+async def create_band(payload: dict, current_user: dict = Depends(get_current_user)):
+    """Create a new band for the currently logged-in musician."""
+    if current_user.get("role") != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can create bands")
+
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+
+    band_payload = _build_band_payload(payload)
+    if not band_payload["name"]:
+        raise HTTPException(status_code=400, detail="Band name is required")
+
+    # Prevent duplicate band name for the same musician
+    for existing in musician.get("bands", []):
+        if existing.get("name", "").strip().lower() == band_payload["name"].lower():
+            raise HTTPException(status_code=400, detail="You already have a band with this name")
+
+    band_payload["admin_id"] = current_user["id"]
+    band_payload["invite_code"] = musician["id"][:8].upper()
+    band_payload["created_at"] = datetime.now(timezone.utc).isoformat()
+
+    await db.musicians.update_one(
+        {"user_id": current_user["id"]},
+        {"$push": {"bands": band_payload}}
+    )
+
+    return _serialize_band(musician, band_payload)
+
+
+@router.get("/musicians/bands/{band_id}")
+async def get_band_by_id(band_id: str):
+    """Retrieve a single band by its composite id '{musician_id}-{band_name}'."""
+    musician_id, band_name = _parse_band_id(band_id)
+    if not musician_id:
+        raise HTTPException(status_code=404, detail="Groupe non trouvé")
+
+    musician = await db.musicians.find_one({"id": musician_id}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Groupe non trouvé")
+
+    band = next((b for b in musician.get("bands", []) if b.get("name") == band_name), None)
+    if not band:
+        raise HTTPException(status_code=404, detail="Groupe non trouvé")
+
+    return _serialize_band(musician, band)
+
+
+@router.put("/musicians/bands/{band_id}")
+async def update_band(band_id: str, payload: dict, current_user: dict = Depends(get_current_user)):
+    """Update a band. Only the band admin can update."""
+    musician_id, band_name = _parse_band_id(band_id)
+    if not musician_id:
+        raise HTTPException(status_code=404, detail="Groupe non trouvé")
+
+    musician = await db.musicians.find_one({"id": musician_id}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Groupe non trouvé")
+
+    band = next((b for b in musician.get("bands", []) if b.get("name") == band_name), None)
+    if not band:
+        raise HTTPException(status_code=404, detail="Groupe non trouvé")
+
+    if band.get("admin_id") != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Seul l'administrateur du groupe peut le modifier")
+
+    # Partial merge: only update fields present in payload, keep the rest.
+    allowed = _build_band_payload(payload)
+    update_fields = {k: v for k, v in allowed.items() if k in payload}
+
+    # Handle band rename: name change requires new array entry placement
+    new_name = update_fields.get("name", band.get("name"))
+
+    set_ops = {f"bands.$.{k}": v for k, v in update_fields.items()}
+    if set_ops:
+        await db.musicians.update_one(
+            {"id": musician_id, "bands.name": band_name},
+            {"$set": set_ops}
+        )
+
+    # Re-fetch the updated musician/band
+    musician = await db.musicians.find_one({"id": musician_id}, {"_id": 0})
+    band = next((b for b in musician.get("bands", []) if b.get("name") == new_name), None)
+    if not band:
+        raise HTTPException(status_code=500, detail="Update failed")
+
+    return _serialize_band(musician, band)
+
+
+@router.delete("/musicians/bands/{band_id}")
+async def delete_band(band_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a band. Only the band admin can delete."""
+    musician_id, band_name = _parse_band_id(band_id)
+    if not musician_id:
+        raise HTTPException(status_code=404, detail="Groupe non trouvé")
+
+    musician = await db.musicians.find_one({"id": musician_id}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Groupe non trouvé")
+
+    band = next((b for b in musician.get("bands", []) if b.get("name") == band_name), None)
+    if not band:
+        raise HTTPException(status_code=404, detail="Groupe non trouvé")
+
+    if band.get("admin_id") != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Seul l'administrateur du groupe peut le supprimer")
+
+    await db.musicians.update_one(
+        {"id": musician_id},
+        {"$pull": {"bands": {"name": band_name}}}
+    )
+
+    return {"message": "Groupe supprimé", "id": band_id}

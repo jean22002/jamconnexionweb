@@ -492,6 +492,12 @@ export default function ConcertsTab({
                       <Clock className="w-4 h-4" />
                       <span>{concert.start_time} - {concert.end_time}</span>
                     </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Users className="w-4 h-4 text-primary" />
+                      <span className="text-primary font-medium" data-testid={`concert-participants-count-${concert.id}`}>
+                        {concert.participants_count || 0} participant{(concert.participants_count || 0) > 1 ? 's' : ''}
+                      </span>
+                    </div>
                     {concert.description && (
                       <p className="text-xs mt-2 line-clamp-2">{concert.description}</p>
                     )}

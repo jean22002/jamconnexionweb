@@ -3437,6 +3437,12 @@ export default function VenueDashboard() {
                           <span className="inline-block px-2 py-1 bg-secondary/20 text-secondary text-xs rounded-full mt-2">
                             {spectacle.type}
                           </span>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Users className="w-4 h-4 text-cyan-400" />
+                            <span className="text-cyan-400 text-sm font-medium" data-testid={`spectacle-participants-count-${spectacle.id}`}>
+                              {spectacle.participants_count || 0} participant{(spectacle.participants_count || 0) > 1 ? 's' : ''}
+                            </span>
+                          </div>
                           {spectacle.price && (
                             <p className="text-green-400 text-sm mt-1">💰 {spectacle.price}</p>
                           )}

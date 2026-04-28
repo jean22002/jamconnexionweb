@@ -1,5 +1,5 @@
 import { Button } from "../../../components/ui/button";
-import { Plus, Edit, Trash2, Calendar, Clock, Music } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, Clock, Music, Users } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../../components/ui/dialog";
 import { Label } from "../../../components/ui/label";
 import { Input } from "../../../components/ui/input";
@@ -116,6 +116,12 @@ export default function JamsTab({
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
                   <span>{jam.start_time} - {jam.end_time}</span>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <Users className="w-4 h-4 text-purple-400" />
+                  <span className="text-purple-400 font-medium" data-testid={`jam-participants-count-${jam.id}`}>
+                    {jam.participants_count || 0} participant{(jam.participants_count || 0) > 1 ? 's' : ''}
+                  </span>
                 </div>
               </div>
               <div className="flex gap-2">

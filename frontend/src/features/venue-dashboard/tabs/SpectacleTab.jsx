@@ -1,5 +1,5 @@
 import { Button } from "../../../components/ui/button";
-import { Plus, Edit, Trash2, Calendar, Clock, Theater } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, Clock, Theater, Users } from "lucide-react";
 
 export default function SpectacleTab({ 
   spectacles,
@@ -45,6 +45,12 @@ export default function SpectacleTab({
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
                   <span>{spectacle.start_time} - {spectacle.end_time}</span>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <Users className="w-4 h-4 text-cyan-400" />
+                  <span className="text-cyan-400 font-medium" data-testid={`spectacle-participants-count-${spectacle.id}`}>
+                    {spectacle.participants_count || 0} participant{(spectacle.participants_count || 0) > 1 ? 's' : ''}
+                  </span>
                 </div>
               </div>
               <div className="flex gap-2">

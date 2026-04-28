@@ -1,5 +1,5 @@
 import { Button } from "../../../components/ui/button";
-import { Plus, Edit, Trash2, Calendar, Clock, Mic } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, Clock, Mic, Users } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../../components/ui/dialog";
 import { Label } from "../../../components/ui/label";
 import { Input } from "../../../components/ui/input";
@@ -148,6 +148,12 @@ export default function KaraokeTab({
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
                   <span>{karaoke.start_time} - {karaoke.end_time}</span>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <Users className="w-4 h-4 text-pink-400" />
+                  <span className="text-pink-400 font-medium" data-testid={`karaoke-participants-count-${karaoke.id}`}>
+                    {karaoke.participants_count || 0} participant{(karaoke.participants_count || 0) > 1 ? 's' : ''}
+                  </span>
                 </div>
                 {karaoke.conditions && (
                   <div className="flex items-center gap-2">

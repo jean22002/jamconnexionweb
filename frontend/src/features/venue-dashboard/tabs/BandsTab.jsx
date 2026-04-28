@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui
 import { Music, Users, MapPin, ArrowLeft, MapPinOff, X, Send } from "lucide-react";
 import { REGIONS_FRANCE, DEPARTEMENTS_FRANCE } from "../../../data/france-locations";
 import { MUSIC_STYLES_LIST } from "../../../data/music-styles";
+import { enrichWithLocation } from "../../../data/city-to-location";
 
 // Composant pour afficher une carte de groupe
 function BandCard({ band, onViewDetails }) {
@@ -90,6 +91,14 @@ export default function BandsTab({
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
 
+  // Enrichit les groupes avec leur région/département via leur ville
+  // quand ces champs sont manquants. Évite des groupes "fantômes"
+  // qui n'apparaissent ni dans Régions ni dans Départements.
+  const enrichedBands = useMemo(
+    () => (Array.isArray(bands) ? bands.map(enrichWithLocation) : []),
+    [bands]
+  );
+
   // Fonction pour filtrer les groupes selon les critères
   const getFilteredBands = (bandsToFilter) => {
     return bandsToFilter.filter(band => {
@@ -103,8 +112,8 @@ export default function BandsTab({
         return false;
       }
 
-      // Filtre : Type de groupe
-      if (bandFilters.bandType && band.type !== bandFilters.bandType) {
+      // Filtre : Type de groupe (compat band_type / type)
+      if (bandFilters.bandType && band.band_type !== bandFilters.bandType && band.type !== bandFilters.bandType) {
         return false;
       }
 
@@ -234,10 +243,10 @@ export default function BandsTab({
       }}>
         <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 gap-1 scrollbar-thin scrollbar-thumb-cyan-500/50 scrollbar-track-transparent">
           <TabsTrigger value="all" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
-            Tous ({getFilteredBands(bands).length})
+            Tous ({getFilteredBands(enrichedBands).length})
           </TabsTrigger>
           <TabsTrigger value="france" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
-            France ({getFilteredBands(bands.filter(b => !b.country || b.country === 'France')).length})
+            France ({getFilteredBands(enrichedBands.filter(b => !b.country || b.country === 'France')).length})
           </TabsTrigger>
           <TabsTrigger value="region" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">
             Par Région
@@ -254,7 +263,7 @@ export default function BandsTab({
               <Music className="w-12 h-12 mx-auto mb-4 opacity-50 text-primary animate-pulse" />
               <p className="text-muted-foreground">Chargement des groupes...</p>
             </div>
-          ) : getFilteredBands(bands).length === 0 ? (
+          ) : getFilteredBands(enrichedBands).length === 0 ? (
             <div className="glassmorphism rounded-2xl p-12 text-center">
               <Music className="w-16 h-16 mx-auto mb-4 opacity-50" />
               <h3 className="text-lg font-semibold mb-2">Aucun groupe trouvé</h3>
@@ -264,7 +273,7 @@ export default function BandsTab({
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {getFilteredBands(bands).map((band) => (
+              {getFilteredBands(enrichedBands).map((band) => (
                 <BandCard key={band.id} band={band} onViewDetails={onViewDetails} />
               ))}
             </div>
@@ -278,7 +287,7 @@ export default function BandsTab({
               <Music className="w-12 h-12 mx-auto mb-4 opacity-50 text-primary animate-pulse" />
               <p className="text-muted-foreground">Chargement des groupes...</p>
             </div>
-          ) : getFilteredBands(bands.filter(b => !b.country || b.country === 'France')).length === 0 ? (
+          ) : getFilteredBands(enrichedBands.filter(b => !b.country || b.country === 'France')).length === 0 ? (
             <div className="glassmorphism rounded-2xl p-12 text-center">
               <Music className="w-16 h-16 mx-auto mb-4 opacity-50" />
               <h3 className="text-lg font-semibold mb-2">Aucun groupe trouvé en France</h3>
@@ -288,7 +297,7 @@ export default function BandsTab({
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {getFilteredBands(bands.filter(b => !b.country || b.country === 'France')).map((band) => (
+              {getFilteredBands(enrichedBands.filter(b => !b.country || b.country === 'France')).map((band) => (
                 <BandCard key={band.id} band={band} onViewDetails={onViewDetails} />
               ))}
             </div>
@@ -302,7 +311,7 @@ export default function BandsTab({
             REGIONS_FRANCE.forEach(region => {
               bandsByRegion[region] = [];
             });
-            const franceBands = bands.filter(b => !b.country || b.country === 'France');
+            const franceBands = enrichedBands.filter(b => !b.country || b.country === 'France');
             getFilteredBands(franceBands).forEach(b => {
               if (b.region && bandsByRegion[b.region]) {
                 bandsByRegion[b.region].push(b);
@@ -375,7 +384,7 @@ export default function BandsTab({
                 bands: []
               };
             });
-            const franceBands = bands.filter(b => !b.country || b.country === 'France');
+            const franceBands = enrichedBands.filter(b => !b.country || b.country === 'France');
             getFilteredBands(franceBands).forEach(b => {
               if (b.department && bandsByDepartment[b.department]) {
                 bandsByDepartment[b.department].bands.push(b);

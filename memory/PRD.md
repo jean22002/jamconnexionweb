@@ -67,6 +67,20 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - [x] Fix WebSocket critique : Socket.IO monté avant middlewares (handshake 500 résolu)
 - [x] Notifications temps réel opérationnelles via Socket.IO
 
+### Phase 5 (Mai 2026 - Parité Web ↔ Mobile)
+- [x] CRUD complet des groupes (POST/GET/PUT/DELETE + leave logic)
+- [x] Comptabilité musicien (API + UI avec calcul GUSO)
+- [x] Healthcheck monitor (15 endpoints, alertes email Resend)
+- [x] AdSense interstitiel pour comptes free (3-5s avant envoi message)
+- [x] Filtres profils étendus à 25 instruments + filtre par profil recherché
+- [x] Logique Quitter/Supprimer pour les groupes (membre vs admin)
+- [x] Enrichissement city-to-location pour filtrage par région
+- [x] **API Chat enrichie** : `GET /chat/conversations` complète à la volée `name`/`role`/`avatar` des participants (jointure users + musicians/venues/melomanes)
+- [x] **Fonction `resolve_display_name`** : fallback intelligent name → profile.stage_name/venue_name/username → email
+- [x] **Alias `GET /api/online-status/users/{user_id}`** (pluriel) pour compatibilité mobile
+- [x] **Heartbeat polling web** : déjà actif via `useOnlineStatus` (PWAPrompt monté globalement, ping toutes les 2 min + sur interactions)
+- [x] Healthcheck monitor : 15/15 endpoints UP en production
+
 ## P0/P1/P2 Remaining
 
 ### P1

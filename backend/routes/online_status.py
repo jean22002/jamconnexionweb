@@ -151,6 +151,12 @@ async def get_user_online_status(user_id: str):
         "mode": user.get("online_status_mode", "auto")
     }
 
+
+@router.get("/users/{user_id}")
+async def get_user_online_status_alias(user_id: str):
+    """Alias pluriel pour compatibilité mobile - même comportement que /user/{user_id}"""
+    return await get_user_online_status(user_id)
+
 # Helper function
 async def is_user_online(user: dict) -> bool:
     """Détermine si un utilisateur est en ligne selon son mode"""

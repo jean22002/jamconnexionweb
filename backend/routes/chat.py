@@ -49,6 +49,7 @@ async def get_conversations(user: dict = Depends(get_current_user_local)):
     Récupère toutes les conversations de l'utilisateur.
     
     Retourne les conversations triées par date de mise à jour (plus récente en premier).
+    Enrichit les participants avec name/role/avatar si manquants (compatibilité Web ↔ Mobile).
     """
     try:
         conversations = await db.conversations.find(
@@ -56,8 +57,43 @@ async def get_conversations(user: dict = Depends(get_current_user_local)):
             {"_id": 0}
         ).sort("updated_at", -1).to_list(100)
         
-        # Ajouter unread_count pour l'utilisateur
+        # Cache pour éviter les requêtes redondantes
+        user_cache = {}
+        
+        async def enrich_participant(p):
+            uid = p.get("user_id")
+            if not uid:
+                return p
+            # Fields déjà présents → on complète seulement les manquants
+            need_name = not p.get("name")
+            need_role = not p.get("role")
+            need_avatar = "avatar" not in p or p.get("avatar") is None
+            if not (need_name or need_role or need_avatar):
+                return p
+            
+            if uid not in user_cache:
+                u = await db.users.find_one(
+                    {"id": uid},
+                    {"_id": 0, "id": 1, "name": 1, "role": 1, "email": 1}
+                )
+                user_cache[uid] = u or {}
+            u = user_cache[uid]
+            if need_role and u.get("role"):
+                p["role"] = u["role"]
+            if need_name:
+                resolved = await resolve_display_name(db, u)
+                if resolved:
+                    p["name"] = resolved
+            if need_avatar and u.get("role"):
+                p["avatar"] = await get_user_avatar(db, uid, u["role"])
+            return p
+        
+        # Enrichir les participants + ajouter unread_count pour l'utilisateur
         for conv in conversations:
+            participants = conv.get("participants", [])
+            for i, p in enumerate(participants):
+                participants[i] = await enrich_participant(p)
+            conv["participants"] = participants
             conv["my_unread_count"] = conv.get("unread_count", {}).get(user["id"], 0)
         
         return conversations
@@ -91,7 +127,7 @@ async def create_conversation(
         # Récupérer infos participant
         participant = await db.users.find_one(
             {"id": request.participant_id},
-            {"_id": 0, "id": 1, "name": 1, "role": 1}
+            {"_id": 0, "id": 1, "name": 1, "role": 1, "email": 1}
         )
         
         if not participant:
@@ -100,6 +136,10 @@ async def create_conversation(
         # Récupérer avatars
         avatar_current = await get_user_avatar(db, user["id"], user["role"])
         avatar_participant = await get_user_avatar(db, participant["id"], participant["role"])
+        
+        # Récupérer noms de profil (fallback sur email si name manquant en DB)
+        current_name = await resolve_display_name(db, user)
+        participant_name = await resolve_display_name(db, participant)
         
         # Créer conversation
         conversation_id = f"conv_{uuid4().hex[:12]}"
@@ -112,14 +152,14 @@ async def create_conversation(
                 {
                     "user_id": user["id"],
                     "role": user["role"],
-                    "name": user["name"],
+                    "name": current_name,
                     "avatar": avatar_current,
                     "last_read_at": now
                 },
                 {
                     "user_id": participant["id"],
                     "role": participant["role"],
-                    "name": participant["name"],
+                    "name": participant_name,
                     "avatar": avatar_participant,
                     "last_read_at": None
                 }
@@ -237,13 +277,14 @@ async def send_message(
         
         # Récupérer avatar
         avatar = await get_user_avatar(db, user["id"], user["role"])
+        sender_name = await resolve_display_name(db, user)
         
         # Créer message
         message = await send_message_internal(
             db=db,
             conversation_id=request.conversation_id,
             sender_id=user["id"],
-            sender_name=user["name"],
+            sender_name=sender_name,
             sender_avatar=avatar,
             content=request.content,
             msg_type=request.type,
@@ -364,6 +405,48 @@ async def get_user_avatar(db, user_id: str, role: str) -> Optional[str]:
     except Exception as e:
         logger.error(f"Error getting user avatar: {e}")
         return None
+
+
+async def resolve_display_name(db, user: dict) -> str:
+    """
+    Résout le nom d'affichage d'un utilisateur avec fallback intelligent :
+    1. user.name (collection users)
+    2. profile.name / profile.venue_name (collection musicians/venues/melomanes)
+    3. user.email (dernier recours)
+    """
+    name = user.get("name")
+    if name:
+        return name
+    
+    user_id = user.get("id")
+    role = user.get("role")
+    
+    try:
+        if role == "musician" and user_id:
+            profile = await db.musicians.find_one(
+                {"user_id": user_id},
+                {"_id": 0, "name": 1, "stage_name": 1}
+            )
+            if profile:
+                return profile.get("stage_name") or profile.get("name") or user.get("email", "Utilisateur")
+        elif role == "venue" and user_id:
+            profile = await db.venues.find_one(
+                {"user_id": user_id},
+                {"_id": 0, "name": 1, "venue_name": 1}
+            )
+            if profile:
+                return profile.get("venue_name") or profile.get("name") or user.get("email", "Utilisateur")
+        elif role == "melomane" and user_id:
+            profile = await db.melomanes.find_one(
+                {"user_id": user_id},
+                {"_id": 0, "name": 1, "username": 1}
+            )
+            if profile:
+                return profile.get("username") or profile.get("name") or user.get("email", "Utilisateur")
+    except Exception as e:
+        logger.error(f"Error resolving display name: {e}")
+    
+    return user.get("email", "Utilisateur")
 
 
 async def send_message_internal(

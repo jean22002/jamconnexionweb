@@ -1,11 +1,12 @@
 import { Button } from "../../../components/ui/button";
-import { Plus, Calendar, UserPlus, Copy, Check, Share2, Trash2 } from "lucide-react";
+import { Plus, Calendar, UserPlus, Copy, Check, Share2, Trash2, LogOut } from "lucide-react";
 import { useState } from "react";
 
 export default function BandTab({ 
   profileForm, 
   handleOpenBandDialog, 
   handleDeleteBand,
+  handleLeaveBand,
   onViewPlanning, 
   onShareBand, 
   onJoinBand,
@@ -51,9 +52,14 @@ export default function BandTab({
       {profileForm.bands && profileForm.bands.length > 0 ? (
         <div className="grid gap-3">
           {profileForm.bands.map((band, index) => {
-            // L'admin est soit défini explicitement, soit on considère que le user courant est admin
-            // (car les groupes dans "Mes Groupes" appartiennent au musicien)
-            const isAdmin = !band.admin_id || band.admin_id === currentUserId;
+            // Détection admin alignée avec l'app mobile :
+            // 1) is_admin === true (champ explicite envoyé par certains endpoints)
+            // 2) admin_id == currentUserId
+            // 3) groupe legacy sans admin_id → considéré admin par défaut
+            const isAdmin =
+              band.is_admin === true ||
+              (currentUserId && band.admin_id && String(band.admin_id) === String(currentUserId)) ||
+              !band.admin_id;
             
             return (
               <div key={`band-${band.id || band.name}-${index}`} className="p-4 bg-black/20 rounded-xl border border-white/10 hover:border-primary/30 transition-colors">
@@ -143,6 +149,24 @@ export default function BandTab({
                         data-testid={`delete-band-${index}`}
                       >
                         <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                    {/* Bouton Quitter (membre non-admin) */}
+                    {!isAdmin && handleLeaveBand && (
+                      <Button
+                        onClick={() => {
+                          if (window.confirm(`Êtes-vous sûr de vouloir quitter le groupe "${band.name}" ? Vous ne ferez plus partie de ce groupe et vous ne pourrez plus accéder à ses informations privées.`)) {
+                            handleLeaveBand(index);
+                          }
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full border-red-500/40 text-red-500 hover:bg-red-500/10 hover:border-red-500/60 gap-2"
+                        title="Quitter le groupe"
+                        data-testid={`leave-band-${index}`}
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Quitter
                       </Button>
                     )}
                   </div>

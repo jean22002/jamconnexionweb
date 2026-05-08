@@ -873,6 +873,27 @@ export default function MusicianDashboard() {
     }
   };
 
+  const handleLeaveBand = async (index) => {
+    const bandToLeave = profileForm.bands[index];
+    if (!bandToLeave) return;
+
+    // Optimistic update
+    const newBands = profileForm.bands.filter((_, i) => i !== index);
+    const previousForm = profileForm;
+    setProfileForm({ ...profileForm, bands: newBands });
+
+    try {
+      const bandId = bandToLeave.id || `${bandToLeave.admin_id}-${bandToLeave.name}`;
+      await axios.delete(`${API}/musicians/bands/${encodeURIComponent(bandId)}/leave`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success(`Vous avez quitté le groupe "${bandToLeave.name}"`);
+    } catch (error) {
+      setProfileForm(previousForm);
+      toast.error(error.response?.data?.detail || "Erreur lors du retrait du groupe");
+    }
+  };
+
   const handleOpenBandDialog = (index = null) => {
     if (index !== null) {
       // Editing existing band
@@ -1626,6 +1647,7 @@ export default function MusicianDashboard() {
                 removeFromList={removeFromList}
                 handleOpenBandDialog={handleOpenBandDialog}
                 handleDeleteBand={handleDeleteBand}
+                handleLeaveBand={handleLeaveBand}
                 onViewBandPlanning={handleViewBandPlanning}
                 handleSaveProfile={handleSaveProfile}
                 handleChangePassword={handleChangePassword}

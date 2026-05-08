@@ -57,6 +57,7 @@ export default function ProfileEditModal({
   handleChangePassword,
   handleOpenBandDialog,
   handleDeleteBand,
+  handleLeaveBand,
   onViewBandPlanning,
   addConcert,
   removeConcert,
@@ -152,6 +153,7 @@ export default function ProfileEditModal({
               profileForm={profileForm}
               handleOpenBandDialog={handleOpenBandDialog}
               handleDeleteBand={handleDeleteBand}
+              handleLeaveBand={handleLeaveBand}
               onViewPlanning={onViewBandPlanning}
               onShareBand={handleShareBand}
               onJoinBand={handleJoinBand}

@@ -871,3 +871,57 @@ async def delete_band(band_id: str, current_user: dict = Depends(get_current_use
     )
 
     return {"message": "Groupe supprimé", "id": band_id}
+
+
+
+@router.delete("/musicians/bands/{band_id}/leave")
+async def leave_band(band_id: str, current_user: dict = Depends(get_current_user)):
+    """Leave a band as a non-admin member.
+
+    Removes the band entry from the current user's `db.musicians.bands[]` array.
+    The admin cannot leave their own band — they must DELETE /musicians/bands/{band_id}
+    instead. The band_id format is '{musician_creator_id}-{band_name}'.
+    """
+    musician_id, band_name = _parse_band_id(band_id)
+    if not musician_id:
+        raise HTTPException(status_code=404, detail="Groupe non trouvé")
+
+    # Find the current user's own musician profile
+    me = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not me:
+        raise HTTPException(status_code=404, detail="Profil musicien introuvable")
+
+    # Find the band entry in the user's own bands list (matching by name)
+    my_band = next((b for b in me.get("bands", []) if b.get("name") == band_name), None)
+    if not my_band:
+        raise HTTPException(status_code=404, detail="Vous n'êtes pas membre de ce groupe")
+
+    # Refuse if the user IS the admin — they must use DELETE instead
+    if my_band.get("admin_id") == current_user["id"]:
+        raise HTTPException(
+            status_code=403,
+            detail="L'administrateur ne peut pas quitter son groupe. Utilisez la suppression à la place.",
+        )
+
+    # Remove the band from the user's array
+    await db.musicians.update_one(
+        {"user_id": current_user["id"]},
+        {"$pull": {"bands": {"name": band_name}}},
+    )
+
+    # Best-effort cleanup: decrement members_count on the creator's copy and remove
+    # the user from band_invite_codes.used_by so they can re-join with a fresh code
+    try:
+        await db.musicians.update_one(
+            {"id": musician_id, "bands.name": band_name},
+            {"$inc": {"bands.$.members_count": -1}},
+        )
+        await db.band_invite_codes.update_many(
+            {"band_id": band_id},
+            {"$pull": {"used_by": current_user["id"]}},
+        )
+    except Exception:
+        # non-blocking
+        pass
+
+    return {"message": "Vous avez quitté le groupe", "id": band_id}

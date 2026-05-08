@@ -1,0 +1,349 @@
+from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.gzip import GZipMiddleware  # NEW: Gzip compression
+from dotenv import load_dotenv
+from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
+from datetime import datetime, timezone
+import os
+import logging
+from pathlib import Path
+import stripe
+
+# Import performance optimization middlewares
+from middleware.cache_headers import CacheHeadersMiddleware
+from middleware.rate_limit import limiter, rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+
+# Import utility functions
+from utils import geocode_city
+from utils.geocoding import geocode_address
+
+# CRITICAL: Middleware to trust Cloudflare proxy headers for WebSocket connections
+class CloudflareProxyMiddleware(BaseHTTPMiddleware):
+    """Trust Cloudflare's proxy headers for WebSocket and HTTP connections"""
+    async def dispatch(self, request, call_next):
+        # Trust Cloudflare's real IP header
+        if "cf-connecting-ip" in request.headers:
+            request.scope["client"] = (request.headers["cf-connecting-ip"], 0)
+        
+        # Trust Cloudflare's forwarded protocol (http/https)
+        if "x-forwarded-proto" in request.headers:
+            request.scope["scheme"] = request.headers["x-forwarded-proto"]
+        
+        # Trust Cloudflare's forwarded host
+        if "x-forwarded-host" in request.headers:
+            request.scope["server"] = (request.headers["x-forwarded-host"], 443 if request.scope["scheme"] == "https" else 80)
+        
+        return await call_next(request)
+
+ROOT_DIR = Path(__file__).parent
+UPLOADS_DIR = ROOT_DIR / "uploads"
+UPLOADS_DIR.mkdir(exist_ok=True)
+
+load_dotenv(ROOT_DIR / '.env')
+
+# Setup logging FIRST
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# MongoDB connection - Use production URL if ENVIRONMENT is production
+environment = os.environ.get('ENVIRONMENT', 'development')
+if environment == 'production':
+    # Emergent uses MONGO_URL directly in production (not MONGO_URL_PRODUCTION)
+    mongo_url = os.environ.get('MONGO_URL', os.environ.get('MONGO_URL_PRODUCTION', 'mongodb://localhost:27017'))
+    logger.info(f"🌍 Using PRODUCTION MongoDB: {mongo_url.split('@')[1] if '@' in mongo_url else 'Atlas'}")
+else:
+    mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+    logger.info("💻 Using DEVELOPMENT MongoDB: localhost:27017")
+
+# MongoDB Connection with Optimized Pooling and Production Timeouts
+client = AsyncIOMotorClient(
+    mongo_url,
+    maxPoolSize=100,           # Maximum 100 concurrent connections
+    minPoolSize=10,            # Keep 10 connections always open
+    maxIdleTimeMS=45000,       # Close idle connections after 45s
+    serverSelectionTimeoutMS=30000,  # 30s timeout for server selection (increased for K8s)
+    connectTimeoutMS=20000,    # 20s connection timeout (increased for production)
+    socketTimeoutMS=60000,     # 60s socket timeout
+    retryWrites=True,          # Retry failed writes
+    retryReads=True,           # Retry failed reads
+    heartbeatFrequencyMS=10000,  # Check server health every 10s
+    appName="JamConnexion"     # Identify app in MongoDB Atlas logs
+)
+db = client[os.environ['DB_NAME']]
+logger.info("✅ MongoDB Connection Pool configured: maxPoolSize=100, minPoolSize=10, serverSelectionTimeout=30s")
+
+# Stripe configuration
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
+STRIPE_PRICE_ID = os.environ.get('STRIPE_PRICE_ID', 'price_1SpH8aBykagrgoTUBAdOU10z')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
+SUBSCRIPTION_PRICE = 12.99
+stripe.api_key = STRIPE_API_KEY
+
+# Create FastAPI app
+app = FastAPI(
+    title="Jam Connexion API",
+    description="API for connecting musicians with venues",
+    version="2.0.0"
+)
+
+# CRITICAL: Initialize Socket.IO BEFORE middlewares to avoid conflicts
+# This must be done before adding middlewares that could interfere with WebSocket handshake
+try:
+    from websocket import sio, socket_app, set_db as ws_set_db
+    # Mount Socket.IO on /api/socket.io (BEFORE middlewares)
+    app.mount('/api/socket.io', socket_app)
+    logger.info("✅ WebSocket Socket.IO mounted on /api/socket.io (before middlewares)")
+except Exception as e:
+    logger.error(f"❌ WebSocket mount failed: {e}")
+
+# Add rate limiter state to app
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+
+# PERFORMANCE OPTIMIZATION MIDDLEWARES (Order matters!)
+# 1. Gzip Compression - Compress responses (must be first for compression)
+app.add_middleware(
+    GZipMiddleware,
+    minimum_size=1000,  # Only compress responses larger than 1KB
+    compresslevel=6     # Balance between speed and compression ratio (1-9)
+)
+
+# 2. CORS Configuration (Must be after Gzip for headers to work)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://collapsible-map.preview.emergentagent.com",  # Preview domain
+        "https://*.preview.emergentagent.com",  # Mobile development
+        "https://preview.emergentagent.com",
+        "https://jamconnexion.com",  # Production domain
+        "https://www.jamconnexion.com",  # Production domain with www
+        "http://localhost:3000",  # Local development
+        "http://127.0.0.1:3000"  # Local development
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["Cache-Control", "CDN-Cache-Control", "Retry-After"]
+)
+
+# 3. Cache Headers Middleware - Adds Cache-Control headers
+app.add_middleware(CacheHeadersMiddleware)
+
+# 4. Cloudflare Proxy Middleware - Trust Cloudflare headers for WebSocket
+app.add_middleware(CloudflareProxyMiddleware)
+
+logger.info("✅ Performance middlewares configured: Gzip, Cache Headers, Rate Limiting, Cloudflare Proxy")
+
+# Create main API router
+api_router = APIRouter(prefix="/api")
+
+# Mount static files for uploads under /api prefix
+app.mount("/api/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
+
+# Import and include refactored routers
+from routes import (
+    auth_router, account_router, uploads_router, 
+    payments_router, webhooks_router,
+    messages_router, reviews_router, notifications_router
+)
+import routes.messages as messages
+import routes.reviews as reviews
+import routes.notifications as notifications
+import routes.melomanes as melomanes
+import routes.musicians as musicians
+import routes.musician_accounting as musician_accounting
+import routes.health_monitor as health_monitor
+import routes.venues as venues
+import routes.events as events
+import routes.planning as planning
+import routes.bands as bands
+import routes.band_invitations as band_invitations  # NEW: Band member invitations
+import routes.badges as badges
+import routes.push_notifications as push_notifications
+import routes.friends as friends
+import routes.reports as reports
+import routes.analytics as analytics
+import routes.audit as audit  # NEW: Audit logging
+import routes.online_status as online_status
+import routes.accounting as accounting
+import routes.firebase_push as firebase_push
+import routes.chat as chat
+import routes.config as config  # NEW: Configuration endpoint for mobile
+import routes.moderation as moderation  # NEW: Moderation settings
+import routes.moderation_settings as moderation_settings  # NEW: Admin moderation settings
+import routes.websocket as websocket  # NEW: WebSocket notifications
+
+# Include routers with basic functionality
+api_router.include_router(auth_router)
+api_router.include_router(account_router)
+api_router.include_router(uploads_router)
+api_router.include_router(payments_router)
+api_router.include_router(webhooks_router)
+api_router.include_router(messages_router)
+api_router.include_router(reviews_router)
+api_router.include_router(notifications_router)
+
+# Inject DB connection to routers that need it
+messages.set_db(db)
+reviews.set_db(db)
+notifications.set_db(db)
+melomanes.set_db(db)
+musicians.set_db(db)
+events.set_db(db)
+planning.set_db(db)
+bands.set_db(db)
+band_invitations.db = db  # NEW: Band invitations
+badges.set_db(db)
+push_notifications.set_db(db)
+reports.set_db(db)
+analytics.set_db(db)
+audit.set_db(db)  # NEW: Audit logging
+accounting.set_db(db)
+musician_accounting.set_db(db)
+firebase_push.set_db(db)
+chat.set_db(db)
+moderation_settings.set_db(db)  # NEW: Admin moderation settings
+
+# Include domain-specific routers
+api_router.include_router(melomanes.router)
+api_router.include_router(musicians.router)
+# Musician accounting MUST be included AFTER musicians.router so that the literal
+# routes /musicians/me/accounting/{summary,concerts,export,...} declared inside
+# musicians.py win over the catch-all /musicians/me/accounting/{event_id} below.
+api_router.include_router(musician_accounting.router)
+api_router.include_router(health_monitor.router)
+api_router.include_router(venues.router)
+api_router.include_router(events.router)
+api_router.include_router(planning.router)
+api_router.include_router(bands.router)
+api_router.include_router(band_invitations.router)  # NEW: Band invitations
+api_router.include_router(badges.router)
+api_router.include_router(push_notifications.router)
+api_router.include_router(friends.router)
+api_router.include_router(reports.router)
+api_router.include_router(analytics.router)
+api_router.include_router(audit.router)  # NEW: Audit logging
+api_router.include_router(online_status.router)
+api_router.include_router(accounting.router, prefix="/accounting", tags=["Accounting"])
+api_router.include_router(firebase_push.router)
+api_router.include_router(chat.router)
+api_router.include_router(config.router)
+api_router.include_router(moderation.router)  # NEW: Moderation settings
+api_router.include_router(moderation_settings.router)  # NEW: Admin moderation settings  
+api_router.include_router(websocket.router)  # NEW: WebSocket  # NEW: Mobile app configuration
+
+# Import files router
+from routes import files
+api_router.include_router(files.router)  # NEW: Public file proxy for Object Storage
+
+# Stats endpoint for Landing page
+@api_router.get("/stats/counts")
+async def get_stats_counts():
+    """Return public counts for the landing page"""
+    musicians_count = await db.musicians.count_documents({})
+    venues_count = await db.venues.count_documents({})
+    return {"musicians": musicians_count, "venues": venues_count}
+
+
+@api_router.get("/stats/promo")
+async def get_promo_stats():
+    """Return promo offer stats (venues count for 6-month offer)"""
+    venues_count = await db.venues.count_documents({})
+    remaining = max(0, 100 - venues_count)
+    is_available = venues_count < 100
+    
+    return {
+        "total_venues": venues_count,
+        "promo_limit": 100,
+        "remaining_slots": remaining,
+        "is_promo_available": is_available,
+        "current_offer_months": 6 if is_available else 3
+    }
+
+
+@api_router.get("/stats/promo-musicians")
+async def get_promo_musicians_stats():
+    """Return promo offer stats for musicians (2 months free PRO for first 200)"""
+    musicians_count = await db.musicians.count_documents({})
+    remaining = max(0, 200 - musicians_count)
+    is_available = musicians_count < 200
+    
+    return {
+        "total_musicians": musicians_count,
+        "promo_limit": 200,
+        "remaining_slots": remaining,
+        "is_promo_available": is_available,
+        "free_months": 2 if is_available else 0,
+        "description": "2 mois PRO gratuits" if is_available else "Offre terminée"
+    }
+
+# Geocoding utility endpoint
+@api_router.post("/geocode")
+async def geocode_endpoint(data: dict):
+    """Public endpoint for geocoding addresses"""
+    return await geocode_address(data)
+
+# Include main API router
+app.include_router(api_router)
+
+# Root endpoint
+@app.get("/")
+def read_root():
+    return {"message": "Jam Connexion API v2.0", "status": "healthy"}
+
+# Health check endpoint (at root level for local testing)
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
+# Health check endpoint under /api for external access through ingress
+@app.get("/api/health")
+def api_health_check():
+    return {"status": "healthy"}
+
+# Startup event
+@app.on_event("startup")
+async def startup_db_client():
+    logger.info("Connected to MongoDB")
+    
+    # Initialize object storage
+    try:
+        from utils.storage import init_storage
+        init_storage()
+    except Exception as e:
+        logger.warning(f"⚠️  Object storage init failed (non-critical): {e}")
+    
+    # Initialize Firebase (for mobile push notifications)
+    try:
+        from firebase_config import initialize_firebase
+        if initialize_firebase():
+            logger.info("✅ Firebase Cloud Messaging initialized")
+        else:
+            logger.warning("⚠️  Firebase not initialized (credentials missing). Mobile push notifications disabled.")
+    except Exception as e:
+        logger.warning(f"⚠️  Firebase init failed (non-critical): {e}")
+    
+    # Set database for Socket.IO (already mounted during app creation)
+    try:
+        from websocket import set_db as ws_set_db
+        ws_set_db(db)
+        logger.info("✅ WebSocket Socket.IO database connection configured")
+    except Exception as e:
+        logger.error(f"❌ WebSocket DB config failed: {e}")
+
+    # Launch the health monitor daemon (pings critical endpoints every 5 min)
+    try:
+        import asyncio
+        asyncio.create_task(health_monitor.health_monitor_loop())
+        logger.info("✅ Health monitor daemon scheduled")
+    except Exception as e:
+        logger.error(f"❌ Health monitor scheduling failed: {e}")
+
+# Shutdown event
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    client.close()
+    logger.info("Disconnected from MongoDB")

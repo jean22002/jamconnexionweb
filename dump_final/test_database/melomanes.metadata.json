@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"id":{"$numberInt":"1"}},"name":"idx_melomanes_id_new","unique":true}],"uuid":"99376d7b783a4117875641734f3477a7","collectionName":"melomanes","type":"collection"}

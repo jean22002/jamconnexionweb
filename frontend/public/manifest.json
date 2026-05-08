@@ -1,0 +1,61 @@
+{
+  "short_name": "JamConnexion",
+  "name": "Jam Connexion - Réseau Musical",
+  "description": "Connectez musiciens, mélomanes et établissements pour bœufs musicaux et concerts. Trouvez les meilleurs spots près de chez vous.",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#a855f7",
+  "background_color": "#0a0118",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["music", "social", "entertainment"],
+  "screenshots": [],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Trouver des événements",
+      "short_name": "Événements",
+      "description": "Découvrir concerts et jams à proximité",
+      "url": "/",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mon Dashboard",
+      "short_name": "Dashboard",
+      "description": "Accéder à mon profil musicien/établissement",
+      "url": "/musician",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Messages",
+      "short_name": "Messages",
+      "description": "Voir mes conversations",
+      "url": "/messages-improved",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    }
+  ],
+  "display_override": ["window-controls-overlay", "standalone"],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
+}
+

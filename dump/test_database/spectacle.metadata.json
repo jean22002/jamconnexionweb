@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"venue_id":{"$numberInt":"1"},"date":{"$numberInt":"1"}},"name":"idx_spectacle_venue_date"}],"uuid":"631412a39cea4931b03226bd397a3c3d","collectionName":"spectacle","type":"collection"}

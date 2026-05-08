@@ -1,0 +1,155 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "Jam Connexion",
+      "archetype": "Electric & Neon",
+      "vibe": "Underground, Energetic, Connected, Professional yet Raw",
+      "core_values": ["Fusion", "Emotion", "Contrast", "Rhythm"]
+    },
+    "typography": {
+      "font_family": {
+        "heading": "Unbounded, sans-serif",
+        "body": "Manrope, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "google_fonts_import": "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;600;800&family=Manrope:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap",
+      "usage": {
+        "h1": "font-heading font-bold text-5xl md:text-7xl tracking-tight leading-none",
+        "h2": "font-heading font-semibold text-3xl md:text-5xl tracking-tight",
+        "h3": "font-heading font-medium text-2xl md:text-3xl",
+        "body": "font-body text-base md:text-lg leading-relaxed text-muted-foreground",
+        "label": "font-mono text-xs uppercase tracking-widest text-primary/80"
+      }
+    },
+    "colors": {
+      "palette": {
+        "background": "240 30% 6%",
+        "foreground": "210 40% 98%",
+        "card": "240 25% 10%",
+        "card_foreground": "210 40% 98%",
+        "popover": "240 25% 10%",
+        "popover_foreground": "210 40% 98%",
+        "primary": "290 80% 60%",
+        "primary_foreground": "210 40% 98%",
+        "secondary": "180 80% 45%",
+        "secondary_foreground": "240 30% 6%",
+        "muted": "240 20% 15%",
+        "muted_foreground": "215 20% 65%",
+        "accent": "290 80% 60%",
+        "accent_foreground": "210 40% 98%",
+        "destructive": "0 84% 60%",
+        "destructive_foreground": "210 40% 98%",
+        "border": "240 20% 20%",
+        "input": "240 20% 20%",
+        "ring": "290 80% 60%"
+      },
+      "gradients": {
+        "hero_glow": "bg-gradient-to-tr from-primary/20 via-secondary/10 to-background",
+        "text_gradient": "bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary"
+      }
+    },
+    "visual_enhancers": {
+      "glassmorphism": "bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl",
+      "neon_border": "border border-primary/50 shadow-[0_0_15px_rgba(217,70,239,0.3)]",
+      "noise_texture": "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E\")"
+    },
+    "layout": {
+      "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+      "section_spacing": "py-24 md:py-32",
+      "grid_marketing": "grid grid-cols-1 md:grid-cols-12 gap-8",
+      "grid_dashboard": "grid grid-cols-1 md:grid-cols-4 gap-6"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary hover:bg-primary/90 text-white rounded-full px-8 py-6 font-heading font-semibold transition-all hover:shadow-[0_0_20px_rgba(217,70,239,0.5)] hover:-translate-y-1",
+      "secondary": "bg-transparent border border-white/20 hover:border-white/50 text-white rounded-full px-8 py-6 font-heading transition-all hover:bg-white/5",
+      "ghost": "hover:bg-white/5 text-muted-foreground hover:text-white transition-colors"
+    },
+    "cards": {
+      "venue": "group relative overflow-hidden rounded-2xl border border-white/10 bg-card/50 hover:border-primary/50 transition-all duration-500 hover:shadow-2xl",
+      "musician": "rounded-xl bg-muted/30 border border-white/5 p-6 hover:bg-muted/50 transition-colors",
+      "feature": "p-8 rounded-3xl bg-gradient-to-b from-white/5 to-transparent border border-white/10 backdrop-blur-sm"
+    },
+    "inputs": {
+      "default": "bg-black/20 border-white/10 focus:border-primary/50 focus:ring-primary/20 h-12 rounded-lg transition-all"
+    }
+  },
+  "assets": {
+    "images": {
+      "hero_bg": {
+        "url": "https://images.pexels.com/photos/1692695/pexels-photo-1692695.jpeg",
+        "alt": "Neon lit concert stage",
+        "usage": "Landing page hero background with heavy overlay"
+      },
+      "auth_musician": {
+        "url": "https://images.pexels.com/photos/10438494/pexels-photo-10438494.jpeg",
+        "alt": "Guitarist in dark club",
+        "usage": "Musician registration/login side image"
+      },
+      "auth_venue": {
+        "url": "https://images.pexels.com/photos/9419374/pexels-photo-9419374.jpeg",
+        "alt": "Jazz club interior",
+        "usage": "Venue registration/login side image"
+      },
+      "social_vibe": {
+        "url": "https://images.pexels.com/photos/7271799/pexels-photo-7271799.jpeg",
+        "alt": "People at bar",
+        "usage": "Community/Social proof section"
+      },
+      "equipment_tech": {
+        "url": "https://images.pexels.com/photos/3784221/pexels-photo-3784221.jpeg",
+        "alt": "Mixing console",
+        "usage": "Features section or equipment list background"
+      },
+      "microphone": {
+        "url": "https://images.pexels.com/photos/7715793/pexels-photo-7715793.jpeg",
+        "alt": "Microphone spotlight",
+        "usage": "Call to action or footer accent"
+      }
+    },
+    "icons": {
+      "library": "lucide-react",
+      "style": "Stroke width 1.5px, distinct and sharp"
+    }
+  },
+  "instructions_to_main_agent": {
+    "setup": [
+      "Install fonts: Add the Google Fonts import to index.css",
+      "Update tailwind.config.js: Extend the theme with the colors and font families defined above.",
+      "Global CSS: Apply the 'noise_texture' to the body background with a low opacity overlay.",
+      "Dark Mode: Ensure 'dark' class is applied to the html/body by default or via a provider."
+    ],
+    "layout_rules": [
+      "Mobile First: Always design for mobile (col-1) then expand to md/lg.",
+      "Spacing: Use 'gap-8' or 'gap-12' for sections. Don't crowd elements.",
+      "Glassmorphism: Use the 'glassmorphism' utility class defined in visual_enhancers for all floating elements (nav, modals, toasts)."
+    ],
+    "component_overrides": [
+      "Shadcn Button: Override default styles to match the 'buttons' section above.",
+      "Shadcn Card: Remove default bg and shadow, apply 'cards.venue' style by default.",
+      "Shadcn Input: Increase height to h-12 or h-14 for better touch targets."
+    ]
+  },
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. In frontend design, this creates what users call the 'AI slop' aesthetic. Avoid this: make creative, distinctive frontends that surprise and delight.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy",
+    "Use glass-morphism effects with backdrop filters (12-24px blur)",
+    "You MUST NOT apply universal transition. Eg: transition: all. This results in breaking transforms. Always add transitions for specific interactive elements like button, input excluding transforms",
+    "You MUST NOT center align the app container, ie do not add .App { text-align: center; } in the css file. This disrupts the human natural reading flow of text",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style",
+    "NEVER: use AI assistant Emoji characters like 🤖🧠💭💡🔮🎯📚🎭🎬🎪🎉🎊🎁🎀🎂🍰🎈🎨🎰💰💵💳🏦💎🪙💸🤑📊📈📉💹🔢🏆🥇 etc for icons.",
+    "Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations. Static = dead.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations: separates good from extraordinary.",
+    "Main agent relies on these image URLs. Missing categories (especially sponsor logos) = main agent will use placeholder text which is FORBIDDEN",
+    "Prioritize using pre-existing components from src/components/ui when applicable",
+    "Create new components that match the style and conventions of existing components when needed",
+    "Examine existing components to understand the project's component patterns before creating new ones",
+    "Components MUST use named exports (export const ComponentName = ...)",
+    "Pages MUST use default exports (export default function PageName() {...})",
+    "Use sonner for toasts. Sonner component are located in /app/src/components/ui/sonner.tsx"
+  ]
+}

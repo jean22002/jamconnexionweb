@@ -1,0 +1,161 @@
+<analysis>**original_problem_statement:**
+L'utilisateur a demandé plusieurs évolutions et corrections : 
+1. L'export des plannings (groupes et participations personnelles) vers Google Agenda / iOS via des fichiers  et liens d'abonnement.
+2. L'amélioration du design responsive (mobile) pour les menus à onglets.
+3. La correction d'un bug où les nouveaux groupes créés n'apparaissaient pas dans la liste.
+4. L'ajout d'un bouton pour accéder au planning directement depuis les cartes de groupe.
+5. Le nettoyage de l'interface (suppression de la carte d'information GPS).
+6. Le refactoring massif des fichiers monolithiques pour améliorer la maintenabilité.
+*(Nouvelles demandes ajoutées en cours de route : Migration vers MongoDB Atlas en production, configuration du nom de domaine personnalisé , correction de bugs en production sur les concerts, l'export iCal, et les profils manquants).*
+
+**PRODUCT REQUIREMENTS:**
+- Génération de flux iCal RFC 5545 pour le planning des groupes et les participations individuelles.
+- Interface utilisateur 100% responsive sur mobile.
+- Base de données persistante en production (MongoDB Atlas).
+- Domaine personnalisé fonctionnel et correctement routé (jamconnexion.com).
+- Synchronisation correcte de la double structure de données des groupes ( vs ).
+
+**User's preferred language**: French
+*(INSTRUCT: Next agent MUST respond in French only)*
+
+**what currently exists?** 
+Une application full-stack (React, FastAPI, MongoDB) de mise en relation et de gestion pour musiciens et établissements. L'application est désormais connectée à **MongoDB Atlas en environnement de production** et est accessible via le domaine personnalisé . Les fonctionnalités récentes incluent l'export iCal, les dashboards refactorisés, et la création/synchronisation automatique des ID de groupes (Bands) entre le profil musicien et la collection globale des groupes.
+
+**Last working item**:
+    - Last item agent was working: Vérification de l'intégrité des données du profil de l'utilisateur. L'utilisateur craignait que ses données aient été effacées suite à la résolution d'une erreur 404 sur le chargement du profil (causée par l'absence d'un document musician pour le user Test). L'agent a confirmé via script que toutes les données (groupes, concerts) sont intactes.
+    - Status: USER VERIFICATION PENDING
+    - Agent Testing Done: Y
+    - Which testing method agent to use? manual testing by python -c
+    - User Testing Done: N
+
+**All Pending/In progress Issue list**:
+  Issue 1: Désactiver l'activation automatique du statut PRO pour les nouveaux utilisateurs (P0)
+     - Attempted fixes: N/A (Repoussé pour traiter les bugs de production critiques)
+     - Next debug checklist: Modifier  pour retirer le bloc de code qui attribue automatiquement le statut PRO aux nouveaux musiciens (actuellement en place pour les tests).
+     - Why fix this issue and what will be achieved with the fix?: L'application est maintenant en production avec MongoDB Atlas. Les nouveaux inscrits ne doivent plus avoir le statut PRO gratuit pour permettre le vrai modèle économique (abonnement).
+     - Status: NOT STARTED
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? Backend
+
+  Issue 2: Incohérence possible des  et profils manquants pour les anciens utilisateurs (P1)
+     - Attempted fixes: Corrigé manuellement pour l'utilisateur jean (user_id mismatch) et l'utilisateur Test (profil manquant).
+     - Next debug checklist: Créer un script de migration qui parcourt tous les documents de la collection , vérifie qu'un document correspondant existe dans  ou , et s'assure que le  correspond exactement au uid=0(root) gid=0(root) groups=0(root) de la table .
+     - Why fix this issue and what will be achieved with the fix?: Éviter les erreurs 403 (Forbidden) sur l'export iCal et les erreurs 404 (Not Found) au chargement des profils pour les anciens comptes.
+     - Status: NOT STARTED
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix? Backend
+
+  Issue 3: Amélioration du taux de réussite de la suite de tests backend (P2)
+     - Attempted fixes: Résolution du conflit de nommage  et correction des endpoints appelés. Le taux est passé de 0% à ~46%.
+     - Next debug checklist: Continuer à déboguer  pour les tests échouant restants (ex: bugs de création de jams multiples, erreurs 422 sur les applications).
+     - Why fix this issue and what will be achieved with the fix?: Assurer la stabilité de la CI/CD.
+     - Status: IN PROGRESS
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix? Backend
+
+**In progress Task List**:
+  Aucune tâche officiellement en cours, toutes les urgences de production ont été stabilisées.
+
+**Upcoming and Future Tasks**
+  - (P0) Désactiver l'activation automatique du statut PRO à l'inscription (dans ).
+  - (P1) Script de migration global pour la cohérence des  et la création des profils manquants.
+  - (P1) Rendre les seuils de modération configurables.
+  - (P2) Implémenter des notifications en temps réel avec des WebSockets.
+
+**Completed work in this session**
+  - Migration vers MongoDB Atlas en production via le changement de  dans  (DONE)
+  - Configuration et diagnostic du domaine personnalisé  avec le Support Agent et Cloudflare (DONE)
+  - Correction des tests backend : Résolution du conflit d'import  (DONE)
+  - Correction d'une erreur 500 sur  : Rendu de  et  optionnels dans les modèles Pydantic (DONE)
+  - Correction d'une erreur React #31 : Rendu conditionnel des propriétés des concerts au lieu des objets entiers dans  (DONE)
+  - Ajout du bouton Voir le planning directement sur les cartes de groupe dans l'onglet Profil (DONE)
+  - Suppression de la carte d'information GPS dans le Modal d'édition de profil (DONE)
+  - Correction du bug de création des groupes (Synchronisation) : Les groupes créés depuis le profil sont désormais correctement injectés dans la collection globale  avec génération garantie d'un  (Frontend + Backend) (DONE)
+  - Réparation en masse de 28 anciens groupes sans  dans la base de données (DONE)
+  - Résolution de l'erreur 403 Forbidden sur l'export iCal (Correction de la comparaison  vs  et correction DB pour jean) (DONE)
+  - Résolution de l'erreur 404 Profil non trouvé (Création d'un script pour générer le profil manquant de l'utilisateur Test) (DONE)
+
+**Earlier issues found/mentioned but not fixed**
+   Issue 1: Profils musiciens non créés ou incohérents
+   - Debug checklist: Écrire un script pour détecter les utilisateurs sans entrée dans  et les  désynchronisés.
+   - Why to solve this issue and what will be achieved with this: Évite des crashs 404 sur le dashboard pour d'anciens utilisateurs.
+   - Should Test frontend/backend/both after fix: backend
+   - Is recurring issue? Y
+
+**Known issue recurrence from previous fork**
+  - Issue recurrence in previous fork: Tests backend qui échouent en masse.
+  - Recurrence count: 4
+  - Status: IN PROGRESS (Taux de succès passé de ~0% à 45.9%)
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+- FastAPI + Motor (MongoDB Async)
+- React Frontend
+- Pydantic Models validation
+- MongoDB Atlas (Production Environment)
+
+**key DB schema**
+  - : {id, email, role}
+  - : {user_id, pseudo, bands: [{id, name...}], concerts: []}
+  - : {id, name, leader_id, admin_id, members: []} -> **CRITICAL**: The  embedded array inside  must stay synced with the  standalone collection.
+
+**changes in tech stack**
+  - **CRITICAL MIGRATION**: Base de données passée de MongoDB local () à MongoDB Atlas (). Les données sont désormais persistantes et en live !
+
+**All files of reference**
+  -  (Définit ENVIRONMENT='production' et pointe vers Atlas)
+  -  (Mise à jour Pydantic)
+  -  (Logique de création/synchronisation des bands modifiée)
+  -  (Logique de permission iCal modifiée)
+  -  (UI du bouton planning)
+  -  (Gestion de l'état du planning)
+
+**Areas that need refactoring**:
+  - La synchronisation entre  et la collection  a été renforcée dans , mais ce pattern de double stockage reste sujet à des désynchronisations si des endpoints futurs modifient une collection sans modifier l'autre.
+
+**key api endpoints**
+  -  (Export iCal)
+  -  (Mise à jour profil et synchronisation des groupes)
+
+**Critical Info for New Agent**
+  - **L'application est en PRODUCTION**. Toutes les modifications dans la DB affectent les vrais utilisateurs. Utilisez des requêtes de lecture sûres ou des comptes de test isolés.
+  - Le domaine web  pointe désormais vers cette application via Cloudflare.
+  - Il existe un problème récurrent dans l'architecture où  correspond à  mais certaines anciennes tables référencent un vieux format ou ont des désynchronisations. Toujours vérifier la correspondance entre  et  lors de requêtes d'autorisation.
+  - N'oubliez pas de re-déployer (via l'UI Emergent) si des modifications de code doivent être visibles sur le domaine de production par l'utilisateur.
+
+**documents and test reports created in this job**
+  - None created strictly as files, but test scripts logs are in the terminal history.
+
+**Last 10 User Messages and any pending HUMAN messages** 
+ 1. User: Appuie sur exporter le calendrier et observe un bug 404 (L'agent a corrigé la non-synchronisation des ID de groupes dans la base de données).
+ 2. User: Indique que les groupes créés ne sont plus sauvegardés (L'agent a corrigé un oubli dans l'attribution de l'ID backend et a réparé 28 groupes via script).
+ 3. User: Demande pourquoi le groupe toto n'est pas dans son profil (L'agent a confirmé que le script l'a réparé).
+ 4. User: Demande de s'assurer que tous les nouveaux groupes auront un ID pour pallier le problème (L'agent a vérifié la double protection front/back).
+ 5. User: Signale un bug persistant (Erreur 403) pour télécharger le calendrier (L'agent a diagnostiqué un problème d'autorisation avec ).
+ 6. User: Relance avec ??? et une capture d'écran de l'erreur 403 qui persiste (L'agent a trouvé une incohérence profonde dans la base de données entre  et  pour ce compte précis et l'a corrigée).
+ 7. User: Demande de corriger le 403 Forbidden v1 (L'agent a testé via DB que l'accès était maintenant autorisé).
+ 8. User: Signale un problème de profil (404 Not found) avec capture d'écran (L'agent a découvert que l'utilisateur Test n'avait pas de document  créé, et l'a généré manuellement).
+ 9. User: les donne du profil ont été effacé? (L'agent a rassuré l'utilisateur en vérifiant via script que les données sont intactes).
+
+**Project Health Check:**
+  - Broken: Backend Bash Tests (partially passing: 45.9%).
+  - Mocked: Auto-PRO feature on register.
+
+**3rd Party Integrations**
+  - Cloudflare (DNS/Proxy) — requires User Account (already configured)
+  - MongoDB Atlas — uses Database connection string in 
+  - Stripe (Payments) — requires User API Key
+
+**Testing status**
+  - Testing agent used after significant changes: NO (Used terminal manual testing).
+  - Troubleshoot agent used after agent stuck in loop: YES (Support Agent was called to help user resolve Cloudflare/Domain linking problem).
+  - Test files created: []
+  - Known regressions: None
+
+**Credentials to test flow:**
+  - L'inscription via l'UI est le meilleur moyen de tester de nouveaux workflows.
+
+**What agent forgot to execute**
+  - La désactivation du PRO automatique pour les nouveaux musiciens (Issue P0) a été repoussée en raison des problèmes critiques consécutifs liés au passage en production, à la migration de la base de données, aux configurations DNS, et aux bugs bloquants liés au profil/calendrier. C'est la priorité numéro 1 pour le prochain agent.</analysis>

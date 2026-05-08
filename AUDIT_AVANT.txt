@@ -1,0 +1,10 @@
+=== AUDIT SYSTÈME - AVANT OPTIMISATION ===
+Date: Fri Mar 20 11:13:51 UTC 2026
+
+## 1. CONFIGURATION MONGODB ACTUELLE
+from motor.motor_asyncio import AsyncIOMotorClient
+import os
+import logging
+from pathlib import Path
+import stripe
+

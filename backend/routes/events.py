@@ -1,0 +1,1873 @@
+"""
+Events router - Handles all event types (jams, concerts, karaoke, spectacles) and participations
+"""
+from fastapi import APIRouter, HTTPException, Depends, Header, UploadFile, File, Query, Body, Request
+from fastapi.responses import FileResponse, StreamingResponse, Response
+from typing import List, Optional
+import uuid
+from datetime import datetime, timezone
+import jwt
+import os
+import logging
+from math import radians, sin, cos, sqrt, atan2
+from pathlib import Path
+import zipfile
+import io
+
+from models import (
+    JamEvent, JamEventResponse,
+    ConcertEvent, ConcertEventResponse,
+    KaraokeEvent, KaraokeEventResponse,
+    SpectacleEvent, SpectacleEventResponse
+)
+from routes.audit import log_action  # Import audit logging
+from routes.planning import create_notification  # Import notification helper
+
+router = APIRouter()
+db = None
+logger = logging.getLogger(__name__)
+
+
+def _normalize_event(doc):
+    """Sanitize legacy event records before Pydantic validation.
+
+    - Coerce datetime → ISO string for fields modeled as `str`.
+    - Replace None with "" for non-optional string fields.
+    - Wrap legacy bands stored as plain strings into {"name": ...} dicts.
+    """
+    if not doc:
+        return doc
+    for key in ("created_at", "updated_at", "start_time", "end_time", "date", "venue_name"):
+        v = doc.get(key)
+        if hasattr(v, "isoformat"):
+            doc[key] = v.isoformat()
+    # Pydantic str fields can't be None: default them to ""
+    for key in ("start_time", "end_time", "venue_name", "title"):
+        if key in doc and doc[key] is None:
+            doc[key] = ""
+    # Normalize bands (some legacy records store strings instead of dicts)
+    bands = doc.get("bands")
+    if isinstance(bands, list):
+        doc["bands"] = [
+            b if isinstance(b, dict) else {"name": str(b)}
+            for b in bands
+            if b is not None
+        ]
+    return doc
+
+JWT_SECRET = os.environ.get('JWT_SECRET', 'default_secret')
+JWT_ALGORITHM = "HS256"
+
+def set_db(database):
+    global db
+    db = database
+
+async def get_current_user(authorization: str = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
+    
+    token = authorization.split(" ")[1]
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        user = await db.users.find_one({"id": payload["user_id"]}, {"_id": 0})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        return user
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+
+async def get_current_user_optional(authorization: str = Header(None)):
+    """Optional authentication - returns None if not authenticated"""
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    
+    token = authorization.split(" ")[1]
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        user = await db.users.find_one({"id": payload["user_id"]}, {"_id": 0})
+        return user
+    except Exception:
+        return None
+
+
+async def notify_venue_subscribers(venue_id: str, event_type: str, title: str, message: str, link: str):
+    """Send notification to all venue subscribers"""
+    try:
+        subscriptions = await db.venue_subscriptions.find({"venue_id": venue_id}, {"_id": 0}).to_list(1000)
+        
+        for sub in subscriptions:
+            notification_id = str(uuid.uuid4())
+            notification_doc = {
+                "id": notification_id,
+                "user_id": sub["subscriber_id"],
+                "type": event_type,
+                "title": title,
+                "message": message,
+                "link": link,
+                "read": False,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.notifications.insert_one(notification_doc)
+        
+        logger.info(f"Notified {len(subscriptions)} subscribers for venue {venue_id}")
+    except Exception as e:
+        logger.error(f"Error notifying subscribers: {e}")
+
+
+# ============= JAM EVENTS (Boeuf musical) =============
+
+@router.post("/jams", response_model=JamEventResponse)
+async def create_jam_event(data: JamEvent, request: Request, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can create jam events")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Check if jam already exists at this date
+    existing_jam = await db.jams.find_one({
+        "venue_id": venue["id"],
+        "date": data.date
+    }, {"_id": 0})
+    
+    if existing_jam:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Un bœuf est déjà prévu le {data.date}. Vous ne pouvez pas créer deux bœufs le même jour."
+        )
+    
+    jam_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    jam_doc = {
+        "id": jam_id,
+        "venue_id": venue["id"],
+        "venue_name": venue["name"],
+        **data.model_dump(),
+        "created_at": now
+    }
+    
+    await db.jams.insert_one(jam_doc)
+    
+    # 🔔 Broadcast temps réel : Nouveau jam créé
+    try:
+        from websocket import broadcast_new_event
+        await broadcast_new_event(
+            event_type="jam",
+            venue_name=venue.get("name", "un établissement"),
+            city=venue.get("city", ""),
+            date=data.date,
+            music_styles=data.music_styles or []
+        )
+    except Exception as e:
+        logger.warning(f"Could not broadcast new jam event: {e}")
+    
+    # Audit log: Jam event created
+    await log_action(
+        user_id=current_user["id"],
+        user_role=current_user["role"],
+        action="create",
+        resource_type="jam_event",
+        resource_id=jam_id,
+        details={"date": data.date, "venue_name": venue["name"]},
+        request=request,
+        status="success"
+    )
+    
+    # Notify subscribers
+    await notify_venue_subscribers(
+        venue["id"], 
+        "jam_event", 
+        f"Nouveau boeuf musical chez {venue['name']}", 
+        f"Le {data.date} de {data.start_time} à {data.end_time}", 
+        f"/venue/{venue['id']}"
+    )
+    
+    # Check for new badges (event created)
+    try:
+        from utils.badge_checker import check_and_award_badges_internal
+        await check_and_award_badges_internal(db, current_user["id"])
+    except Exception as e:
+        logger.warning(f"Could not check badges: {e}")
+    
+    # Alert nearby venues (within 100km)
+    try:
+        # Optimisation: Ne récupérer que les champs nécessaires pour le calcul de distance et notification
+        all_venues = await db.venues.find(
+            {},
+            {"_id": 0, "id": 1, "user_id": 1, "latitude": 1, "longitude": 1, "name": 1}
+        ).to_list(1000)
+        
+        nearby_venues = []
+        for other_venue in all_venues:
+            if other_venue["id"] == venue["id"]:
+                continue
+            
+            if not other_venue.get("latitude") or not other_venue.get("longitude"):
+                continue
+            
+            if not venue.get("latitude") or not venue.get("longitude"):
+                continue
+            
+            # Calculate distance using Haversine formula
+            lat1, lon1 = radians(venue["latitude"]), radians(venue["longitude"])
+            lat2, lon2 = radians(other_venue["latitude"]), radians(other_venue["longitude"])
+            
+            dlat = lat2 - lat1
+            dlon = lon2 - lon1
+            
+            a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+            c = 2 * atan2(sqrt(a), sqrt(1-a))
+            distance_km = 6371 * c
+            
+            if distance_km <= 100:
+                nearby_venues.append({
+                    "venue": other_venue,
+                    "distance_km": round(distance_km, 1)
+                })
+        
+        # Send notification to each nearby venue
+        for nearby in nearby_venues:
+            notification = {
+                "id": str(uuid.uuid4()),
+                "user_id": nearby["venue"]["user_id"],
+                "type": "nearby_jam_alert",
+                "title": "🎵 Bœuf planifié à proximité",
+                "message": f"{venue['name']} organise un bœuf le {data.date} de {data.start_time} à {data.end_time} ({nearby['distance_km']}km de chez vous). Pensez à vérifier votre planning !",
+                "data": {
+                    "jam_id": jam_id,
+                    "venue_id": venue["id"],
+                    "venue_name": venue["name"],
+                    "date": data.date,
+                    "start_time": data.start_time,
+                    "end_time": data.end_time,
+                    "distance_km": nearby["distance_km"]
+                },
+                "is_read": False,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.notifications.insert_one(notification)
+        
+        logger.info(f"✅ Alerted {len(nearby_venues)} nearby venues about jam on {data.date}")
+    except Exception as e:
+        logger.error(f"⚠️ Error alerting nearby venues: {e}")
+    
+    return JamEventResponse(**jam_doc)
+
+
+@router.get("/jams", response_model=List[JamEventResponse])
+async def list_jam_events(venue_id: Optional[str] = None, date_from: Optional[str] = None):
+    query = {}
+    if venue_id:
+        query["venue_id"] = venue_id
+    if date_from:
+        query["date"] = {"$gte": date_from}
+    
+    jams = await db.jams.find(query, {"_id": 0}).sort("date", 1).to_list(100)
+    return [JamEventResponse(**_normalize_event(j)) for j in jams]
+
+
+@router.get("/venues/{venue_id}/jams", response_model=List[JamEventResponse])
+async def get_venue_jams(venue_id: str):
+    """Get all jams for a venue with participants count (optimized with aggregation)"""
+    # Utiliser une agrégation pour compter les participants en une seule requête
+    pipeline = [
+        # 1. Filtrer les jams du venue
+        {"$match": {"venue_id": venue_id}},
+        # 2. Joindre avec event_participations pour compter
+        {
+            "$lookup": {
+                "from": "event_participations",
+                "let": {"jam_id": "$id"},
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    {"$eq": ["$event_id", "$$jam_id"]},
+                                    {"$eq": ["$event_type", "jam"]},
+                                    {"$ne": ["$active", False]}
+                                ]
+                            }
+                        }
+                    },
+                    {"$count": "count"}
+                ],
+                "as": "participants_data"
+            }
+        },
+        # 3. Extraire le count (ou 0 si pas de participants) et ajouter les champs manquants
+        {
+            "$addFields": {
+                "participants_count": {
+                    "$ifNull": [
+                        {"$arrayElemAt": ["$participants_data.count", 0]},
+                        0
+                    ]
+                },
+                "venue_name": {"$ifNull": ["$venue_name", ""]},
+                "start_time": {"$ifNull": ["$start_time", ""]},
+                "end_time": {"$ifNull": ["$end_time", ""]}
+            }
+        },
+        # 4. Retirer _id et les champs temporaires
+        {
+            "$project": {
+                "_id": 0,
+                "participants_data": 0
+            }
+        },
+        # 5. Trier par date
+        {"$sort": {"date": 1}}
+    ]
+    
+    jams = await db.jams.aggregate(pipeline).to_list(100)
+    return [JamEventResponse(**_normalize_event(jam)) for jam in jams]
+
+
+@router.delete("/jams/{jam_id}")
+async def delete_jam_event(jam_id: str, request: Request, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can delete jam events")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Get jam before deleting for audit log
+    jam = await db.jams.find_one({"id": jam_id, "venue_id": venue["id"]}, {"_id": 0})
+    
+    result = await db.jams.delete_one({"id": jam_id, "venue_id": venue["id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Jam event not found")
+    
+    # Audit log: Jam event deleted
+    await log_action(
+        user_id=current_user["id"],
+        user_role=current_user["role"],
+        action="delete",
+        resource_type="jam_event",
+        resource_id=jam_id,
+        details={"date": jam.get("date") if jam else None, "venue_name": venue["name"]},
+        request=request,
+        status="success"
+    )
+    
+    return {"message": "Jam event deleted"}
+
+
+@router.put("/jams/{jam_id}", response_model=JamEventResponse)
+async def update_jam_event(jam_id: str, data: JamEvent, request: Request, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update jam events")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    jam = await db.jams.find_one({"id": jam_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not jam:
+        raise HTTPException(status_code=404, detail="Jam event not found")
+    
+    # Check for conflicts if date changed
+    if data.date != jam.get("date"):
+        existing = await db.jams.find_one({
+            "venue_id": venue["id"],
+            "date": data.date,
+            "id": {"$ne": jam_id}
+        })
+        if existing:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Un bœuf est déjà prévu le {data.date}"
+            )
+    
+    update_data = data.model_dump()
+    update_data["venue_name"] = venue["name"]
+    
+    await db.jams.update_one(
+        {"id": jam_id},
+        {"$set": update_data}
+    )
+    
+    updated = await db.jams.find_one({"id": jam_id}, {"_id": 0})
+    return JamEventResponse(**updated)
+
+
+# ============= CONCERT EVENTS =============
+
+@router.post("/concerts", response_model=ConcertEventResponse)
+async def create_concert_event(data: ConcertEvent, request: Request, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can create concert events")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    concert_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # DEBUG: Log what we're receiving
+    logger.info(f"🔍 Creating concert with data: {data.model_dump()}")
+    
+    concert_doc = {
+        "id": concert_id,
+        "venue_id": venue["id"],
+        "venue_name": venue["name"],
+        **data.model_dump(),
+        "created_at": now
+    }
+    
+    logger.info(f"🔍 Concert doc to insert: payment_method={concert_doc.get('payment_method')}, amount={concert_doc.get('amount')}, payment_status={concert_doc.get('payment_status')}")
+    
+    await db.concerts.insert_one(concert_doc)
+    
+    # 🔔 Broadcast temps réel : Nouveau concert créé
+    try:
+        from websocket import broadcast_new_event
+        await broadcast_new_event(
+            event_type="concert",
+            venue_name=venue.get("name", "un établissement"),
+            city=venue.get("city", ""),
+            date=data.date,
+            music_styles=data.music_styles or []
+        )
+    except Exception as e:
+        logger.warning(f"Could not broadcast new concert event: {e}")
+    
+    # 🎵 SYNC TO MUSICIANS & SEND NOTIFICATIONS
+    # For ALL concerts (not just GUSO), notify and add to musician's planning
+    if concert_doc.get("bands"):
+        for band in concert_doc["bands"]:
+            musician_id = band.get("musician_id")
+            if musician_id:
+                # Get musician profile
+                musician = await db.musicians.find_one({"id": musician_id}, {"_id": 0})
+                if musician:
+                    # Create concert entry for musician's profile
+                    musician_concert = {
+                        "id": concert_id,
+                        "venue_name": venue["name"],
+                        "venue_id": venue["id"],
+                        "city": venue.get("city", ""),
+                        "date": data.date,
+                        "start_time": data.start_time,
+                        "end_time": data.end_time,
+                        "title": data.title or f"Concert chez {venue['name']}",
+                        "band_name": band.get("name"),
+                        "is_guso": concert_doc.get("is_guso", False),
+                        "cachet_type": concert_doc.get("cachet_type"),
+                        "cachet": concert_doc.get("amount"),
+                        "guso_contract_type": concert_doc.get("guso_contract_type"),
+                        "guso_declared": False if concert_doc.get("is_guso") else None,
+                        "payment_status": concert_doc.get("payment_status", "pending"),
+                        "formation_type": band.get("formation_type", "Groupe"),
+                        "source": "venue_created_concert"
+                    }
+                    
+                    # Check if concert already exists in musician's profile
+                    existing_concert = next(
+                        (c for c in musician.get("concerts", []) if c.get("id") == concert_id),
+                        None
+                    )
+                    
+                    if not existing_concert:
+                        # Add to musician's concerts
+                        await db.musicians.update_one(
+                            {"id": musician_id},
+                            {"$push": {"concerts": musician_concert}}
+                        )
+                        logger.info(f"✅ Concert synced to musician {musician_id} for concert {concert_id}")
+                        
+                        # 🔔 SEND NOTIFICATION TO MUSICIAN
+                        await create_notification(
+                            musician["user_id"],
+                            "concert_scheduled",
+                            "🎸 Concert programmé !",
+                            f"{venue['name']} vous a programmé pour un concert le {data.date}. Consultez les détails dans votre planning.",
+                            f"/venue/{venue['id']}"
+                        )
+    
+    # Notify subscribers
+    await notify_venue_subscribers(
+        venue["id"],
+        "concert_event",
+        f"Nouveau concert chez {venue['name']}",
+        f"Le {data.date} de {data.start_time} à {data.end_time}",
+        f"/venue/{venue['id']}"
+    )
+    
+    # Check for new badges (event created)
+    try:
+        from utils.badge_checker import check_and_award_badges_internal
+        await check_and_award_badges_internal(db, current_user["id"])
+    except Exception as e:
+        logger.warning(f"Could not check badges: {e}")
+    
+    # Count participants
+    participants_count = await db.event_participations.count_documents({
+        "event_id": concert_id,
+        "event_type": "concert",
+        "active": True
+    })
+    
+    return ConcertEventResponse(**concert_doc, participants_count=participants_count)
+
+
+@router.get("/concerts", response_model=List[ConcertEventResponse])
+async def list_concerts(venue_id: Optional[str] = None):
+    """List all concerts with participants count (optimized with aggregation)"""
+    # Construire le match query
+    match_query = {}
+    if venue_id:
+        match_query["venue_id"] = venue_id
+    
+    # Utiliser une agrégation pour compter les participants en une seule requête
+    pipeline = [
+        # 1. Filtrer les concerts
+        {"$match": match_query} if match_query else {"$match": {}},
+        # 2. Joindre avec event_participations pour compter
+        {
+            "$lookup": {
+                "from": "event_participations",
+                "let": {"concert_id": "$id"},
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    {"$eq": ["$event_id", "$$concert_id"]},
+                                    {"$eq": ["$event_type", "concert"]},
+                                    {"$eq": ["$active", True]}
+                                ]
+                            }
+                        }
+                    },
+                    {"$count": "count"}
+                ],
+                "as": "participants_data"
+            }
+        },
+        # 3. Extraire le count et ajouter les champs manquants
+        {
+            "$addFields": {
+                "participants_count": {
+                    "$ifNull": [
+                        {"$arrayElemAt": ["$participants_data.count", 0]},
+                        0
+                    ]
+                },
+                "venue_name": {"$ifNull": ["$venue_name", ""]},
+                "start_time": {"$ifNull": ["$start_time", ""]}
+            }
+        },
+        # 4. Retirer _id et champs temporaires
+        {
+            "$project": {
+                "_id": 0,
+                "participants_data": 0
+            }
+        },
+        # 5. Trier par date
+        {"$sort": {"date": 1}}
+    ]
+    
+    concerts = await db.concerts.aggregate(pipeline).to_list(100)
+    return [ConcertEventResponse(**_normalize_event(concert)) for concert in concerts]
+
+
+@router.get("/venues/{venue_id}/concerts", response_model=List[ConcertEventResponse])
+async def get_venue_concerts(venue_id: str):
+    """Get all concerts for a venue with participants count (optimized with aggregation)"""
+    # Utiliser une agrégation pour compter les participants en une seule requête
+    pipeline = [
+        # 1. Filtrer les concerts du venue
+        {"$match": {"venue_id": venue_id}},
+        # 2. Joindre avec event_participations pour compter
+        {
+            "$lookup": {
+                "from": "event_participations",
+                "let": {"concert_id": "$id"},
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    {"$eq": ["$event_id", "$$concert_id"]},
+                                    {"$eq": ["$event_type", "concert"]},
+                                    {"$eq": ["$active", True]}
+                                ]
+                            }
+                        }
+                    },
+                    {"$count": "count"}
+                ],
+                "as": "participants_data"
+            }
+        },
+        # 3. Extraire le count et ajouter les champs manquants
+        {
+            "$addFields": {
+                "participants_count": {
+                    "$ifNull": [
+                        {"$arrayElemAt": ["$participants_data.count", 0]},
+                        0
+                    ]
+                },
+                "venue_name": {"$ifNull": ["$venue_name", ""]},
+                "start_time": {"$ifNull": ["$start_time", ""]}
+            }
+        },
+        # 4. Retirer _id et champs temporaires
+        {
+            "$project": {
+                "_id": 0,
+                "participants_data": 0
+            }
+        },
+        # 5. Trier par date
+        {"$sort": {"date": 1}}
+    ]
+    
+    concerts = await db.concerts.aggregate(pipeline).to_list(100)
+    return [ConcertEventResponse(**_normalize_event(concert)) for concert in concerts]
+
+
+@router.delete("/concerts/{concert_id}")
+async def delete_concert(concert_id: str, request: Request, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can delete concerts")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    result = await db.concerts.delete_one({"id": concert_id, "venue_id": venue["id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Concert not found")
+    
+    # Delete associated participations
+    await db.event_participations.delete_many({
+        "event_id": concert_id,
+        "event_type": "concert"
+    })
+    
+    return {"message": "Concert deleted"}
+
+
+@router.put("/concerts/{concert_id}", response_model=ConcertEventResponse)
+async def update_concert(concert_id: str, data: ConcertEvent, request: Request, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update concerts")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    concert = await db.concerts.find_one({"id": concert_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not concert:
+        raise HTTPException(status_code=404, detail="Concert not found")
+    
+    update_data = data.model_dump()
+    update_data["venue_name"] = venue["name"]
+    
+    await db.concerts.update_one(
+        {"id": concert_id},
+        {"$set": update_data}
+    )
+    
+    # 🎵 SYNC UPDATED GUSO INFO TO MUSICIANS
+    # If GUSO info changed, update musician profiles
+    if update_data.get("is_guso") and update_data.get("bands"):
+        for band in update_data["bands"]:
+            musician_id = band.get("musician_id")
+            if musician_id:
+                # Update the concert in musician's profile
+                musician = await db.musicians.find_one({"user_id": musician_id}, {"_id": 0})
+                if musician:
+                    concerts = musician.get("concerts", [])
+                    concert_index = next(
+                        (i for i, c in enumerate(concerts) if c.get("id") == concert_id),
+                        None
+                    )
+                    
+                    if concert_index is not None:
+                        # Update existing concert
+                        concerts[concert_index].update({
+                            "cachet_type": update_data.get("cachet_type"),
+                            "cachet": update_data.get("amount"),
+                            "guso_contract_type": update_data.get("guso_contract_type"),
+                            "is_guso": True
+                        })
+                        
+                        await db.musicians.update_one(
+                            {"user_id": musician_id},
+                            {"$set": {"concerts": concerts}}
+                        )
+                        logger.info(f"✅ GUSO info updated for musician {musician_id} - concert {concert_id}")
+    
+    updated = await db.concerts.find_one({"id": concert_id}, {"_id": 0})
+    participants_count = await db.event_participations.count_documents({
+        "event_id": concert_id,
+        "event_type": "concert",
+        "active": True
+    })
+    
+    return ConcertEventResponse(**updated, participants_count=participants_count)
+
+
+# ============= KARAOKE EVENTS =============
+
+@router.post("/karaoke", response_model=KaraokeEventResponse)
+async def create_karaoke_event(data: KaraokeEvent, request: Request, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can create karaoke events")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    karaoke_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    karaoke_doc = {
+        "id": karaoke_id,
+        "venue_id": venue["id"],
+        "venue_name": venue["name"],
+        **data.model_dump(),
+        "created_at": now
+    }
+    
+    await db.karaoke.insert_one(karaoke_doc)
+    
+    return KaraokeEventResponse(**karaoke_doc)
+
+
+@router.get("/karaoke", response_model=List[KaraokeEventResponse])
+async def list_karaoke_events(venue_id: Optional[str] = None):
+    query = {}
+    if venue_id:
+        query["venue_id"] = venue_id
+    
+    events = await db.karaoke.find(query, {"_id": 0}).sort("date", 1).to_list(100)
+    return [KaraokeEventResponse(**e) for e in events]
+
+
+@router.get("/venues/{venue_id}/karaoke", response_model=List[KaraokeEventResponse])
+async def get_venue_karaoke(venue_id: str):
+    events = await db.karaoke.find({"venue_id": venue_id}, {"_id": 0}).sort("date", 1).to_list(100)
+    return [KaraokeEventResponse(**e) for e in events]
+
+
+@router.delete("/karaoke/{karaoke_id}")
+async def delete_karaoke(karaoke_id: str, request: Request, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can delete karaoke events")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    result = await db.karaoke.delete_one({"id": karaoke_id, "venue_id": venue["id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Karaoke event not found")
+    
+    return {"message": "Karaoke event deleted"}
+
+
+@router.put("/karaoke/{karaoke_id}", response_model=KaraokeEventResponse)
+async def update_karaoke(karaoke_id: str, data: KaraokeEvent, request: Request, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update karaoke events")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    karaoke = await db.karaoke.find_one({"id": karaoke_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not karaoke:
+        raise HTTPException(status_code=404, detail="Karaoke event not found")
+    
+    update_data = data.model_dump()
+    update_data["venue_name"] = venue["name"]
+    
+    await db.karaoke.update_one(
+        {"id": karaoke_id},
+        {"$set": update_data}
+    )
+    
+    updated = await db.karaoke.find_one({"id": karaoke_id}, {"_id": 0})
+    return KaraokeEventResponse(**updated)
+
+
+# ============= SPECTACLE EVENTS =============
+
+@router.post("/spectacle", response_model=SpectacleEventResponse)
+async def create_spectacle_event(data: SpectacleEvent, request: Request, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can create spectacle events")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    spectacle_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    spectacle_doc = {
+        "id": spectacle_id,
+        "venue_id": venue["id"],
+        "venue_name": venue["name"],
+        **data.model_dump(),
+        "created_at": now
+    }
+    
+    await db.spectacle.insert_one(spectacle_doc)
+    
+    return SpectacleEventResponse(**spectacle_doc)
+
+
+@router.get("/spectacle", response_model=List[SpectacleEventResponse])
+async def list_spectacle_events(venue_id: Optional[str] = None):
+    query = {}
+    if venue_id:
+        query["venue_id"] = venue_id
+    
+    events = await db.spectacle.find(query, {"_id": 0}).sort("date", 1).to_list(100)
+    return [SpectacleEventResponse(**e) for e in events]
+
+
+@router.get("/venues/{venue_id}/spectacle", response_model=List[SpectacleEventResponse])
+async def get_venue_spectacle(venue_id: str):
+    events = await db.spectacle.find({"venue_id": venue_id}, {"_id": 0}).sort("date", 1).to_list(100)
+    return [SpectacleEventResponse(**e) for e in events]
+
+
+@router.delete("/spectacle/{spectacle_id}")
+async def delete_spectacle(spectacle_id: str, request: Request, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can delete spectacle events")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    result = await db.spectacle.delete_one({"id": spectacle_id, "venue_id": venue["id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Spectacle event not found")
+    
+    return {"message": "Spectacle event deleted"}
+
+
+@router.put("/spectacle/{spectacle_id}", response_model=SpectacleEventResponse)
+async def update_spectacle(spectacle_id: str, data: SpectacleEvent, request: Request, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update spectacle events")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    spectacle = await db.spectacle.find_one({"id": spectacle_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not spectacle:
+        raise HTTPException(status_code=404, detail="Spectacle event not found")
+    
+    update_data = data.model_dump()
+    update_data["venue_name"] = venue["name"]
+    
+    await db.spectacle.update_one(
+        {"id": spectacle_id},
+        {"$set": update_data}
+    )
+    
+    updated = await db.spectacle.find_one({"id": spectacle_id}, {"_id": 0})
+    return SpectacleEventResponse(**updated)
+
+
+# ============= EVENT PARTICIPATIONS =============
+
+@router.post("/events/{event_id}/join")
+async def join_event(event_id: str, event_type: str, request: Request, current_user: dict = Depends(get_current_user)):
+    """Join an event (for musicians and melomanes)"""
+    if current_user["role"] not in ["musician", "melomane"]:
+        raise HTTPException(status_code=403, detail="Only musicians and melomanes can join events")
+    
+    # Check if event exists
+    event = None
+    if event_type == "jam":
+        event = await db.jams.find_one({"id": event_id}, {"_id": 0})
+    elif event_type == "concert":
+        event = await db.concerts.find_one({"id": event_id}, {"_id": 0})
+    elif event_type == "karaoke":
+        event = await db.karaoke.find_one({"id": event_id}, {"_id": 0})
+    elif event_type == "spectacle":
+        event = await db.spectacle.find_one({"id": event_id}, {"_id": 0})
+    
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    # Check if already participating (active)
+    existing_active = await db.event_participations.find_one({
+        "event_id": event_id,
+        "user_id": current_user["id"],
+        "active": True
+    })
+    
+    if existing_active:
+        raise HTTPException(status_code=400, detail="Already participating in this event")
+    
+    # Check if there's an inactive participation (previously left)
+    existing_inactive = await db.event_participations.find_one({
+        "event_id": event_id,
+        "user_id": current_user["id"],
+        "active": False
+    })
+    
+    if existing_inactive:
+        # Reactivate the existing participation
+        await db.event_participations.update_one(
+            {"id": existing_inactive["id"]},
+            {"$set": {"active": True, "rejoined_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        return {"message": "Successfully joined event", "participation_id": existing_inactive["id"]}
+    
+    # Create new participation
+    participation_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    participation_doc = {
+        "id": participation_id,
+        "event_id": event_id,
+        "event_type": event_type,
+        "user_id": current_user["id"],
+        "user_role": current_user["role"],
+        "active": True,
+        "created_at": now
+    }
+    
+    await db.event_participations.insert_one(participation_doc)
+    
+    # ✨ NOUVEAU : Notifier l'établissement de la participation
+    try:
+        # Récupérer les infos du venue
+        venue = await db.venues.find_one({"id": event["venue_id"]}, {"_id": 0, "user_id": 1, "name": 1})
+        
+        if venue:
+            # Récupérer les infos du participant
+            participant_name = "Un utilisateur"
+            participant_type = "utilisateur"
+            
+            if current_user["role"] == "musician":
+                musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0, "pseudo": 1})
+                if musician:
+                    participant_name = musician.get("pseudo", "Un musicien")
+                    participant_type = "musicien"
+            elif current_user["role"] == "melomane":
+                melomane = await db.melomanes.find_one({"user_id": current_user["id"]}, {"_id": 0, "pseudo": 1})
+                if melomane:
+                    participant_name = melomane.get("pseudo", "Un mélomane")
+                    participant_type = "mélomane"
+            
+            # Créer la notification pour l'établissement
+            event_type_label = {
+                "jam": "bœuf",
+                "concert": "concert",
+                "karaoke": "karaoké",
+                "spectacle": "spectacle"
+            }
+            
+            notification_title = f"🎵 Nouvelle participation : {participant_name}"
+            notification_message = f"{participant_name} ({participant_type}) a rejoint votre {event_type_label.get(event_type, 'événement')} du {event.get('date', 'TBD')}"
+            
+            # Check notification preferences
+            from utils.notification_preferences import should_send_notification
+            should_notify = await should_send_notification(venue["user_id"], "new_participants", "venue")
+            
+            if should_notify:
+                notification = {
+                    "id": str(uuid.uuid4()),
+                    "user_id": venue["user_id"],
+                    "type": "new_participation",
+                    "title": notification_title,
+                    "message": notification_message,
+                    "related_id": event_id,
+                    "read": False,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                
+                await db.notifications.insert_one(notification)
+                logger.info(f"✓ Notification sent to venue {venue['user_id']} for participation in event {event_id}")
+                
+                # 🔔 NOUVEAU : Envoyer notification push en temps réel
+                try:
+                    from routes.push_notifications import send_push_notification
+                    await send_push_notification(
+                        user_id=venue["user_id"],
+                        notification_data={
+                            "title": notification_title,
+                            "message": notification_message,
+                            "link": "/venue-dashboard?tab=planning",
+                            "data": {
+                                "type": "new_participation",
+                                "event_id": event_id,
+                                "event_type": event_type
+                            }
+                        }
+                    )
+                    logger.info(f"✓ Push notification sent to venue {venue['user_id']}")
+                except Exception as push_error:
+                    logger.warning(f"Push notification failed (non-blocking): {push_error}")
+            else:
+                logger.info(f"Notification skipped for venue {venue['user_id']} (new_participants disabled)")
+            
+    except Exception as e:
+        logger.error(f"Failed to create venue notification: {e}")
+    
+    # Check for new badges (for musicians participating in events)
+    try:
+        from utils.badge_checker import check_and_award_badges_internal
+        if current_user["role"] == "musician":
+            await check_and_award_badges_internal(db, current_user["id"])
+    except Exception as e:
+        logger.warning(f"Could not check badges: {e}")
+    
+    return {"message": "Successfully joined event", "participation_id": participation_id}
+
+
+@router.post("/events/{event_id}/leave")
+async def leave_event(event_id: str, request: Request, current_user: dict = Depends(get_current_user)):
+    """Leave an event"""
+    result = await db.event_participations.update_one(
+        {"event_id": event_id, "user_id": current_user["id"], "active": True},
+        {"$set": {"active": False}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Participation not found")
+    
+    return {"message": "Successfully left event"}
+
+
+@router.get("/events/{event_id}/participants")
+async def get_event_participants(event_id: str):
+    """Get all participants of an event"""
+    participations = await db.event_participations.find({
+        "event_id": event_id,
+        "active": True
+    }, {"_id": 0}).to_list(1000)
+    
+    return participations
+
+
+@router.get("/musicians/me/participations")
+async def get_my_participations(request: Request, current_user: dict = Depends(get_current_user)):
+    """Get all my event participations with enriched data"""
+    if current_user["role"] not in ["musician", "melomane"]:
+        raise HTTPException(status_code=403, detail="Only musicians and melomanes can access this")
+    
+    participations = await db.event_participations.find({
+        "user_id": current_user["id"],
+        "active": True
+    }, {"_id": 0}).to_list(1000)
+    
+    # Enrich with event and venue details
+    enriched_participations = []
+    for participation in participations:
+        event_id = participation.get("event_id")
+        event_type = participation.get("event_type")
+        
+        # Get event details based on type
+        event = None
+        if event_type == "jam":
+            event = await db.jams.find_one({"id": event_id}, {"_id": 0})
+        elif event_type == "concert":
+            event = await db.concerts.find_one({"id": event_id}, {"_id": 0})
+        elif event_type == "karaoke":
+            event = await db.karaoke_events.find_one({"id": event_id}, {"_id": 0})
+        elif event_type == "spectacle":
+            event = await db.spectacle_events.find_one({"id": event_id}, {"_id": 0})
+        
+        if event:
+            # Get venue details
+            venue = await db.venues.find_one({"id": event.get("venue_id")}, {"_id": 0, "name": 1, "city": 1})
+            
+            # Merge all data
+            enriched_participations.append({
+                **participation,
+                "venue_id": event.get("venue_id"),
+                "venue_name": venue.get("name") if venue else "Établissement inconnu",
+                "venue_city": venue.get("city") if venue else None,
+                "event_date": event.get("date"),
+                "event_time": event.get("start_time"),
+                "event_end_time": event.get("end_time"),
+                "event_title": event.get("title") if event_type == "concert" else None
+            })
+        else:
+            enriched_participations.append(participation)
+    
+    return enriched_participations
+
+
+@router.get("/musicians/me/participations/calendar.ics")
+async def export_my_participations_calendar(request: Request, current_user: dict = Depends(get_current_user)):
+    """
+    Export all my participations as .ics file
+    Compatible with Google Calendar, iOS Calendar, Outlook, etc.
+    """
+    if current_user["role"] not in ["musician", "melomane"]:
+        raise HTTPException(status_code=403, detail="Only musicians and melomanes can export participations")
+    
+    # Get all participations
+    participations = await db.event_participations.find({
+        "user_id": current_user["id"],
+        "active": True
+    }, {"_id": 0}).to_list(1000)
+    
+    # Build events list for iCal
+    events = []
+    for participation in participations:
+        event_id = participation.get("event_id")
+        event_type = participation.get("event_type")
+        
+        # Get event details
+        event = None
+        if event_type == "jam":
+            event = await db.jams.find_one({"id": event_id}, {"_id": 0})
+        elif event_type == "concert":
+            event = await db.concerts.find_one({"id": event_id}, {"_id": 0})
+        elif event_type == "karaoke":
+            event = await db.karaoke.find_one({"id": event_id}, {"_id": 0})
+        elif event_type == "spectacle":
+            event = await db.spectacle.find_one({"id": event_id}, {"_id": 0})
+        
+        if event:
+            venue = await db.venues.find_one({"id": event.get("venue_id")}, {"_id": 0})
+            
+            events.append({
+                "id": event_id,
+                "type": event_type,
+                "date": event.get("date"),
+                "start_time": event.get("start_time", "20:00"),
+                "end_time": event.get("end_time", "23:00"),
+                "venue_name": venue.get("name") if venue else "Établissement",
+                "venue_city": venue.get("city") if venue else "",
+                "title": event.get("title") if event_type == "concert" else None
+            })
+    
+    # Generate iCal content
+    ical_content = generate_participations_ical(events, current_user.get("name", "Musicien"))
+    
+    # Return as downloadable .ics file
+    filename = "mes_participations.ics"
+    
+    return Response(
+        content=ical_content,
+        media_type="text/calendar",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"'
+        }
+    )
+
+
+def generate_participations_ical(events: List[dict], user_name: str) -> str:
+    """Generate iCalendar format for participations"""
+    ical_lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Jam Connexion//Mes Participations//FR",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        f"X-WR-CALNAME:Mes Participations - {user_name}",
+        "X-WR-TIMEZONE:Europe/Paris",
+        "X-WR-CALDESC:Tous mes concerts, bœufs et événements musicaux"
+    ]
+    
+    for event in events:
+        try:
+            # Parse date and time
+            event_date = event.get("date", "")
+            start_time = event.get("start_time", "20:00")
+            end_time = event.get("end_time", "23:00")
+            
+            date_obj = datetime.fromisoformat(event_date)
+            
+            # Parse times
+            start_parts = start_time.split(":")
+            start_hour = int(start_parts[0]) if start_parts else 20
+            start_minute = int(start_parts[1]) if len(start_parts) > 1 else 0
+            
+            end_parts = end_time.split(":")
+            end_hour = int(end_parts[0]) if end_parts else 23
+            end_minute = int(end_parts[1]) if len(end_parts) > 1 else 0
+            
+            start_dt = date_obj.replace(hour=start_hour, minute=start_minute)
+            end_dt = date_obj.replace(hour=end_hour, minute=end_minute)
+            
+            dtstart = start_dt.strftime("%Y%m%dT%H%M%S")
+            dtend = end_dt.strftime("%Y%m%dT%H%M%S")
+            dtstamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+            
+        except Exception:
+            continue
+        
+        # Event details
+        event_type = event.get("type", "event")
+        venue_name = event.get("venue_name", "Établissement")
+        venue_city = event.get("venue_city", "")
+        title = event.get("title")
+        event_id = event.get("id", "")
+        
+        # Build summary
+        type_labels = {
+            "jam": "Bœuf musical",
+            "concert": "Concert",
+            "karaoke": "Karaoké",
+            "spectacle": "Spectacle"
+        }
+        
+        event_label = type_labels.get(event_type, "Événement")
+        
+        if title and event_type == "concert":
+            summary = f"{title} @ {venue_name}"
+        else:
+            summary = f"{event_label} @ {venue_name}"
+        
+        # Build location
+        location = venue_name
+        if venue_city:
+            location = f"{venue_name}, {venue_city}"
+        
+        # Build description
+        description = f"{event_label} - Participation confirmée"
+        
+        # Add event to calendar
+        ical_lines.extend([
+            "BEGIN:VEVENT",
+            f"UID:{event_id}@jamconnexion.com",
+            f"DTSTAMP:{dtstamp}",
+            f"DTSTART:{dtstart}",
+            f"DTEND:{dtend}",
+            f"SUMMARY:{summary}",
+            f"DESCRIPTION:{description}",
+            f"LOCATION:{location}",
+            "STATUS:CONFIRMED",
+            "TRANSP:OPAQUE",
+            "END:VEVENT"
+        ])
+    
+    ical_lines.append("END:VCALENDAR")
+    
+    return "\r\n".join(ical_lines)
+
+
+# ============= ACCOUNTING - UPDATE PAYMENT STATUS =============
+
+from pydantic import BaseModel
+
+class PaymentStatusUpdate(BaseModel):
+    payment_status: str
+
+@router.patch("/jams/{jam_id}/payment-status")
+async def update_jam_payment_status(
+    jam_id: str,
+    data: PaymentStatusUpdate,
+    request: Request, current_user: dict = Depends(get_current_user)
+):
+    """Update only the payment status of a jam event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update payment status")
+    
+    # Validate status
+    valid_statuses = ["Payé", "En attente", "Annulé", "Non spécifié"]
+    if data.payment_status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    jam = await db.jams.find_one({"id": jam_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not jam:
+        raise HTTPException(status_code=404, detail="Jam event not found")
+    
+    # Update only payment_status
+    await db.jams.update_one(
+        {"id": jam_id},
+        {"$set": {"payment_status": data.payment_status}}
+    )
+    
+    return {"success": True, "payment_status": data.payment_status}
+
+
+@router.patch("/concerts/{concert_id}/payment-status")
+async def update_concert_payment_status(
+    concert_id: str,
+    data: PaymentStatusUpdate,
+    request: Request, current_user: dict = Depends(get_current_user)
+):
+    """Update only the payment status of a concert event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update payment status")
+    
+    # Validate status
+    valid_statuses = ["Payé", "En attente", "Annulé", "Non spécifié"]
+    if data.payment_status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    concert = await db.concerts.find_one({"id": concert_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not concert:
+        raise HTTPException(status_code=404, detail="Concert not found")
+    
+    # Update only payment_status
+    await db.concerts.update_one(
+        {"id": concert_id},
+        {"$set": {"payment_status": data.payment_status}}
+    )
+    
+    return {"success": True, "payment_status": data.payment_status}
+
+
+@router.patch("/karaoke/{karaoke_id}/payment-status")
+async def update_karaoke_payment_status(
+    karaoke_id: str,
+    data: PaymentStatusUpdate,
+    request: Request, current_user: dict = Depends(get_current_user)
+):
+    """Update only the payment status of a karaoke event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update payment status")
+    
+    # Validate status
+    valid_statuses = ["Payé", "En attente", "Annulé", "Non spécifié"]
+    if data.payment_status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    karaoke = await db.karaoke.find_one({"id": karaoke_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not karaoke:
+        raise HTTPException(status_code=404, detail="Karaoke event not found")
+    
+    # Update only payment_status
+    await db.karaoke.update_one(
+        {"id": karaoke_id},
+        {"$set": {"payment_status": data.payment_status}}
+    )
+    
+    return {"success": True, "payment_status": data.payment_status}
+
+
+@router.patch("/spectacle/{spectacle_id}/payment-status")
+async def update_spectacle_payment_status(
+    spectacle_id: str,
+    data: PaymentStatusUpdate,
+    request: Request, current_user: dict = Depends(get_current_user)
+):
+    """Update only the payment status of a spectacle event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update payment status")
+    
+    # Validate status
+    valid_statuses = ["Payé", "En attente", "Annulé", "Non spécifié"]
+    if data.payment_status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    spectacle = await db.spectacle.find_one({"id": spectacle_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not spectacle:
+        raise HTTPException(status_code=404, detail="Spectacle event not found")
+    
+    # Update only payment_status
+    await db.spectacle.update_one(
+        {"id": spectacle_id},
+        {"$set": {"payment_status": data.payment_status}}
+    )
+    
+    return {"success": True, "payment_status": data.payment_status}
+
+
+
+# ============= INVOICE FILE UPLOAD =============
+
+UPLOAD_DIR = Path("/app/backend/uploads/invoices")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+ALLOWED_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".gif", ".webp"}
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+
+def get_file_extension(filename: str) -> str:
+    """Get file extension in lowercase"""
+    return Path(filename).suffix.lower()
+
+@router.post("/jams/{jam_id}/invoice")
+async def upload_jam_invoice(
+    jam_id: str,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload invoice file for a jam event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can upload invoices")
+    
+    # Validate file extension
+    file_ext = get_file_extension(file.filename)
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+    
+    # Validate file size
+    file_content = await file.read()
+    if len(file_content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Max size: 10MB")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    jam = await db.jams.find_one({"id": jam_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not jam:
+        raise HTTPException(status_code=404, detail="Jam event not found")
+    
+    # Generate unique filename
+    unique_filename = f"{jam_id}_{uuid.uuid4().hex[:8]}{file_ext}"
+    file_path = UPLOAD_DIR / unique_filename
+    
+    # Save file
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+    
+    # Update database
+    await db.jams.update_one(
+        {"id": jam_id},
+        {"$set": {"invoice_file": unique_filename}}
+    )
+    
+    return {"success": True, "filename": unique_filename}
+
+
+@router.post("/concerts/{concert_id}/invoice")
+async def upload_concert_invoice(
+    concert_id: str,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload invoice file for a concert event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can upload invoices")
+    
+    # Validate file extension
+    file_ext = get_file_extension(file.filename)
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+    
+    # Validate file size
+    file_content = await file.read()
+    if len(file_content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Max size: 10MB")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    concert = await db.concerts.find_one({"id": concert_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not concert:
+        raise HTTPException(status_code=404, detail="Concert not found")
+    
+    # Generate unique filename
+    unique_filename = f"{concert_id}_{uuid.uuid4().hex[:8]}{file_ext}"
+    file_path = UPLOAD_DIR / unique_filename
+    
+    # Save file
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+    
+    # Update database
+    await db.concerts.update_one(
+        {"id": concert_id},
+        {"$set": {"invoice_file": unique_filename}}
+    )
+    
+    return {"success": True, "filename": unique_filename}
+
+
+@router.post("/karaoke/{karaoke_id}/invoice")
+async def upload_karaoke_invoice(
+    karaoke_id: str,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload invoice file for a karaoke event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can upload invoices")
+    
+    file_ext = get_file_extension(file.filename)
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+    
+    file_content = await file.read()
+    if len(file_content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Max size: 10MB")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    karaoke = await db.karaoke.find_one({"id": karaoke_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not karaoke:
+        raise HTTPException(status_code=404, detail="Karaoke event not found")
+    
+    unique_filename = f"{karaoke_id}_{uuid.uuid4().hex[:8]}{file_ext}"
+    file_path = UPLOAD_DIR / unique_filename
+    
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+    
+    await db.karaoke.update_one(
+        {"id": karaoke_id},
+        {"$set": {"invoice_file": unique_filename}}
+    )
+    
+    return {"success": True, "filename": unique_filename}
+
+
+@router.post("/spectacle/{spectacle_id}/invoice")
+async def upload_spectacle_invoice(
+    spectacle_id: str,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload invoice file for a spectacle event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can upload invoices")
+    
+    file_ext = get_file_extension(file.filename)
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+    
+    file_content = await file.read()
+    if len(file_content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Max size: 10MB")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    spectacle = await db.spectacle.find_one({"id": spectacle_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not spectacle:
+        raise HTTPException(status_code=404, detail="Spectacle event not found")
+    
+    unique_filename = f"{spectacle_id}_{uuid.uuid4().hex[:8]}{file_ext}"
+    file_path = UPLOAD_DIR / unique_filename
+    
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+    
+    await db.spectacle.update_one(
+        {"id": spectacle_id},
+        {"$set": {"invoice_file": unique_filename}}
+    )
+    
+    return {"success": True, "filename": unique_filename}
+
+
+@router.get("/invoices/{filename}")
+async def download_invoice(
+    filename: str,
+    token: Optional[str] = None,
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """Download an invoice file"""
+    # L'authentification est optionnelle pour le téléchargement
+    # car le lien peut être partagé ou ouvert dans un nouvel onglet
+    
+    file_path = UPLOAD_DIR / filename
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Invoice file not found")
+    
+    return FileResponse(
+        path=str(file_path),
+        filename=filename,
+        media_type="application/octet-stream"
+    )
+
+
+@router.get("/invoices/download/all")
+async def download_all_invoices(
+    payment_method: Optional[str] = Query(None),
+    payment_status: Optional[str] = Query(None),
+    event_type: Optional[str] = Query(None),
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    current_user: dict = Depends(get_current_user)
+):
+    """Download all invoices matching the filters as a ZIP file"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can download invoices")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    # Construire les requêtes pour chaque type d'événement
+    base_query = {"venue_id": venue["id"], "invoice_file": {"$ne": None}}
+    
+    # Appliquer les filtres
+    if payment_method and payment_method != "all":
+        base_query["payment_method"] = payment_method
+    
+    if payment_status and payment_status != "all":
+        base_query["payment_status"] = payment_status
+    
+    # Filtrage par date
+    date_filter = {}
+    if start_date:
+        date_filter["$gte"] = start_date
+    if end_date:
+        date_filter["$lte"] = end_date
+    if date_filter:
+        base_query["date"] = date_filter
+    
+    # Collecter toutes les factures
+    all_invoices = []
+    
+    if not event_type or event_type == "all" or event_type == "jam":
+        jams = await db.jams.find(base_query, {"_id": 0, "invoice_file": 1, "title": 1, "date": 1}).to_list(1000)
+        all_invoices.extend([{"file": j["invoice_file"], "name": f"jam_{j['title']}_{j['date']}", "type": "jam"} for j in jams if j.get("invoice_file")])
+    
+    if not event_type or event_type == "all" or event_type == "concert":
+        concerts = await db.concerts.find(base_query, {"_id": 0, "invoice_file": 1, "title": 1, "date": 1}).to_list(1000)
+        all_invoices.extend([{"file": c["invoice_file"], "name": f"concert_{c['title']}_{c['date']}", "type": "concert"} for c in concerts if c.get("invoice_file")])
+    
+    if not event_type or event_type == "all" or event_type == "karaoke":
+        karaokes = await db.karaokes.find(base_query, {"_id": 0, "invoice_file": 1, "title": 1, "date": 1}).to_list(1000)
+        all_invoices.extend([{"file": k["invoice_file"], "name": f"karaoke_{k['title']}_{k['date']}", "type": "karaoke"} for k in karaokes if k.get("invoice_file")])
+    
+    if not event_type or event_type == "all" or event_type == "spectacle":
+        spectacles = await db.spectacle.find(base_query, {"_id": 0, "invoice_file": 1, "artist_name": 1, "date": 1}).to_list(1000)
+        all_invoices.extend([{"file": s["invoice_file"], "name": f"spectacle_{s['artist_name']}_{s['date']}", "type": "spectacle"} for s in spectacles if s.get("invoice_file")])
+    
+    if not all_invoices:
+        raise HTTPException(status_code=404, detail="No invoices found matching the filters")
+    
+    # Créer un fichier ZIP en mémoire
+    zip_buffer = io.BytesIO()
+    
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for invoice in all_invoices:
+            file_path = UPLOAD_DIR / invoice["file"]
+            if file_path.exists():
+                # Nettoyer le nom du fichier
+                safe_name = invoice["name"].replace(" ", "_").replace("/", "-")
+                # Obtenir l'extension du fichier original
+                extension = Path(invoice["file"]).suffix
+                archive_name = f"{invoice['type']}/{safe_name}{extension}"
+                
+                # Ajouter le fichier au ZIP
+                zip_file.write(file_path, archive_name)
+    
+    # Réinitialiser le curseur du buffer
+    zip_buffer.seek(0)
+    
+    # Nom du fichier ZIP
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    zip_filename = f"factures_{venue['name']}_{timestamp}.zip"
+    
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": f"attachment; filename={zip_filename}"}
+    )
+
+
+@router.delete("/jams/{jam_id}/invoice")
+async def delete_jam_invoice(
+    jam_id: str,
+    request: Request, current_user: dict = Depends(get_current_user)
+):
+    """Delete invoice file for a jam event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can delete invoices")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    jam = await db.jams.find_one({"id": jam_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not jam:
+        raise HTTPException(status_code=404, detail="Jam event not found")
+    
+    # Delete file if it exists
+    if jam.get("invoice_file"):
+        file_path = UPLOAD_DIR / jam["invoice_file"]
+        if file_path.exists():
+            file_path.unlink()
+    
+    # Update database
+    await db.jams.update_one(
+        {"id": jam_id},
+        {"$set": {"invoice_file": None}}
+    )
+    
+    return {"success": True, "message": "Invoice deleted"}
+
+
+@router.delete("/concerts/{concert_id}/invoice")
+async def delete_concert_invoice(
+    concert_id: str,
+    request: Request, current_user: dict = Depends(get_current_user)
+):
+    """Delete invoice file for a concert event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can delete invoices")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    concert = await db.concerts.find_one({"id": concert_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not concert:
+        raise HTTPException(status_code=404, detail="Concert not found")
+    
+    # Delete file if it exists
+    if concert.get("invoice_file"):
+        file_path = UPLOAD_DIR / concert["invoice_file"]
+        if file_path.exists():
+            file_path.unlink()
+    
+    # Update database
+    await db.concerts.update_one(
+        {"id": concert_id},
+        {"$set": {"invoice_file": None}}
+    )
+    
+    return {"success": True, "message": "Invoice deleted"}
+
+
+@router.delete("/karaoke/{karaoke_id}/invoice")
+async def delete_karaoke_invoice(
+    karaoke_id: str,
+    request: Request, current_user: dict = Depends(get_current_user)
+):
+    """Delete invoice file for a karaoke event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can delete invoices")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    karaoke = await db.karaoke.find_one({"id": karaoke_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not karaoke:
+        raise HTTPException(status_code=404, detail="Karaoke event not found")
+    
+    # Delete file if it exists
+    if karaoke.get("invoice_file"):
+        file_path = UPLOAD_DIR / karaoke["invoice_file"]
+        if file_path.exists():
+            file_path.unlink()
+    
+    # Update database
+    await db.karaoke.update_one(
+        {"id": karaoke_id},
+        {"$set": {"invoice_file": None}}
+    )
+    
+    return {"success": True, "message": "Invoice deleted"}
+
+
+@router.delete("/spectacle/{spectacle_id}/invoice")
+async def delete_spectacle_invoice(
+    spectacle_id: str,
+    request: Request, current_user: dict = Depends(get_current_user)
+):
+    """Delete invoice file for a spectacle event"""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can delete invoices")
+    
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+    
+    spectacle = await db.spectacle.find_one({"id": spectacle_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not spectacle:
+        raise HTTPException(status_code=404, detail="Spectacle event not found")
+    
+    # Delete file if it exists
+    if spectacle.get("invoice_file"):
+        file_path = UPLOAD_DIR / spectacle["invoice_file"]
+        if file_path.exists():
+            file_path.unlink()
+    
+    # Update database
+    await db.spectacle.update_one(
+        {"id": spectacle_id},
+        {"$set": {"invoice_file": None}}
+    )
+    
+    return {"success": True, "message": "Invoice deleted"}
+
+async def get_invoice_file(
+    filename: str,
+    token: str
+):
+    """Download/view an invoice file with token authentication"""
+    try:
+        # Validate token from query param
+        import jwt
+        from os import environ
+        payload = jwt.decode(token, environ.get("JWT_SECRET", "your-secret-key-replace-me"), algorithms=["HS256"])
+        
+        if payload.get("role") != "venue":
+            raise HTTPException(status_code=403, detail="Only venues can access invoices")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Authentication failed")
+    
+    file_path = UPLOAD_DIR / filename
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Invoice file not found")
+    
+    # Determine media type based on extension
+    file_ext = get_file_extension(filename)
+    media_types = {
+        ".pdf": "application/pdf",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".webp": "image/webp"
+    }
+    media_type = media_types.get(file_ext, "application/octet-stream")
+    
+    return FileResponse(
+        path=file_path,
+        media_type=media_type,
+        filename=filename
+    )
+

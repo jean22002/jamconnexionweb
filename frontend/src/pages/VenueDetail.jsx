@@ -23,6 +23,7 @@ import Calendar from "../components/Calendar";
 import UserBadges from "../components/UserBadges";
 import ReportProfileDialog from "../components/ReportProfileDialog";
 import { buildImageUrl } from "../utils/urlBuilder";
+import { sortEventsUpcomingFirst, isEventPast, pastEventCardClass } from "../utils/eventUtils";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -852,8 +853,15 @@ export default function VenueDetail() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {jams.map((jam) => (
-                  <div key={jam.id} className="glassmorphism rounded-xl p-5">
+                {sortEventsUpcomingFirst(jams).map((jam) => {
+                  const past = isEventPast(jam);
+                  return (
+                  <div key={jam.id} className={`glassmorphism rounded-xl p-5 transition-all ${past ? pastEventCardClass : ''}`}>
+                    {past && (
+                      <div className="inline-block mb-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-muted-foreground uppercase tracking-wide">
+                        Événement terminé
+                      </div>
+                    )}
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
                         <p className="font-heading font-semibold text-lg">{jam.date}</p>
@@ -901,7 +909,7 @@ export default function VenueDetail() {
                         Ajouter au calendrier
                       </Button>
                       
-                      {(user?.role === "musician" || user?.role === "melomane") && (
+                      {(user?.role === "musician" || user?.role === "melomane") && !past && (
                         <JoinEventButton 
                           event={{ ...jam, type: 'jam' }}
                           venueId={id}
@@ -913,7 +921,8 @@ export default function VenueDetail() {
                       )}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </TabsContent>
@@ -927,8 +936,15 @@ export default function VenueDetail() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {concerts.map((concert) => (
-                  <div key={concert.id} className="glassmorphism rounded-xl p-5">
+                {sortEventsUpcomingFirst(concerts).map((concert) => {
+                  const past = isEventPast(concert);
+                  return (
+                  <div key={concert.id} className={`glassmorphism rounded-xl p-5 transition-all ${past ? pastEventCardClass : ''}`}>
+                    {past && (
+                      <div className="inline-block mb-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-muted-foreground uppercase tracking-wide">
+                        Événement terminé
+                      </div>
+                    )}
                     <p className="font-heading font-semibold text-lg">{concert.title || "Concert"}</p>
                     <p className="text-muted-foreground">{concert.date} à {concert.start_time}</p>
                     {concert.bands?.length > 0 && (
@@ -971,7 +987,7 @@ export default function VenueDetail() {
                       </Button>
                       
                       {/* Bouton "Je participe" pour les musiciens et mélomanes */}
-                      {(user?.role === "musician" || user?.role === "melomane") && (
+                      {(user?.role === "musician" || user?.role === "melomane") && !past && (
                         <JoinEventButton 
                           event={{ ...concert, type: 'concert' }}
                           venueId={id}
@@ -983,7 +999,8 @@ export default function VenueDetail() {
                       )}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </TabsContent>

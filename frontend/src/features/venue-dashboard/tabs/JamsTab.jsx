@@ -5,6 +5,7 @@ import { Label } from "../../../components/ui/label";
 import { Input } from "../../../components/ui/input";
 import { Textarea } from "../../../components/ui/textarea";
 import TimeSelect from "../../../components/TimeSelect";
+import { sortEventsUpcomingFirst, isEventPast, pastEventCardClass } from "../../../utils/eventUtils";
 
 export default function JamsTab({ 
   jams,
@@ -105,8 +106,15 @@ export default function JamsTab({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {jams.map((jam) => (
-            <div key={jam.id} className="glassmorphism rounded-xl p-4 hover:border-purple-500/50 transition-all border-2 border-purple-500/20">
+          {sortEventsUpcomingFirst(jams).map((jam) => {
+            const past = isEventPast(jam);
+            return (
+            <div key={jam.id} className={`glassmorphism rounded-xl p-4 hover:border-purple-500/50 transition-all border-2 border-purple-500/20 ${past ? pastEventCardClass : ''}`}>
+              {past && (
+                <div className="inline-block mb-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-muted-foreground uppercase tracking-wide">
+                  Terminé
+                </div>
+              )}
               <h3 className="font-semibold text-lg mb-2">{jam.title || 'Bœuf musical'}</h3>
               <div className="space-y-1 text-sm text-muted-foreground mb-3">
                 <div className="flex items-center gap-2">
@@ -144,7 +152,8 @@ export default function JamsTab({
                 </Button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

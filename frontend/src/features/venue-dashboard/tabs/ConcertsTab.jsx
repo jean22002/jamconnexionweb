@@ -10,6 +10,7 @@ import { Switch } from "../../../components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 import TimeSelect from "../../../components/TimeSelect";
 import NoAutocompleteInput from "../../../components/NoAutocompleteInput";
+import { sortEventsUpcomingFirst, isEventPast, pastEventCardClass } from "../../../utils/eventUtils";
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
@@ -478,8 +479,15 @@ export default function ConcertsTab({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {concerts.map((concert) => (
-            <div key={concert.id} className="glassmorphism rounded-xl p-4 hover:border-primary/50 transition-all">
+          {sortEventsUpcomingFirst(concerts).map((concert) => {
+            const past = isEventPast(concert);
+            return (
+            <div key={concert.id} className={`glassmorphism rounded-xl p-4 hover:border-primary/50 transition-all ${past ? pastEventCardClass : ''}`}>
+              {past && (
+                <div className="inline-block mb-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-muted-foreground uppercase tracking-wide">
+                  Terminé
+                </div>
+              )}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg mb-1">{concert.title || 'Concert'}</h3>
@@ -524,7 +532,8 @@ export default function ConcertsTab({
                 </Button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

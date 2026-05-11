@@ -5,6 +5,7 @@ import { Label } from "../../../components/ui/label";
 import { Input } from "../../../components/ui/input";
 import { Textarea } from "../../../components/ui/textarea";
 import TimeSelect from "../../../components/TimeSelect";
+import { sortEventsUpcomingFirst, isEventPast, pastEventCardClass } from "../../../utils/eventUtils";
 
 export default function KaraokeTab({ 
   karaokes,
@@ -137,8 +138,15 @@ export default function KaraokeTab({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {karaokes.map((karaoke) => (
-            <div key={karaoke.id} className="glassmorphism rounded-xl p-4 hover:border-pink-500/50 transition-all border-2 border-pink-500/20">
+          {sortEventsUpcomingFirst(karaokes).map((karaoke) => {
+            const past = isEventPast(karaoke);
+            return (
+            <div key={karaoke.id} className={`glassmorphism rounded-xl p-4 hover:border-pink-500/50 transition-all border-2 border-pink-500/20 ${past ? pastEventCardClass : ''}`}>
+              {past && (
+                <div className="inline-block mb-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-muted-foreground uppercase tracking-wide">
+                  Terminé
+                </div>
+              )}
               <h3 className="font-semibold text-lg mb-2">{karaoke.title || 'Soirée Karaoké'}</h3>
               <div className="space-y-1 text-sm text-muted-foreground mb-3">
                 <div className="flex items-center gap-2">
@@ -189,7 +197,8 @@ export default function KaraokeTab({
                 </Button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

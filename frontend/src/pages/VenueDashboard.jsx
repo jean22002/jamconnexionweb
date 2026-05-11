@@ -13,6 +13,7 @@ import OnlineStatusSelector from "../components/OnlineStatusSelector";
 import BackgroundSyncSettings from "../components/BackgroundSyncSettings";
 // NEW: Import refactored utilities
 import { buildImageUrl } from "../utils/urlBuilder";
+import { sortEventsUpcomingFirst, isEventPast, pastEventCardClass } from "../utils/eventUtils";
 import {
   Select,
   SelectContent,
@@ -3425,12 +3426,19 @@ export default function VenueDashboard() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {spectacles.map((spectacle) => (
+                  {sortEventsUpcomingFirst(spectacles).map((spectacle) => {
+                    const past = isEventPast(spectacle);
+                    return (
                     <div 
                       key={spectacle.id} 
-                      className="glassmorphism rounded-xl p-5 cursor-pointer hover:bg-white/5 transition-colors"
+                      className={`glassmorphism rounded-xl p-5 cursor-pointer hover:bg-white/5 transition-colors ${past ? pastEventCardClass : ''}`}
                       onClick={() => handleEditEvent(spectacle, 'spectacle')}
                     >
+                      {past && (
+                        <div className="inline-block mb-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-muted-foreground uppercase tracking-wide">
+                          Terminé
+                        </div>
+                      )}
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <p className="font-heading font-semibold text-lg">{spectacle.artist_name}</p>
@@ -3471,7 +3479,8 @@ export default function VenueDashboard() {
                         <p className="text-muted-foreground text-sm mt-3">{spectacle.description}</p>
                       )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

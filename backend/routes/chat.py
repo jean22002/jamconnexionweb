@@ -133,6 +133,34 @@ async def create_conversation(
         if not participant:
             raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
         
+        # === Check messaging preferences (venue recipient + musician sender) ===
+        # Pour une NOUVELLE conversation, appliquer les restrictions de l'établissement.
+        if participant.get("role") == "venue" and user.get("role") == "musician":
+            venue_profile = await db.venues.find_one({"user_id": participant["id"]}, {"_id": 0})
+            pref = (venue_profile or {}).get("allow_messages_from", "everyone")
+            if pref != "everyone":
+                if pref == "none":
+                    raise HTTPException(status_code=403, detail="Ce lieu n'accepte pas de nouveaux messages")
+                elif pref in ("pros_only", "pro_only"):
+                    sender_user = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+                    is_pro = bool(
+                        sender_user and
+                        sender_user.get("subscription_tier") == "pro" and
+                        sender_user.get("subscription_status") == "active"
+                    )
+                    if not is_pro:
+                        raise HTTPException(status_code=403, detail="Ce lieu n'accepte que les messages des musiciens PRO")
+                elif pref == "connected_only":
+                    venue_id = (venue_profile or {}).get("id")
+                    sub = None
+                    if venue_id:
+                        sub = await db.venue_subscriptions.find_one({
+                            "venue_id": venue_id,
+                            "user_id": user["id"]
+                        })
+                    if not sub:
+                        raise HTTPException(status_code=403, detail="Ce lieu n'accepte que les messages de ses Jacks")
+        
         # Récupérer avatars
         avatar_current = await get_user_avatar(db, user["id"], user["role"])
         avatar_participant = await get_user_avatar(db, participant["id"], participant["role"])

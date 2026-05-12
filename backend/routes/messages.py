@@ -29,36 +29,61 @@ async def send_message(request: Request, data: MessageCreate, current_user: dict
     if not recipient:
         raise HTTPException(status_code=404, detail="Recipient not found")
     
-    # CHECK MESSAGING PREFERENCES
-    # If recipient is a venue, check their messaging settings
-    if recipient.get("role") == "venue":
+    # ============================================
+    # CHECK MESSAGING PREFERENCES (venue recipient + musician sender)
+    # ============================================
+    # Modes supportés:
+    #   - 'everyone'        : tout le monde peut envoyer (legacy default)
+    #   - 'pros_only'       : musiciens PRO seulement (+ conversations existantes)
+    #   - 'pro_only'        : alias legacy de 'pros_only'
+    #   - 'connected_only'  : musiciens Jacks (abonnés au venue) seulement (+ existantes)
+    #   - 'none'            : aucun nouveau message, seulement conversations existantes
+    if recipient.get("role") == "venue" and current_user.get("role") == "musician":
         venue_profile = await db.venues.find_one({"user_id": recipient["id"]}, {"_id": 0})
-        if venue_profile:
-            allow_messages_from = venue_profile.get("allow_messages_from", "everyone")
+        pref = (venue_profile or {}).get("allow_messages_from", "everyone")
+        
+        # 'everyone' (legacy) → autorisé sans condition
+        if pref != "everyone":
+            # Toujours autoriser si une conversation existe déjà entre les deux users
+            existing_count = await db.messages.count_documents({
+                "$or": [
+                    {"sender_id": current_user["id"], "recipient_id": recipient["id"]},
+                    {"sender_id": recipient["id"], "recipient_id": current_user["id"]},
+                ]
+            })
             
-            # If venue only accepts from PRO musicians
-            if allow_messages_from == "pro_only" and current_user.get("role") == "musician":
-                # Check if sender is PRO
-                sender_user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
-                if not sender_user:
-                    raise HTTPException(status_code=403, detail="Sender profile not found")
-                
-                is_pro = (
-                    sender_user.get("subscription_tier") == "pro" and 
-                    sender_user.get("subscription_status") == "active"
-                )
-                
-                if not is_pro:
+            if existing_count == 0:
+                if pref == "none":
                     raise HTTPException(
-                        status_code=403, 
-                        detail="Cet établissement n'accepte que les messages des musiciens PRO. Passez à l'abonnement PRO pour le contacter."
+                        status_code=403,
+                        detail="Ce lieu n'accepte pas de nouveaux messages"
                     )
-            
-            # If venue only accepts from connected musicians
-            elif allow_messages_from == "connected_only" and current_user.get("role") == "musician":
-                # Check if musician has played at this venue or has been accepted
-                # This logic already exists - keep it as is
-                pass
+                elif pref in ("pros_only", "pro_only"):
+                    sender_user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+                    is_pro = bool(
+                        sender_user and
+                        sender_user.get("subscription_tier") == "pro" and
+                        sender_user.get("subscription_status") == "active"
+                    )
+                    if not is_pro:
+                        raise HTTPException(
+                            status_code=403,
+                            detail="Ce lieu n'accepte que les messages des musiciens PRO"
+                        )
+                elif pref == "connected_only":
+                    venue_id = (venue_profile or {}).get("id")
+                    is_sub = False
+                    if venue_id:
+                        sub = await db.venue_subscriptions.find_one({
+                            "venue_id": venue_id,
+                            "user_id": current_user["id"]
+                        })
+                        is_sub = bool(sub)
+                    if not is_sub:
+                        raise HTTPException(
+                            status_code=403,
+                            detail="Ce lieu n'accepte que les messages de ses Jacks"
+                        )
     
     # Get sender profile info
     sender_profile = None

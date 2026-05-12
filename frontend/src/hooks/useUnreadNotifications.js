@@ -19,7 +19,7 @@ export const useUnreadNotifications = (token, socketUnreadCount = null) => {
     }
 
     try {
-      const response = await axios.get(`${API}/api/notifications/unread-count`, {
+      const response = await axios.get(`${API}/api/notifications/unread/count`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUnreadCount(response.data.count || 0);

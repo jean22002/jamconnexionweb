@@ -164,6 +164,10 @@ const AccountingTab = ({ token }) => {
           getStatusBadge={getStatusBadge}
           token={token}
           fetchConcerts={fetchConcerts}
+          editingConcert={editingConcert}
+          setEditingConcert={setEditingConcert}
+          entriesByEventId={entriesByEventId}
+          setEntriesByEventId={setEntriesByEventId}
         />
       </TabsContent>
 

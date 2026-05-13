@@ -2,7 +2,7 @@
 // Service Worker PWA pour Jam Connexion
 // Support du mode hors ligne, notifications push et cache intelligent
 
-const CACHE_VERSION = 'v7.4';  // Fix editingConcert ReferenceError + tri events + notifications/unread/count
+const CACHE_VERSION = 'v7.5';  // Real fix: editingConcert prop-drilled into GeneralAccountingContent
 const CACHE_NAME = `jam-connexion-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `jam-connexion-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE = `jam-connexion-images-${CACHE_VERSION}`;

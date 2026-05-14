@@ -1536,7 +1536,8 @@ async def download_venue_invoices_zip(
     year: int = None,
     event_type: str = "all",  # 'all', 'jam', 'concert', 'karaoke', 'spectacle'
     payment_status: str = "all",  # 'all', 'paid', 'pending', 'cancelled'
-    payment_method: str = "all",  # 'all', 'GUSO', 'Facture', 'Espèces', 'Virement', 'Chèque', 'Promotion'
+    payment_method: str = "all",  # 'all', 'facture', 'guso', 'promotion' (legacy: 'GUSO', 'Facture', 'Espèces', ...)
+    payment_mode: str = "all",  # 'all', 'especes', 'cheque', 'virement'
     start_date: str = None,  # Format: YYYY-MM-DD
     end_date: str = None,    # Format: YYYY-MM-DD
     current_user: dict = Depends(get_current_user)
@@ -1639,6 +1640,12 @@ async def download_venue_invoices_zip(
                 event_method = normalize(str(event.get('payment_method', '')))
                 filter_method = normalize(payment_method)
                 if event_method != filter_method:
+                    continue
+            
+            # Filter by payment mode (new sémantique : especes/cheque/virement)
+            if payment_mode != "all":
+                event_mode = str(event.get('payment_mode', '')).lower()
+                if event_mode != payment_mode.lower():
                     continue
             
             # Only include events with invoice_file or invoice_url

@@ -2,7 +2,7 @@
 // Service Worker PWA pour Jam Connexion
 // Support du mode hors ligne, notifications push et cache intelligent
 
-const CACHE_VERSION = 'v7.6';  // payment_mode separation (facture/guso/promotion + especes/cheque/virement)
+const CACHE_VERSION = 'v7.7';  // Export ZIP factures avec filtres period/payment_mode + alias mobile
 const CACHE_NAME = `jam-connexion-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `jam-connexion-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE = `jam-connexion-images-${CACHE_VERSION}`;

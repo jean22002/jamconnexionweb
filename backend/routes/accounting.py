@@ -2,7 +2,7 @@
 Accounting router - Système de comptabilité pour les établissements
 """
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
 from typing import List, Optional
 from datetime import datetime, timezone
 import os
@@ -231,3 +231,74 @@ async def update_payment_status(
         raise HTTPException(status_code=404, detail="Event not found")
     
     return {"message": "Payment status updated", "payment_status": payment_status}
+
+
+@router.get("/export-invoices.zip")
+async def export_invoices_zip(
+    request: Request,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    period: Optional[str] = None,       # "2025", "2025-03", "all" — alternative aux dates
+    payment_method: Optional[str] = None,  # facture, guso, promotion
+    payment_mode: Optional[str] = None,    # especes, cheque, virement
+    event_type: Optional[str] = None,      # concert, jam, karaoke, spectacle
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Export ZIP de toutes les factures filtrées (alias de
+    /api/venues/me/accounting/invoices/download avec une convention de noms
+    de paramètres adaptée au mobile).
+    
+    Filtres :
+      - period="2025" → toute l'année 2025
+      - period="2025-03" → mars 2025
+      - date_from/date_to → fenêtre personnalisée (prioritaire si fourni)
+    """
+    from routes.venues import download_venue_invoices_zip
+    from datetime import datetime as _dt
+    
+    # Mapper period → year ou start_date/end_date
+    year = None
+    start_date = date_from
+    end_date = date_to
+    
+    if period and not (date_from or date_to):
+        if period == "all":
+            pass  # On laisse tout passer (l'endpoint par défaut prendra year courant)
+            # Pour ratisser large, on met dates très larges
+            start_date = "2000-01-01"
+            end_date = "2099-12-31"
+        elif len(period) == 4 and period.isdigit():
+            year = int(period)
+        elif len(period) == 7 and period[4] == "-":
+            try:
+                y, m = period.split("-")
+                y, m = int(y), int(m)
+                # Dernier jour du mois
+                from calendar import monthrange
+                last_day = monthrange(y, m)[1]
+                start_date = f"{y}-{m:02d}-01"
+                end_date = f"{y}-{m:02d}-{last_day:02d}"
+            except (ValueError, IndexError):
+                raise HTTPException(status_code=400, detail="period invalide. Formats acceptés: YYYY, YYYY-MM, 'all'")
+        else:
+            raise HTTPException(status_code=400, detail="period invalide. Formats acceptés: YYYY, YYYY-MM, 'all'")
+    
+    if date_from and date_to:
+        try:
+            if _dt.fromisoformat(date_from) > _dt.fromisoformat(date_to):
+                raise HTTPException(status_code=400, detail="date_from doit être <= date_to")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Format de date invalide (attendu YYYY-MM-DD)")
+    
+    return await download_venue_invoices_zip(
+        request=request,
+        year=year,
+        event_type=event_type or "all",
+        payment_status="all",
+        payment_method=payment_method or "all",
+        payment_mode=payment_mode or "all",
+        start_date=start_date,
+        end_date=end_date,
+        current_user=current_user,
+    )

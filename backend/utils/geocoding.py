@@ -7,20 +7,49 @@ import logging
 logger = logging.getLogger(__name__)
 
 async def geocode_city(city_name: str) -> Tuple[Optional[float], Optional[float]]:
-    """Get GPS coordinates from city name using French government API"""
+    """
+    Get GPS coordinates from city name using French government API.
+    
+    Priorité :
+      1. Match exact (insensible à la casse + accents) sur le nom de commune
+      2. À match équivalent, prendre la plus grosse population
+      3. Sinon, prendre le 1er résultat de l'API (par défaut)
+    
+    Évite le piège classique où "Paris" remonte "Parisot" (commune de 1k hab).
+    """
     if not city_name:
         return None, None
+
+    def _norm(s: str) -> str:
+        import unicodedata
+        s = unicodedata.normalize("NFD", s or "")
+        s = "".join(c for c in s if unicodedata.category(c) != "Mn")
+        return s.lower().strip().replace("-", " ").replace("'", " ")
+
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                f"https://geo.api.gouv.fr/communes?nom={city_name}&fields=centre&limit=1",
+                f"https://geo.api.gouv.fr/communes?nom={city_name}&fields=centre,population&limit=15&boost=population",
                 timeout=5.0
             )
             data = response.json()
-            if data and len(data) > 0:
-                coords = data[0].get("centre", {}).get("coordinates")
-                if coords and len(coords) == 2:
-                    return coords[1], coords[0]  # lat, lon
+            if not data:
+                return None, None
+            
+            target = _norm(city_name)
+            
+            # Préférer un match exact, sinon retomber sur le plus peuplé
+            def sort_key(c):
+                name_match = 0 if _norm(c.get("nom", "")) == target else 1
+                # population décroissante (donc on inverse en négatif)
+                pop = -(c.get("population") or 0)
+                return (name_match, pop)
+            
+            data.sort(key=sort_key)
+            
+            coords = data[0].get("centre", {}).get("coordinates")
+            if coords and len(coords) == 2:
+                return coords[1], coords[0]  # lat, lon
     except Exception:
         pass
     return None, None

@@ -293,21 +293,19 @@ async def update_musician_profile(data: MusicianProfile, request: Request, curre
         # Remplacer les bands dans update_data avec ceux qui ont des IDs
         update_data["bands"] = bands_with_ids
     
-    # Auto-geocode if city and postal_code are provided but latitude/longitude are missing
-    if update_data.get("city") and update_data.get("postal_code"):
+    # Auto-geocode if city is provided but latitude/longitude are missing
+    # (postal_code optional — geocodage France via geo.api.gouv.fr accepts city alone)
+    if update_data.get("city"):
         if not update_data.get("latitude") or not update_data.get("longitude") or update_data.get("latitude") == 0:
             try:
-                from routes.geocode import geocode_address
-                geocode_result = await geocode_address(
-                    city=update_data["city"],
-                    postal_code=update_data["postal_code"]
-                )
-                if geocode_result:
-                    update_data["latitude"] = geocode_result["latitude"]
-                    update_data["longitude"] = geocode_result["longitude"]
-                    update_data["department"] = geocode_result.get("department") or update_data.get("department")
-                    update_data["region"] = geocode_result.get("region") or update_data.get("region")
-                    logger.info(f"Auto-geocoded musician {current_user['id']}: {update_data['city']} -> ({update_data['latitude']}, {update_data['longitude']})")
+                from utils.geocoding import geocode_city
+                lat, lon = await geocode_city(update_data["city"])
+                if lat and lon:
+                    update_data["latitude"] = lat
+                    update_data["longitude"] = lon
+                    logger.info(f"Auto-geocoded musician {current_user['id']}: {update_data['city']} -> ({lat}, {lon})")
+                else:
+                    logger.warning(f"Could not geocode city '{update_data['city']}' for musician {current_user['id']}")
             except Exception as geocode_error:
                 logger.warning(f"Geocoding failed for musician {current_user['id']}: {geocode_error}")
                 # Continue without geocoding - non-blocking
@@ -341,6 +339,54 @@ async def get_my_musician_profile(request: Request, current_user: dict = Depends
     })
     
     return MusicianProfileResponse(**{**musician, "friends_count": friends_count})
+
+
+@router.get("/musicians/me/location-debug")
+async def get_my_location_debug(request: Request, current_user: dict = Depends(get_current_user)):
+    """
+    Debug endpoint : retourne les champs de géolocalisation du musicien connecté
+    pour vérifier que le géocodage automatique a fonctionné.
+    """
+    if current_user["role"] != "musician":
+        raise HTTPException(status_code=403, detail="Only musician accounts can access this")
+    
+    musician = await db.musicians.find_one(
+        {"user_id": current_user["id"]},
+        {"_id": 0, "user_id": 1, "city": 1, "postal_code": 1, "latitude": 1,
+         "longitude": 1, "department": 1, "region": 1,
+         "temporary_latitude": 1, "temporary_longitude": 1,
+         "temporary_location_enabled": 1, "temporary_location_expires": 1}
+    )
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+    
+    geocoded = bool(musician.get("latitude")) and bool(musician.get("longitude"))
+    has_temp = bool(musician.get("temporary_location_enabled")) and bool(musician.get("temporary_latitude"))
+    
+    return {
+        "user_id": current_user["id"],
+        "profile_location": {
+            "city": musician.get("city"),
+            "postal_code": musician.get("postal_code"),
+            "latitude": musician.get("latitude"),
+            "longitude": musician.get("longitude"),
+            "department": musician.get("department"),
+            "region": musician.get("region"),
+        },
+        "temporary_location": {
+            "enabled": musician.get("temporary_location_enabled", False),
+            "latitude": musician.get("temporary_latitude"),
+            "longitude": musician.get("temporary_longitude"),
+            "expires": musician.get("temporary_location_expires"),
+        },
+        "is_geocoded": geocoded,
+        "has_temporary_location": has_temp,
+        "discoverable_by_venues": geocoded or has_temp,
+        "tip": (
+            "Renseignez votre ville dans Paramètres pour être visible des établissements à proximité."
+            if not (geocoded or has_temp) else None
+        ),
+    }
 
 
 # Alias route for mobile apps (PUT /musicians/me)

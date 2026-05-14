@@ -31,7 +31,7 @@ async def geocode_musicians():
     
     # Find musicians without GPS coordinates but with city
     musicians = await db.musicians.find({
-        "city": {"$exists": True, "$ne": None, "$ne": ""},
+        "city": {"$exists": True, "$nin": [None, ""]},
         "$or": [
             {"latitude": {"$exists": False}},
             {"latitude": None},
@@ -51,9 +51,9 @@ async def geocode_musicians():
     
     # Import geocode function
     try:
-        from routes.geocode import geocode_address
-    except ImportError:
-        print("❌ Could not import geocode function")
+        from utils.geocoding import geocode_city
+    except ImportError as e:
+        print(f"❌ Could not import geocode function: {e}")
         client.close()
         return
     
@@ -62,9 +62,8 @@ async def geocode_musicians():
     skipped_count = 0
     
     for musician in musicians:
-        pseudo = musician.get("pseudo", "Unknown")
+        pseudo = musician.get("pseudo") or musician.get("name") or "Unknown"
         city = musician.get("city")
-        postal_code = musician.get("postal_code")
         
         if not city:
             print(f"⚠️  Skipped {pseudo}: No city")
@@ -72,21 +71,19 @@ async def geocode_musicians():
             continue
         
         try:
-            # Try to geocode
-            result = await geocode_address(city=city, postal_code=postal_code)
+            lat, lon = await geocode_city(city)
             
-            if result and result.get("latitude") and result.get("longitude"):
-                # Update musician with coordinates
+            if lat and lon:
+                # Update musician with coordinates (match by user_id, fallback id)
+                query = {"user_id": musician["user_id"]} if musician.get("user_id") else {"id": musician.get("id")}
                 await db.musicians.update_one(
-                    {"id": musician["id"]},
+                    query,
                     {"$set": {
-                        "latitude": result["latitude"],
-                        "longitude": result["longitude"],
-                        "department": result.get("department") or musician.get("department"),
-                        "region": result.get("region") or musician.get("region")
+                        "latitude": lat,
+                        "longitude": lon,
                     }}
                 )
-                print(f"✅ Geocoded {pseudo}: {city} → ({result['latitude']:.4f}, {result['longitude']:.4f})")
+                print(f"✅ Geocoded {pseudo}: {city} → ({lat:.4f}, {lon:.4f})")
                 geocoded_count += 1
             else:
                 print(f"❌ Failed {pseudo}: {city} (no result)")

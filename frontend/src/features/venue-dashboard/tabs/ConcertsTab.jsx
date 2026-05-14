@@ -301,6 +301,22 @@ export default function ConcertsTab({
                         </SelectContent>
                       </Select>
                     </div>
+                    <div className="space-y-2">
+                      <Label>Mode de paiement *</Label>
+                      <Select 
+                        value={concertForm.payment_mode || ''} 
+                        onValueChange={(value) => setConcertForm({ ...concertForm, payment_mode: value })}
+                      >
+                        <SelectTrigger className="bg-black/20 border-white/10">
+                          <SelectValue placeholder="Sélectionner" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="especes">💵 Espèces</SelectItem>
+                          <SelectItem value="cheque">📝 Chèque</SelectItem>
+                          <SelectItem value="virement">🏦 Virement</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 )}
               </div>

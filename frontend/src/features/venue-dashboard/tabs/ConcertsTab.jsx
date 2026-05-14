@@ -313,6 +313,7 @@ export default function ConcertsTab({
                     onCheckedChange={(checked) => setConcertForm({ 
                       ...concertForm, 
                       invoice_required: checked,
+                      payment_method: checked ? 'facture' : (concertForm.payment_method === 'facture' ? null : concertForm.payment_method),
                       payment_status: checked ? (concertForm.payment_status || 'pending') : undefined
                     })}
                   />
@@ -353,20 +354,18 @@ export default function ConcertsTab({
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Moyen de paiement</Label>
+                      <Label>Mode de paiement *</Label>
                       <Select 
-                        value={concertForm.payment_method || ''} 
-                        onValueChange={(value) => setConcertForm({ ...concertForm, payment_method: value })}
+                        value={concertForm.payment_mode || ''} 
+                        onValueChange={(value) => setConcertForm({ ...concertForm, payment_mode: value })}
                       >
                         <SelectTrigger className="bg-black/20 border-white/10">
                           <SelectValue placeholder="Sélectionner" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="cash">💵 Espèces</SelectItem>
-                          <SelectItem value="check">📝 Chèque</SelectItem>
-                          <SelectItem value="transfer">🏦 Virement</SelectItem>
-                          <SelectItem value="card">💳 Carte bancaire</SelectItem>
-                          <SelectItem value="other">📋 Autre</SelectItem>
+                          <SelectItem value="especes">💵 Espèces</SelectItem>
+                          <SelectItem value="cheque">📝 Chèque</SelectItem>
+                          <SelectItem value="virement">🏦 Virement</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -374,6 +373,29 @@ export default function ConcertsTab({
                     <div className="text-xs text-muted-foreground bg-black/20 p-3 rounded-lg">
                       💡 <strong>Note :</strong> Vous pourrez uploader la facture plus tard depuis l'onglet Comptabilité
                     </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Promotion (concert gratuit) */}
+              <div className="p-4 border-2 border-pink-500/20 rounded-xl space-y-4">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={concertForm.payment_method === 'promotion'}
+                    onCheckedChange={(checked) => setConcertForm({ 
+                      ...concertForm, 
+                      payment_method: checked ? 'promotion' : (concertForm.payment_method === 'promotion' ? null : concertForm.payment_method),
+                      payment_mode: checked ? null : concertForm.payment_mode,
+                      amount: checked ? 0 : concertForm.amount,
+                      invoice_required: checked ? false : concertForm.invoice_required,
+                      is_guso: checked ? false : concertForm.is_guso,
+                    })}
+                  />
+                  <Label className="font-medium text-pink-400">🎁 Promotion (concert gratuit)</Label>
+                </div>
+                {concertForm.payment_method === 'promotion' && (
+                  <div className="pl-8 text-xs text-muted-foreground bg-black/20 p-3 rounded-lg">
+                    Aucun montant ni mode de paiement requis. L'événement sera affiché comme « Gratuit ».
                   </div>
                 )}
               </div>

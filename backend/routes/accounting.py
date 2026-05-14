@@ -94,7 +94,8 @@ async def upload_invoice(
 
 @router.get("/events")
 async def get_accounting_events(
-    payment_method: Optional[str] = None,  # facture, guso, all
+    payment_method: Optional[str] = None,  # facture, guso, promotion, all
+    payment_mode: Optional[str] = None,    # especes, cheque, virement, all
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     payment_status: Optional[str] = None,  # paid, pending, cancelled, all
@@ -128,6 +129,10 @@ async def get_accounting_events(
     # Filtre par méthode de paiement
     if payment_method and payment_method != "all":
         match_filter["payment_method"] = payment_method
+    
+    # Filtre par mode de paiement
+    if payment_mode and payment_mode != "all":
+        match_filter["payment_mode"] = payment_mode
     
     # Filtre par statut de paiement
     if payment_status and payment_status != "all":

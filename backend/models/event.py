@@ -1,7 +1,44 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from typing import Optional, List, Dict, Any
 
-class JamEvent(BaseModel):
+VALID_PAYMENT_METHODS = {"facture", "guso", "promotion"}
+VALID_PAYMENT_MODES = {"especes", "cheque", "virement"}
+
+
+class PaymentValidationMixin:
+    """
+    Mixin Pydantic appliquant les règles métier :
+      - payment_method ∈ {facture, guso, promotion, None}
+      - payment_mode ∈ {especes, cheque, virement, None}
+      - method = "promotion" → mode forcé à None, amount à 0
+      - method ∈ {facture, guso} → mode obligatoire
+    """
+
+    @model_validator(mode="after")
+    def _validate_payment_fields(self):
+        method = getattr(self, "payment_method", None)
+        mode = getattr(self, "payment_mode", None)
+
+        if method is not None and method not in VALID_PAYMENT_METHODS:
+            raise ValueError(
+                f"payment_method invalide. Valeurs autorisées : {sorted(VALID_PAYMENT_METHODS)}"
+            )
+        if mode is not None and mode not in VALID_PAYMENT_MODES:
+            raise ValueError(
+                f"payment_mode invalide. Valeurs autorisées : {sorted(VALID_PAYMENT_MODES)}"
+            )
+
+        if method == "promotion":
+            self.payment_mode = None
+            self.amount = 0
+        elif method in ("facture", "guso") and not mode:
+            raise ValueError(
+                "payment_mode est obligatoire quand payment_method est 'facture' ou 'guso'"
+            )
+        return self
+
+
+class JamEvent(BaseModel, PaymentValidationMixin):
     date: str
     start_time: str
     end_time: Optional[str] = None
@@ -14,6 +51,7 @@ class JamEvent(BaseModel):
     additional_info: Optional[str] = None
     # Comptabilité
     payment_method: Optional[str] = None
+    payment_mode: Optional[str] = None  # especes, cheque, virement (si payment_method ∈ facture/guso)
     amount: Optional[float] = None
     payment_status: Optional[str] = "pending"
     invoice_file: Optional[str] = None
@@ -24,7 +62,7 @@ class JamEventResponse(BaseModel):
     venue_name: str = ""  # Default for older records
     date: str
     start_time: str = ""  # Default for older records
-    end_time: str = ""  # Default for older records
+    end_time: Optional[str] = ""  # Default for older records
     title: Optional[str] = None
     description: Optional[str] = None
     music_styles: List[str] = []
@@ -39,6 +77,7 @@ class JamEventResponse(BaseModel):
     expenses: Optional[float] = None
     net_profit: Optional[float] = None
     payment_method: Optional[str] = None
+    payment_mode: Optional[str] = None
     amount: Optional[float] = None
     payment_status: Optional[str] = "pending"
     invoice_file: Optional[str] = None
@@ -51,7 +90,7 @@ class ConcertBand(BaseModel):
     facebook: Optional[str] = None
     instagram: Optional[str] = None
 
-class ConcertEvent(BaseModel):
+class ConcertEvent(BaseModel, PaymentValidationMixin):
     date: str
     start_time: str
     end_time: Optional[str] = None
@@ -71,6 +110,7 @@ class ConcertEvent(BaseModel):
     accommodation_tbd: bool = False
     # Comptabilité
     payment_method: Optional[str] = None
+    payment_mode: Optional[str] = None  # especes, cheque, virement (si payment_method ∈ facture/guso)
     amount: Optional[float] = None
     payment_status: Optional[str] = "pending"
     invoice_file: Optional[str] = None
@@ -111,6 +151,7 @@ class ConcertEventResponse(BaseModel):
     expenses: Optional[float] = None
     net_profit: Optional[float] = None
     payment_method: Optional[str] = None
+    payment_mode: Optional[str] = None
     amount: Optional[float] = None
     payment_status: Optional[str] = "pending"
     invoice_file: Optional[str] = None
@@ -119,7 +160,7 @@ class ConcertEventResponse(BaseModel):
     cachet_type: Optional[str] = None
     guso_contract_type: Optional[str] = None
 
-class KaraokeEvent(BaseModel):
+class KaraokeEvent(BaseModel, PaymentValidationMixin):
     date: str
     start_time: str
     end_time: Optional[str] = None
@@ -129,6 +170,7 @@ class KaraokeEvent(BaseModel):
     host_name: Optional[str] = None
     # Comptabilité
     payment_method: Optional[str] = None
+    payment_mode: Optional[str] = None  # especes, cheque, virement (si payment_method ∈ facture/guso)
     amount: Optional[float] = None
     payment_status: Optional[str] = "pending"
     invoice_file: Optional[str] = None
@@ -152,11 +194,12 @@ class KaraokeEventResponse(BaseModel):
     expenses: Optional[float] = None
     net_profit: Optional[float] = None
     payment_method: Optional[str] = None
+    payment_mode: Optional[str] = None
     amount: Optional[float] = None
     payment_status: Optional[str] = "pending"
     invoice_file: Optional[str] = None
 
-class SpectacleEvent(BaseModel):
+class SpectacleEvent(BaseModel, PaymentValidationMixin):
     date: str
     start_time: str
     end_time: Optional[str] = None
@@ -166,6 +209,7 @@ class SpectacleEvent(BaseModel):
     price: Optional[str] = None
     # Comptabilité
     payment_method: Optional[str] = None
+    payment_mode: Optional[str] = None  # especes, cheque, virement (si payment_method ∈ facture/guso)
     amount: Optional[float] = None
     payment_status: Optional[str] = "pending"
     invoice_file: Optional[str] = None
@@ -191,6 +235,7 @@ class SpectacleEventResponse(BaseModel):
     expenses: Optional[float] = None
     net_profit: Optional[float] = None
     payment_method: Optional[str] = None
+    payment_mode: Optional[str] = None
     amount: Optional[float] = None
     payment_status: Optional[str] = "pending"
     invoice_file: Optional[str] = None

@@ -85,6 +85,12 @@ export function useWebSocket(token, options = {}) {
         }
       });
 
+      // Bridge participation changes to a window event listened by VenueDashboard
+      socket.on('event_participation_changed', (payload) => {
+        console.log('🔁 event_participation_changed', payload);
+        window.dispatchEvent(new CustomEvent('ws:event_participation_changed', { detail: payload }));
+      });
+
       socket.on('connect_error', (err) => {
         console.error('❌ Socket.IO connection error:', err.message);
         

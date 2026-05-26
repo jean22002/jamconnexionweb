@@ -737,12 +737,23 @@ export default function VenueDashboard() {
 
   // Polling pour rafraîchir les événements toutes les 15 secondes pour mise à jour temps réel
   useEffect(() => {
+    if (!profile?.id) return;
     const interval = setInterval(() => {
       fetchEvents();
     }, 15000); // 15 secondes pour mises à jour temps réel des participants
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [profile?.id, fetchEvents]);
+
+  // Écoute WebSocket : rafraîchir immédiatement à chaque participation
+  useEffect(() => {
+    if (!profile?.id) return;
+    const handler = (payload) => {
+      console.log('🔄 event_participation_changed reçu:', payload);
+      fetchEvents();
+    };
+    window.addEventListener('ws:event_participation_changed', handler);
+    return () => window.removeEventListener('ws:event_participation_changed', handler);
+  }, [profile?.id, fetchEvents]);
 
   // Mettre à jour selectedEvent quand les données sont rafraîchies
   useEffect(() => {

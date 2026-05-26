@@ -950,6 +950,19 @@ async def join_event(event_id: str, event_type: str, request: Request, current_u
     
     await db.event_participations.insert_one(participation_doc)
     
+    # ✨ Émettre un event WebSocket pour que le venue rafraîchisse sa liste
+    try:
+        from websocket import emit_to_user
+        venue_doc = await db.venues.find_one({"id": event.get("venue_id")}, {"_id": 0, "user_id": 1})
+        if venue_doc and venue_doc.get("user_id"):
+            await emit_to_user(
+                venue_doc["user_id"],
+                "event_participation_changed",
+                {"event_id": event_id, "event_type": event_type, "action": "join"}
+            )
+    except Exception as ws_err:
+        logger.debug(f"WebSocket emit failed (non-blocking): {ws_err}")
+    
     # ✨ NOUVEAU : Notifier l'établissement de la participation
     try:
         # Récupérer les infos du venue
@@ -1040,6 +1053,12 @@ async def join_event(event_id: str, event_type: str, request: Request, current_u
 @router.post("/events/{event_id}/leave")
 async def leave_event(event_id: str, request: Request, current_user: dict = Depends(get_current_user)):
     """Leave an event"""
+    # Find participation to retrieve event_type before deactivating
+    participation = await db.event_participations.find_one(
+        {"event_id": event_id, "user_id": current_user["id"], "active": True},
+        {"_id": 0}
+    )
+    
     result = await db.event_participations.update_one(
         {"event_id": event_id, "user_id": current_user["id"], "active": True},
         {"$set": {"active": False}}
@@ -1047,6 +1066,25 @@ async def leave_event(event_id: str, request: Request, current_user: dict = Depe
     
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Participation not found")
+    
+    # ✨ Émettre un event WebSocket pour que le venue rafraîchisse sa liste
+    try:
+        from websocket import emit_to_user
+        evt_type = (participation or {}).get("event_type", "concert")
+        # Retrouver le venue_id à partir de l'événement
+        coll_map = {"jam": db.jams, "concert": db.concerts, "karaoke": db.karaoke, "spectacle": db.spectacle}
+        coll = coll_map.get(evt_type, db.concerts)
+        evt = await coll.find_one({"id": event_id}, {"_id": 0, "venue_id": 1})
+        if evt and evt.get("venue_id"):
+            venue_doc = await db.venues.find_one({"id": evt["venue_id"]}, {"_id": 0, "user_id": 1})
+            if venue_doc and venue_doc.get("user_id"):
+                await emit_to_user(
+                    venue_doc["user_id"],
+                    "event_participation_changed",
+                    {"event_id": event_id, "event_type": evt_type, "action": "leave"}
+                )
+    except Exception as ws_err:
+        logger.debug(f"WebSocket emit failed (non-blocking): {ws_err}")
     
     return {"message": "Successfully left event"}
 

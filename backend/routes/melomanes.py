@@ -240,6 +240,23 @@ async def mark_participation(
     
     await db.event_participations.insert_one(participation_doc)
     
+    # ✨ Émettre WS event vers le venue pour rafraîchissement temps réel
+    try:
+        from websocket import emit_to_user
+        coll_map = {"jam": db.jams, "concert": db.concerts, "karaoke": db.karaoke, "spectacle": db.spectacle}
+        coll = coll_map.get(event_type, db.concerts)
+        evt = await coll.find_one({"id": event_id}, {"_id": 0, "venue_id": 1})
+        if evt and evt.get("venue_id"):
+            venue_doc = await db.venues.find_one({"id": evt["venue_id"]}, {"_id": 0, "user_id": 1})
+            if venue_doc and venue_doc.get("user_id"):
+                await emit_to_user(
+                    venue_doc["user_id"],
+                    "event_participation_changed",
+                    {"event_id": event_id, "event_type": event_type, "action": "join"}
+                )
+    except Exception as ws_err:
+        logger.debug(f"WebSocket emit failed (non-blocking): {ws_err}")
+    
     # Increment events_attended counter
     await db.melomanes.update_one(
         {"user_id": user_id},
@@ -277,6 +294,28 @@ async def remove_participation(
         {"user_id": user_id},
         {"$inc": {"events_attended": -1}}
     )
+    
+    # ✨ Émettre WS event vers le venue pour rafraîchissement temps réel
+    try:
+        from websocket import emit_to_user
+        coll_map = {"jam": db.jams, "concert": db.concerts, "karaoke": db.karaoke, "spectacle": db.spectacle}
+        evt = None
+        evt_type = None
+        for et, coll in coll_map.items():
+            evt = await coll.find_one({"id": event_id}, {"_id": 0, "venue_id": 1})
+            if evt:
+                evt_type = et
+                break
+        if evt and evt.get("venue_id"):
+            venue_doc = await db.venues.find_one({"id": evt["venue_id"]}, {"_id": 0, "user_id": 1})
+            if venue_doc and venue_doc.get("user_id"):
+                await emit_to_user(
+                    venue_doc["user_id"],
+                    "event_participation_changed",
+                    {"event_id": event_id, "event_type": evt_type, "action": "leave"}
+                )
+    except Exception as ws_err:
+        logger.debug(f"WebSocket emit failed (non-blocking): {ws_err}")
     
     return {"message": "Participation removed"}
 

@@ -35,6 +35,14 @@ async def create_checkout(data: CheckoutRequest, request: Request, current_user:
         success_url = f"{data.origin_url}/payment/success?session_id={{CHECKOUT_SESSION_ID}}"
         cancel_url = f"{data.origin_url}/payment/cancel"
         
+        # ✨ Compter les venues PRO actuelles pour déterminer la durée du trial
+        # 100 premiers : 180 jours (6 mois) — au-delà : 90 jours (3 mois)
+        venue_pro_count = await db.venues.count_documents({
+            "subscription_tier": "pro",
+            "subscription_status": {"$in": ["active", "trialing"]}
+        })
+        trial_days = 180 if venue_pro_count < 100 else 90
+        
         # Create Stripe checkout session for subscription
         session = stripe.checkout.Session.create(
             mode='subscription',
@@ -42,6 +50,14 @@ async def create_checkout(data: CheckoutRequest, request: Request, current_user:
                 'price': STRIPE_PRICE_ID,
                 'quantity': 1,
             }],
+            subscription_data={
+                'trial_period_days': trial_days,
+                'metadata': {
+                    'trial_days': str(trial_days),
+                    'venue_pro_count_at_subscribe': str(venue_pro_count),
+                    'user_id': current_user["id"]
+                }
+            },
             success_url=success_url,
             cancel_url=cancel_url,
             client_reference_id=current_user["id"],
@@ -49,7 +65,8 @@ async def create_checkout(data: CheckoutRequest, request: Request, current_user:
             metadata={
                 "user_id": current_user["id"],
                 "email": current_user["email"],
-                "type": "venue_subscription"
+                "type": "venue_subscription",
+                "trial_days": str(trial_days)
             }
         )
         
@@ -63,11 +80,13 @@ async def create_checkout(data: CheckoutRequest, request: Request, current_user:
             "currency": "eur",
             "status": "initiated",
             "payment_status": "pending",
+            "trial_days": trial_days,
+            "venue_pro_count_at_subscribe": venue_pro_count,
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.payment_transactions.insert_one(transaction_doc)
         
-        return {"url": session.url, "session_id": session.id}
+        return {"url": session.url, "session_id": session.id, "trial_days": trial_days}
     
     except stripe.error.StripeError as e:
         logger.error(f"Stripe error: {str(e)}")

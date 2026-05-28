@@ -1704,7 +1704,7 @@ async def get_temporary_location_status(request: Request, current_user: dict = D
 async def create_pro_subscription(request: Request, current_user: dict = Depends(get_current_user)):
     """
     Create Stripe Checkout session for Musicien PRO subscription
-    - FREE TRIAL: 7 days
+    - FREE TRIAL: 60 days (2 months)
     - Then: 4.99€/month with automatic renewal
     - Cancelable anytime before anniversary date
     
@@ -1770,9 +1770,9 @@ async def create_pro_subscription(request: Request, current_user: dict = Depends
             }],
             mode='subscription',
             subscription_data={
-                'trial_period_days': 7,  # 7 DAYS FREE TRIAL
+                'trial_period_days': 60,  # 2 MONTHS FREE TRIAL (aligné mobile)
                 'metadata': {
-                    'trial_duration': '7_days',
+                    'trial_duration': '60_days',
                     'user_id': current_user["id"]
                 }
             },
@@ -1788,8 +1788,8 @@ async def create_pro_subscription(request: Request, current_user: dict = Depends
         return {
             "checkout_url": checkout_session.url,
             "session_id": checkout_session.id,
-            "trial_days": 7,
-            "trial_info": "7 jours gratuits - Premier paiement le " + (datetime.now(timezone.utc) + timedelta(days=7)).strftime("%d/%m/%Y")
+            "trial_days": 60,
+            "trial_info": "2 mois gratuits - Premier paiement le " + (datetime.now(timezone.utc) + timedelta(days=60)).strftime("%d/%m/%Y")
         }
     
     except Exception as e:
@@ -1815,7 +1815,7 @@ async def get_subscription_status(request: Request, current_user: dict = Depends
     
     if subscription_started and musician.get("subscription_tier") == "pro":
         started_dt = datetime.fromisoformat(subscription_started)
-        trial_end_dt = started_dt + timedelta(days=7)  # 7 days trial
+        trial_end_dt = started_dt + timedelta(days=60)  # 60 days trial (2 months)
         now = datetime.now(timezone.utc)
         
         if now < trial_end_dt:

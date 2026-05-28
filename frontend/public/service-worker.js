@@ -2,7 +2,7 @@
 // Service Worker PWA pour Jam Connexion
 // Support du mode hors ligne, notifications push et cache intelligent
 
-const CACHE_VERSION = 'v8.1';  // Tarifs alignés mobile : Musicien 6,99→4,99€ | Venue 12,99→9,99€
+const CACHE_VERSION = 'v8.2';  // Musicien trial 7→60 jours + push notif sound déjà OK Firebase
 const CACHE_NAME = `jam-connexion-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `jam-connexion-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE = `jam-connexion-images-${CACHE_VERSION}`;

@@ -1705,7 +1705,7 @@ async def create_pro_subscription(request: Request, current_user: dict = Depends
     """
     Create Stripe Checkout session for Musicien PRO subscription
     - FREE TRIAL: 7 days
-    - Then: 6.99€/month with automatic renewal
+    - Then: 4.99€/month with automatic renewal
     - Cancelable anytime before anniversary date
     
     Returns checkout URL for frontend redirect
@@ -1758,10 +1758,10 @@ async def create_pro_subscription(request: Request, current_user: dict = Depends
                     'currency': 'eur',
                     'product_data': {
                         'name': 'Musicien PRO',
-                        'description': '7 JOURS GRATUITS puis 6,99€/mois - Annulable à tout moment',
+                        'description': '7 JOURS GRATUITS puis 4,99€/mois - Annulable à tout moment',
                         'images': ['https://jamconnexion.com/images/pro-badge.png'],
                     },
-                    'unit_amount': 699,  # 6.99€ in cents
+                    'unit_amount': 499,  # 4.99€ in cents
                     'recurring': {
                         'interval': 'month',
                     },

@@ -82,7 +82,7 @@ const ProSubscriptionCard = ({ token, currentTier, onSuccess, profile }) => {
             <div>
               <h2 className="font-heading font-semibold text-lg">Offre PRO</h2>
               <p className="text-xs text-muted-foreground">
-                7 jours gratuits puis 6,99€/mois
+                7 jours gratuits puis 4,99€/mois
               </p>
             </div>
           </div>
@@ -135,7 +135,7 @@ const ProSubscriptionCard = ({ token, currentTier, onSuccess, profile }) => {
         </div>
         <div className="flex items-baseline gap-2 flex-wrap">
           <span className="text-lg sm:text-xl text-muted-foreground">puis</span>
-          <span className="text-2xl sm:text-3xl font-bold">6,99€</span>
+          <span className="text-2xl sm:text-3xl font-bold">4,99€</span>
           <span className="text-base sm:text-lg text-muted-foreground">/mois</span>
         </div>
         <p className="text-sm text-muted-foreground mt-2">

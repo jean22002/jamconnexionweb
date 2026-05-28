@@ -87,7 +87,7 @@ export default function Pricing() {
               <div>
                 <h2 className="font-heading font-bold text-2xl">Musicien PRO</h2>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-secondary font-bold text-xl">6,99€</span>
+                  <span className="text-secondary font-bold text-xl">4,99€</span>
                   <span className="text-muted-foreground text-sm">/mois</span>
                 </div>
               </div>
@@ -101,7 +101,7 @@ export default function Pricing() {
                 pour les 200 premiers musiciens !
               </p>
               <p className="text-xs text-center text-cyan-300 mt-2 font-medium">
-                L'abonnement débute à la fin de l'essai • 6,99€/mois
+                L'abonnement débute à la fin de l'essai • 4,99€/mois
               </p>
               <p className="text-xs text-center text-muted-foreground mt-1">
                 Annulable à tout moment sans frais
@@ -154,7 +154,7 @@ export default function Pricing() {
               )}
             </Button>
             <p className="text-xs text-center text-muted-foreground mt-3">
-              Aucun prélèvement pendant l'essai • Abonnement 6,99€/mois après 2 mois
+              Aucun prélèvement pendant l'essai • Abonnement 4,99€/mois après 2 mois
             </p>
           </div>
 
@@ -216,7 +216,7 @@ export default function Pricing() {
               <div>
                 <h2 className="font-heading font-bold text-2xl">Établissement</h2>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-primary font-bold text-2xl">12,99€</span>
+                  <span className="text-primary font-bold text-2xl">9,99€</span>
                   <span className="text-muted-foreground">/mois</span>
                 </div>
               </div>
@@ -230,7 +230,7 @@ export default function Pricing() {
                 pour les 100 premiers établissements !
               </p>
               <p className="text-xs text-center text-orange-300 font-medium">
-                Puis 12,99€/mois à partir du 7ᵉ mois
+                Puis 9,99€/mois à partir du 7ᵉ mois
               </p>
               <p className="text-xs text-center text-muted-foreground mt-2">
                 Annulable à tout moment sans frais
@@ -238,7 +238,7 @@ export default function Pricing() {
             </div>
             
             <div className="text-xs text-center text-muted-foreground mb-4 px-2">
-              <span className="opacity-70">Après les 100 premiers : 3 mois gratuits puis 12,99€/mois</span>
+              <span className="opacity-70">Après les 100 premiers : 3 mois gratuits puis 9,99€/mois</span>
             </div>
             
             {/* Compteur temps réel */}

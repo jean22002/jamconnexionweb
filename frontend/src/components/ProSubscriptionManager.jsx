@@ -93,7 +93,7 @@ const ProSubscriptionManager = ({ token, subscriptionData, onUpdate }) => {
                   </span>
                 )}
               </h3>
-              <p className="text-sm text-muted-foreground">6,99€/mois • Annulable à tout moment</p>
+              <p className="text-sm text-muted-foreground">4,99€/mois • Annulable à tout moment</p>
             </div>
           </div>
           

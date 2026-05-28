@@ -79,7 +79,7 @@ logger.info("✅ MongoDB Connection Pool configured: maxPoolSize=100, minPoolSiz
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
 STRIPE_PRICE_ID = os.environ.get('STRIPE_PRICE_ID', 'price_1SpH8aBykagrgoTUBAdOU10z')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
-SUBSCRIPTION_PRICE = 12.99
+SUBSCRIPTION_PRICE = 9.99
 stripe.api_key = STRIPE_API_KEY
 
 # Create FastAPI app

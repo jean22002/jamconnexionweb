@@ -60,7 +60,7 @@ async def get_app_config():
         "websocket_url": f"{websocket_url}/socket.io",
         "stripe": {
             "publishable_key": stripe_publishable_key,
-            "subscription_price": 12.99,
+            "subscription_price": 9.99,
             "currency": "eur"
         },
         "firebase": firebase_config,

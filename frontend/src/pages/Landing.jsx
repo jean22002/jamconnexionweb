@@ -295,7 +295,7 @@ export default function Landing() {
               </Button>
             </Link>
             <p className="text-muted-foreground text-sm mt-4">
-              🎁 2 mois PRO gratuits • Abonnement à 6,99€/mois après l'essai
+              🎁 2 mois PRO gratuits • Abonnement à 4,99€/mois après l'essai
             </p>
           </div>
         </div>
@@ -316,7 +316,7 @@ export default function Landing() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <h2 className="font-heading font-semibold text-3xl md:text-5xl tracking-tight">
-                <span className="text-gradient">Musicien PRO</span> à 6,99€/mois
+                <span className="text-gradient">Musicien PRO</span> à 4,99€/mois
               </h2>
               <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl px-6 py-4 border border-cyan-500/30">
                 <p className="text-cyan-400 font-bold text-lg mb-1">
@@ -326,7 +326,7 @@ export default function Landing() {
                   L'abonnement débute à la fin de l'essai
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Puis 6,99€/mois • Annulable à tout moment sans frais
+                  Puis 4,99€/mois • Annulable à tout moment sans frais
                 </p>
               </div>
               <p className="text-muted-foreground text-lg">
@@ -362,7 +362,7 @@ export default function Landing() {
               <div className="text-center mb-6">
                 <p className="font-mono text-xs uppercase tracking-wider text-primary mb-2">Établissements</p>
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="font-heading font-bold text-5xl">12,99€</span>
+                  <span className="font-heading font-bold text-5xl">9,99€</span>
                   <span className="text-muted-foreground">/mois</span>
                 </div>
                 <div className="mt-3 space-y-1">
@@ -504,7 +504,7 @@ export default function Landing() {
             {[
               {
                 question: "L'inscription est-elle payante ?",
-                answer: "🎸 Musiciens : Les 200 premiers obtiennent 2 mois PRO gratuits, puis 6,99€/mois (annulable à tout moment). Un accès gratuit de base reste toujours disponible. 🎤 Établissements : • Les 100 premiers : 6 mois gratuits, puis 12,99€/mois à partir du 7ᵉ mois. • Après les 100 premiers : 3 mois gratuits, puis 12,99€/mois à partir du 4ᵉ mois. Tous les abonnements sont annulables sans frais."
+                answer: "🎸 Musiciens : Les 200 premiers obtiennent 2 mois PRO gratuits, puis 4,99€/mois (annulable à tout moment). Un accès gratuit de base reste toujours disponible. 🎤 Établissements : • Les 100 premiers : 6 mois gratuits, puis 9,99€/mois à partir du 7ᵉ mois. • Après les 100 premiers : 3 mois gratuits, puis 9,99€/mois à partir du 4ᵉ mois. Tous les abonnements sont annulables sans frais."
               },
               {
                 question: "Comment fonctionne la mise en relation ?",

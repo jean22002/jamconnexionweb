@@ -2887,7 +2887,7 @@ export default function VenueDashboard() {
                    user?.subscription_status === "trial" ? "Période d'essai" : "Abonnez-vous"}
                 </h3>
                 <p className="text-muted-foreground text-sm">
-                  {isSubscriptionExpired ? "Réabonnez-vous pour continuer à utiliser toutes les fonctionnalités" : "12,99€/mois pour être visible"}
+                  {isSubscriptionExpired ? "Réabonnez-vous pour continuer à utiliser toutes les fonctionnalités" : "9,99€/mois pour être visible"}
                 </p>
               </div>
               <Button onClick={handleSubscribe} className="bg-primary hover:bg-primary/90 rounded-full px-6 gap-2" data-testid="subscribe-btn">
@@ -2941,7 +2941,7 @@ export default function VenueDashboard() {
                     ⏰ Renouvellement dans {daysUntilRenewal} jour{daysUntilRenewal > 1 ? "s" : ""}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Votre abonnement sera renouvelé automatiquement pour 12,99€.
+                    Votre abonnement sera renouvelé automatiquement pour 9,99€.
                     {daysUntilRenewal === 1 && " C'est demain !"}
                   </p>
                 </div>

@@ -101,6 +101,7 @@ async def create_planning_slot(data: PlanningSlot, request: Request, current_use
         "venue_id": venue["id"],
         "venue_name": venue["name"],
         **data_dict,
+        "is_open": data_dict.get("is_open", True),  # Garantir le champ même si modèle modifié
         "created_at": now
     }
     

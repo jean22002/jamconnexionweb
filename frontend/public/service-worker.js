@@ -2,7 +2,7 @@
 // Service Worker PWA pour Jam Connexion
 // Support du mode hors ligne, notifications push et cache intelligent
 
-const CACHE_VERSION = 'v8.3';  // Trial Venue dynamique : 180j (100 premiers) / 90j (suivants)
+const CACHE_VERSION = 'v8.4';  // Fix candidatures: PlanningSlot.is_open=True manquait à la création + migration 9 slots
 const CACHE_NAME = `jam-connexion-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `jam-connexion-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE = `jam-connexion-images-${CACHE_VERSION}`;

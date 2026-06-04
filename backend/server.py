@@ -277,7 +277,13 @@ async def get_promo_musicians_stats():
         "remaining_slots": remaining,
         "is_promo_available": is_available,
         "free_months": 2 if is_available else 0,
-        "description": "2 mois PRO gratuits" if is_available else "Offre terminée"
+        "description": "2 mois PRO gratuits" if is_available else "Offre terminée",
+        # Features mises en avant dans la PromoBanner (pilotable côté backend, partagé web/mobile)
+        "features": [
+            {"icon": "🏛️", "label": "Filtre GUSO"},
+            {"icon": "🎤", "label": "Projet solo nommé"},
+            {"icon": "💎", "label": "Badge PRO"}
+        ]
     }
 
 # Geocoding utility endpoint

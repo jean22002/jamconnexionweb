@@ -640,6 +640,20 @@ async def list_musicians(
     return result
 
 
+@router.get("/musicians/bands")
+async def get_my_bands_alias(current_user: dict = Depends(get_current_user)):
+    """
+    Alias compat mobile : liste les groupes du musicien connecté.
+    Renvoie [] (pas 404) pour faciliter les fallbacks côté mobile.
+    """
+    if current_user.get("role") != "musician":
+        return []
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        return []
+    return musician.get("bands", []) or []
+
+
 @router.get("/musicians/{musician_id}", response_model=MusicianProfileResponse)
 async def get_musician(musician_id: str):
     musician = await db.musicians.find_one({"id": musician_id}, {"_id": 0})

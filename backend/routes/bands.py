@@ -1,7 +1,7 @@
 """
 Bands router - Handles bands directory and join requests
 """
-from fastapi import APIRouter, HTTPException, Depends, Header
+from fastapi import APIRouter, HTTPException, Depends, Header, Response
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
@@ -212,6 +212,7 @@ async def get_band_calendar(
 
 @router.get("/bands")
 async def get_bands_directory(
+    response: Response,
     department: Optional[str] = None, 
     city: Optional[str] = None,
     music_style: Optional[str] = None,
@@ -223,6 +224,10 @@ async def get_bands_directory(
     radius: Optional[float] = None
 ):
     """Get public bands directory with optional filters or geolocation"""
+    # Empêche Cloudflare/proxies de servir un cache obsolète (sinon délai 5min après création)
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["CDN-Cache-Control"] = "no-cache"
+    response.headers["Pragma"] = "no-cache"
     # Get all musicians with bands
     musicians = await db.musicians.find({}, {"_id": 0}).to_list(2000)
     

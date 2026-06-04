@@ -591,7 +591,7 @@ async def get_received_applications(request: Request, current_user: dict = Depen
     return result
 
 
-@router.get("/planning/{slot_id}/applications", response_model=List[ConcertApplicationResponse])
+@router.get("/planning/{slot_id}/applications")
 async def get_slot_applications(slot_id: str, request: Request, current_user: dict = Depends(get_current_user)):
     """Get all applications for a planning slot (venue only)"""
     if current_user["role"] != "venue":
@@ -606,7 +606,16 @@ async def get_slot_applications(slot_id: str, request: Request, current_user: di
         raise HTTPException(status_code=404, detail="Planning slot not found")
     
     applications = await db.applications.find({"planning_slot_id": slot_id}, {"_id": 0}).to_list(100)
-    return [ConcertApplicationResponse(**a) for a in applications]
+    # Robust serialization : on tolère les vieux docs incomplets pour ne jamais renvoyer un 500
+    result = []
+    for a in applications:
+        try:
+            result.append(ConcertApplicationResponse(**a))
+        except Exception as e:
+            logger.warning(f"Skipping malformed application {a.get('id')}: {e}")
+            # Fallback : on renvoie le doc brut (FastAPI gère via Pydantic permissive)
+            result.append(a)
+    return result
 
 
 @router.post("/applications/{app_id}/accept")

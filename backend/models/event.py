@@ -280,11 +280,15 @@ class PlanningSlot(BaseModel):
     application_type: str = "bands"  # "bands" or "solo"
     is_guso: bool = False  # GUSO contract
     is_open: bool = True  # Slot ouvert aux candidatures par défaut
-    # Catering
+    # Catering (boissons)
     has_catering: bool = False
     catering_drinks: int = 0
     catering_respect: bool = False
     catering_tbd: bool = False
+    # Meals (repas) — nouveau (mobile)
+    has_meals: bool = False
+    meals_count: int = 0
+    meals_tbd: bool = False
     # Accommodation
     has_accommodation: bool = False
     accommodation_capacity: int = 0
@@ -311,17 +315,24 @@ class PlanningSlotResponse(BaseModel):
     applications_count: int = 0
     accepted_bands_count: int = 0
     is_open: bool = True
-    # Catering
+    # Catering (boissons)
     has_catering: bool = False
     catering_drinks: int = 0
     catering_respect: bool = False
     catering_tbd: bool = False
+    # Meals (repas) — nouveau (mobile)
+    has_meals: bool = False
+    meals_count: int = 0
+    meals_tbd: bool = False
     # Accommodation
     has_accommodation: bool = False
     accommodation_capacity: int = 0
     accommodation_tbd: bool = False
     is_guso: bool = False  # GUSO contract
     created_at: str
+    
+    class Config:
+        extra = "allow"
 
 # Modèle pour les candidatures de concerts
 class ConcertApplication(BaseModel):
@@ -335,15 +346,34 @@ class ConcertApplication(BaseModel):
 
 class ConcertApplicationResponse(BaseModel):
     id: str
-    concert_id: str
-    band_name: str
+    concert_id: Optional[str] = None
+    planning_slot_id: Optional[str] = None
+    band_name: Optional[str] = None
+    band_id: Optional[str] = None
+    band_type: Optional[str] = None  # 'group' or 'solo'
     band_members: List[str] = []
-    contact_email: str
+    members_count: Optional[int] = None
+    musician_id: Optional[str] = None
+    musician_name: Optional[str] = None
+    contact_email: Optional[str] = None
     contact_phone: Optional[str] = None
     message: Optional[str] = None
-    status: str = "pending"
-    created_at: str
-
-    status: str = "pending"  # pending, accepted, rejected
+    status: str = "pending"  # pending, accepted, rejected, cancelled
+    created_at: Optional[str] = None
+    # Boissons
+    has_catering: Optional[bool] = None
+    catering_drinks: Optional[int] = None
+    catering_tbd: Optional[bool] = None
+    # Repas (nouveau mobile)
+    has_meals: Optional[bool] = None
+    meals_count: Optional[int] = None
+    meals_tbd: Optional[bool] = None
+    # Hébergement
+    has_accommodation: Optional[bool] = None
+    accommodation_capacity: Optional[int] = None
+    accommodation_tbd: Optional[bool] = None
+    
+    class Config:
+        extra = "allow"
 
 

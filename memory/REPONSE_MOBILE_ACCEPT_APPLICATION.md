@@ -160,11 +160,11 @@ Tu peux donc immédiatement re-fetch `/applications/my` et `/bands/{id}/events`,
 
 ## 8. Cas particuliers / Pièges connus
 
-1. **Anciennes acceptations (avant ce fix)** : les 11 candidatures historiquement marquées `accepted` n'ont **pas** de doc dans `db.concerts`. Tu ne verras donc pas ces concerts dans `/bands/{id}/events`. Si besoin, on peut écrire un script de migration rétroactive (sur demande utilisateur).
+1. **Anciennes acceptations** : ✅ **Backfill effectué** — 10 concerts historiques ont été insérés rétroactivement dans `db.concerts` avec `source: "application_accepted_backfill"`. 1 candidature orpheline (slot supprimé) n'a pas pu être migrée — ignorable.
 
-2. **Candidature Solo sans `band_id`** : si le musicien n'a pas de Solo band dans `db.bands` (pas migré), le concert sera créé avec `band_id = null`. Il sera **invisible** dans `/bands/{id}/events`. Le mobile devrait donc :
-   - Soit afficher ces concerts via `musician_id` (filtrer `db.concerts` par `musician_id`)
-   - Soit déclencher la création automatique du Solo band au premier login du musicien
+2. **Candidature Solo sans `band_id`** : depuis le déploiement actuel, **plus aucun risque** — tout musicien possède désormais un Solo band dans `db.bands` (création auto au register + backfill des 82 musiciens existants). Si jamais un edge case se produit (musicien sans Solo band), le concert sera créé avec `band_id = null` et le mobile peut alors :
+   - Soit afficher ces concerts via `musician_id` (filtre `db.concerts` par `musician_id`)
+   - Soit appeler `POST /api/musicians/me/ensure-solo-band` puis re-tenter
 
 3. **`musicians.upcoming_concerts[]` est toujours alimenté** (legacy), mais c'est de la data dénormalisée. Privilégier la source unique `db.concerts` pour le mobile v83+.
 

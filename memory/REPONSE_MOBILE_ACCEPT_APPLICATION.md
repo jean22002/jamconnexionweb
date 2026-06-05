@@ -172,7 +172,39 @@ Tu peux donc immédiatement re-fetch `/applications/my` et `/bands/{id}/events`,
 
 ---
 
-## 9. Tests validés (curl en preview prod)
+## 10. 🆕 Endpoint `POST /api/musicians/me/ensure-solo-band`
+
+Pour garantir que **toute candidature solo génère un concert visible** dans `/bands/{id}/events`, le mobile peut appeler cet endpoint :
+
+- **Auth :** Bearer token musicien (role=musician), sinon 403.
+- **Idempotent :** si un Solo band existe déjà dans `db.bands` pour ce musicien, on le retourne tel quel.
+- **Réponse :**
+  ```json
+  {
+    "created": true | false,
+    "band": {
+      "id": "...",
+      "name": "<pseudo> (Solo)",
+      "leader_id": "<musician_id>",
+      "leader_name": "<pseudo>",
+      "admin_id": "<user_id>",
+      "band_type": "Solo",
+      "description": "Profil solo de <pseudo>",
+      "music_styles": [...],
+      "city": "...",
+      "members_count": 1,
+      "members": [{"id": "...", "user_id": "...", "name": "...", "role": "leader"}],
+      "is_public": false,
+      "created_at": "ISO8601"
+    }
+  }
+  ```
+
+**Recommandation mobile :** appeler cet endpoint au premier login musicien (silencieusement). Ensuite, à chaque candidature solo, envoyer `band_id = band.id` à `POST /api/planning/{slot_id}/apply` pour avoir un flux unifié.
+
+---
+
+## Tests validés (curl en preview prod)
 
 ```
 ✅ POST /api/planning           → 201, slot_id généré
@@ -184,6 +216,9 @@ Tu peux donc immédiatement re-fetch `/applications/my` et `/bands/{id}/events`,
    → count: 1, concert visible, headers Cache-Control: no-cache
 ✅ GET /api/applications/my
    → band_type renvoyé (Solo si pas de band_id, sinon lookup)
+✅ POST /api/musicians/me/ensure-solo-band
+   → idempotent ({"created": true} 1er appel, {"created": false} ensuite)
+   → 403 si role != musician
 ```
 
 Si tu as besoin d'autres tests (membre normal de groupe, cas multi-bands, etc.), dis-moi.

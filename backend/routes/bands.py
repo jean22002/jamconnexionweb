@@ -818,6 +818,62 @@ async def create_band(payload: dict, current_user: dict = Depends(get_current_us
     return _serialize_band(musician, band_payload)
 
 
+@router.post("/musicians/me/ensure-solo-band")
+async def ensure_solo_band(current_user: dict = Depends(get_current_user)):
+    """Crée (si absent) le Solo band du musicien connecté dans `db.bands`.
+
+    Idempotent : retourne le Solo band existant si déjà présent.
+    Utile pour garantir que toute candidature solo génère un concert visible dans
+    `GET /api/bands/{band_id}/events` après acceptation.
+    """
+    if current_user.get("role") != "musician":
+        raise HTTPException(status_code=403, detail="Only musicians can create a Solo band")
+
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+
+    # 1) Si un Solo band existe déjà dans db.bands → on le retourne
+    existing = await db.bands.find_one(
+        {"leader_id": musician["id"], "band_type": "Solo"},
+        {"_id": 0}
+    )
+    if existing:
+        return {"band": existing, "created": False}
+
+    # 2) Sinon, on en crée un
+    pseudo = musician.get("pseudo") or current_user.get("name") or "Solo"
+    band_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    solo_band = {
+        "id": band_id,
+        "name": f"{pseudo} (Solo)",
+        "leader_id": musician["id"],
+        "leader_name": pseudo,
+        "admin_id": current_user["id"],
+        "band_type": "Solo",
+        "description": f"Profil solo de {pseudo}",
+        "music_styles": musician.get("music_styles", []),
+        "city": musician.get("city", ""),
+        "members_count": 1,
+        "members": [{
+            "id": musician["id"],
+            "user_id": current_user["id"],
+            "name": pseudo,
+            "role": "leader"
+        }],
+        "is_public": False,  # Solo n'apparaît pas dans le directory groupes
+        "created_at": now
+    }
+    await db.bands.insert_one(solo_band)
+    # Re-fetch sans _id (insert_one mute le dict)
+    solo_band.pop("_id", None)
+    logger.info(f"Solo band auto-created for musician {musician['id']} (band_id={band_id})")
+    return {"band": solo_band, "created": True}
+
+
+
+
 @router.get("/musicians/bands/{band_id}")
 async def get_band_by_id(band_id: str):
     """Retrieve a single band by its composite id '{musician_id}-{band_name}'."""

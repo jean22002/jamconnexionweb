@@ -121,4 +121,5 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - **`GET /api/applications/my`** expose désormais `band_type` (toujours présent, "Solo" si pas de band)
 - **Headers `Cache-Control: no-cache`** posés sur `/accept`, `/applications/my`, `/bands/{id}/events` → pas de purge Cloudflare nécessaire
 - Document de réponse complète à l'agent mobile : `/app/memory/REPONSE_MOBILE_ACCEPT_APPLICATION.md`
+- **🆕 `POST /api/musicians/me/ensure-solo-band`** : crée (idempotent) le Solo band du musicien connecté dans `db.bands`. À appeler au premier login musicien côté mobile.
 - ✅ Tests E2E curl validés en preview prod (slot → apply → accept → /bands/{id}/events → 1 résultat)

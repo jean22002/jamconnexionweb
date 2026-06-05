@@ -49,6 +49,55 @@ def generate_invite_code() -> str:
     return ''.join(secrets.choice(characters) for _ in range(6))
 
 
+async def _ensure_solo_band_for_musician(musician_doc: dict, user_doc: dict) -> Optional[dict]:
+    """Crée (si absent) le Solo band du musicien dans `db.bands`. Idempotent.
+
+    Réutilisé par :
+      - POST /api/musicians (création de profil)
+      - POST /api/musicians/me/ensure-solo-band (endpoint explicite)
+      - Script de migration des musiciens existants
+    """
+    musician_id = musician_doc.get("id")
+    if not musician_id:
+        return None
+
+    existing = await db.bands.find_one(
+        {"leader_id": musician_id, "band_type": "Solo"},
+        {"_id": 0}
+    )
+    if existing:
+        return existing
+
+    pseudo = musician_doc.get("pseudo") or (user_doc.get("name") if user_doc else None) or "Solo"
+    band_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    solo_band = {
+        "id": band_id,
+        "name": f"{pseudo} (Solo)",
+        "leader_id": musician_id,
+        "leader_name": pseudo,
+        "admin_id": musician_doc.get("user_id") or (user_doc.get("id") if user_doc else None),
+        "band_type": "Solo",
+        "description": f"Profil solo de {pseudo}",
+        "music_styles": musician_doc.get("music_styles", []),
+        "city": musician_doc.get("city", ""),
+        "members_count": 1,
+        "members": [{
+            "id": musician_id,
+            "user_id": musician_doc.get("user_id"),
+            "name": pseudo,
+            "role": "leader"
+        }],
+        "is_public": False,
+        "created_at": now
+    }
+    await db.bands.insert_one(solo_band)
+    solo_band.pop("_id", None)
+    return solo_band
+
+
+
+
 
 async def save_to_history(collection_name: str, document_id: str, data: dict, action: str = "update"):
     """Sauvegarde une copie du document dans la collection d'historique"""
@@ -192,7 +241,14 @@ async def create_musician_profile(data: MusicianProfile, request: Request, curre
     }
     
     await db.musicians.insert_one(musician_doc)
-    
+
+    # 🎵 Auto-création du Solo band (idempotent) — garantit que toute candidature solo
+    # produira un concert visible dans /api/bands/{band_id}/events après acceptation.
+    try:
+        await _ensure_solo_band_for_musician(musician_doc, current_user)
+    except Exception as e:
+        logger.warning(f"Failed to auto-create Solo band for new musician {musician_id}: {e}")
+
     friends_count = await db.friends.count_documents({
         "$or": [{"from_user_id": current_user["id"]}, {"to_user_id": current_user["id"]}],
         "status": "accepted"

@@ -106,6 +106,36 @@ async def register(request: Request, data: UserRegister):
             "pro_subscription_status": "active"
         }
         await db.musicians.insert_one(musician_profile)
+        # 🎵 Auto-création du Solo band (idempotent) pour ce nouveau musicien
+        try:
+            existing_solo = await db.bands.find_one(
+                {"leader_id": musician_profile["id"], "band_type": "Solo"},
+                {"_id": 0, "id": 1}
+            )
+            if not existing_solo:
+                solo_band = {
+                    "id": str(uuid.uuid4()),
+                    "name": f"{data.name} (Solo)",
+                    "leader_id": musician_profile["id"],
+                    "leader_name": data.name,
+                    "admin_id": user_id,
+                    "band_type": "Solo",
+                    "description": f"Profil solo de {data.name}",
+                    "music_styles": [],
+                    "city": "",
+                    "members_count": 1,
+                    "members": [{
+                        "id": musician_profile["id"],
+                        "user_id": user_id,
+                        "name": data.name,
+                        "role": "leader"
+                    }],
+                    "is_public": False,
+                    "created_at": now
+                }
+                await db.bands.insert_one(solo_band)
+        except Exception as e:
+            logger.warning(f"Failed to auto-create Solo band on register for {data.email}: {e}")
     elif data.role == "melomane":
         melomane_profile = {
             "id": str(uuid.uuid4()),
@@ -231,12 +261,6 @@ async def get_me(request: Request, current_user: dict = Depends(get_current_user
         subscription_status=current_user.get("subscription_status"),
         trial_end=current_user.get("trial_end").isoformat() if isinstance(current_user.get("trial_end"), datetime) else current_user.get("trial_end")
     )
-
-@router.post("/logout")
-async def logout(response: Response):
-    """Logout - Delete httpOnly cookie"""
-    response.delete_cookie(key="access_token", path="/")
-    return {"message": "Déconnexion réussie"}
 
 
 @router.get("/verify-email")

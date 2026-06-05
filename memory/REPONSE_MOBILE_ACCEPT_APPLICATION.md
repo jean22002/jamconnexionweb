@@ -172,12 +172,22 @@ Tu peux donc immédiatement re-fetch `/applications/my` et `/bands/{id}/events`,
 
 ---
 
-## 10. 🆕 Endpoint `POST /api/musicians/me/ensure-solo-band`
+## 10. 🆕 Endpoint `POST /api/musicians/me/ensure-solo-band` + Auto-création au register
 
-Pour garantir que **toute candidature solo génère un concert visible** dans `/bands/{id}/events`, le mobile peut appeler cet endpoint :
+### Auto-création (transparent côté mobile)
+**Depuis ce déploiement**, tout nouveau musicien (via `POST /api/auth/register` avec `role=musician`) reçoit **automatiquement** un Solo band dans `db.bands` :
 
-- **Auth :** Bearer token musicien (role=musician), sinon 403.
-- **Idempotent :** si un Solo band existe déjà dans `db.bands` pour ce musicien, on le retourne tel quel.
+- `name = "<pseudo> (Solo)"`, `band_type = "Solo"`, `leader_id = musician_id`, `admin_id = user_id`, `is_public = false`
+- 82 musiciens existants ont été backfillés rétroactivement.
+- **Aucun appel côté mobile n'est nécessaire** pour les nouveaux comptes.
+
+### Endpoint explicite (fallback / migration ancienne)
+Si tu veux t'assurer qu'un musicien (potentiellement ancien) a bien son Solo band :
+
+`POST /api/musicians/me/ensure-solo-band` (Bearer token musicien)
+
+- **Idempotent :** retourne le Solo band existant si déjà présent.
+- 403 si role != musician.
 - **Réponse :**
   ```json
   {
@@ -200,7 +210,11 @@ Pour garantir que **toute candidature solo génère un concert visible** dans `/
   }
   ```
 
-**Recommandation mobile :** appeler cet endpoint au premier login musicien (silencieusement). Ensuite, à chaque candidature solo, envoyer `band_id = band.id` à `POST /api/planning/{slot_id}/apply` pour avoir un flux unifié.
+### Flux candidature solo unifié
+1. Au register, le Solo band est créé automatiquement.
+2. À la candidature : `POST /api/planning/{slot_id}/apply?band_id=<solo_band_id>` (recommandé) — ou sans `band_id`, le serveur fera la résolution.
+3. À l'acceptation : un concert est créé dans `db.concerts` avec `band_id = solo_band_id`.
+4. Côté mobile : `GET /api/bands/{solo_band_id}/events` ramène tous les concerts confirmés (groupes + solos, même flux).
 
 ---
 

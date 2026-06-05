@@ -47,27 +47,46 @@ async def get_current_user(authorization: str = Header(None)):
 # ============= HELPER FUNCTIONS =============
 
 async def is_band_member(band_id: str, user_id: str) -> bool:
-    """Vérifie si un utilisateur est membre d'un groupe"""
-    # Chercher le musicien qui possède ce groupe
+    """Vérifie si un utilisateur est membre d'un groupe.
+
+    Cherche d'abord dans `musicians.bands[]` (embedded), puis dans la collection `db.bands`
+    (notamment pour les profils Solo migrés où le leader est seul membre).
+    """
+    # 1) Embedded check (legacy)
     musician = await db.musicians.find_one(
         {"bands.band_id": band_id},
         {"_id": 0, "user_id": 1, "bands": 1}
     )
-    
-    if not musician:
-        return False
-    
-    # Trouver le groupe spécifique
-    band = next((b for b in musician.get("bands", []) if b.get("band_id") == band_id), None)
-    if not band:
-        return False
-    
-    # Vérifier si l'utilisateur est admin ou membre
-    if musician["user_id"] == user_id:
-        return True
-    
-    members = band.get("members", [])
-    return any(m.get("user_id") == user_id for m in members)
+
+    if musician:
+        band = next((b for b in musician.get("bands", []) if b.get("band_id") == band_id), None)
+        if band:
+            if musician["user_id"] == user_id:
+                return True
+            members = band.get("members", [])
+            if any(m.get("user_id") == user_id for m in members):
+                return True
+
+    # 2) db.bands fallback (collection bands, incluant les Solo migrés)
+    band_doc = await db.bands.find_one({"id": band_id}, {"_id": 0})
+    if band_doc:
+        # Leader ?
+        leader_id = band_doc.get("leader_id")
+        if leader_id:
+            leader_musician = await db.musicians.find_one({"id": leader_id}, {"_id": 0, "user_id": 1})
+            if leader_musician and leader_musician.get("user_id") == user_id:
+                return True
+        # Membres ?
+        for m in (band_doc.get("members") or []):
+            if m.get("user_id") == user_id:
+                return True
+            mid = m.get("id") or m.get("musician_id")
+            if mid:
+                mmusician = await db.musicians.find_one({"id": mid}, {"_id": 0, "user_id": 1})
+                if mmusician and mmusician.get("user_id") == user_id:
+                    return True
+
+    return False
 
 
 # ============= BANDS DIRECTORY =============
@@ -75,12 +94,18 @@ async def is_band_member(band_id: str, user_id: str) -> bool:
 @router.get("/bands/{band_id}/events")
 async def get_band_events(
     band_id: str,
+    response: Response,
     month: Optional[int] = None,
     year: Optional[int] = None,
     current_user: dict = Depends(get_current_user)
 ):
     """Récupère les événements (concerts) d'un groupe pour ses membres"""
-    
+
+    # Pas de cache CDN — la liste évolue dès qu'un venue accepte une candidature
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["CDN-Cache-Control"] = "no-cache"
+    response.headers["Pragma"] = "no-cache"
+
     # Vérifier que l'utilisateur est membre du groupe
     if not await is_band_member(band_id, current_user["id"]):
         raise HTTPException(

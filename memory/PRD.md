@@ -110,3 +110,15 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - `REACT_APP_BACKEND_URL` doit être vide en déploiement (URLs relatives)
 - Cloudflare redirect www → non-www configuré
 - `ENVIRONMENT='production'` active MongoDB Atlas
+
+## Changelog 2026-02-05 — Fix Flux Acceptation Candidature (Mobile sync)
+- **`POST /api/applications/{id}/accept`** insère désormais dans `db.concerts` (source unique de vérité)
+  - Champs : `id={app_id}_concert`, `band_id` (résolu), `band_type`, `musician_id`, `source="application_accepted"`, `application_id`
+  - Idempotent (pas de doublon si rappelé)
+  - Réponse JSON enrichie : `{ message, concert_id, band_id }`
+- **Résolution band_id Solo** : si pas de `band_id`, le serveur cherche `db.bands{leader_id, band_type:"Solo"}` puis `musicians.bands[]`
+- **`is_band_member`** (bands.py) corrigé : reconnaît maintenant les Solo bands stockés dans `db.bands` (auparavant ne regardait que `musicians.bands[]` embedded)
+- **`GET /api/applications/my`** expose désormais `band_type` (toujours présent, "Solo" si pas de band)
+- **Headers `Cache-Control: no-cache`** posés sur `/accept`, `/applications/my`, `/bands/{id}/events` → pas de purge Cloudflare nécessaire
+- Document de réponse complète à l'agent mobile : `/app/memory/REPONSE_MOBILE_ACCEPT_APPLICATION.md`
+- ✅ Tests E2E curl validés en preview prod (slot → apply → accept → /bands/{id}/events → 1 résultat)

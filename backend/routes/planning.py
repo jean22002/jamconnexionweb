@@ -512,35 +512,65 @@ async def create_application(data: ConcertApplication, request: Request, current
 @router.get("/applications/my")
 async def get_my_applications(request: Request, current_user: dict = Depends(get_current_user)):
     """Get all my applications (musician only)"""
+    from fastapi import Response as FastAPIResponse
+    import json as _json
+
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can view their applications")
-    
+
     musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
     if not musician:
-        return []
-    
+        empty = FastAPIResponse(content="[]", media_type="application/json")
+        empty.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        empty.headers["CDN-Cache-Control"] = "no-cache"
+        return empty
+
     applications = await db.applications.find({"musician_id": musician["id"]}, {"_id": 0}).to_list(100)
-    
+
+    # Pré-charger les bands du musicien (embedded) pour résoudre band_type rapidement
+    embedded_bands = {b.get("id"): b for b in (musician.get("bands") or []) if b.get("id")}
+
     result = []
     for app in applications:
         slot = await db.planning_slots.find_one({"id": app["planning_slot_id"]}, {"_id": 0})
         if slot:
-            # Get venue information
             venue = await db.venues.find_one({"id": slot.get("venue_id")}, {"_id": 0})
-            
-            # Add all slot and venue information needed for display
+
+            # Slot + venue display fields
             app["slot_venue_name"] = slot.get("venue_name") or (venue.get("name") if venue else None)
             app["slot_venue_city"] = venue.get("city") if venue else None
             app["slot_date"] = slot.get("date")
             app["slot_start_time"] = slot.get("time") or slot.get("start_time")
             app["slot_end_time"] = slot.get("end_time")
-            app["music_styles"] = slot.get("music_styles", [])  # Add music styles from slot
-            
-            # Keep legacy fields for backward compatibility
+            app["music_styles"] = slot.get("music_styles", [])
+
+            # Légacy
             app["venue_name"] = slot.get("venue_name")
+
+        # Résolution band_type (groupe vs Solo)
+        bid = app.get("band_id")
+        bt = None
+        if bid:
+            if bid in embedded_bands:
+                bt = embedded_bands[bid].get("band_type")
+            if not bt:
+                band_doc = await db.bands.find_one({"id": bid}, {"_id": 0, "band_type": 1})
+                if band_doc:
+                    bt = band_doc.get("band_type")
+            if not bt:
+                bt = "group"
+        else:
+            # Pas de band_id → considéré Solo (legacy + nouveau)
+            bt = "Solo"
+        app["band_type"] = bt
+
         result.append(app)
-    
-    return result
+
+    response = FastAPIResponse(content=_json.dumps(result, default=str), media_type="application/json")
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["CDN-Cache-Control"] = "no-cache"
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 
 @router.get("/applications/sent")
@@ -620,22 +650,35 @@ async def get_slot_applications(slot_id: str, request: Request, current_user: di
 
 @router.post("/applications/{app_id}/accept")
 async def accept_application(app_id: str, request: Request, current_user: dict = Depends(get_current_user)):
-    """Accept an application (venue only)"""
+    """Accept an application (venue only).
+
+    Side-effects garantis :
+      1. applications.status = "accepted"
+      2. Si num_bands_needed est atteint → planning_slots.is_open = False
+      3. INSERT db.concerts (band_id rempli — pour Solo, on résout via musicians.bands[band_type=Solo] ou db.bands[band_type=Solo])
+      4. push musicians.upcoming_concerts (legacy mobile)
+      5. WebSocket notify_application_status + DB notification
+      6. Si band_name → notification au band admin
+    """
+    from fastapi import Response as FastAPIResponse
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can accept applications")
-    
+
     venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
     if not venue:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
+
     app = await db.applications.find_one({"id": app_id}, {"_id": 0})
     if not app:
         raise HTTPException(status_code=404, detail="Application not found")
-    
+
     slot = await db.planning_slots.find_one({"id": app["planning_slot_id"], "venue_id": venue["id"]}, {"_id": 0})
     if not slot:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
+
+    # Idempotency : si déjà accepté, on ne rejoue pas les side-effects (évite doublons dans db.concerts)
+    already_accepted = app.get("status") == "accepted"
+
     # Update application status
     await db.applications.update_one({"id": app_id}, {"$set": {"status": "accepted"}})
     
@@ -667,6 +710,73 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
     # Close slot only if we have enough accepted bands
     if accepted_count >= num_bands_needed:
         await db.planning_slots.update_one({"id": slot["id"]}, {"$set": {"is_open": False}})
+
+    # 🎵 INSERT INTO db.concerts (single source of truth pour /api/bands/{band_id}/events)
+    # On résout le band_id de manière déterministe :
+    #   - Si application.band_id existe → on l'utilise
+    #   - Sinon (cas Solo), on cherche le band Solo du musicien dans db.bands (band_type="Solo", leader_id=musician_id)
+    #   - Sinon, on cherche dans musicians.bands[band_type="Solo"]
+    resolved_band_id = app.get("band_id")
+    resolved_band_type = None
+
+    musician_for_band = await db.musicians.find_one({"id": app["musician_id"]}, {"_id": 0}) if app.get("musician_id") else None
+
+    if not resolved_band_id and musician_for_band:
+        # 1) collection db.bands avec band_type=Solo
+        solo_band = await db.bands.find_one(
+            {"leader_id": musician_for_band["id"], "band_type": "Solo"},
+            {"_id": 0, "id": 1}
+        )
+        if solo_band:
+            resolved_band_id = solo_band["id"]
+            resolved_band_type = "Solo"
+        else:
+            # 2) musicians.bands[] embedded avec band_type=Solo
+            for b in (musician_for_band.get("bands") or []):
+                if b.get("band_type") == "Solo":
+                    resolved_band_id = b.get("id") or b.get("band_id")
+                    resolved_band_type = "Solo"
+                    break
+
+    if not resolved_band_type and resolved_band_id:
+        # Lookup band_type pour info
+        band_doc = await db.bands.find_one({"id": resolved_band_id}, {"_id": 0, "band_type": 1})
+        if band_doc:
+            resolved_band_type = band_doc.get("band_type") or "group"
+
+    concert_doc_id = app_id + "_concert"
+    if not already_accepted:
+        # Insert dans db.concerts seulement si pas déjà fait (idempotence)
+        existing_concert = await db.concerts.find_one({"id": concert_doc_id}, {"_id": 0, "id": 1})
+        if not existing_concert:
+            concert_doc = {
+                "id": concert_doc_id,
+                "venue_id": venue.get("id"),
+                "venue_name": venue.get("name"),
+                "band_id": resolved_band_id,  # peut être None si vraiment aucun band trouvé
+                "band_name": app.get("band_name"),
+                "band_type": resolved_band_type,
+                "musician_id": app.get("musician_id"),
+                "date": slot.get("date"),
+                "start_time": slot.get("time") or slot.get("start_time"),
+                "end_time": slot.get("end_time"),
+                "title": slot.get("title") or (f"Concert {app.get('band_name')}" if app.get("band_name") else "Concert"),
+                "description": slot.get("description"),
+                "music_styles": slot.get("music_styles", []),
+                "payment": slot.get("payment"),
+                "is_guso": slot.get("is_guso", False),
+                "has_catering": slot.get("has_catering"),
+                "has_meals": slot.get("has_meals"),
+                "has_accommodation": slot.get("has_accommodation"),
+                "source": "application_accepted",
+                "planning_slot_id": slot["id"],
+                "application_id": app_id,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            try:
+                await db.concerts.insert_one(concert_doc)
+            except Exception as e:
+                logger.warning(f"Failed to insert concert from accepted application {app_id}: {e}")
     
     # Notify musician
     musician = await db.musicians.find_one({"id": app["musician_id"]}, {"_id": 0})
@@ -763,8 +873,16 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
                                 {"$push": {"upcoming_concerts": band_concert_entry}}
                             )
                         break
-    
-    return {"message": "Application accepted"}
+
+    # Réponse + Cache-Control no-cache (Cloudflare)
+    response = FastAPIResponse(
+        content='{"message": "Application accepted", "concert_id": "' + concert_doc_id + '", "band_id": ' + ('"' + resolved_band_id + '"' if resolved_band_id else 'null') + '}',
+        media_type="application/json"
+    )
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["CDN-Cache-Control"] = "no-cache"
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 
 @router.post("/applications/{app_id}/reject")

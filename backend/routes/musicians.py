@@ -370,7 +370,28 @@ async def update_musician_profile(data: MusicianProfile, request: Request, curre
         {"user_id": current_user["id"]},
         {"$set": update_data}
     )
-    
+
+    # 🎵 Sync du Solo band si pseudo / music_styles / city ont changé
+    try:
+        new_pseudo = update_data.get("pseudo") or musician.get("pseudo")
+        if new_pseudo:
+            solo_band = await db.bands.find_one(
+                {"leader_id": musician["id"], "band_type": "Solo"},
+                {"_id": 0, "id": 1, "name": 1, "leader_name": 1}
+            )
+            if solo_band:
+                solo_updates = {
+                    "name": f"{new_pseudo} (Solo)",
+                    "leader_name": new_pseudo,
+                    "music_styles": update_data.get("music_styles", musician.get("music_styles", [])),
+                    "city": update_data.get("city", musician.get("city", "")),
+                    "description": f"Profil solo de {new_pseudo}",
+                    "members.0.name": new_pseudo,
+                }
+                await db.bands.update_one({"id": solo_band["id"]}, {"$set": solo_updates})
+    except Exception as e:
+        logger.warning(f"Solo band sync failed for musician {musician['id']}: {e}")
+
     updated = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
     friends_count = await db.friends.count_documents({
         "$or": [{"from_user_id": current_user["id"]}, {"to_user_id": current_user["id"]}],

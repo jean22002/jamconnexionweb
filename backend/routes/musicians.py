@@ -261,14 +261,24 @@ async def create_musician_profile(data: MusicianProfile, request: Request, curre
 async def update_musician_profile(data: MusicianProfile, request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musician accounts can update musician profiles")
-    
+
     musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
     if not musician:
         raise HTTPException(status_code=404, detail="Musician profile not found")
-    
+
+    # 🛡️ Récupère le body brut pour savoir EXACTEMENT quels champs le client a envoyés.
+    # Évite que les valeurs par défaut de Pydantic (ex. `bands: List = []`) n'écrasent les
+    # champs existants en BDD quand un ancien client n'envoie pas tous les champs.
+    try:
+        raw_body = await request.json()
+        if not isinstance(raw_body, dict):
+            raw_body = {}
+    except Exception:
+        raw_body = {}
+
     # 🛡️ PROTECTION 1: Sauvegarder l'état actuel dans l'historique
     await save_to_history("musicians", musician["id"], musician, action="before_update")
-    
+
     # 🛡️ PROTECTION 2: Valider que ce n'est pas un écrasement accidentel
     update_data_dict = data.model_dump()
     if not validate_profile_update(musician, update_data_dict, min_fields=2):
@@ -277,20 +287,37 @@ async def update_musician_profile(data: MusicianProfile, request: Request, curre
             status_code=400, 
             detail="Update rejected: too few fields filled. This looks like an accidental data wipe. Please fill at least 2 critical fields (pseudo, instruments, music_styles, city, bio, or profile_image)."
         )
-    
-    # Add IDs to new concerts
-    concerts_with_ids = []
-    for concert in data.concerts:
-        concert_dict = concert.model_dump()
-        if not concert_dict.get("id"):
-            concert_dict["id"] = str(uuid.uuid4())
-        concerts_with_ids.append(concert_dict)
-    
-    update_data = data.model_dump()
-    update_data["concerts"] = concerts_with_ids
-    
-    # Sync bands to the bands collection
-    if update_data.get("bands"):
+
+    # 🛡️ PROTECTION 3 (NOUVELLE) — Construire update_data à partir du body brut UNIQUEMENT
+    # pour ne PAS écraser les listes (`bands`, `concerts`, etc.) si le client ne les envoie pas.
+    # Cela corrige le bug : un ancien build mobile qui envoie un PUT contenant `solo_profile`
+    # mais sans `bands` → bands[] WIPE complet en BDD.
+    update_data = {k: v for k, v in update_data_dict.items() if k in raw_body}
+
+    # 🛡️ PROTECTION 4 — Ignorer `solo_profile` côté DB.
+    # La migration solo_profile → bands[Solo] est terminée ; on garde solo_profile en lecture
+    # seule (renvoyé par GET pour compat), mais on ne le persiste plus depuis un PUT pour
+    # éviter toute re-migration intempestive ou état dupliqué.
+    if "solo_profile" in update_data:
+        logger.warning(
+            f"PUT /musicians: legacy 'solo_profile' received from user {current_user['id']} "
+            f"(role={current_user['role']}) — ignored (read-only). "
+            f"is_available={raw_body.get('solo_profile', {}).get('is_available')}"
+        )
+        update_data.pop("solo_profile", None)
+
+    # Add IDs to new concerts — uniquement si le client a envoyé concerts
+    if "concerts" in update_data:
+        concerts_with_ids = []
+        for concert in data.concerts:
+            concert_dict = concert.model_dump()
+            if not concert_dict.get("id"):
+                concert_dict["id"] = str(uuid.uuid4())
+            concerts_with_ids.append(concert_dict)
+        update_data["concerts"] = concerts_with_ids
+
+    # Sync bands to the bands collection — uniquement si le client a envoyé bands
+    if "bands" in update_data and update_data.get("bands"):
         bands_with_ids = []
         for band_data in update_data["bands"]:
             # Utiliser l'ID existant ou générer un nouveau

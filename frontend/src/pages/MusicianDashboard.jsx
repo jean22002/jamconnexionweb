@@ -32,6 +32,7 @@ import MapTab from "../features/musician-dashboard/tabs/MapTab";
 import PlanningTab from "../features/musician-dashboard/tabs/PlanningTab";
 import SubscriptionsTab from "../features/musician-dashboard/tabs/SubscriptionsTab";
 import ProfileEditModal from "../features/musician-dashboard/ProfileEditModal";
+import SoloProjectFormDialog from "../features/musician-dashboard/profile/SoloProjectFormDialog";
 import BandMembersManager from "../components/band/BandMembersManager";
 import AdInterstitial from "../components/AdInterstitial";
 import JoinBandWithCode from "../components/band/JoinBandWithCode";
@@ -377,6 +378,9 @@ export default function MusicianDashboard() {
   // State for managing multiple bands
   const [editingBandIndex, setEditingBandIndex] = useState(null);
   const [showBandDialog, setShowBandDialog] = useState(false);
+  // 🎤 Projet Solo (nouveau formulaire accordion aligné avec mobile)
+  const [showSoloProjectDialog, setShowSoloProjectDialog] = useState(false);
+  const [editingSoloProject, setEditingSoloProject] = useState(null);
   const [showBandPlanningDialog, setShowBandPlanningDialog] = useState(false);
   const [selectedBandForPlanning, setSelectedBandForPlanning] = useState(null);
   const [currentBand, setCurrentBand] = useState({
@@ -896,8 +900,15 @@ export default function MusicianDashboard() {
 
   const handleOpenBandDialog = (index = null) => {
     if (index !== null) {
+      const band = profileForm.bands[index];
+      // 🎤 Si c'est un projet Solo, on ouvre le nouveau dialog accordion aligné mobile
+      if (band && band.band_type === "Solo") {
+        setEditingSoloProject(band);
+        setShowSoloProjectDialog(true);
+        return;
+      }
       // Editing existing band
-      setCurrentBand(profileForm.bands[index]);
+      setCurrentBand(band);
       setEditingBandIndex(index);
     } else {
       // Adding new band - Generate unique ID
@@ -933,6 +944,21 @@ export default function MusicianDashboard() {
       setEditingBandIndex(null);
     }
     setShowBandDialog(true);
+  };
+
+  // 🎤 Handler pour ouvrir le dialog "Créer un projet Solo"
+  const handleOpenSoloDialog = () => {
+    setEditingSoloProject(null);
+    setShowSoloProjectDialog(true);
+  };
+
+  // 🎤 Callback après save/delete d'un projet Solo : refresh du profil
+  const handleSoloProjectSaved = async () => {
+    try {
+      await fetchProfile();
+    } catch (e) {
+      // non-bloquant
+    }
   };
 
   // Fonction pour ouvrir le planning d'un groupe
@@ -1646,6 +1672,7 @@ export default function MusicianDashboard() {
                 addToList={addToList}
                 removeFromList={removeFromList}
                 handleOpenBandDialog={handleOpenBandDialog}
+                handleOpenSoloDialog={handleOpenSoloDialog}
                 handleDeleteBand={handleDeleteBand}
                 handleLeaveBand={handleLeaveBand}
                 onViewBandPlanning={handleViewBandPlanning}
@@ -1653,6 +1680,15 @@ export default function MusicianDashboard() {
                 handleChangePassword={handleChangePassword}
                 onProfileRefresh={fetchProfile}
                 API={API}
+              />
+
+              {/* 🎤 Solo Project Dialog (accordion 7 sections, aligné mobile) */}
+              <SoloProjectFormDialog
+                open={showSoloProjectDialog}
+                onClose={() => setShowSoloProjectDialog(false)}
+                token={token}
+                editingSolo={editingSoloProject}
+                onSaved={handleSoloProjectSaved}
               />
 
               <Dialog open={showBandDialog} onOpenChange={setShowBandDialog}>

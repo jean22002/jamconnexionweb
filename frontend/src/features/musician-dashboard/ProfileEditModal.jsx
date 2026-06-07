@@ -56,6 +56,7 @@ export default function ProfileEditModal({
   handleSaveProfile,
   handleChangePassword,
   handleOpenBandDialog,
+  handleOpenSoloDialog,
   handleDeleteBand,
   handleLeaveBand,
   onViewBandPlanning,
@@ -152,6 +153,7 @@ export default function ProfileEditModal({
             <BandTab
               profileForm={profileForm}
               handleOpenBandDialog={handleOpenBandDialog}
+              handleOpenSoloDialog={handleOpenSoloDialog}
               handleDeleteBand={handleDeleteBand}
               handleLeaveBand={handleLeaveBand}
               onViewPlanning={onViewBandPlanning}

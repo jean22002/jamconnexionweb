@@ -125,6 +125,13 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - **🆕 Auto-création du Solo band au register** : tout nouveau musicien reçoit automatiquement un Solo band dans `db.bands` lors de `POST /api/auth/register`.
 - **🆕 Backfill rétroactif** : 82 musiciens existants migrés via `scripts/backfill_solo_bands.py` (idempotent).
 - **🆕 Sync Solo band** : `PUT /api/musicians` synchronise désormais `name`, `leader_name`, `city`, `music_styles`, `members[0].name` du Solo band associé quand le musicien modifie son pseudo / styles / ville.
+- **🆕 Formulaire web "Projet Solo" aligné mobile** (2026-02-07) :
+  - Nouveau composant `frontend/src/features/musician-dashboard/profile/SoloProjectFormDialog.jsx` (accordion 7 sections : Base, Styles, Localisation, Détails, Structure & paiement, Recrutement, Réseaux).
+  - Bouton "🎤 Ajouter un projet Solo" dans le BandTab (à côté de "Ajouter un groupe").
+  - Édition d'un Solo band ouvre automatiquement ce nouveau dialog (détection via `band_type === "Solo"`).
+  - `band_type` verrouillé à `"Solo"`, autocomplete ville via `api-adresse.data.gouv.fr`, payload identique à l'app mobile (avec alias `looking_for_profiles` pour compat ascendante).
+  - Endpoints utilisés : `POST /api/bands`, `PUT /api/musicians/bands/{id}`, `DELETE /api/musicians/bands/{id}`.
+  - Tests E2E (playwright + curl) : création/save/styles/sections accordion validés.
 - **🛡️ FIX CRITIQUE bug data wipe `PUT /api/musicians[/me]`** (2026-02-06) :
   - **Cause** : `update_data = data.model_dump()` produisait toujours `bands=[]` par défaut Pydantic. Ancien build mobile (78/80) qui envoyait `solo_profile` sans `bands` → `$set: {bands: []}` → WIPE de tous les bands en BDD.
   - **Fix** : on construit `update_data` UNIQUEMENT avec les clés effectivement présentes dans le body JSON brut (`request.json()`).

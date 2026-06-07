@@ -1,10 +1,11 @@
 import { Button } from "../../../components/ui/button";
-import { Plus, Calendar, UserPlus, Copy, Check, Share2, Trash2, LogOut } from "lucide-react";
+import { Plus, Calendar, UserPlus, Copy, Check, Share2, Trash2, LogOut, Mic } from "lucide-react";
 import { useState } from "react";
 
 export default function BandTab({ 
   profileForm, 
   handleOpenBandDialog, 
+  handleOpenSoloDialog,
   handleDeleteBand,
   handleLeaveBand,
   onViewPlanning, 
@@ -35,14 +36,20 @@ export default function BandTab({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-heading text-lg">Mes Groupes</h3>
-        <div className="flex gap-2">
-          <Button onClick={onJoinBand} size="sm" variant="outline" className="rounded-full">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h3 className="font-heading text-lg">Mes Groupes & Projets Solo</h3>
+        <div className="flex gap-2 flex-wrap">
+          <Button onClick={onJoinBand} size="sm" variant="outline" className="rounded-full" data-testid="join-band-btn">
             <UserPlus className="w-4 h-4 mr-1" />
             Rejoindre un groupe
           </Button>
-          <Button onClick={() => handleOpenBandDialog()} size="sm" className="rounded-full">
+          {handleOpenSoloDialog && (
+            <Button onClick={handleOpenSoloDialog} size="sm" variant="outline" className="rounded-full border-primary/40 text-primary hover:bg-primary/10" data-testid="add-solo-project-btn">
+              <Mic className="w-4 h-4 mr-1" />
+              Ajouter un projet Solo
+            </Button>
+          )}
+          <Button onClick={() => handleOpenBandDialog()} size="sm" className="rounded-full" data-testid="add-band-btn">
             <Plus className="w-4 h-4 mr-1" />
             Ajouter un groupe
           </Button>
@@ -62,11 +69,19 @@ export default function BandTab({
               !band.admin_id;
             
             return (
-              <div key={`band-${band.id || band.name}-${index}`} className="p-4 bg-black/20 rounded-xl border border-white/10 hover:border-primary/30 transition-colors">
+              <div key={`band-${band.id || band.name}-${index}`} className={`p-4 bg-black/20 rounded-xl border ${band.band_type === "Solo" ? "border-primary/40 bg-primary/5" : "border-white/10"} hover:border-primary/60 transition-colors`}>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h4 className="font-semibold text-lg mb-1">{band.name}</h4>
-                    {band.band_type && (
+                    <h4 className="font-semibold text-lg mb-1 flex items-center gap-2">
+                      {band.band_type === "Solo" && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-primary text-primary-foreground">
+                          <Mic className="w-3 h-3" />
+                          Solo
+                        </span>
+                      )}
+                      {band.name}
+                    </h4>
+                    {band.band_type && band.band_type !== "Solo" && (
                       <p className="text-sm text-muted-foreground">{band.band_type}</p>
                     )}
                     {band.music_styles && band.music_styles.length > 0 && (
@@ -178,7 +193,7 @@ export default function BandTab({
       ) : (
         <div className="text-center py-8 text-muted-foreground border-2 border-dashed border-white/10 rounded-xl">
           <p>Aucun groupe ajoute</p>
-          <p className="text-sm mt-2">Cliquez sur "Ajouter un groupe" pour commencer</p>
+          <p className="text-sm mt-2">Cliquez sur &quot;Ajouter un groupe&quot; pour commencer</p>
         </div>
       )}
     </div>

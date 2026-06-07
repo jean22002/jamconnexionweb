@@ -140,7 +140,8 @@ export const useProfileManager = ({
     editing,
     loading,
     saving,
-    
+    setSaving,
+
     // Actions
     setFormData,
     setEditing,

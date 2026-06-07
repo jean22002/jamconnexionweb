@@ -144,6 +144,7 @@ export default function VenueDashboard() {
     setProfile: setProfileFromHook,
     loading: loadingFromHook,
     saving: savingFromHook,
+    setSaving: setSavingFromHook,
     editing: editingFromHook,
     setEditing: setEditingFromHook,
     saveProfile: saveProfileFromHook,
@@ -180,6 +181,7 @@ export default function VenueDashboard() {
   const setProfile = setProfileFromHook;
   const loading = loadingFromHook;
   const saving = savingFromHook;
+  const setSaving = setSavingFromHook;
   const editing = editingFromHook;
   const setEditing = setEditingFromHook;
   const [loadingEvents, setLoadingEvents] = useState(false);
@@ -306,6 +308,8 @@ export default function VenueDashboard() {
   const [showApplicationsModal, setShowApplicationsModal] = useState(false);
   
   // Selected planning slot for applications
+  // 🆕 Build 94 : état global des candidatures reçues (pour compteur onglet)
+  const [allReceivedApplications, setAllReceivedApplications] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   
   // Reviews
@@ -359,7 +363,8 @@ export default function VenueDashboard() {
   const [manualBandEntry, setManualBandEntry] = useState(false); // Mode saisie manuelle
   
   // Gallery
-  const [gallery, setGallery] = useState([]);
+  // gallery dérivée du profile (pas besoin de state local)
+  const gallery = profile?.gallery || [];
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -585,13 +590,21 @@ export default function VenueDashboard() {
     
     setLoadingEvents(true);
     try {
+      // 🆕 Build 92/94 : cache-buster + headers no-cache pour bypass Cloudflare
+      const ts = Date.now();
+      const noCacheHeaders = {
+        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' }
+      };
+      // Helper Build 94 : normaliser une date "YYYY-MM-DDT..." → "YYYY-MM-DD"
+      const normalizeDate = (d) => (typeof d === 'string' && d.length >= 10) ? d.slice(0, 10) : d;
+
       // Faire les requêtes en parallèle avec gestion d'erreur individuelle
       const [jamsRes, concertsRes, karaokeRes, spectacleRes, planningRes] = await Promise.allSettled([
-        axios.get(`${API}/venues/${profile.id}/jams`),
-        axios.get(`${API}/venues/${profile.id}/concerts`),
-        axios.get(`${API}/venues/${profile.id}/karaoke`),
-        axios.get(`${API}/venues/${profile.id}/spectacle`),
-        axios.get(`${API}/venues/${profile.id}/planning`)
+        axios.get(`${API}/venues/${profile.id}/jams?_=${ts}`, noCacheHeaders),
+        axios.get(`${API}/venues/${profile.id}/concerts?_=${ts}`, noCacheHeaders),
+        axios.get(`${API}/venues/${profile.id}/karaoke?_=${ts}`, noCacheHeaders),
+        axios.get(`${API}/venues/${profile.id}/spectacle?_=${ts}`, noCacheHeaders),
+        axios.get(`${API}/venues/${profile.id}/planning?_=${ts}`, noCacheHeaders)
       ]);
       
       // Log des erreurs éventuelles
@@ -610,6 +623,13 @@ export default function VenueDashboard() {
       
       console.log(`✅ Events loaded - Jams: ${jams.length}, Concerts: ${concerts.length}, Karaoke: ${karaokes.length}, Spectacles: ${spectacles.length}`);
       
+      // 🆕 Build 94 : normaliser toutes les dates au format YYYY-MM-DD
+      jams.forEach(j => { j.date = normalizeDate(j.date); });
+      concerts.forEach(c => { c.date = normalizeDate(c.date); });
+      karaokes.forEach(k => { k.date = normalizeDate(k.date); });
+      spectacles.forEach(s => { s.date = normalizeDate(s.date); });
+      planning.forEach(p => { p.date = normalizeDate(p.date); });
+
       setJams(jams);
       setConcerts(concerts);
       setKaraokes(karaokes);
@@ -664,6 +684,24 @@ export default function VenueDashboard() {
     }
   }, []);
 
+  // 🆕 Build 94 : fetch global des candidatures pending pour le compteur de l'onglet
+  const fetchAllReceivedApplications = useCallback(async () => {
+    if (!token) return;
+    try {
+      const ts = Date.now();
+      const resp = await axios.get(`${API}/applications/received?_=${ts}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+      });
+      setAllReceivedApplications(Array.isArray(resp.data) ? resp.data : []);
+    } catch (error) {
+      // non-bloquant
+    }
+  }, [token]);
+
   const fetchNotifications = useCallback(async () => {
     if (!token) return;
     try {
@@ -698,6 +736,7 @@ export default function VenueDashboard() {
     // fetchEvents() removed from here - will be called when profile is loaded
     fetchNotifications();
     fetchUnreadMessages();
+    fetchAllReceivedApplications();
     fetchSubscribers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty array = run only once on mount
@@ -782,6 +821,12 @@ export default function VenueDashboard() {
   useEffect(() => {
     if (activeTab === 'planning' && profile?.id) {
       fetchEvents();
+      // 🆕 Build 94 : refresh aussi le compteur pending au focus Planning
+      fetchAllReceivedApplications();
+    }
+    if (activeTab === 'candidatures' && profile?.id) {
+      // 🆕 Build 94 : refresh candidatures au focus
+      fetchAllReceivedApplications();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, profile?.id]);
@@ -1557,11 +1602,7 @@ export default function VenueDashboard() {
     }
   };
 
-  useEffect(() => {
-    if (profile?.gallery) {
-      setGallery(profile.gallery);
-    }
-  }, [profile]);
+  // gallery derived from profile (was a useEffect+setState — removed Build 94 cleanup)
 
   // Calendar helper functions
   const getDaysInMonth = (date) => {
@@ -1771,7 +1812,10 @@ export default function VenueDashboard() {
           catering_tbd: planningForm.catering_tbd || false,
           has_accommodation: planningForm.has_accommodation || false,
           accommodation_capacity: planningForm.accommodation_capacity || 0,
-          accommodation_tbd: planningForm.accommodation_tbd || false
+          accommodation_tbd: planningForm.accommodation_tbd || false,
+          // 🆕 Build 91 — Formation recherchée (Solo/Duo/Trio/Quatuor/Quintet/Groupe)
+          formation_type: planningForm.formation_type || null,
+          max_musicians: planningForm.max_musicians || null
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -2472,7 +2516,8 @@ export default function VenueDashboard() {
     onNotification: (message) => {
       console.log('📨 Notification:', message);
       if (message.notification_type === 'new_application') {
-        fetchPlanning();
+        fetchEvents();
+        fetchAllReceivedApplications();
       }
     },
   });
@@ -2786,7 +2831,7 @@ export default function VenueDashboard() {
                       className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors w-full text-left"
                     >
                       <HelpCircle className="w-5 h-5 text-primary" />
-                      <span className="font-medium">Guide d'utilisation</span>
+                      <span className="font-medium">Guide d&apos;utilisation</span>
                     </button>
 
                     {/* Status */}
@@ -2908,9 +2953,9 @@ export default function VenueDashboard() {
                 <div>
                   <p className="font-heading font-semibold text-lg">
                     {trialDaysLeft > 0 ? (
-                      <>Il vous reste {trialDaysLeft} jour{trialDaysLeft > 1 ? "s" : ""} d'essai gratuit</>
+                      <>Il vous reste {trialDaysLeft} jour{trialDaysLeft > 1 ? "s" : ""} d&apos;essai gratuit</>
                     ) : (
-                      <>Votre essai se termine aujourd'hui</>
+                      <>Votre essai se termine aujourd&apos;hui</>
                     )}
                   </p>
                   <p className="text-sm text-muted-foreground">
@@ -2921,7 +2966,7 @@ export default function VenueDashboard() {
               <Button asChild className="bg-secondary hover:bg-secondary/90 rounded-full">
                 <Link to="/pricing">
                   <CreditCard className="w-4 h-4 mr-2" />
-                  S'abonner maintenant
+                  S&apos;abonner maintenant
                 </Link>
               </Button>
             </div>
@@ -2971,10 +3016,10 @@ export default function VenueDashboard() {
                     ⚠️ Annulation prévue dans {daysUntilRenewal} jour{daysUntilRenewal > 1 ? "s" : ""}
                   </p>
                   <p className="text-sm text-muted-foreground mb-2">
-                    Vous avez annulé le renouvellement automatique. Votre abonnement restera actif jusqu'à la fin de la période payée.
+                    Vous avez annulé le renouvellement automatique. Votre abonnement restera actif jusqu&apos;à la fin de la période payée.
                   </p>
                   <p className="text-xs text-orange-400">
-                    💡 Vous pouvez changer d'avis et réactiver le renouvellement avant la fin de la période.
+                    💡 Vous pouvez changer d&apos;avis et réactiver le renouvellement avant la fin de la période.
                   </p>
                 </div>
               </div>
@@ -3001,8 +3046,8 @@ export default function VenueDashboard() {
                   ⚠️ Accès limité - Abonnement expiré
                 </p>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Votre abonnement a expiré. Vous ne pouvez plus accéder aux fonctionnalités de gestion d'événements. 
-                  Réabonnez-vous pour retrouver l'accès complet à votre dashboard.
+                  Votre abonnement a expiré. Vous ne pouvez plus accéder aux fonctionnalités de gestion d&apos;événements. 
+                  Réabonnez-vous pour retrouver l&apos;accès complet à votre dashboard.
                 </p>
                 <Button 
                   onClick={handleSubscribe} 
@@ -3059,14 +3104,22 @@ export default function VenueDashboard() {
               disabled={isSubscriptionExpired}
               className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              Planning {isSubscriptionExpired && '🔒'}
+              {(() => {
+                // 🆕 Build 94 : compteur "Créneaux N" = slots ouverts sans candidature acceptée
+                const cnt = (planningSlots || []).filter(s => s.is_open && (!s.accepted_bands_count || s.accepted_bands_count === 0)).length;
+                return <>Planning{cnt > 0 ? ` (${cnt})` : ''} {isSubscriptionExpired && '🔒'}</>;
+              })()}
             </TabsTrigger>
             <TabsTrigger 
               value="candidatures" 
               disabled={isSubscriptionExpired}
               className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              Candidatures {isSubscriptionExpired && '🔒'}
+              {(() => {
+                // 🆕 Build 94 : compteur "Candidatures N" = applications pending (toutes slots)
+                const cnt = (allReceivedApplications || []).filter(a => a.status === 'pending').length;
+                return <>Candidatures{cnt > 0 ? ` (${cnt})` : ''} {isSubscriptionExpired && '🔒'}</>;
+              })()}
             </TabsTrigger>
             <TabsTrigger 
               value="jacks" 
@@ -3253,7 +3306,7 @@ export default function VenueDashboard() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Nom de l'artiste</Label>
+                        <Label>Nom de l&apos;artiste</Label>
                         <Input 
                           value={spectacleForm.artist_name} 
                           onChange={(e) => setSpectacleForm({ ...spectacleForm, artist_name: e.target.value })} 
@@ -3273,7 +3326,7 @@ export default function VenueDashboard() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Prix d'entrée (optionnel)</Label>
+                        <Label>Prix d&apos;entrée (optionnel)</Label>
                         <Input 
                           value={spectacleForm.price} 
                           onChange={(e) => setSpectacleForm({ ...spectacleForm, price: e.target.value })} 
@@ -3306,7 +3359,7 @@ export default function VenueDashboard() {
                               </SelectTrigger>
                               <SelectContent className="bg-background border-white/10">
                                 <SelectItem value="fixe">Fixe</SelectItem>
-                                <SelectItem value="etablissement">À définir avec l'établissement</SelectItem>
+                                <SelectItem value="etablissement">À définir avec l&apos;établissement</SelectItem>
                                 <SelectItem value="facture">Facture</SelectItem>
                                 <SelectItem value="guso">GUSO</SelectItem>
                                 <SelectItem value="promotion">Promotion du groupe</SelectItem>
@@ -3381,7 +3434,7 @@ export default function VenueDashboard() {
                                 checked={spectacleForm.catering_tbd}
                                 onCheckedChange={(checked) => setSpectacleForm({ ...spectacleForm, catering_tbd: checked })}
                               />
-                              <Label className="text-sm">À définir avec l'artiste</Label>
+                              <Label className="text-sm">À définir avec l&apos;artiste</Label>
                             </div>
                           </div>
                         )}
@@ -3400,7 +3453,7 @@ export default function VenueDashboard() {
                         {spectacleForm.has_accommodation && (
                           <div className="space-y-3 pl-8">
                             <div className="space-y-2">
-                              <Label>Capacité d'hébergement (personnes)</Label>
+                              <Label>Capacité d&apos;hébergement (personnes)</Label>
                               <Input
                                 type="number"
                                 min="0"
@@ -3415,7 +3468,7 @@ export default function VenueDashboard() {
                                 checked={spectacleForm.accommodation_tbd}
                                 onCheckedChange={(checked) => setSpectacleForm({ ...spectacleForm, accommodation_tbd: checked })}
                               />
-                              <Label className="text-sm">À définir avec l'artiste</Label>
+                              <Label className="text-sm">À définir avec l&apos;artiste</Label>
                             </div>
                           </div>
                         )}
@@ -3668,7 +3721,7 @@ export default function VenueDashboard() {
                     <div className="flex-1 text-sm">
                       <p className="font-semibold text-amber-500 mb-1">⚠️ Utilisation responsable</p>
                       <p className="text-amber-200/80 leading-relaxed">
-                        N'abusez pas des notifications à des fins commerciales. Un usage excessif peut saturer vos abonnés et les inciter à se désabonner. Privilégiez des messages pertinents et utiles.
+                        N&apos;abusez pas des notifications à des fins commerciales. Un usage excessif peut saturer vos abonnés et les inciter à se désabonner. Privilégiez des messages pertinents et utiles.
                       </p>
                     </div>
                   </div>
@@ -3873,7 +3926,7 @@ export default function VenueDashboard() {
                   <div>
                     <p className="font-semibold text-yellow-500 mb-1">Indicateurs donnés à titre informatif</p>
                     <p className="text-sm text-muted-foreground">
-                      L'utilisateur reste seul responsable des décisions prises sur leur base.
+                      L&apos;utilisateur reste seul responsable des décisions prises sur leur base.
                     </p>
                   </div>
                 </div>
@@ -3898,7 +3951,7 @@ export default function VenueDashboard() {
                   </div>
                   
                   <div>
-                    <Label className="text-sm mb-2 block">Type d'événement</Label>
+                    <Label className="text-sm mb-2 block">Type d&apos;événement</Label>
                     <select
                       value={historyFilters.type}
                       onChange={(e) => setHistoryFilters({...historyFilters, type: e.target.value})}

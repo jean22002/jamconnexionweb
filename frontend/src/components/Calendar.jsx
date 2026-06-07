@@ -93,7 +93,18 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
     const hasAcceptedApplications = planningSlot && planningSlot.accepted_bands_count > 0;
     const isSlotComplete = planningSlot && !planningSlot.is_open && planningSlot.accepted_bands_count >= planningSlot.num_bands_needed;
     const isOpenSlot = planningSlot && planningSlot.is_open && !hasAcceptedApplications;
-    
+    // 🆕 Build 94 : slot fermé sans aucune candidature acceptée → Réservé rouge
+    const isSlotReservedClosed = planningSlot && !planningSlot.is_open && (!planningSlot.accepted_bands_count || planningSlot.accepted_bands_count === 0);
+
+    // Helper Build 94 : couleurs par type d'événement
+    const colorsByEventType = {
+      concert: 'bg-green-500/20 text-green-400 border-2 border-green-500/40 hover:bg-green-500/30 cursor-pointer',
+      jam: 'bg-purple-500/20 text-purple-400 border-2 border-purple-500/40 hover:bg-purple-500/30 cursor-pointer',
+      karaoke: 'bg-pink-500/20 text-pink-400 border-2 border-pink-500/40 hover:bg-pink-500/30 cursor-pointer',
+      spectacle: 'bg-cyan-500/20 text-cyan-400 border-2 border-cyan-500/40 hover:bg-cyan-500/30 cursor-pointer',
+    };
+    const labelsByEventType = { concert: 'Concert', jam: 'Bœuf', karaoke: 'Karaoké', spectacle: 'Spectacle' };
+
     // Définir les couleurs selon le type d'événement
     let colorClasses = '';
     let label = '';
@@ -133,21 +144,22 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
         colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 hover:bg-red-500/30 cursor-pointer';
         label = 'Réservé';
       }
-    } else if (isSlotComplete) {
-      // Rouge pour les créneaux complets avec toutes les candidatures acceptées
-      colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 hover:bg-red-500/30 cursor-pointer';
-      label = 'Complet';
-      eventInfo = `${planningSlot.accepted_bands_count}/${planningSlot.num_bands_needed} groupes`;
-    } else if (hasAcceptedApplications) {
-      // Orange pour les créneaux partiellement remplis
-      colorClasses = 'bg-orange-500/20 text-orange-400 border-2 border-orange-500/40 hover:bg-orange-500/30 cursor-pointer';
-      label = 'En cours';
-      eventInfo = `${planningSlot.accepted_bands_count}/${planningSlot.num_bands_needed} groupes`;
+    } else if (isSlotComplete || hasAcceptedApplications) {
+      // 🆕 Build 94 : slot avec >= 1 acceptation → couleur du TYPE d'événement
+      // (concert vert / jam violet / karaoké rose / spectacle cyan)
+      const effectiveType = eventType || planningSlot?.event_type || 'concert';
+      colorClasses = colorsByEventType[effectiveType] || colorsByEventType.concert;
+      label = labelsByEventType[effectiveType] || 'Concert';
+      eventInfo = `${planningSlot.accepted_bands_count}/${planningSlot.num_bands_needed || 1} groupe${(planningSlot.num_bands_needed || 1) > 1 ? 's' : ''}`;
     } else if (isOpenSlot) {
-      // JAUNE pour les créneaux ouverts disponibles
+      // 🆕 Build 94 : slot ouvert aux candidatures → "Candidature" 📢 jaune
       colorClasses = 'bg-yellow-500/20 text-yellow-400 border-2 border-yellow-500/40 hover:bg-yellow-500/30 cursor-pointer';
-      label = 'Disponible';
+      label = '📢 Candidature';
       eventInfo = planningSlot.title || `${planningSlot.num_bands_needed || 1} groupe${planningSlot.num_bands_needed > 1 ? 's' : ''}`;
+    } else if (isSlotReservedClosed) {
+      // 🆕 Build 94 : slot fermé sans acceptation → "Réservé" rouge
+      colorClasses = 'bg-red-500/20 text-red-400 border-2 border-red-500/40 hover:bg-red-500/30 cursor-pointer';
+      label = 'Réservé';
     } else if (eventType === 'concert') {
       // VERT pour les concerts
       colorClasses = 'bg-green-500/20 text-green-400 border-2 border-green-500/40 hover:bg-green-500/30 cursor-pointer';
@@ -200,7 +212,7 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
     }
     
     // Appliquer une opacité réduite aux événements passés tout en gardant leur couleur
-    if (isPast && (isBookedByEvent || isSlotComplete || hasAcceptedApplications || isOpenSlot || hasApplied)) {
+    if (isPast && (isBookedByEvent || isSlotComplete || hasAcceptedApplications || isOpenSlot || isSlotReservedClosed || hasApplied)) {
       colorClasses = colorClasses.replace('cursor-pointer', 'cursor-pointer opacity-70');
     }
     
@@ -209,13 +221,13 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
         key={day}
         onClick={() => {
           // Permettre le click sur les dates avec événements (même passées)
-          if (!isPast || isBookedByEvent || isSlotComplete || hasAcceptedApplications || isOpenSlot || hasApplied) {
+          if (!isPast || isBookedByEvent || isSlotComplete || hasAcceptedApplications || isOpenSlot || isSlotReservedClosed || hasApplied) {
             // Collecter l'événement spécifique pour le passer
             let eventData = null;
             
             if (hasApplied && planningSlot) {
               eventData = { type: 'application', data: planningSlot, date: dateStr };
-            } else if (isSlotComplete || hasAcceptedApplications || isOpenSlot) {
+            } else if (isSlotComplete || hasAcceptedApplications || isOpenSlot || isSlotReservedClosed) {
               eventData = { type: 'slot', data: planningSlot, date: dateStr };
             } else if (eventType === 'concert' && concert) {
               eventData = { type: 'concert', data: concert, date: dateStr };
@@ -233,7 +245,7 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
             onDateClick(eventData || dateStr);
           }
         }}
-        disabled={isPast && !isBookedByEvent && !isSlotComplete && !hasAcceptedApplications && !isOpenSlot && !hasApplied}
+        disabled={isPast && !isBookedByEvent && !isSlotComplete && !hasAcceptedApplications && !isOpenSlot && !isSlotReservedClosed && !hasApplied}
         className={`
           aspect-square p-2 rounded-lg font-semibold transition-all
           ${colorClasses}

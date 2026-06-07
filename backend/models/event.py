@@ -293,6 +293,12 @@ class PlanningSlot(BaseModel):
     has_accommodation: bool = False
     accommodation_capacity: int = 0
     accommodation_tbd: bool = False
+    # 🆕 Build 91 — Formation recherchée (filtrage candidatures par taille de projet)
+    formation_type: Optional[str] = None  # Solo, Duo, Trio, Quatuor, Quintet, Groupe, ou None (any)
+    max_musicians: Optional[int] = None  # 1, 2, 3, 4, 5, 8 ou None
+
+    class Config:
+        extra = "allow"
 
 class PlanningSlotResponse(BaseModel):
     id: str
@@ -329,6 +335,9 @@ class PlanningSlotResponse(BaseModel):
     accommodation_capacity: int = 0
     accommodation_tbd: bool = False
     is_guso: bool = False  # GUSO contract
+    # 🆕 Build 91 — Formation recherchée
+    formation_type: Optional[str] = None
+    max_musicians: Optional[int] = None
     created_at: str
     
     class Config:

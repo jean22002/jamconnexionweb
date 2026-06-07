@@ -24,6 +24,7 @@ import UserBadges from "../components/UserBadges";
 import ReportProfileDialog from "../components/ReportProfileDialog";
 import { buildImageUrl } from "../utils/urlBuilder";
 import { sortEventsUpcomingFirst, isEventPast, pastEventCardClass } from "../utils/eventUtils";
+import { detectFormationType, isProjectCompatible, formationLabel } from "../utils/formationCompatibility";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -571,7 +572,7 @@ export default function VenueDetail() {
                   Établissement temporairement non disponible
                 </h3>
                 <p className="text-muted-foreground">
-                  L'établissement n'est plus abonné à Jam Connexion pour le moment. 
+                  L&apos;établissement n&apos;est plus abonné à Jam Connexion pour le moment. 
                   Vous ne pouvez pas candidater ou participer aux événements actuellement.
                 </p>
               </div>
@@ -767,7 +768,7 @@ export default function VenueDetail() {
                           <p className="text-sm text-muted-foreground">✓ Auto light (jeux de lumière automatiques)</p>
                         )}
                         {venue.has_light_table && (
-                          <p className="text-sm text-muted-foreground">✓ Table light (console d'éclairage)</p>
+                          <p className="text-sm text-muted-foreground">✓ Table light (console d&apos;éclairage)</p>
                         )}
                         {!venue.has_auto_light && !venue.has_light_table && (
                           <p className="text-sm text-muted-foreground">✓ Éclairage disponible</p>
@@ -1204,11 +1205,8 @@ export default function VenueDetail() {
                             )}
                             
                             <div className="space-y-1 text-sm">
-                              {slot.is_guso && (
-                                <p className="font-semibold text-purple-400 flex items-center gap-1">
-                                  💼 Concert avec contrat GUSO
-                                </p>
-                              )}
+                              {/* Badge GUSO retiré des vues publiques (Build 93 — confidentialité)
+                                  Il reste visible uniquement côté venue propriétaire et compta musicien */}
                               {slot.expected_band_style && (
                                 <p className="text-muted-foreground">🎸 Style recherché: {slot.expected_band_style}</p>
                               )}
@@ -1252,23 +1250,72 @@ export default function VenueDetail() {
               <DialogContent className="glassmorphism border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader><DialogTitle>Postuler pour le {selectedSlot?.date}</DialogTitle></DialogHeader>
                 <div className="space-y-4 mt-4">
+                  {/* 🆕 Build 91 — Indicateur de formation recherchée */}
+                  {(() => {
+                    const ft = detectFormationType(selectedSlot);
+                    if (ft === 'any') {
+                      return (
+                        <div className="p-3 rounded-md bg-blue-500/10 border border-blue-500/30 text-sm">
+                          🎵 Ce créneau accepte toutes les formations
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="p-3 rounded-md bg-yellow-500/10 border border-yellow-500/30 text-sm">
+                        {formationLabel(ft)} — l&apos;établissement recherche cette formation. Les projets incompatibles seront verrouillés.
+                      </div>
+                    );
+                  })()}
+
                   <div className="space-y-2">
-                    <Label>Sélectionnez votre groupe ou profil solo *</Label>
+                    <Label>Sélectionnez votre groupe ou projet solo *</Label>
                     <select 
                       value={selectedBandOrSolo} 
                       onChange={(e) => handleBandSelection(e.target.value)}
                       className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-md text-white"
+                      data-testid="apply-band-select"
                     >
                       <option value="">-- Choisissez --</option>
-                      <option value="solo">🎤 Mon profil Solo</option>
-                      {musicianProfile?.bands?.map((band, idx) => (
-                        <option key={idx} value={band.name}>
-                          🎸 {band.name}
-                        </option>
-                      ))}
+                      {(() => {
+                        const ft = detectFormationType(selectedSlot);
+                        const maxM = selectedSlot?.max_musicians;
+                        const bands = musicianProfile?.bands || [];
+                        // On utilise uniquement bands[] désormais (Solo est aussi un band)
+                        return bands.map((band, idx) => {
+                          const { compatible, reason } = isProjectCompatible(band, ft, maxM);
+                          const emoji = band.band_type === 'Solo' ? '🎤' : '🎸';
+                          return (
+                            <option
+                              key={band.id || idx}
+                              value={band.name}
+                              disabled={!compatible}
+                              title={reason || ''}
+                            >
+                              {compatible ? '' : '🔒 '}{emoji} {band.name}{band.band_type ? ` (${band.band_type})` : ''}{!compatible && reason ? ` — ${reason}` : ''}
+                            </option>
+                          );
+                        });
+                      })()}
                     </select>
+                    {(() => {
+                      const ft = detectFormationType(selectedSlot);
+                      const maxM = selectedSlot?.max_musicians;
+                      const bands = musicianProfile?.bands || [];
+                      const anyCompatible = bands.some(b => isProjectCompatible(b, ft, maxM).compatible);
+                      if (!anyCompatible && ft !== 'any') {
+                        const ftLabel = formationLabel(ft).replace(/^[^\s]+\s/, '');
+                        return (
+                          <div className="mt-2 p-3 rounded-md bg-orange-500/10 border border-orange-500/30 text-sm">
+                            Aucun de vos projets ne correspond à <strong>{ftLabel}</strong>.
+                            <br />
+                            <a href="/musician" className="text-primary underline">Créer un projet {ftLabel}</a>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                     <p className="text-xs text-muted-foreground">
-                      Vous ne pouvez postuler qu'avec vos propres groupes ou votre profil solo
+                      Vous ne pouvez postuler qu&apos;avec vos propres groupes ou votre projet solo
                     </p>
                   </div>
 
@@ -1374,7 +1421,7 @@ export default function VenueDetail() {
               ) : bandsPlayed.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <Music className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Aucun groupe n'a encore joué dans ce lieu</p>
+                  <p>Aucun groupe n&apos;a encore joué dans ce lieu</p>
                   <p className="text-sm mt-2">Les groupes apparaîtront ici après leurs concerts</p>
                 </div>
               ) : (
@@ -1578,7 +1625,7 @@ export default function VenueDetail() {
                       {review.venue_response && (
                         <div className="mt-4 pl-4 border-l-2 border-primary/30">
                           <p className="text-sm font-semibold text-primary mb-1">
-                            Réponse de l'établissement
+                            Réponse de l&apos;établissement
                           </p>
                           <p className="text-sm text-muted-foreground">{review.venue_response}</p>
                           <p className="text-xs text-muted-foreground mt-1">
@@ -1603,7 +1650,7 @@ export default function VenueDetail() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {venue.gallery.map((photo) => (
+                  {venue.gallery.map((photo, index) => (
                     <div key={photo} className="group cursor-pointer">
                       <LazyImage 
                         src={photo} 

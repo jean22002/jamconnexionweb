@@ -42,7 +42,7 @@ export default function PlanningTab({
   applications,
   handleAcceptApplication,
   handleRejectApplication,
-  onConvertToConcer// Nouveau callback
+  onConvertToConcert // Nouveau callback
 }) {
   // État local pour la sélection multiple
   const [selectedApplications, setSelectedApplications] = useState([]);
@@ -94,6 +94,10 @@ export default function PlanningTab({
         <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Légende :</h3>
         <div className="flex flex-wrap gap-4">
           <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded bg-yellow-500/20 border-2 border-yellow-500"></div>
+            <span className="text-sm">📢 Candidature</span>
+          </div>
+          <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded bg-green-500/20 border-2 border-green-500"></div>
             <span className="text-sm">Concert</span>
           </div>
@@ -110,16 +114,8 @@ export default function PlanningTab({
             <span className="text-sm">Spectacle</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-yellow-500/20 border-2 border-yellow-500"></div>
-            <span className="text-sm">Ouvert</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-orange-500/20 border-2 border-orange-500"></div>
-            <span className="text-sm">En cours</span>
-          </div>
-          <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded bg-red-500/20 border-2 border-red-500"></div>
-            <span className="text-sm">Complet</span>
+            <span className="text-sm">Réservé</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded bg-blue-500/20 border-2 border-blue-500"></div>
@@ -173,7 +169,7 @@ export default function PlanningTab({
 
             {/* Titre */}
             <div className="space-y-2">
-              <Label>Titre de l'événement (optionnel)</Label>
+              <Label>Titre de l&apos;événement (optionnel)</Label>
               <Input
                 type="text"
                 placeholder="Ex: Soirée Rock, Concert acoustique..."
@@ -252,9 +248,9 @@ export default function PlanningTab({
               </Select>
             </div>
 
-            {/* Catégories d'artistes recherchés */}
+            {/* Catégories d&apos;artistes recherchés */}
             <div className="space-y-2">
-              <Label>Catégories d'artistes recherchés</Label>
+              <Label>Catégories d&apos;artistes recherchés</Label>
               <div className="flex flex-wrap gap-3 p-3 bg-black/20 rounded-lg border border-white/10">
                 {['Solo', 'Duo', 'Trio', 'Groupe (4+)', 'Tous'].map((category) => (
                   <div key={category} className="flex items-center space-x-2">
@@ -276,6 +272,54 @@ export default function PlanningTab({
                     </label>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* 🆕 Build 91 — Formation recherchée (unique) : auto-remplit max_musicians et préfixe description */}
+            <div className="space-y-2">
+              <Label>Formation recherchée</Label>
+              <p className="text-xs text-muted-foreground">
+                Filtrera automatiquement les candidatures par taille de projet
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { key: 'any', label: '🎵 Tout', max: null },
+                  { key: 'Solo', label: '🎤 Solo', max: 1 },
+                  { key: 'Duo', label: '🎸 Duo', max: 2 },
+                  { key: 'Trio', label: '🎶 Trio', max: 3 },
+                  { key: 'Quatuor', label: '🎻 Quatuor', max: 4 },
+                  { key: 'Quintet', label: '🥁 Quintet', max: 5 },
+                  { key: 'Groupe', label: '🎷 Groupe 6+', max: 8 },
+                ].map((f) => {
+                  const active = (planningForm.formation_type || 'any') === f.key;
+                  return (
+                    <button
+                      key={f.key}
+                      type="button"
+                      data-testid={`formation-chip-${f.key}`}
+                      onClick={() => {
+                        // Préfixer la description avec [Tag] (et nettoyer si on change)
+                        const prevDesc = (planningForm.description || '').replace(/^\[[A-Za-zÀ-ÿ\s+]+\]\s*/, '');
+                        const newDesc = f.key !== 'any'
+                          ? `[${f.key}] ${prevDesc}`.trim()
+                          : prevDesc.trim();
+                        setPlanningForm({
+                          ...planningForm,
+                          formation_type: f.key,
+                          max_musicians: f.max,
+                          description: newDesc,
+                        });
+                      }}
+                      className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                        active
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'bg-black/20 border-white/10 hover:border-primary/40'
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -369,7 +413,7 @@ export default function PlanningTab({
                       onCheckedChange={(checked) => setPlanningForm({ ...planningForm, catering_tbd: checked })}
                     />
                     <label htmlFor="catering_tbd" className="text-sm cursor-pointer">
-                      À définir avec l'artiste
+                      À définir avec l&apos;artiste
                     </label>
                   </div>
                 </div>
@@ -392,7 +436,7 @@ export default function PlanningTab({
               {planningForm.has_accommodation && (
                 <div className="space-y-3 pl-6">
                   <div className="space-y-2">
-                    <Label className="text-xs">Capacité d'hébergement (nombre de personnes)</Label>
+                    <Label className="text-xs">Capacité d&apos;hébergement (nombre de personnes)</Label>
                     <Input
                       type="number"
                       min="1"
@@ -410,7 +454,7 @@ export default function PlanningTab({
                       onCheckedChange={(checked) => setPlanningForm({ ...planningForm, accommodation_tbd: checked })}
                     />
                     <label htmlFor="accommodation_tbd" className="text-sm cursor-pointer">
-                      À définir avec l'artiste
+                      À définir avec l&apos;artiste
                     </label>
                   </div>
                 </div>
@@ -495,7 +539,7 @@ export default function PlanningTab({
                               </h4>
                               {app.message && (
                                 <p className="text-sm text-muted-foreground mt-2 italic">
-                                  "{app.message}"
+                                  &quot;{app.message}&quot;
                                 </p>
                               )}
                               {app.band_name && app.musician_name && (

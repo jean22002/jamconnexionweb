@@ -497,7 +497,16 @@ export default function MusicianDashboard() {
 
   const fetchProfile = useCallback(async () => {
     try {
-      const response = await axios.get(`${API}/musicians/me`, { headers: { Authorization: `Bearer ${token}` } });
+      // 🆕 Build 92 : cache-buster + headers no-cache pour bypass CDN
+      // (apparition instantanée des projets Solo/Groupe créés)
+      const ts = Date.now();
+      const response = await axios.get(`${API}/musicians/me?_=${ts}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+      });
       setProfile(response.data);
       
       // Migration: si l'ancien champ 'band' existe mais pas 'bands', migrer vers bands[0]
@@ -862,7 +871,7 @@ export default function MusicianDashboard() {
     try {
       const profileData = {
         ...updatedForm,
-        solo_profile: soloProfile,
+        // solo_profile removed (Build 90 — legacy field, projets Solo désormais dans bands[band_type:"Solo"])
         ...(geoPosition && {
           latitude: geoPosition.latitude,
           longitude: geoPosition.longitude
@@ -952,9 +961,21 @@ export default function MusicianDashboard() {
     setShowSoloProjectDialog(true);
   };
 
-  // 🎤 Callback après save/delete d'un projet Solo : refresh du profil
-  const handleSoloProjectSaved = async () => {
+  // 🎤 Callback après save/delete d'un projet Solo : optimistic update + refresh
+  const handleSoloProjectSaved = async (savedBand) => {
+    // 🆕 Build 92 : ajout/màj optimiste immédiate dans profileForm.bands
+    if (savedBand && savedBand.id) {
+      setProfileForm((prev) => {
+        const bands = prev.bands || [];
+        const idx = bands.findIndex((b) => b.id === savedBand.id);
+        const next = idx >= 0
+          ? bands.map((b, i) => (i === idx ? { ...b, ...savedBand } : b))
+          : [...bands, savedBand];
+        return { ...prev, bands: next };
+      });
+    }
     try {
+      // Refresh fresh derrière (le fetchProfile inclut déjà cache-buster)
       await fetchProfile();
     } catch (e) {
       // non-bloquant
@@ -1012,7 +1033,7 @@ export default function MusicianDashboard() {
       const method = profile ? "put" : "post";
       const profileData = {
         ...updatedForm,
-        solo_profile: soloProfile,
+        // solo_profile removed (Build 90 — legacy field, projets Solo désormais dans bands[band_type:"Solo"])
         ...(geoPosition && {
           latitude: geoPosition.latitude,
           longitude: geoPosition.longitude
@@ -1067,7 +1088,7 @@ export default function MusicianDashboard() {
       // Préparer les données avec le profil solo ET les coordonnées GPS
       const profileData = {
         ...profileForm,
-        solo_profile: soloProfile,
+        // solo_profile removed (Build 90 — legacy field, projets Solo désormais dans bands[band_type:"Solo"])
         // Ajouter les coordonnées GPS si disponibles
         ...(geoPosition && {
           latitude: geoPosition.latitude,
@@ -1734,9 +1755,9 @@ export default function MusicianDashboard() {
                             onCheckedChange={(checked) => setCurrentBand({ ...currentBand, is_admin: checked })}
                           />
                           <div className="flex-1">
-                            <Label className="cursor-pointer text-base">👑 Je suis l'administrateur de ce groupe</Label>
+                            <Label className="cursor-pointer text-base">👑 Je suis l&apos;administrateur de ce groupe</Label>
                             <p className="text-xs text-muted-foreground mt-1">
-                              En tant qu'administrateur, vous serez le seul à pouvoir modifier les informations du groupe. 
+                              En tant qu&apos;administrateur, vous serez le seul à pouvoir modifier les informations du groupe. 
                               Vous recevrez également les notifications des établissements et pourrez communiquer avec eux.
                             </p>
                           </div>
@@ -1748,7 +1769,7 @@ export default function MusicianDashboard() {
                     {editingBandIndex !== null && currentBand.admin_id && currentBand.admin_id !== user?.id && (
                       <div className="p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
                         <p className="text-sm text-yellow-400">
-                          ⚠️ Vous n'êtes pas l'administrateur de ce groupe. Seul l'administrateur peut modifier ces informations.
+                          ⚠️ Vous n&apos;êtes pas l&apos;administrateur de ce groupe. Seul l&apos;administrateur peut modifier ces informations.
                         </p>
                       </div>
                     )}
@@ -1953,12 +1974,12 @@ export default function MusicianDashboard() {
                           checked={currentBand.is_association || false} 
                           onCheckedChange={(checked) => setCurrentBand({ ...currentBand, is_association: checked, association_name: checked ? currentBand.association_name : "" })}
                         />
-                        <Label className="cursor-pointer">Mon groupe fait partie d'une association</Label>
+                        <Label className="cursor-pointer">Mon groupe fait partie d&apos;une association</Label>
                       </div>
                       
                       {currentBand.is_association && (
                         <div className="space-y-2 pl-4">
-                          <Label>Nom de l'association</Label>
+                          <Label>Nom de l&apos;association</Label>
                           <Input 
                             value={currentBand.association_name || ""} 
                             onChange={(e) => setCurrentBand({ ...currentBand, association_name: e.target.value })}
@@ -2072,7 +2093,7 @@ export default function MusicianDashboard() {
                           <Label className="text-sm">🎤 Cherche des concerts</Label>
                         </div>
                         <p className="text-xs text-muted-foreground ml-6 italic">
-                          ⚠️ Activez cette option pour recevoir des notifications lorsqu'un établissement cherche ce type de profil ou ces styles musicaux
+                          ⚠️ Activez cette option pour recevoir des notifications lorsqu&apos;un établissement cherche ce type de profil ou ces styles musicaux
                         </p>
                       </div>
                       <div className="space-y-3">
@@ -2413,7 +2434,7 @@ export default function MusicianDashboard() {
                       className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors w-full text-left"
                     >
                       <HelpCircle className="w-5 h-5 text-primary" />
-                      <span className="font-medium">Guide d'utilisation</span>
+                      <span className="font-medium">Guide d&apos;utilisation</span>
                     </button>
 
                     <Link to="/leaderboard" className="flex items-center gap-3 p-3 hover:bg-primary/10 rounded-lg transition-colors">
@@ -2466,7 +2487,7 @@ export default function MusicianDashboard() {
           <h1 className="font-heading font-bold text-3xl mb-2">
             Salut, <span className="text-gradient">{profile?.pseudo || user?.name}</span>!
           </h1>
-          <p className="text-muted-foreground">Trouve des spots et connecte-toi avec d'autres musiciens</p>
+          <p className="text-muted-foreground">Trouve des spots et connecte-toi avec d&apos;autres musiciens</p>
           <p className="mt-2 text-sm font-medium bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent" data-testid="pioneer-message">
             Vous êtes le pionnier de la nouvelle connexion musicale. Soyez patient, les données grandiront de semaine en semaine.
           </p>
@@ -2475,7 +2496,7 @@ export default function MusicianDashboard() {
         {/* Friend Requests */}
         {friendRequests.length > 0 && (
           <div className="mb-6 p-4 glassmorphism rounded-xl neon-border">
-            <h3 className="font-heading font-semibold mb-4">Demandes d'ami ({friendRequests.length})</h3>
+            <h3 className="font-heading font-semibold mb-4">Demandes d&apos;ami ({friendRequests.length})</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {friendRequests.map(req => (
                 <div key={req.id} className="p-4 bg-muted/30 border border-white/10 rounded-xl hover:bg-muted/50 transition-all">
@@ -2991,7 +3012,7 @@ export default function MusicianDashboard() {
                     className="w-full min-h-[150px] bg-black/20 border border-white/10 rounded-md p-3 text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Ce message sera envoyé à l'administrateur du groupe par email.
+                    Ce message sera envoyé à l&apos;administrateur du groupe par email.
                   </p>
                 </div>
               </div>

@@ -8,7 +8,8 @@ import { useState } from "react";
 // Profile tabs components
 import InfoTab from "./profile/InfoTab";
 import StylesTab from "./profile/StylesTab";
-import SoloTab from "./profile/SoloTab";
+// SoloTab retiré (Build 90 — projets Solo désormais gérés via SoloProjectFormDialog/BandTab unifié)
+// import SoloTab from "./profile/SoloTab";
 import BandTab from "./profile/BandTab";
 import ConcertsTab from "./profile/ConcertsTab";
 import SettingsTab from "./profile/SettingsTab";
@@ -111,8 +112,7 @@ export default function ProfileEditModal({
           <TabsList className="flex w-full overflow-x-auto bg-muted/50 rounded-full p-1 gap-1 scrollbar-thin scrollbar-thumb-cyan-500/50 scrollbar-track-transparent scroll-smooth snap-x snap-mandatory">
             <TabsTrigger value="info" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[70px] sm:min-w-auto">Infos</TabsTrigger>
             <TabsTrigger value="styles" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[70px] sm:min-w-auto">Styles</TabsTrigger>
-            <TabsTrigger value="solo" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[70px] sm:min-w-auto">Solo</TabsTrigger>
-            <TabsTrigger value="band" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[70px] sm:min-w-auto">Groupe</TabsTrigger>
+            <TabsTrigger value="band" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[80px] sm:min-w-auto">Projets</TabsTrigger>
             <TabsTrigger value="concerts" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[80px] sm:min-w-auto">Concerts</TabsTrigger>
             <TabsTrigger value="settings" className="rounded-full whitespace-nowrap flex-shrink-0 px-2 sm:px-4 text-xs sm:text-sm snap-center min-w-[90px] sm:min-w-auto">Paramètres</TabsTrigger>
           </TabsList>
@@ -137,18 +137,9 @@ export default function ProfileEditModal({
             />
           </TabsContent>
 
-          {/* Onglet Solo - Simplified for brevity - You'll need to add the full content */}
-          <TabsContent value="solo" className="space-y-4 mt-4">
-            <SoloTab
-              soloProfile={soloProfile}
-              setSoloProfile={setSoloProfile}
-              token={token}
-              addToList={addToList}
-              removeFromList={removeFromList}
-            />
-          </TabsContent>
+          {/* Onglet Solo legacy retiré (Build 90) — projets Solo désormais dans l'onglet "Projets" */}
 
-          {/* Onglet Groupe - Placeholder */}
+          {/* Onglet Projets (Solo + Groupes unifiés) */}
           <TabsContent value="band" className="space-y-4 mt-4">
             <BandTab
               profileForm={profileForm}

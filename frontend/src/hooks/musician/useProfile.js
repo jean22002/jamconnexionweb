@@ -152,7 +152,7 @@ export const useProfile = (token, geoPosition) => {
       
       const profileData = {
         ...profileForm,
-        solo_profile: soloProfile,
+        // solo_profile removed (Build 90 — legacy field, projets Solo désormais dans bands[band_type:"Solo"])
         ...(geoPosition && {
           latitude: geoPosition.latitude,
           longitude: geoPosition.longitude

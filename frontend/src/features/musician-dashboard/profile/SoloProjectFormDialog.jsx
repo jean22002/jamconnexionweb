@@ -210,18 +210,22 @@ function SoloProjectFormBody({ token, editingSolo, onClose, onSaved }) {
     setSaving(true);
     try {
       const payload = buildPayload();
+      let savedBand = null;
       if (editingSolo && editingSolo.id) {
-        await axios.put(`${API_URL}/api/musicians/bands/${editingSolo.id}`, payload, {
+        const resp = await axios.put(`${API_URL}/api/musicians/bands/${editingSolo.id}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        savedBand = resp.data;
         toast.success("Projet Solo mis à jour");
       } else {
-        await axios.post(`${API_URL}/api/bands`, payload, {
+        const resp = await axios.post(`${API_URL}/api/bands`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        savedBand = resp.data;
         toast.success("Projet Solo créé");
       }
-      onSaved && onSaved();
+      // 🆕 Build 92 : optimistic update — notifie le parent du band sauvé pour ajout immédiat
+      onSaved && onSaved(savedBand);
       onClose();
     } catch (e) {
       const msg = e?.response?.data?.detail || e?.message || "Erreur lors de la sauvegarde";

@@ -235,3 +235,42 @@ Endpoints couverts (`normalize_event_dates(docs, ['date', 'slot_date'])` appliqu
 ---
 
 **Fin du message.** Une fois les 14 endroits sécurisés et le test sur `test@gmail.com` validé, tu peux passer au Build 96 (sujet à définir avec l'utilisateur — pistes ouvertes : Light Mode via `useTheme()`, refactoring `VenueDashboard`, intégration Facebook Events).
+
+---
+
+## 9. 🆕 BONUS Build 95.1 — Décharge légale Comptabilité (à ajouter en même temps)
+
+Pour des raisons légales, **Jam Connexion n'est PAS un logiciel de comptabilité ni de facturation officiel** — juste un outil d'aide au suivi. Il faut afficher une décharge discrète **en bas de l'onglet Comptabilité** (côté musicien ET côté venue).
+
+### Côté Web (✅ déjà fait)
+Petit paragraphe centré, gris translucide, italique 11px, juste avant la fermeture du composant `AccountingTab`.
+
+### À porter côté Mobile
+
+Ajoute en **bas de l'écran Comptabilité musicien** ET en **bas de l'écran Comptabilité établissement** (après la liste des concerts, avant la fin du ScrollView) :
+
+```jsx
+<Text
+  testID="accounting-disclaimer-musician"  // ou "accounting-disclaimer-venue"
+  style={{
+    fontSize: 11,
+    lineHeight: 16,
+    color: 'rgba(255,255,255,0.45)',  // ou theme.colors.mutedForeground avec opacité
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingTop: 16,
+    paddingBottom: 24,
+    paddingHorizontal: 16,
+  }}
+>
+  ℹ️ Jam Connexion est un outil d'aide au suivi de votre activité musicale. Ce n'est ni un logiciel de comptabilité, ni un logiciel de facturation officiel. Les données affichées sont indicatives : vérifiez et conservez vos propres justificatifs. Jam Connexion ne peut être tenu responsable d'une éventuelle perte de données ou d'une erreur de saisie.
+</Text>
+```
+
+**Texte musicien** (mot pour mot, exactement comme côté web) :
+> ℹ️ Jam Connexion est un outil d'aide au suivi de votre activité musicale. Ce n'est ni un logiciel de comptabilité, ni un logiciel de facturation officiel. Les données affichées sont indicatives : vérifiez et conservez vos propres justificatifs. Jam Connexion ne peut être tenu responsable d'une éventuelle perte de données ou d'une erreur de saisie.
+
+**Texte venue** (différence : "activité" au lieu de "activité musicale") :
+> ℹ️ Jam Connexion est un outil d'aide au suivi de votre activité. Ce n'est ni un logiciel de comptabilité, ni un logiciel de facturation officiel. Les données affichées sont indicatives : vérifiez et conservez vos propres justificatifs. Jam Connexion ne peut être tenu responsable d'une éventuelle perte de données ou d'une erreur de saisie.
+
+Important : **texte identique au web**, mot pour mot, pour cohérence légale.

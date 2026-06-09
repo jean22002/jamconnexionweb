@@ -540,6 +540,14 @@ export default function AccountingTab({
           </div>
         )}
       </div>
+
+      {/* Décharge légale — Jam Connexion n'est pas un logiciel de compta/facturation */}
+      <p
+        data-testid="accounting-disclaimer-venue"
+        className="text-[11px] leading-relaxed text-muted-foreground/70 italic text-center pt-4 pb-2 px-4"
+      >
+        ℹ️ Jam Connexion est un outil d&apos;aide au suivi de votre activité. Ce n&apos;est ni un logiciel de comptabilité, ni un logiciel de facturation officiel. Les données affichées sont indicatives : vérifiez et conservez vos propres justificatifs. Jam Connexion ne peut être tenu responsable d&apos;une éventuelle perte de données ou d&apos;une erreur de saisie.
+      </p>
     </div>
   );
 }

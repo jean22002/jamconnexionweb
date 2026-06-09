@@ -152,3 +152,12 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - **Backend** : nouveau `backend/utils/date_normalization.py` (`normalize_date_str`, `normalize_event_dates`). Appliqué sur tous les endpoints planning / concerts / jams / karaokés / spectacles / applications / bands events. Garantit `YYYY-MM-DD` strict sur les champs `date` et `slot_date`.
   - **Web** : nouveau `frontend/src/utils/dateFormatting.js` (`parseEventDate`, `formatEventDate`, `toDateKey`). Tolère null/undefined/""/legacy ISO. Sécurisation `VenueDashboard.jsx`, `VenueDetail.jsx`, `MusicianDashboard.jsx` (suppression des `new Date(date + 'T00:00:00')` dangereux).
   - **Mobile** : briefing complet préparé dans `/app/memory/MESSAGE_MOBILE_BUILD_95_DATES.md` (helper à copier + 14 endroits à sécuriser + patterns dangereux à grepper). En attente de port côté agent mobile.
+- **🐛 Fix bug critique Comptabilité musicien** (2026-02-09) :
+  - **Bug** : `ReferenceError: entriesByEventId is not defined` crash l'onglet Comptabilité musicien dès l'ouverture (production + preview).
+  - **Cause** : le composant `GeneralAccountingContent` recevait `editingConcert`, `setEditingConcert`, `entriesByEventId`, `setEntriesByEventId` en props (passés par le parent) mais ne les listait PAS dans sa destructuration. Erreur déjà signalée par ESLint (no-undef) mais ignorée.
+  - **Fix** : ajout des 4 props dans la destructuration de `GeneralAccountingContent` (`components/accounting/AccountingTab.jsx`). Lint clean. E2E validé sur `test@gmail.com` : onglet Comptabilité charge les 20 concerts factices sans crash.
+- **⚖️ Décharge légale Comptabilité (Build 95.1)** (2026-02-09) :
+  - Petit paragraphe italique discret ajouté en bas de l'onglet Comptabilité côté musicien (`components/accounting/AccountingTab.jsx`) ET côté venue (`features/venue-dashboard/tabs/AccountingTab.jsx`).
+  - Texte : « Jam Connexion est un outil d'aide au suivi… ni un logiciel de comptabilité, ni un logiciel de facturation officiel… ne peut être tenu responsable d'une éventuelle perte de données ou d'une erreur de saisie. »
+  - data-testid : `accounting-disclaimer-musician` / `accounting-disclaimer-venue`.
+  - Briefing pour port mobile inclus dans `MESSAGE_MOBILE_BUILD_95_DATES.md` (§9).

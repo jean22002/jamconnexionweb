@@ -14,6 +14,7 @@ from models import (
     ConcertApplication, ConcertApplicationResponse
 )
 from routes.audit import log_action  # Import audit logging
+from utils.date_normalization import normalize_event_dates  # 🛡️ Build 95 date safety
 
 router = APIRouter()
 db = None
@@ -168,6 +169,9 @@ async def list_planning_slots(venue_id: Optional[str] = None, is_open: bool = Tr
         query["date"] = {"$gte": today}
     
     slots = await db.planning_slots.find(query, {"_id": 0}).sort("date", 1).to_list(100)
+
+    # 🛡️ Build 95 — normalisation défensive YYYY-MM-DD
+    normalize_event_dates(slots, fields=['date'])
     
     result = []
     for s in slots:
@@ -220,6 +224,9 @@ async def search_planning_slots(
     
     # Get all matching slots
     slots = await db.planning_slots.find(query, {"_id": 0}).sort("date", 1).to_list(500)
+    
+    # 🛡️ Build 95 — normalisation défensive YYYY-MM-DD
+    normalize_event_dates(slots, fields=['date'])
     
     # Filter by venue location (region/department) and music styles
     result = []
@@ -284,6 +291,9 @@ async def get_venue_planning(venue_id: str, include_past: bool = False):
         query["date"] = {"$gte": today}
     
     slots = await db.planning_slots.find(query, {"_id": 0}).sort("date", 1).to_list(100)
+
+    # 🛡️ Build 95 — normalisation défensive YYYY-MM-DD
+    normalize_event_dates(slots, fields=['date'])
     
     result = []
     for s in slots:
@@ -566,6 +576,9 @@ async def get_my_applications(request: Request, current_user: dict = Depends(get
 
         result.append(app)
 
+    # 🛡️ Build 95 — normaliser slot_date au format YYYY-MM-DD
+    normalize_event_dates(result, fields=['slot_date', 'date'])
+
     response = FastAPIResponse(content=_json.dumps(result, default=str), media_type="application/json")
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["CDN-Cache-Control"] = "no-cache"
@@ -617,6 +630,9 @@ async def get_received_applications(request: Request, current_user: dict = Depen
             app["musician_pseudo"] = musician.get("pseudo")
             app["musician_city"] = musician.get("city")
         result.append(app)
+
+    # 🛡️ Build 95 — défense en profondeur : tronquer toute date ISO datetime à YYYY-MM-DD
+    normalize_event_dates(result, fields=['date', 'slot_date'])
 
     return result
 

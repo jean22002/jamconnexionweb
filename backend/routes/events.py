@@ -41,6 +41,10 @@ def _normalize_event(doc):
         v = doc.get(key)
         if hasattr(v, "isoformat"):
             doc[key] = v.isoformat()
+    # 🛡️ Build 95 — tronquer "date" au format YYYY-MM-DD strict (jamais "2026-06-08T00:00:00")
+    d = doc.get("date")
+    if isinstance(d, str) and len(d) >= 10 and "T" in d:
+        doc["date"] = d[:10]
     # Pydantic str fields can't be None: default them to ""
     for key in ("start_time", "end_time", "venue_name", "title"):
         if key in doc and doc[key] is None:

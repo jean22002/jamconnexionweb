@@ -2,6 +2,7 @@ import { Loader2, CalendarIcon, Check, Clock, MapPin, Music } from "lucide-react
 import { Button } from "../../../components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog";
 import Calendar from "../../../components/Calendar";
+import { formatEventDate } from "../../../utils/dateFormatting";
 
 export default function PlanningTab({
   loadingCalendar,
@@ -47,12 +48,7 @@ export default function PlanningTab({
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>
-                  Événements du {selectedDate && new Date(selectedDate + 'T00:00:00').toLocaleDateString('fr-FR', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
+                  Événements du {formatEventDate(selectedDate, 'full')}
                 </DialogTitle>
               </DialogHeader>
               

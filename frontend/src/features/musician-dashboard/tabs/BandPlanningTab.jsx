@@ -3,6 +3,7 @@ import { Loader2, CalendarIcon, Check, Clock, MapPin, Music, Users, Download, Li
 import { Button } from "../../../components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog";
 import Calendar from "../../../components/Calendar";
+import { formatEventDate } from "../../../utils/dateFormatting";
 import axios from 'axios';
 import { toast } from 'sonner';
 
@@ -146,7 +147,7 @@ export default function BandPlanningTab({ bandId, bandName, token }) {
             className="rounded-full"
           >
             <Link2 className="w-4 h-4 mr-2" />
-            S'abonner au calendrier
+            S&apos;abonner au calendrier
           </Button>
         </div>
       </div>
@@ -183,12 +184,7 @@ export default function BandPlanningTab({ bandId, bandName, token }) {
             <DialogContent className="max-w-2xl glassmorphism border-white/10">
               <DialogHeader>
                 <DialogTitle>
-                  Événements du {selectedDate && new Date(selectedDate + 'T00:00:00').toLocaleDateString('fr-FR', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
+                  Événements du {formatEventDate(selectedDate, 'full')}
                 </DialogTitle>
               </DialogHeader>
               
@@ -326,7 +322,7 @@ export default function BandPlanningTab({ bandId, bandName, token }) {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-heading font-semibold text-lg mb-1 flex items-center gap-2">
-                        Option 2 : S'abonner au calendrier
+                        Option 2 : S&apos;abonner au calendrier
                         <span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded-full">Recommandé</span>
                       </h3>
                       <p className="text-sm text-muted-foreground mb-3">
@@ -346,11 +342,11 @@ export default function BandPlanningTab({ bandId, bandName, token }) {
                   </div>
                   
                   <div className="ml-13 text-xs text-muted-foreground bg-green-500/10 p-3 rounded-lg">
-                    <p className="font-semibold mb-1">🔄 Comment s'abonner :</p>
+                    <p className="font-semibold mb-1">🔄 Comment s&apos;abonner :</p>
                     <ul className="list-disc list-inside space-y-1">
-                      <li><strong>Google Agenda</strong> : Autres agendas (+) → À partir de l'URL → Coller le lien</li>
-                      <li><strong>iOS</strong> : Réglages → Calendrier → Comptes → Ajouter un compte → Autre → S'abonner à un calendrier</li>
-                      <li><strong>Outlook</strong> : Ajouter un calendrier → S'abonner à partir du web → Coller le lien</li>
+                      <li><strong>Google Agenda</strong> : Autres agendas (+) → À partir de l&apos;URL → Coller le lien</li>
+                      <li><strong>iOS</strong> : Réglages → Calendrier → Comptes → Ajouter un compte → Autre → S&apos;abonner à un calendrier</li>
+                      <li><strong>Outlook</strong> : Ajouter un calendrier → S&apos;abonner à partir du web → Coller le lien</li>
                     </ul>
                   </div>
                 </div>

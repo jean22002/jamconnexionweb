@@ -148,3 +148,7 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - **🆕 Backfill rétroactif des acceptations** : `scripts/backfill_accepted_to_concerts.py` exécuté → **10 concerts historiques** créés dans `db.concerts` à partir des candidatures acceptées (1 échec sur app orpheline avec slot supprimé). Idempotent.
 - **Fix bug pré-existant** : suppression de la définition dupliquée de la route `/api/auth/logout` (le second `logout` shadowait le premier).
 - ✅ Tests E2E curl validés en preview prod (register → musician → solo band auto-créé → slot → apply → accept → /bands/{id}/events → concert visible)
+- **🛡️ Build 95 — Robustesse parsing des dates (Web + Backend)** (2026-02-07) :
+  - **Backend** : nouveau `backend/utils/date_normalization.py` (`normalize_date_str`, `normalize_event_dates`). Appliqué sur tous les endpoints planning / concerts / jams / karaokés / spectacles / applications / bands events. Garantit `YYYY-MM-DD` strict sur les champs `date` et `slot_date`.
+  - **Web** : nouveau `frontend/src/utils/dateFormatting.js` (`parseEventDate`, `formatEventDate`, `toDateKey`). Tolère null/undefined/""/legacy ISO. Sécurisation `VenueDashboard.jsx`, `VenueDetail.jsx`, `MusicianDashboard.jsx` (suppression des `new Date(date + 'T00:00:00')` dangereux).
+  - **Mobile** : briefing complet préparé dans `/app/memory/MESSAGE_MOBILE_BUILD_95_DATES.md` (helper à copier + 14 endroits à sécuriser + patterns dangereux à grepper). En attente de port côté agent mobile.

@@ -234,6 +234,7 @@ export default function Auth() {
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="votre@email.com"
                     value={formData.email}
@@ -248,6 +249,7 @@ export default function Auth() {
                   <Label htmlFor="password">Mot de passe</Label>
                   <Input
                     id="password"
+                    name="password"
                     type="password"
                     placeholder="••••••••"
                     value={formData.password}

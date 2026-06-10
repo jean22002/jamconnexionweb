@@ -179,3 +179,9 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - data-testid : `ad-consent-preferences`, `ad-consent-status-accepted/refused/undefined`, `ad-consent-pref-accept/refuse`.
   - Test E2E playwright validé : modal Mon Profil → Paramètres → statut "Publicités personnalisées acceptées" affiché correctement avec le bouton Accepter pré-sélectionné. Synchronisé avec backend `ad_consent: true` confirmé.
   - Côté mobile, l'équivalent est `showPrivacyOptionsForm()` exposé via le UMP SDK (Build 109).
+- **📜 Page publique Politique de cookies (Build 95.4)** (2026-02-09) :
+  - Nouvelle page `/cookies` (`pages/Cookies.jsx`) accessible sans connexion.
+  - Sections : Qu'est-ce qu'un cookie / Cookies essentiels (tableau jc_auth, jc_ad_consent_v1, *_activeTab) / Cookies publicitaires (AdSense web + AdMob mobile, publisher IDs) / Mesure d'audience / Comment gérer vos cookies / Droits RGPD / Modification / Liens utiles.
+  - Lien "Cookies" ajouté au footer du Landing (`pages/Landing.jsx`).
+  - Le bandeau de consentement (`components/AdConsentBanner.jsx`) pointe désormais "En savoir plus" vers `/cookies` au lieu de `/cgu`.
+  - data-testid : `cookies-page`, `footer-cookies-link`.

@@ -33,6 +33,7 @@ const PaymentCancel = lazy(() => import("./pages/PaymentCancel"));
 const TrialExpired = lazy(() => import("./pages/TrialExpired"));
 const CGU = lazy(() => import("./pages/CGU"));
 const CGV = lazy(() => import("./pages/CGV"));
+const Cookies = lazy(() => import("./pages/Cookies"));
 const MapExplorer = lazy(() => import("./pages/MapExplorer"));
 const BadgesPage = lazy(() => import("./pages/BadgesPage"));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
@@ -132,6 +133,7 @@ function App() {
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/cgu" element={<CGU />} />
             <Route path="/cgv" element={<CGV />} />
+            <Route path="/cookies" element={<Cookies />} />
             <Route 
               path="/musician" 
               element={

@@ -35,7 +35,7 @@ export default function AdConsentBanner() {
             de la version gratuite). Vous pouvez retirer votre consentement à tout
             moment dans vos paramètres.{" "}
             <Link
-              to="/cgu"
+              to="/cookies"
               className="underline hover:text-primary"
               data-testid="ad-consent-learn-more"
             >

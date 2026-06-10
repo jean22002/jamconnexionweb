@@ -173,3 +173,9 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - **Variables ENV** : `REACT_APP_ADSENSE_SLOT_INTERSTITIAL_APPLY=` ajoutée dans `.env` (à remplir avec slot AdSense côté utilisateur).
   - Tests E2E playwright validés : bandeau apparaît au 1er visit, Accept/Refuse persistés en localStorage + sync backend confirmée via `GET /auth/me` qui retourne `ad_consent: true`, `ad_consent_date: ...`. Aucune erreur runtime sur login.
   - Briefing complet pour port mobile : `/app/memory/MESSAGE_MOBILE_BUILD_95.2_AD_CONSENT.md` (UMP SDK + sync logic).
+- **🎚️ Préférences publicitaires user-settings (Build 95.3)** (2026-02-09) :
+  - Nouveau composant `components/AdConsentPreferences.jsx` (statut courant + Accepter/Refuser à tout moment, conforme exigence CNIL "retrait aussi facile que consentement").
+  - Intégré dans 3 emplacements : `SettingsTab` musicien (`features/musician-dashboard/profile/SettingsTab.jsx`), `SettingsTab` venue (`features/venue-dashboard/tabs/SettingsTab.jsx`), onglet Paramètres mélomane (`pages/MelomaneDashboard.jsx`).
+  - data-testid : `ad-consent-preferences`, `ad-consent-status-accepted/refused/undefined`, `ad-consent-pref-accept/refuse`.
+  - Test E2E playwright validé : modal Mon Profil → Paramètres → statut "Publicités personnalisées acceptées" affiché correctement avec le bouton Accepter pré-sélectionné. Synchronisé avec backend `ad_consent: true` confirmé.
+  - Côté mobile, l'équivalent est `showPrivacyOptionsForm()` exposé via le UMP SDK (Build 109).

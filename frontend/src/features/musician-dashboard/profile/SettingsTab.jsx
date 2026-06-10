@@ -2,6 +2,7 @@ import { Label } from "../../../components/ui/label";
 import { Input } from "../../../components/ui/input";
 import { Button } from "../../../components/ui/button";
 import { toast } from "sonner";
+import AdConsentPreferences from "../../../components/AdConsentPreferences";
 
 export default function SettingsTab({ passwordForm, setPasswordForm, handleChangePassword }) {
   return (
@@ -44,6 +45,9 @@ export default function SettingsTab({ passwordForm, setPasswordForm, handleChang
           </Button>
         </div>
       </div>
+
+      {/* Build 95.3 — Préférences publicitaires RGPD */}
+      <AdConsentPreferences />
     </div>
   );
 }

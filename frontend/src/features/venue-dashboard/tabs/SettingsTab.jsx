@@ -1,5 +1,6 @@
 import OnlineStatusSelector from "../../../components/OnlineStatusSelector";
 import BackgroundSyncSettings from "../../../components/BackgroundSyncSettings";
+import AdConsentPreferences from "../../../components/AdConsentPreferences";
 import ModerationSettingsCard from "../components/ModerationSettingsCard";
 
 export default function SettingsTab({ venueId, token }) {
@@ -10,6 +11,9 @@ export default function SettingsTab({ venueId, token }) {
         <div className="space-y-6">
           <OnlineStatusSelector />
           <BackgroundSyncSettings />
+          {/* Build 95.3 — Préférences publicitaires RGPD (visible même si les
+              venues ne voient jamais de pub, pour transparence + parité Mobile) */}
+          <AdConsentPreferences />
         </div>
       </div>
       

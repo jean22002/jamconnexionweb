@@ -42,6 +42,7 @@ import { useNotifications } from "../hooks/useNotifications";
 import { buildImageUrl } from "../utils/urlBuilder";
 import DashboardNotification from "../components/DashboardNotification";
 import AdBanner from "../components/AdBanner";
+import AdConsentPreferences from "../components/AdConsentPreferences";
 import { useAdConsent } from "../hooks/useAdConsent";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -1394,6 +1395,7 @@ export default function MelomaneDashboard() {
               <div className="space-y-6">
                 <OnlineStatusSelector />
                 <BackgroundSyncSettings />
+                <AdConsentPreferences />
               </div>
             </div>
           </TabsContent>

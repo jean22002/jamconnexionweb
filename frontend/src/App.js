@@ -6,6 +6,7 @@ import { BadgeProvider } from "./context/BadgeContext";
 import PWAPrompt from "./components/PWAPrompt";
 import PushNotificationPrompt from "./components/PushNotificationPrompt";
 import ChatPopupManager from "./components/ChatPopupManager";
+import AdConsentBanner from "./components/AdConsentBanner";
 import "leaflet/dist/leaflet.css";
 import "./App.css";
 
@@ -108,6 +109,7 @@ function App() {
           <PWAPrompt />
           <PushNotificationPrompt />
           <ChatPopupManager />
+          <AdConsentBanner />
           <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Landing />} />

@@ -22,6 +22,22 @@
         -->
         <title>Jam Connexion - Réseau Musical</title>
         <script src="https://assets.emergent.sh/scripts/emergent-main.js"></script>
+        <!-- Google Consent Mode v2 — RGPD (Build 95.2)
+             Par défaut, on REFUSE tous les signaux publicitaires et analytics.
+             Le consentement est ensuite mis à jour via window.gtag('consent','update',...)
+             dans le hook useAdConsent quand l'utilisateur clique Accepter. -->
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          window.gtag = gtag;
+          gtag('consent', 'default', {
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            analytics_storage: 'denied',
+            wait_for_update: 500
+          });
+        </script>
         <!-- Google AdSense -->
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4254207195182110"
              crossorigin="anonymous"></script>

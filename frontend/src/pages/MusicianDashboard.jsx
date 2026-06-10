@@ -35,6 +35,7 @@ import ProfileEditModal from "../features/musician-dashboard/ProfileEditModal";
 import SoloProjectFormDialog from "../features/musician-dashboard/profile/SoloProjectFormDialog";
 import BandMembersManager from "../components/band/BandMembersManager";
 import AdInterstitial from "../components/AdInterstitial";
+import { useAdConsent } from "../hooks/useAdConsent";
 import JoinBandWithCode from "../components/band/JoinBandWithCode";
 import BandPlanningTab from "../features/musician-dashboard/tabs/BandPlanningTab";
 import BandModerationSettings from "../components/band/BandModerationSettings";
@@ -201,6 +202,8 @@ export default function MusicianDashboard() {
   const isProActive = subscriptionData?.tier === "pro" && (
     subscriptionData?.status === "active" || subscriptionData?.in_trial === true
   );
+  // Build 95.2 — Consentement RGPD gating
+  const { canShowAds } = useAdConsent(token);
   
   // Sauvegarder l'onglet actif dans localStorage à chaque changement
   useEffect(() => {
@@ -3035,7 +3038,8 @@ export default function MusicianDashboard() {
                       return;
                     }
                     // Non-PRO users doivent valider une publicité avant l'envoi
-                    if (!isProActive) {
+                    // (sauf si consent RGPD refusé : on skip directement)
+                    if (!isProActive && canShowAds) {
                       setShowAdInterstitial(true);
                       return;
                     }

@@ -1,4 +1,4 @@
-from .user import UserRegister, UserLogin, UserResponse, TokenResponse, ChangePasswordRequest
+from .user import UserRegister, UserLogin, UserResponse, TokenResponse, ChangePasswordRequest, AdConsentUpdate
 from .musician import (
     BandInfo,
     MusicianConcert,
@@ -40,7 +40,7 @@ from .profitability import ProfitabilityData, ProfitabilityResponse
 from .badge import Badge, UserBadge, BadgeResponse, UserStatsResponse
 
 __all__ = [
-    'UserRegister', 'UserLogin', 'UserResponse', 'TokenResponse', 'ChangePasswordRequest',
+    'UserRegister', 'UserLogin', 'UserResponse', 'TokenResponse', 'ChangePasswordRequest', 'AdConsentUpdate',
     'BandInfo', 'MusicianConcert', 'MusicianProfile', 'MusicianProfileResponse',
     'FriendRequest', 'FriendRequestResponse', 'BandJoinRequest', 'BandJoinRequestResponse',
     'ConcertUpdateRequest',

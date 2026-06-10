@@ -25,6 +25,8 @@ import ReportProfileDialog from "../components/ReportProfileDialog";
 import { buildImageUrl } from "../utils/urlBuilder";
 import { sortEventsUpcomingFirst, isEventPast, pastEventCardClass } from "../utils/eventUtils";
 import { detectFormationType, isProjectCompatible, formationLabel } from "../utils/formationCompatibility";
+import AdInterstitial from "../components/AdInterstitial";
+import { useAdConsent } from "../hooks/useAdConsent";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -43,6 +45,10 @@ export default function VenueDetail() {
   const [myApplications, setMyApplications] = useState([]);
   const [showApplyDialog, setShowApplyDialog] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
+  // Build 95.2 — PRO check musicien + consentement RGPD pour interstitiel pub
+  const [musicianIsPro, setMusicianIsPro] = useState(false);
+  const [showAdInterstitial, setShowAdInterstitial] = useState(false);
+  const { canShowAds } = useAdConsent(token);
   const [applicationForm, setApplicationForm] = useState({
     band_name: "", band_photo: "", description: "", music_style: "",
     links: { facebook: "", instagram: "", youtube: "" },
@@ -174,6 +180,25 @@ export default function VenueDetail() {
       console.error("Error:", error);
     }
   }, [id, token, user]);
+
+  // Build 95.2 — récupère le statut PRO du musicien connecté pour gating pub
+  const fetchMusicianPro = useCallback(async () => {
+    if (!token || !user || user.role !== "musician") {
+      setMusicianIsPro(false);
+      return;
+    }
+    try {
+      const res = await axios.get(`${API}/musicians/me/subscription-status`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const tier = res.data?.tier;
+      const status = res.data?.status;
+      const inTrial = res.data?.in_trial === true;
+      setMusicianIsPro(tier === "pro" && (status === "active" || inTrial));
+    } catch {
+      setMusicianIsPro(false);
+    }
+  }, [token, user]);
 
   const fetchActiveEvents = useCallback(async () => {
     try {
@@ -323,7 +348,8 @@ export default function VenueDetail() {
     checkSubscription();
     fetchCurrentParticipation();
     fetchMyApplications();
-  }, [checkSubscription, fetchCurrentParticipation, fetchMyApplications]);
+    fetchMusicianPro();
+  }, [checkSubscription, fetchCurrentParticipation, fetchMyApplications, fetchMusicianPro]);
 
   // Auto-refresh events and venue info every 10 seconds to update in real-time
   useEffect(() => {
@@ -362,7 +388,12 @@ export default function VenueDetail() {
       return;
     }
     setSelectedSlot(slot);
-    setShowApplyDialog(true);
+    // Build 95.2 — interstitiel pub 5s pour les musiciens free avec consentement RGPD
+    if (!musicianIsPro && canShowAds) {
+      setShowAdInterstitial(true);
+    } else {
+      setShowApplyDialog(true);
+    }
     // Load musician profile to get bands
     if (!musicianProfile && token) {
       fetchMusicianProfile();
@@ -1678,6 +1709,17 @@ export default function VenueDetail() {
           token={token}
         />
       )}
+
+      {/* Build 95.2 — Interstitiel publicitaire avant Postuler (musiciens free uniquement) */}
+      <AdInterstitial
+        open={showAdInterstitial}
+        onClose={() => setShowAdInterstitial(false)}
+        onContinue={() => {
+          setShowAdInterstitial(false);
+          setShowApplyDialog(true);
+        }}
+        countdown={5}
+      />
     </div>
   );
 }

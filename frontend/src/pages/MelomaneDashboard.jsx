@@ -41,6 +41,8 @@ import { MUSIC_STYLES_LIST } from "../data/music-styles";
 import { useNotifications } from "../hooks/useNotifications";
 import { buildImageUrl } from "../utils/urlBuilder";
 import DashboardNotification from "../components/DashboardNotification";
+import AdBanner from "../components/AdBanner";
+import { useAdConsent } from "../hooks/useAdConsent";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -61,6 +63,9 @@ const venueIcon = L.divIcon({
 
 export default function MelomaneDashboard() {
   const { user, token, logout } = useAuth();
+  // Build 95.2 — Banner publicitaire mélomanes (gating RGPD via consent + non-venue)
+  const { canShowAds } = useAdConsent(token);
+  const shouldShowAd = canShowAds && user?.role === "melomane";
   
   // Hook pour les notifications push
   useNotifications(token, user);
@@ -1395,6 +1400,9 @@ export default function MelomaneDashboard() {
 
         </Tabs>
       </main>
+
+      {/* Build 95.2 — Banner publicitaire persistante mélomanes free (post-consent RGPD) */}
+      {shouldShowAd && <AdBanner position="sticky-bottom" testId="ad-banner-melomane" />}
     </div>
   );
 }

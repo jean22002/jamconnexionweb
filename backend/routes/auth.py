@@ -5,7 +5,7 @@ import os
 import uuid
 import logging
 
-from models import UserRegister, UserLogin, UserResponse, TokenResponse
+from models import UserRegister, UserLogin, UserResponse, TokenResponse, AdConsentUpdate
 from utils import hash_password, verify_password, create_token, get_current_user
 from utils.email import send_welcome_email, send_verification_email, send_account_activated_email
 from middleware.rate_limit import limiter
@@ -259,7 +259,39 @@ async def get_me(request: Request, current_user: dict = Depends(get_current_user
         role=current_user["role"], 
         created_at=current_user["created_at"].isoformat() if isinstance(current_user["created_at"], datetime) else current_user["created_at"],
         subscription_status=current_user.get("subscription_status"),
-        trial_end=current_user.get("trial_end").isoformat() if isinstance(current_user.get("trial_end"), datetime) else current_user.get("trial_end")
+        trial_end=current_user.get("trial_end").isoformat() if isinstance(current_user.get("trial_end"), datetime) else current_user.get("trial_end"),
+        ad_consent=current_user.get("ad_consent"),
+        ad_consent_date=current_user["ad_consent_date"].isoformat() if isinstance(current_user.get("ad_consent_date"), datetime) else current_user.get("ad_consent_date"),
+    )
+
+
+@router.patch("/me/ad-consent", response_model=UserResponse)
+@limiter.limit("20/hour")
+async def update_ad_consent(
+    request: Request,
+    data: AdConsentUpdate,
+    current_user: dict = Depends(get_current_user),
+):
+    """Met à jour le consentement publicitaire RGPD de l'utilisateur (sync Web↔Mobile).
+
+    Stocke `ad_consent` (bool) + `ad_consent_date` (datetime ISO UTC).
+    Utilisé par la CMP web (Google Funding Choices) et le UMP SDK mobile.
+    """
+    now_iso = datetime.now(timezone.utc).isoformat()
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {"ad_consent": bool(data.ad_consent), "ad_consent_date": now_iso}},
+    )
+    return UserResponse(
+        id=current_user["id"],
+        email=current_user["email"],
+        name=current_user.get("name", current_user["email"]),
+        role=current_user["role"],
+        created_at=current_user["created_at"].isoformat() if isinstance(current_user["created_at"], datetime) else current_user["created_at"],
+        subscription_status=current_user.get("subscription_status"),
+        trial_end=current_user.get("trial_end").isoformat() if isinstance(current_user.get("trial_end"), datetime) else current_user.get("trial_end"),
+        ad_consent=bool(data.ad_consent),
+        ad_consent_date=now_iso,
     )
 
 

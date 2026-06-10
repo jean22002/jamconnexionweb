@@ -161,3 +161,15 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - Texte : « Jam Connexion est un outil d'aide au suivi… ni un logiciel de comptabilité, ni un logiciel de facturation officiel… ne peut être tenu responsable d'une éventuelle perte de données ou d'une erreur de saisie. »
   - data-testid : `accounting-disclaimer-musician` / `accounting-disclaimer-venue`.
   - Briefing pour port mobile inclus dans `MESSAGE_MOBILE_BUILD_95_DATES.md` (§9).
+- **🍪 Monétisation + RGPD Web (Build 95.2)** (2026-02-09) :
+  - **Google Consent Mode v2** : signaux publicitaires par défaut DENIED dans `public/index.html`. Update via `gtag('consent','update',...)` au choix utilisateur.
+  - **Bandeau RGPD custom** (`components/AdConsentBanner.jsx`) sticky bottom — Accepter / Refuser + lien CGU. Monté globalement dans `App.js`. data-testid `ad-consent-banner` / `ad-consent-accept` / `ad-consent-refuse`.
+  - **Hook `useAdConsent(token)`** (`hooks/useAdConsent.js`) : lit localStorage en priorité, sync depuis backend si user connecté (backend gagne), expose `consent`, `canShowAds`, `canShowNpa`, `acceptConsent`, `refuseConsent`. Sync vers `PATCH /api/auth/me/ad-consent` best-effort.
+  - **Backend** : `UserResponse` étendu avec `ad_consent: bool | None` + `ad_consent_date: str | None`. Nouveau modèle `AdConsentUpdate`. Endpoint `PATCH /api/auth/me/ad-consent` (rate-limited 20/h). `GET /api/auth/me` expose désormais les deux champs.
+  - **Banner publicitaire mélomane** (`components/AdBanner.jsx`) sticky bottom — affichée uniquement si `role === 'melomane'` ET `canShowAds === true` ET slot configuré. Skip silencieux si slot vide.
+  - **Interstitiel "Postuler à un créneau"** (`pages/VenueDetail.jsx`) : musiciens free + consent === true → modal 5s avant ouverture du dialog application. PRO + consent === false skippent directement.
+  - **MusicianDashboard "Contacter groupe"** : check `canShowAds` ajouté au déclenchement existant.
+  - **Audit role venue** : confirmé qu'aucun composant Ad* n'est monté dans `VenueDashboard.jsx`. Les venues ne voient JAMAIS de pub.
+  - **Variables ENV** : `REACT_APP_ADSENSE_SLOT_INTERSTITIAL_APPLY=` ajoutée dans `.env` (à remplir avec slot AdSense côté utilisateur).
+  - Tests E2E playwright validés : bandeau apparaît au 1er visit, Accept/Refuse persistés en localStorage + sync backend confirmée via `GET /auth/me` qui retourne `ad_consent: true`, `ad_consent_date: ...`. Aucune erreur runtime sur login.
+  - Briefing complet pour port mobile : `/app/memory/MESSAGE_MOBILE_BUILD_95.2_AD_CONSENT.md` (UMP SDK + sync logic).

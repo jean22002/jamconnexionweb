@@ -139,7 +139,7 @@ export default function Cookies() {
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
                   <span className="font-semibold text-white">Google AdSense (Web)</span>
                   <span className="text-xs font-mono text-muted-foreground">
-                    publisher ID&nbsp;: ca-pub-4254207195182110
+                    publisher ID&nbsp;: ca-pub-9998561845977424
                   </span>
                 </div>
                 <p className="text-sm">

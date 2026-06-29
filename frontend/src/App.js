@@ -36,6 +36,7 @@ const CGV = lazy(() => import("./pages/CGV"));
 const Cookies = lazy(() => import("./pages/Cookies"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
+const About = lazy(() => import("./pages/About"));
 const MapExplorer = lazy(() => import("./pages/MapExplorer"));
 const BadgesPage = lazy(() => import("./pages/BadgesPage"));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
@@ -138,6 +139,7 @@ function App() {
             <Route path="/cookies" element={<Cookies />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/a-propos" element={<About />} />
             <Route 
               path="/musician" 
               element={

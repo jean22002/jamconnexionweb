@@ -25,6 +25,14 @@ export default function BlogPost() {
         document.title = `${res.data.title} — Jam Connexion`;
         const meta = document.querySelector('meta[name="description"]');
         if (meta && res.data.excerpt) meta.setAttribute("content", res.data.excerpt);
+        // Build 95.7 — Respect du flag noindex pour articles à risque doorway/scaled-content
+        let robotsMeta = document.querySelector('meta[name="robots"]');
+        if (!robotsMeta) {
+          robotsMeta = document.createElement("meta");
+          robotsMeta.setAttribute("name", "robots");
+          document.head.appendChild(robotsMeta);
+        }
+        robotsMeta.setAttribute("content", res.data.noindex ? "noindex, follow" : "index, follow");
       } catch (e) {
         if (e?.response?.status === 404) setNotFound(true);
       } finally {
@@ -32,6 +40,11 @@ export default function BlogPost() {
       }
     };
     fetchArticle();
+    // Cleanup : remettre index par défaut quand on quitte la page
+    return () => {
+      const robotsMeta = document.querySelector('meta[name="robots"]');
+      if (robotsMeta) robotsMeta.setAttribute("content", "index, follow");
+    };
   }, [slug]);
 
   return (

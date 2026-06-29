@@ -28,6 +28,7 @@ STATIC_PAGES = [
     ("/tarifs", "0.8", "monthly"),
     ("/faq", "0.7", "monthly"),
     ("/blog", "0.9", "daily"),
+    ("/a-propos", "0.6", "monthly"),
     ("/cgu", "0.4", "yearly"),
     ("/cgv", "0.4", "yearly"),
     ("/cookies", "0.5", "yearly"),
@@ -50,7 +51,7 @@ async def main():
         )
 
     cursor = db.blog_articles.find(
-        {"published": True},
+        {"published": True, "$or": [{"noindex": {"$exists": False}}, {"noindex": False}]},
         {"slug": 1, "published_at": 1, "updated_at": 1, "_id": 0},
     ).sort("published_at", -1)
     articles = await cursor.to_list(length=1000)

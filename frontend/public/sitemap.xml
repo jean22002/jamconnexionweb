@@ -26,6 +26,11 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://jamconnexion.com/a-propos</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://jamconnexion.com/cgu</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
@@ -102,18 +107,6 @@
   <url>
     <loc>https://jamconnexion.com/blog/faire-musique-marseille-guide</loc>
     <lastmod>2026-05-24</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://jamconnexion.com/blog/bordeaux-guide-musicien-live</loc>
-    <lastmod>2026-05-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://jamconnexion.com/blog/toulouse-integrer-scene-musicale</loc>
-    <lastmod>2026-05-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

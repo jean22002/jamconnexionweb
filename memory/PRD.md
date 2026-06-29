@@ -215,3 +215,10 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - **Cache babel stale** : ancien `// eslint-disable-next-line react-hooks/immutability` toujours en cache → `rm -rf node_modules/.cache` + restart frontend = compilation clean.
   - **Skipped (explicitement risqué)** : hook deps mass fix (212 instances), refactor Calendar/MapTab/EventDetailsDialog, migration localStorage→sessionStorage, type hints Python.
   - Test E2E playwright validé : `/blog` affiche 17 cards, aucune erreur runtime ou compile, DOMPurify rend bien le markdown HTML (8 h2, 22 p, 10 ul sur article test).
+- **🛡️ Anti-spam Google compliance (Build 95.7)** (2026-02-09) :
+  - Audit complet des 16 règles "spam" Google Search → respectées.
+  - **Risque "Doorway abuse"** sur 5 city guides similaires → 2 désindexés (`noindex: true` en DB sur Bordeaux + Toulouse, `<meta robots="noindex, follow">` injecté dynamiquement par `BlogPost.jsx` selon le flag).
+  - **Sitemap mis à jour** : exclut automatiquement les articles `noindex` (script `generate_sitemap.py`).
+  - **Page publique `/a-propos`** (`pages/About.jsx`) : 5 sections (Histoire, Mission, Valeurs, Approche éditoriale transparente, Contact). Signal E-E-A-T fort pour Google.
+  - **Script `scripts/mark_noindex.py`** idempotent pour gérer le flag noindex.
+  - data-testid : `about-page`, `about-cta-signup`, `footer-about-link`.

@@ -26,7 +26,6 @@ def validate_and_normalize_payment_fields(data: dict) -> dict:
     """
     method = data.get("payment_method")
     mode = data.get("payment_mode")
-    amount = data.get("amount")
 
     # Si rien n'est fourni, on laisse passer
     if method is None and mode is None:

@@ -670,7 +670,7 @@ async def get_nearby_musicians_count(request: Request, radius_km: float = 50, cu
                     if datetime.now(timezone.utc) <= expires_dt:
                         musician_lat = musician.get("temporary_latitude")
                         musician_lon = musician.get("temporary_longitude")
-                except:
+                except (ValueError, TypeError, AttributeError):
                     pass
         
         # Fallback to profile location

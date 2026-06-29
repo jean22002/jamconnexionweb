@@ -1482,8 +1482,8 @@ export default function VenueDetail() {
                         
                         {band.music_styles && band.music_styles.length > 0 && (
                           <div className="flex flex-wrap gap-1 mb-3 justify-center">
-                            {band.music_styles.slice(0, 3).map((style, i) => (
-                              <span key={i} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">
+                            {band.music_styles.slice(0, 3).map((style) => (
+                              <span key={`${band.id}-style-${style}`} className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">
                                 {style}
                               </span>
                             ))}

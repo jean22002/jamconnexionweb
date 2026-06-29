@@ -4,6 +4,7 @@ Auto-moderation system - Automatic actions based on reports
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from datetime import datetime, timezone, timedelta
 import logging
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +151,7 @@ async def send_suspension_notification(db: AsyncIOMotorDatabase, user_id: str, a
         
         # Notification dans l'app
         notification_doc = {
-            "id": str(__import__("uuid").uuid4()),
+            "id": str(uuid.uuid4()),
             "user_id": user_id,
             "type": "suspension" if action_result["action"] == "suspended" else "permanent_ban",
             "title": "Suspension de compte" if action_result["action"] == "suspended" else "Bannissement permanent",

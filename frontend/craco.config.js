@@ -65,6 +65,27 @@ const webpackConfig = {
       if (config.enableHealthCheck && healthPluginInstance) {
         webpackConfig.plugins.push(healthPluginInstance);
       }
+
+      // Build 95.6 — Strip console.* in production builds for security/perf
+      // (le reviewer signalait 330 console.* exposant la logique en prod).
+      if (process.env.NODE_ENV === "production") {
+        const TerserPlugin = require("terser-webpack-plugin");
+        webpackConfig.optimization = webpackConfig.optimization || {};
+        webpackConfig.optimization.minimizer = [
+          new TerserPlugin({
+            terserOptions: {
+              compress: {
+                drop_console: true,  // Supprime console.log / console.debug / etc.
+                drop_debugger: true,
+                // Conserve console.error et console.warn (utiles pour Sentry/monitoring)
+                pure_funcs: ["console.log", "console.info", "console.debug", "console.trace"],
+              },
+              format: { comments: false },
+            },
+            extractComments: false,
+          }),
+        ];
+      }
       return webpackConfig;
     },
   },

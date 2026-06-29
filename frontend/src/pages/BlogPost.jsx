@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
+import DOMPurify from "isomorphic-dompurify";
 import { Button } from "../components/ui/button";
 import { ArrowLeft, Music, Clock, Calendar } from "lucide-react";
 
@@ -101,7 +102,12 @@ export default function BlogPost() {
 
             <div
               className="glassmorphism rounded-3xl p-6 sm:p-10 prose-blog"
-              dangerouslySetInnerHTML={{ __html: renderMarkdown(article.content) }}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(renderMarkdown(article.content), {
+                  ALLOWED_TAGS: ["h1", "h2", "h3", "p", "ul", "ol", "li", "strong", "em", "a", "blockquote", "br"],
+                  ALLOWED_ATTR: ["href", "target", "rel"],
+                }),
+              }}
             />
 
             {article.tags?.length > 0 && (

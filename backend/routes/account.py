@@ -109,7 +109,7 @@ async def get_account_status(current_user: dict = Depends(get_current_user)):
             now = datetime.now(timezone.utc)
             days_left = (trial_end - now).days
             trial_days_left = max(0, days_left)
-        except:
+        except (ValueError, TypeError, AttributeError):
             trial_days_left = 0
     
     return {

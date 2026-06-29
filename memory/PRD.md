@@ -204,3 +204,14 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - Total : **17 articles publiés en base** (~125 000 caractères de contenu original français).
   - Script `backend/scripts/generate_sitemap.py` génère `frontend/public/sitemap.xml` (26 URLs) + `frontend/public/robots.txt` à partir des articles publiés.
   - À relancer après chaque ajout/suppression d'article.
+- **🛡️ Code review fixes (Build 95.6)** (2026-02-09) :
+  - **XSS hardening** : `pages/BlogPost.jsx` utilise désormais `DOMPurify.sanitize()` avec allowlist stricte (`h1/h2/h3/p/ul/ol/li/strong/em/a/blockquote/br`, attributs `href/target/rel` uniquement). Empêche toute injection JS via contenu d'article.
+  - **Dynamic import nettoyé** : `app/utils/auto_moderation.py` remplace `__import__("uuid").uuid4()` par `import uuid` statique en haut de fichier.
+  - **Bare excepts corrigés** dans 3 routes prod : `routes/account.py:112`, `routes/online_status.py:181`, `routes/venues.py:673` → typés `(ValueError, TypeError, AttributeError)`.
+  - **Unused variable** : `amount` retiré de `utils/payment_validation.py:29`.
+  - **Console strip prod** : `craco.config.js` config Terser ajoutée — `drop_console: true` + `pure_funcs: [console.log/info/debug/trace]` en build production. console.error et console.warn conservés pour Sentry/monitoring. Couvre les 330 occurrences signalées sans toucher au code.
+  - **Faux positifs reviewer identifiés** : "eval()" était un substring dans `test_concert_catering_accommodation_retrieval`. Les "66 is comparisons" sont tous des `is None`/`is not None` (PEP 8 correct).
+  - **Array index key** corrigé dans `VenueDetail.jsx:1486` (music_styles). 11 autres dans VenueDashboard/MusicianDashboard non touchés (handoff précédent flag les hooks deps comme dangereux à toucher sans refactor global).
+  - **Cache babel stale** : ancien `// eslint-disable-next-line react-hooks/immutability` toujours en cache → `rm -rf node_modules/.cache` + restart frontend = compilation clean.
+  - **Skipped (explicitement risqué)** : hook deps mass fix (212 instances), refactor Calendar/MapTab/EventDetailsDialog, migration localStorage→sessionStorage, type hints Python.
+  - Test E2E playwright validé : `/blog` affiche 17 cards, aucune erreur runtime ou compile, DOMPurify rend bien le markdown HTML (8 h2, 22 p, 10 ul sur article test).

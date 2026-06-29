@@ -178,5 +178,5 @@ async def is_user_online(user: dict) -> bool:
         now = datetime.now(timezone.utc)
         time_diff = now - last_active_dt
         return time_diff < timedelta(minutes=ONLINE_THRESHOLD_MINUTES)
-    except:
+    except (ValueError, TypeError, AttributeError):
         return False

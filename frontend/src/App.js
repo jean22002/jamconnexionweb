@@ -34,6 +34,8 @@ const TrialExpired = lazy(() => import("./pages/TrialExpired"));
 const CGU = lazy(() => import("./pages/CGU"));
 const CGV = lazy(() => import("./pages/CGV"));
 const Cookies = lazy(() => import("./pages/Cookies"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
 const MapExplorer = lazy(() => import("./pages/MapExplorer"));
 const BadgesPage = lazy(() => import("./pages/BadgesPage"));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
@@ -134,6 +136,8 @@ function App() {
             <Route path="/cgu" element={<CGU />} />
             <Route path="/cgv" element={<CGV />} />
             <Route path="/cookies" element={<Cookies />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
             <Route 
               path="/musician" 
               element={

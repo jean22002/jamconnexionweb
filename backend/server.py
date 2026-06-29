@@ -235,6 +235,10 @@ api_router.include_router(moderation.router)  # NEW: Moderation settings
 api_router.include_router(moderation_settings.router)  # NEW: Admin moderation settings  
 api_router.include_router(websocket.router)  # NEW: WebSocket  # NEW: Mobile app configuration
 
+# Build 95.5 — Blog public (SEO + AdSense)
+from routes import blog as blog_routes
+api_router.include_router(blog_routes.router)
+
 # Import files router
 from routes import files
 api_router.include_router(files.router)  # NEW: Public file proxy for Object Storage

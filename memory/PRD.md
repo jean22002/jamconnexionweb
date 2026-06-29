@@ -185,3 +185,17 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - Lien "Cookies" ajouté au footer du Landing (`pages/Landing.jsx`).
   - Le bandeau de consentement (`components/AdConsentBanner.jsx`) pointe désormais "En savoir plus" vers `/cookies` au lieu de `/cgu`.
   - data-testid : `cookies-page`, `footer-cookies-link`.
+- **🆕 Publisher ID AdSense unifié** (2026-02-09) :
+  - Migration de `ca-pub-4254207195182110` vers `ca-pub-9998561845977424` (même publisher que AdMob mobile pour rapports unifiés).
+  - 3 endroits mis à jour : `public/index.html`, `frontend/.env` (`REACT_APP_ADSENSE_CLIENT`), `pages/Cookies.jsx`.
+- **📝 Auth form name attributes** (2026-02-09) :
+  - Ajout `name="email"` et `name="password"` sur les inputs login (`pages/Auth.jsx`) pour permettre la validation Google AdSense via crawler.
+- **📚 Blog public + génération LLM (Build 95.5)** (2026-02-09) :
+  - **Backend** : `models/blog.py` (BlogArticle, BlogArticleListItem), `routes/blog.py` (GET /api/blog, GET /api/blog/{slug} avec compteur vues). Collection MongoDB `blog_articles`. Enregistré dans `server.py`.
+  - **Frontend** : `pages/Blog.jsx` (liste articles avec cards glassmorphism), `pages/BlogPost.jsx` (article individuel avec markdown renderer custom — h1/h2/h3, gras, italique, listes, liens, blockquotes). Routes `/blog` et `/blog/:slug` lazy-loaded dans App.js.
+  - **Styles** : classe `.prose-blog` ajoutée dans `index.css` (titres, paragraphes, listes, liens stylisés).
+  - **Génération automatique** : script `backend/scripts/generate_blog_articles.py` qui appelle Claude Sonnet 4.6 via Emergent LLM Key pour générer 7 articles SEO français (organisation jam, recrutement musiciens, intermittent du spectacle, GUSO, cachet vs facture, premier concert payant, erreurs démarchage). Chaque article = 6800-8900 chars (~1100-1500 mots), structuré avec sous-titres et listes.
+  - **Articles publiés** : 7 articles en base, vues comptabilisées, dates échelonnées pour effet "blog vivant".
+  - **SEO** : `<title>` et `<meta description>` dynamiques par article. Footer landing inclut lien "Blog".
+  - **Objectif** : qualifier AdSense (refus initial "contenu à faible valeur informative" → ces articles fournissent le contenu original substantiel exigé par Google).
+  - data-testid : `blog-page`, `blog-card-{slug}`, `blog-post`, `blog-post-title`, `footer-blog-link`.

@@ -584,6 +584,9 @@ export default function Landing() {
               <Link to="/faq" className="text-muted-foreground hover:text-white text-sm transition-colors">
                 FAQ
               </Link>
+              <Link to="/blog" className="text-muted-foreground hover:text-white text-sm transition-colors" data-testid="footer-blog-link">
+                Blog
+              </Link>
               <Link to="/cookies" className="text-muted-foreground hover:text-white text-sm transition-colors" data-testid="footer-cookies-link">
                 Cookies
               </Link>

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /musician
+Disallow: /melomane
+Disallow: /venue
+
+Sitemap: https://jamconnexion.com/sitemap.xml

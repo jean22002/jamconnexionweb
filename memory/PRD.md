@@ -199,3 +199,8 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - **SEO** : `<title>` et `<meta description>` dynamiques par article. Footer landing inclut lien "Blog".
   - **Objectif** : qualifier AdSense (refus initial "contenu à faible valeur informative" → ces articles fournissent le contenu original substantiel exigé par Google).
   - data-testid : `blog-page`, `blog-card-{slug}`, `blog-post`, `blog-post-title`, `footer-blog-link`.
+- **📚 Blog x17 articles + sitemap.xml SEO (Build 95.5b)** (2026-02-09) :
+  - 10 articles supplémentaires générés (5 guides locaux Paris/Lyon/Marseille/Bordeaux/Toulouse + 5 guides pratiques : dossier de presse, matériel scène, réseaux sociaux, tournée, fidéliser son public).
+  - Total : **17 articles publiés en base** (~125 000 caractères de contenu original français).
+  - Script `backend/scripts/generate_sitemap.py` génère `frontend/public/sitemap.xml` (26 URLs) + `frontend/public/robots.txt` à partir des articles publiés.
+  - À relancer après chaque ajout/suppression d'article.

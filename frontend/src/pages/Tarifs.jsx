@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Check, ArrowLeft, Guitar, Mic } from "lucide-react";
 
 export default function Tarifs() {
   const navigate = useNavigate();
+  const [billingCycle, setBillingCycle] = useState("monthly"); // "monthly" | "yearly"
 
   const musicianFeatures = [
     "Accès illimité à la carte des établissements",
@@ -77,13 +79,50 @@ export default function Tarifs() {
 
       {/* Content */}
       <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-16">
+        <div className="text-center mb-10">
           <h1 className="font-heading font-bold text-4xl md:text-5xl mb-4 text-gradient">
             Choisissez votre formule
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
             Que vous soyez musicien ou établissement, trouvez la solution qui vous correspond
           </p>
+
+          {/* Build 95.9 — Toggle Mensuel / Annuel (économie de 2 mois en annuel) */}
+          <div
+            className="inline-flex items-center gap-1 p-1 rounded-full bg-black/30 border border-white/10"
+            data-testid="billing-toggle"
+          >
+            <button
+              onClick={() => setBillingCycle("monthly")}
+              className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${
+                billingCycle === "monthly"
+                  ? "bg-primary text-white shadow-md"
+                  : "text-muted-foreground hover:text-white"
+              }`}
+              data-testid="billing-monthly-btn"
+            >
+              Mensuel
+            </button>
+            <button
+              onClick={() => setBillingCycle("yearly")}
+              className={`px-6 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2 ${
+                billingCycle === "yearly"
+                  ? "bg-primary text-white shadow-md"
+                  : "text-muted-foreground hover:text-white"
+              }`}
+              data-testid="billing-yearly-btn"
+            >
+              Annuel
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/25 text-green-300 border border-green-500/40 font-bold uppercase tracking-wide">
+                −2 mois
+              </span>
+            </button>
+          </div>
+          {billingCycle === "yearly" && (
+            <p className="text-xs text-green-400 mt-3 font-medium" data-testid="billing-yearly-savings">
+              🎉 Économisez l&apos;équivalent de 2 mois en payant à l&apos;année
+            </p>
+          )}
         </div>
 
         {/* Plans Grid */}
@@ -137,9 +176,20 @@ export default function Tarifs() {
               </div>
               <div>
                 <h2 className="font-heading font-bold text-3xl">Musicien PRO</h2>
-                <p className="text-2xl font-bold text-cyan-300">
-                  4,99€ <span className="text-base text-muted-foreground">/mois</span>
-                </p>
+                {billingCycle === "monthly" ? (
+                  <p className="text-2xl font-bold text-cyan-300" data-testid="musician-pro-price">
+                    4,99€ <span className="text-base text-muted-foreground">/mois</span>
+                  </p>
+                ) : (
+                  <div data-testid="musician-pro-price">
+                    <p className="text-2xl font-bold text-cyan-300">
+                      49,90€ <span className="text-base text-muted-foreground">/an</span>
+                    </p>
+                    <p className="text-xs text-muted-foreground line-through">
+                      au lieu de 59,88€
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -196,7 +246,20 @@ export default function Tarifs() {
               </div>
               <div>
                 <h2 className="font-heading font-bold text-3xl">Établissement</h2>
-                <p className="text-2xl font-bold text-primary">9,99€ <span className="text-base text-muted-foreground">/mois</span></p>
+                {billingCycle === "monthly" ? (
+                  <p className="text-2xl font-bold text-primary" data-testid="venue-price">
+                    9,99€ <span className="text-base text-muted-foreground">/mois</span>
+                  </p>
+                ) : (
+                  <div data-testid="venue-price">
+                    <p className="text-2xl font-bold text-primary">
+                      99,90€ <span className="text-base text-muted-foreground">/an</span>
+                    </p>
+                    <p className="text-xs text-muted-foreground line-through">
+                      au lieu de 119,88€
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -11,6 +11,7 @@ const STRIPE_PAYMENT_LINK_MUSICIAN = "https://buy.stripe.com/5kQfZgfFjfVK0te4CZa
 export default function Pricing() {
   const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [billingCycle, setBillingCycle] = useState("monthly"); // Build 95.9 — uniformisé avec /tarifs
 
   const handleSubscribeVenue = () => {
     if (!user) {
@@ -63,13 +64,50 @@ export default function Pricing() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16" data-testid="pricing-page">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <h1 className="font-heading font-bold text-4xl md:text-5xl mb-4">
             Tarifs <span className="text-gradient">simples</span>
           </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-10">
             Musiciens et mélomanes : accès gratuit. Établissements : abonnement simple pour booster votre visibilité
           </p>
+
+          {/* Build 95.9 — Toggle Mensuel / Annuel (uniformisé avec /tarifs) */}
+          <div
+            className="inline-flex items-center gap-1 p-1 rounded-full bg-black/30 border border-white/10"
+            data-testid="billing-toggle"
+          >
+            <button
+              onClick={() => setBillingCycle("monthly")}
+              className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${
+                billingCycle === "monthly"
+                  ? "bg-primary text-white shadow-md"
+                  : "text-muted-foreground hover:text-white"
+              }`}
+              data-testid="billing-monthly-btn"
+            >
+              Mensuel
+            </button>
+            <button
+              onClick={() => setBillingCycle("yearly")}
+              className={`px-6 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2 ${
+                billingCycle === "yearly"
+                  ? "bg-primary text-white shadow-md"
+                  : "text-muted-foreground hover:text-white"
+              }`}
+              data-testid="billing-yearly-btn"
+            >
+              Annuel
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/25 text-green-300 border border-green-500/40 font-bold uppercase tracking-wide">
+                −2 mois
+              </span>
+            </button>
+          </div>
+          {billingCycle === "yearly" && (
+            <p className="text-xs text-green-400 mt-3 font-medium">
+              🎉 Économisez l&apos;équivalent de 2 mois en payant à l&apos;année
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -86,10 +124,20 @@ export default function Pricing() {
               </div>
               <div>
                 <h2 className="font-heading font-bold text-2xl">Musicien PRO</h2>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-secondary font-bold text-xl">4,99€</span>
-                  <span className="text-muted-foreground text-sm">/mois</span>
-                </div>
+                {billingCycle === "monthly" ? (
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-secondary font-bold text-xl">4,99€</span>
+                    <span className="text-muted-foreground text-sm">/mois</span>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-secondary font-bold text-xl">49,90€</span>
+                      <span className="text-muted-foreground text-sm">/an</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground line-through">au lieu de 59,88€</p>
+                  </div>
+                )}
               </div>
             </div>
             
@@ -215,10 +263,20 @@ export default function Pricing() {
               </div>
               <div>
                 <h2 className="font-heading font-bold text-2xl">Établissement</h2>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-primary font-bold text-2xl">9,99€</span>
-                  <span className="text-muted-foreground">/mois</span>
-                </div>
+                {billingCycle === "monthly" ? (
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-primary font-bold text-2xl">9,99€</span>
+                    <span className="text-muted-foreground">/mois</span>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-primary font-bold text-2xl">99,90€</span>
+                      <span className="text-muted-foreground">/an</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground line-through">au lieu de 119,88€</p>
+                  </div>
+                )}
               </div>
             </div>
             

@@ -222,3 +222,10 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - **Page publique `/a-propos`** (`pages/About.jsx`) : 5 sections (Histoire, Mission, Valeurs, Approche éditoriale transparente, Contact). Signal E-E-A-T fort pour Google.
   - **Script `scripts/mark_noindex.py`** idempotent pour gérer le flag noindex.
   - data-testid : `about-page`, `about-cta-signup`, `footer-about-link`.
+- **💰 Toggle Mensuel/Annuel + uniformisation Pricing (Build 95.8/95.9)** (2026-02-09) :
+  - **`Tarifs.jsx`** : ajout carte Musicien PRO (4,99€/mois) entre Musicien Gratuit et Établissement, grid passée à 3 colonnes. 8 features PRO différenciantes (0 pub, contact instantané, priorité candidature, badge PRO, stats, notifs prio, support).
+  - **Toggle Mensuel/Annuel** (Build 95.9) ajouté sur `/tarifs` ET `/pricing` (pill-style avec badge vert "−2 mois"). En mode annuel : Musicien PRO 49,90€/an (au lieu de 59,88€ barré), Établissement 99,90€/an (au lieu de 119,88€ barré). Économie = 2 mois offerts si engagement annuel.
+  - Message vert "🎉 Économisez l'équivalent de 2 mois en payant à l'année" affiché dynamiquement.
+  - `Pricing.jsx` uniformisé avec le même toggle et les mêmes calculs de prix. Le plan Mélomane reste gratuit (pas de toggle appliqué).
+  - data-testid : `billing-toggle`, `billing-monthly-btn`, `billing-yearly-btn`, `billing-yearly-savings`, `musician-pro-price`, `venue-price`, `tarifs-musician-pro-card`, `tarifs-musician-pro-btn`.
+  - ⚠️ **Note** : les liens Stripe existants (`STRIPE_PAYMENT_LINK_MUSICIAN`, `STRIPE_PAYMENT_LINK_VENUE`) ne connaissent pas encore les prix annuels. Il faudra créer 2 nouveaux Payment Links Stripe pour l'annuel côté user + les brancher via une variante conditionnelle sur `billingCycle`.

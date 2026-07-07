@@ -18,6 +18,17 @@ export default function Tarifs() {
     "Gestion de plusieurs groupes musicaux"
   ];
 
+  const musicianProFeatures = [
+    "Tout ce qui est inclus dans la version gratuite",
+    "🚫 Aucune publicité (bannières et interstitiels)",
+    "⚡ Contact instantané avec les établissements (sans délai de pub)",
+    "🎯 Priorité de candidature aux créneaux",
+    "⭐ Badge PRO visible sur votre profil",
+    "📊 Statistiques détaillées sur vos concerts et candidatures",
+    "🔔 Notifications push prioritaires",
+    "💌 Support prioritaire par email"
+  ];
+
   const venueFeatures = [
     "Profil établissement complet (photos, description, équipements)",
     "Visibilité maximale sur la carte interactive",
@@ -76,7 +87,7 @@ export default function Tarifs() {
         </div>
 
         {/* Plans Grid */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           
           {/* Plan Musicien */}
           <div className="glassmorphism rounded-3xl p-8 hover:shadow-[0_0_40px_rgba(217,70,239,0.3)] transition-all">
@@ -108,9 +119,68 @@ export default function Tarifs() {
             <Button
               onClick={() => navigate("/musician-register")}
               className="w-full bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 hover:to-cyan-500 text-white rounded-full py-6 text-lg font-heading font-semibold"
+              data-testid="tarifs-musician-free-btn"
             >
               Je suis un musicien
             </Button>
+          </div>
+
+          {/* Plan Musicien PRO — Build 95.8 */}
+          <div className="glassmorphism rounded-3xl p-8 hover:shadow-[0_0_40px_rgba(6,182,212,0.35)] transition-all border-2 border-cyan-500/40 relative" data-testid="tarifs-musician-pro-card">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-cyan-500 to-blue-500 px-5 py-1.5 rounded-full">
+              <span className="font-heading font-semibold text-xs text-white">🎁 2 mois gratuits</span>
+            </div>
+
+            <div className="flex items-center gap-4 mb-6 mt-2">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/30 to-blue-500/20 flex items-center justify-center">
+                <Guitar className="w-8 h-8 text-cyan-300" />
+              </div>
+              <div>
+                <h2 className="font-heading font-bold text-3xl">Musicien PRO</h2>
+                <p className="text-2xl font-bold text-cyan-300">
+                  4,99€ <span className="text-base text-muted-foreground">/mois</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Essai gratuit */}
+            <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-2xl p-4 mb-6">
+              <p className="text-center text-cyan-300 font-semibold mb-1">
+                2 mois d&apos;essai gratuit
+              </p>
+              <p className="text-center text-xs text-muted-foreground">
+                pour les 200 premiers musiciens • Annulable à tout moment
+              </p>
+            </div>
+
+            <p className="text-muted-foreground mb-8">
+              Boostez votre visibilité et supprimez toute publicité pour une expérience musicale premium.
+            </p>
+
+            <ul className="space-y-3 mb-8">
+              {musicianProFeatures.map((feature) => (
+                <li
+                  key={`musician-pro-${feature.slice(0, 25)}`}
+                  className="flex items-start gap-3"
+                >
+                  <div className="mt-0.5 w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                    <Check className="w-3 h-3 text-cyan-300" />
+                  </div>
+                  <span className="text-foreground text-sm">{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            <Button
+              onClick={() => navigate("/pricing")}
+              className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-full py-6 text-lg font-heading font-semibold"
+              data-testid="tarifs-musician-pro-btn"
+            >
+              Essayer 2 mois gratuitement
+            </Button>
+            <p className="text-xs text-center text-muted-foreground mt-3">
+              Aucun prélèvement pendant l&apos;essai
+            </p>
           </div>
 
           {/* Plan Établissement */}
@@ -133,7 +203,7 @@ export default function Tarifs() {
             {/* Essai gratuit */}
             <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-2xl p-4 mb-6">
               <p className="text-center text-cyan-400 font-semibold">
-                2 mois d'essai gratuit inclus
+                2 mois d&apos;essai gratuit inclus
               </p>
             </div>
 

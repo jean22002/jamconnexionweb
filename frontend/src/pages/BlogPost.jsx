@@ -4,6 +4,7 @@ import axios from "axios";
 import DOMPurify from "isomorphic-dompurify";
 import { Button } from "../components/ui/button";
 import { ArrowLeft, Music, Clock, Calendar } from "lucide-react";
+import EzoicAdPlaceholder from "../components/EzoicAdPlaceholder";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -122,6 +123,11 @@ export default function BlogPost() {
                 }),
               }}
             />
+
+            {/* Build 95.10 — Emplacement pub Ezoic milieu article (après contenu, avant tags/CTA) */}
+            <div className="mt-8">
+              <EzoicAdPlaceholder id={103} />
+            </div>
 
             {article.tags?.length > 0 && (
               <div className="mt-10 flex items-center gap-2 flex-wrap">

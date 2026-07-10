@@ -7,7 +7,6 @@ import PWAPrompt from "./components/PWAPrompt";
 import PushNotificationPrompt from "./components/PushNotificationPrompt";
 import ChatPopupManager from "./components/ChatPopupManager";
 import AdConsentBanner from "./components/AdConsentBanner";
-import EzoicScriptLoader from "./components/EzoicScriptLoader";
 import "leaflet/dist/leaflet.css";
 import "./App.css";
 
@@ -115,7 +114,6 @@ function App() {
           <PushNotificationPrompt />
           <ChatPopupManager />
           <AdConsentBanner />
-          <EzoicScriptLoader />
           <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Landing />} />

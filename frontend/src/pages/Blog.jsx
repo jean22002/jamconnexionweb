@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { Button } from "../components/ui/button";
 import { ArrowLeft, Music, Clock, ArrowRight } from "lucide-react";
-import EzoicAdPlaceholder from "../components/EzoicAdPlaceholder";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -74,12 +73,7 @@ export default function Blog() {
         )}
 
         {!loading && articles.length > 0 && (
-          <>
-            {/* Build 95.10 — Emplacement pub Ezoic top blog */}
-            <div className="mb-8">
-              <EzoicAdPlaceholder id={101} />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {articles.map((article) => (
               <Link
                 key={article.id}
@@ -111,12 +105,7 @@ export default function Blog() {
                 </article>
               </Link>
             ))}
-            </div>
-            {/* Build 95.10 — Emplacement pub Ezoic bottom blog */}
-            <div className="mt-12">
-              <EzoicAdPlaceholder id={102} />
-            </div>
-          </>
+          </div>
         )}
       </main>
     </div>

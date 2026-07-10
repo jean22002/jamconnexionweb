@@ -229,3 +229,9 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - `Pricing.jsx` uniformisé avec le même toggle et les mêmes calculs de prix. Le plan Mélomane reste gratuit (pas de toggle appliqué).
   - data-testid : `billing-toggle`, `billing-monthly-btn`, `billing-yearly-btn`, `billing-yearly-savings`, `musician-pro-price`, `venue-price`, `tarifs-musician-pro-card`, `tarifs-musician-pro-btn`.
   - ⚠️ **Note** : les liens Stripe existants (`STRIPE_PAYMENT_LINK_MUSICIAN`, `STRIPE_PAYMENT_LINK_VENUE`) ne connaissent pas encore les prix annuels. Il faudra créer 2 nouveaux Payment Links Stripe pour l'annuel côté user + les brancher via une variante conditionnelle sur `billingCycle`.
+- **🧹 Nettoyage stack publicité (Build 95.11)** (2026-02-10) :
+  - **Ezoic** refusé (seuil 250k users/mois trop élevé). Ezoic composants supprimés (`EzoicAdPlaceholder.jsx`, `EzoicScriptLoader.jsx`), imports retirés de Blog.jsx / BlogPost.jsx / App.js, variable `REACT_APP_EZOIC_PUBLISHER_ID` retirée du `.env`.
+  - **Bandeau RGPD (`AdConsentBanner.jsx`)** auto-masqué tant qu'aucune variable pub ENV n'est renseignée. Se réactivera automatiquement quand `REACT_APP_ADSENSE_SLOT_BANNER` ou `REACT_APP_ADSENSE_SLOT_INTERSTITIAL_APPLY` sera défini.
+  - **Hook `useAdConsent` + composant `AdConsentPreferences`** conservés (utiles pour sync mobile via backend et pour ré-activation future).
+  - **AdSense config** conservée dans `index.html` (publisher `ca-pub-9998561845977424` + Consent Mode v2) — sera re-tenté dans 2-3 mois quand le site aura mûri.
+  - **Stratégie de monétisation** : AdMob mobile actif (Build 109) + Stripe PRO web (Musicien 4,99€ / Établissement 9,99€ avec toggle annuel). Pas de pubs web pour l'instant.

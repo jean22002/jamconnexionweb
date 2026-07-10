@@ -17,6 +17,16 @@ export default function AdConsentBanner() {
   const { token } = useAuth() || {};
   const { needsConsent, acceptConsent, refuseConsent } = useAdConsent(token);
 
+  // Build 95.11 — Masqué tant qu'aucun système publicitaire actif.
+  // Sera réactivé automatiquement dès qu'un des flags suivants sera défini :
+  // REACT_APP_ADSENSE_SLOT_BANNER, REACT_APP_ADSENSE_SLOT_INTERSTITIAL_APPLY,
+  // ou REACT_APP_EZOIC_PUBLISHER_ID.
+  const adsEnabled = !!(
+    process.env.REACT_APP_ADSENSE_SLOT_BANNER ||
+    process.env.REACT_APP_ADSENSE_SLOT_INTERSTITIAL_APPLY ||
+    process.env.REACT_APP_EZOIC_PUBLISHER_ID
+  );
+  if (!adsEnabled) return null;
   if (!needsConsent) return null;
 
   return (

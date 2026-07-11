@@ -5,13 +5,20 @@ import { Music, Check, ArrowRight, Guitar, Mic2, Music2, Loader2 } from "lucide-
 import { useAuth } from "../context/AuthContext";
 import PromoCounter from "../components/PromoCounter";
 
-const STRIPE_PAYMENT_LINK_VENUE = "https://buy.stripe.com/3cI8wOfFj5h68ZKd9vafS03";
-const STRIPE_PAYMENT_LINK_MUSICIAN = "https://buy.stripe.com/5kQfZgfFjfVK0te4CZafS04";
+// Build 95.9 — Liens Stripe (mensuel + annuel)
+const STRIPE_PAYMENT_LINK_VENUE_MONTHLY = "https://buy.stripe.com/3cI8wOfFj5h68ZKd9vafS03";
+const STRIPE_PAYMENT_LINK_VENUE_YEARLY = "https://buy.stripe.com/3cI9ASbp3eRG4JuglHafS09";
+const STRIPE_PAYMENT_LINK_MUSICIAN_MONTHLY = "https://buy.stripe.com/5kQfZgfFjfVK0te4CZafS04";
+const STRIPE_PAYMENT_LINK_MUSICIAN_YEARLY = "https://buy.stripe.com/cNieVcfFj10Q8ZKfhDafS0a";
 
 export default function Pricing() {
   const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [billingCycle, setBillingCycle] = useState("monthly"); // Build 95.9 — uniformisé avec /tarifs
+  // Build 95.9 — uniformisé avec /tarifs. Lit le param ?cycle=yearly si présent.
+  const initialCycle = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("cycle") === "yearly"
+    ? "yearly"
+    : "monthly";
+  const [billingCycle, setBillingCycle] = useState(initialCycle);
 
   const handleSubscribeVenue = () => {
     if (!user) {
@@ -20,7 +27,9 @@ export default function Pricing() {
     }
 
     setIsProcessing(true);
-    window.location.href = STRIPE_PAYMENT_LINK_VENUE;
+    window.location.href = billingCycle === "yearly"
+      ? STRIPE_PAYMENT_LINK_VENUE_YEARLY
+      : STRIPE_PAYMENT_LINK_VENUE_MONTHLY;
   };
 
   const handleSubscribeMusician = () => {
@@ -30,7 +39,9 @@ export default function Pricing() {
     }
 
     setIsProcessing(true);
-    window.location.href = STRIPE_PAYMENT_LINK_MUSICIAN;
+    window.location.href = billingCycle === "yearly"
+      ? STRIPE_PAYMENT_LINK_MUSICIAN_YEARLY
+      : STRIPE_PAYMENT_LINK_MUSICIAN_MONTHLY;
   };
 
   return (

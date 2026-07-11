@@ -235,7 +235,7 @@ export default function Tarifs() {
             </ul>
 
             <Button
-              onClick={() => navigate("/pricing")}
+              onClick={() => navigate(`/pricing?cycle=${billingCycle}`)}
               className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-full py-6 text-lg font-heading font-semibold"
               data-testid="tarifs-musician-pro-btn"
             >

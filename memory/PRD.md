@@ -243,3 +243,16 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - **Variables `.env` déjà en place** : `STRIPE_SECRET_KEY`, `STRIPE_API_KEY`, `STRIPE_WEBHOOK_SECRET` (whsec_ipa4aCdZBHq5ZbQNmvioWp3GYnxf9uJ1).
   - **Testé** : les 2 endpoints répondent HTTP 400 sur signature invalide (attendu — la vérification de signature Stripe fonctionne). Lint Python clean.
   - **Action user** : dans Stripe Dashboard → Developers → Webhooks, ajouter `invoice.payment_succeeded` à la liste des événements écoutés (`checkout.session.completed` et `customer.subscription.deleted` déjà en place).
+- **🔗 Câblage Stripe Payment Links Annuels (Build 95.13 suite)** (2026-02-11) :
+  - Constantes `STRIPE_PAYMENT_LINK_MUSICIAN_YEARLY` (`https://buy.stripe.com/cNieVcfFj10Q8ZKfhDafS0a`) et `STRIPE_PAYMENT_LINK_VENUE_YEARLY` (`https://buy.stripe.com/3cI9ASbp3eRG4JuglHafS09`) ajoutées dans `Pricing.jsx`.
+  - `handleSubscribeMusician` et `handleSubscribeVenue` routent maintenant vers le lien correspondant au `billingCycle` sélectionné.
+  - Deep-link supporté : `/pricing?cycle=yearly` pré-sélectionne le cycle annuel (utile pour préserver le choix depuis `/tarifs`).
+  - `Tarifs.jsx` : le bouton `tarifs-musician-pro-btn` propage désormais `?cycle=${billingCycle}` vers `/pricing`.
+  - Briefing agent mobile rédigé : `/app/memory/MESSAGE_MOBILE_BUILD_95.13_STRIPE_YEARLY.md` (à copier-coller pour l'agent mobile).
+
+## Next Tasks (Priorisé)
+- **P1** — Agent mobile met à jour `mobile/app/tarifs.tsx` avec les 4 liens Stripe (mensuel + annuel Musicien PRO / Établissement) et le toggle billingCycle.
+- **P2** — Refactoring des gros composants (`VenueDashboard.jsx` 4400+ lignes, `MusicianDashboard.jsx` 3200+ lignes, `Calendar.jsx`, `MapTab.jsx`) pour lever les warnings ESLint `react-hooks/exhaustive-deps` et retirer `CI=false` du build.
+- **P2** — Reprise intégration Facebook Events (attente credentials FB Developer).
+- **P3** — Exposer `bonus_available: bool` dans le payload `/api/auth/me` pour affichage dynamique de l'offre bonus (utile côté mobile).
+

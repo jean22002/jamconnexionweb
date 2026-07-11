@@ -120,7 +120,7 @@ export default function Tarifs() {
           </div>
           {billingCycle === "yearly" && (
             <p className="text-xs text-green-400 mt-3 font-medium" data-testid="billing-yearly-savings">
-              🎉 Économisez l&apos;équivalent de 2 mois en payant à l&apos;année
+              🎉 Économisez 9,98€ + <strong>1 mois d&apos;essai bonus</strong> pour le plan Musicien PRO
             </p>
           )}
         </div>
@@ -193,14 +193,27 @@ export default function Tarifs() {
               </div>
             </div>
 
-            {/* Essai gratuit */}
+            {/* Essai gratuit — Build 95.12 : 3 mois pour annuel (2 + 1 bonus) */}
             <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-2xl p-4 mb-6">
-              <p className="text-center text-cyan-300 font-semibold mb-1">
-                2 mois d&apos;essai gratuit
-              </p>
-              <p className="text-center text-xs text-muted-foreground">
-                pour les 200 premiers musiciens • Annulable à tout moment
-              </p>
+              {billingCycle === "monthly" ? (
+                <>
+                  <p className="text-center text-cyan-300 font-semibold mb-1">
+                    2 mois d&apos;essai gratuit
+                  </p>
+                  <p className="text-center text-xs text-muted-foreground">
+                    pour les 200 premiers musiciens • Annulable à tout moment
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-center text-cyan-300 font-semibold mb-1">
+                    🎁 3 mois d&apos;essai gratuits
+                  </p>
+                  <p className="text-center text-xs text-muted-foreground">
+                    2 mois + 1 mois bonus annuel • 200 premiers musiciens
+                  </p>
+                </>
+              )}
             </div>
 
             <p className="text-muted-foreground mb-8">
@@ -226,7 +239,9 @@ export default function Tarifs() {
               className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-full py-6 text-lg font-heading font-semibold"
               data-testid="tarifs-musician-pro-btn"
             >
-              Essayer 2 mois gratuitement
+              {billingCycle === "monthly"
+                ? "Essayer 2 mois gratuitement"
+                : "Essayer 3 mois gratuitement"}
             </Button>
             <p className="text-xs text-center text-muted-foreground mt-3">
               Aucun prélèvement pendant l&apos;essai

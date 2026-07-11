@@ -105,7 +105,7 @@ export default function Pricing() {
           </div>
           {billingCycle === "yearly" && (
             <p className="text-xs text-green-400 mt-3 font-medium">
-              🎉 Économisez l&apos;équivalent de 2 mois en payant à l&apos;année
+              🎉 Économisez 9,98€ + <strong>1 mois d&apos;essai bonus</strong> pour le plan Musicien PRO
             </p>
           )}
         </div>
@@ -142,15 +142,31 @@ export default function Pricing() {
             </div>
             
             <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl px-4 py-4 mb-6 border border-cyan-500/30">
-              <p className="text-cyan-400 font-bold text-center text-lg mb-1">
-                🎁 2 mois PRO gratuits
-              </p>
-              <p className="text-xs text-center text-muted-foreground">
-                pour les 200 premiers musiciens !
-              </p>
-              <p className="text-xs text-center text-cyan-300 mt-2 font-medium">
-                L'abonnement débute à la fin de l'essai • 4,99€/mois
-              </p>
+              {billingCycle === "monthly" ? (
+                <>
+                  <p className="text-cyan-400 font-bold text-center text-lg mb-1">
+                    🎁 2 mois PRO gratuits
+                  </p>
+                  <p className="text-xs text-center text-muted-foreground">
+                    pour les 200 premiers musiciens !
+                  </p>
+                  <p className="text-xs text-center text-cyan-300 mt-2 font-medium">
+                    L&apos;abonnement débute à la fin de l&apos;essai • 4,99€/mois
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-cyan-400 font-bold text-center text-lg mb-1">
+                    🎁 3 mois PRO gratuits (2 + 1 bonus annuel)
+                  </p>
+                  <p className="text-xs text-center text-muted-foreground">
+                    pour les 200 premiers musiciens !
+                  </p>
+                  <p className="text-xs text-center text-cyan-300 mt-2 font-medium">
+                    Puis 49,90€/an (au lieu de 59,88€)
+                  </p>
+                </>
+              )}
               <p className="text-xs text-center text-muted-foreground mt-1">
                 Annulable à tout moment sans frais
               </p>
@@ -196,13 +212,17 @@ export default function Pricing() {
                 </>
               ) : (
                 <>
-                  Essayer 2 mois gratuitement
+                  {billingCycle === "monthly"
+                    ? "Essayer 2 mois gratuitement"
+                    : "Essayer 3 mois gratuitement"}
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </>
               )}
             </Button>
             <p className="text-xs text-center text-muted-foreground mt-3">
-              Aucun prélèvement pendant l'essai • Abonnement 4,99€/mois après 2 mois
+              {billingCycle === "monthly"
+                ? "Aucun prélèvement pendant l'essai • Abonnement 4,99€/mois après 2 mois"
+                : "Aucun prélèvement pendant les 3 mois d'essai • Puis 49,90€/an"}
             </p>
           </div>
 

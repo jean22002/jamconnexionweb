@@ -144,9 +144,106 @@ async def stripe_webhook(request: Request):
                     }}
                 )
                 logger.info(f"Subscription cancelled for user {user['id']}")
+
+        elif event.type == 'invoice.payment_succeeded':
+            # Build 95.13 — Bonus "1 mois offert au 1er paiement réussi" (anti-triche)
+            invoice = event.data.object
+            billing_reason = invoice.get("billing_reason")
+            subscription_id = invoice.get("subscription")
+            customer_email = invoice.get("customer_email")
+
+            logger.info(
+                f"invoice.payment_succeeded: reason={billing_reason} sub={subscription_id} email={customer_email}"
+            )
+
+            # On applique le bonus UNIQUEMENT au premier paiement d'un abonnement
+            if billing_reason != "subscription_create" or not subscription_id:
+                return {"status": "success"}
+
+            # Retrouver l'utilisateur (client_reference_id, email, ou stripe_customer_id)
+            user = None
+            if customer_email:
+                user = await db.users.find_one({"email": customer_email}, {"_id": 0})
+            if not user and invoice.get("customer"):
+                user = await db.users.find_one(
+                    {"stripe_customer_id": invoice["customer"]}, {"_id": 0}
+                )
+            if not user:
+                logger.warning(f"Bonus skip: no user for invoice {invoice.get('id')}")
+                return {"status": "success"}
+
+            # Anti-triche : bonus déjà appliqué pour ce user ?
+            if user.get("bonus_applied") is True:
+                logger.info(f"Bonus already applied for user {user['id']}, skipping")
+                return {"status": "success"}
+
+            # Récupérer la subscription pour lire metadata + current_period_end
+            try:
+                subscription = stripe.Subscription.retrieve(subscription_id)
+            except Exception as e:
+                logger.error(f"Bonus: cannot retrieve subscription {subscription_id}: {e}")
+                return {"status": "success"}
+
+            plan_type = (subscription.metadata or {}).get("plan_type", "musician_yearly")
+            current_end = subscription.current_period_end  # timestamp UTC
+
+            # Étendre de +30 jours via l'API Stripe (trial_end en mode "extend")
+            new_end_ts = current_end + 30 * 86400
+            try:
+                stripe.Subscription.modify(
+                    subscription_id,
+                    trial_end=new_end_ts,
+                    proration_behavior="none",
+                )
+                logger.info(
+                    f"Bonus +30j appliqué: sub={subscription_id} old_end={current_end} new_end={new_end_ts}"
+                )
+            except Exception as e:
+                logger.error(f"Bonus: cannot extend subscription {subscription_id}: {e}")
+                return {"status": "success"}
+
+            # Activer PRO côté user + marquer bonus_applied
+            new_end_iso = datetime.fromtimestamp(new_end_ts, tz=timezone.utc).isoformat()
+            user_update = {
+                "bonus_applied": True,
+                "bonus_applied_at": datetime.now(timezone.utc).isoformat(),
+                "subscription_status": "active",
+                "has_active_subscription": True,
+                "subscription_end_date": new_end_iso,
+                "stripe_subscription_id": subscription_id,
+                "stripe_customer_id": subscription.customer,
+                "subscription_tier": "pro",
+                "plan_type": plan_type,
+            }
+            await db.users.update_one({"id": user["id"]}, {"$set": user_update})
+
+            # Si venue, activer aussi son doc venue
+            if user.get("role") == "venue" or plan_type.startswith("venue"):
+                await db.venues.update_one(
+                    {"user_id": user["id"]},
+                    {"$set": {
+                        "subscription_status": "active",
+                        "trial_end": None,
+                        "trial_days_left": None,
+                    }},
+                )
+
+            logger.info(f"Bonus 1 mois + PRO activé pour user {user['id']} (plan={plan_type})")
         
         return {"status": "success"}
     
     except Exception as e:
         logger.error(f"Error processing webhook event: {e}")
         raise HTTPException(status_code=500, detail="Webhook processing failed")
+
+
+# Build 95.13 — Router alias avec le prefix "/webhooks" (pluriel) pour matcher
+# la demande de l'agent mobile. Expose exactement le même handler à 2 URLs :
+#   - POST /api/webhook/stripe   (existant, historique)
+#   - POST /api/webhooks/stripe  (nouveau, demandé par l'agent mobile)
+router_plural = APIRouter(prefix="/webhooks", tags=["Webhooks"])
+
+
+@router_plural.post("/stripe")
+async def stripe_webhook_alias(request: Request):
+    return await stripe_webhook(request)

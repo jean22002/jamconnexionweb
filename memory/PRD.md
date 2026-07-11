@@ -235,3 +235,11 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - **Hook `useAdConsent` + composant `AdConsentPreferences`** conservés (utiles pour sync mobile via backend et pour ré-activation future).
   - **AdSense config** conservée dans `index.html` (publisher `ca-pub-9998561845977424` + Consent Mode v2) — sera re-tenté dans 2-3 mois quand le site aura mûri.
   - **Stratégie de monétisation** : AdMob mobile actif (Build 109) + Stripe PRO web (Musicien 4,99€ / Établissement 9,99€ avec toggle annuel). Pas de pubs web pour l'instant.
+- **🎁 Webhook Stripe bonus 1 mois anti-triche (Build 95.13)** (2026-02-11) :
+  - **Nouvel événement géré** : `invoice.payment_succeeded` dans `routes/webhooks.py`
+  - **Logique** : au 1er paiement (`billing_reason == "subscription_create"`), extension `+30 jours` du `trial_end` de la subscription via `stripe.Subscription.modify(..., trial_end=...)`. Bonus flaggé en DB (`user.bonus_applied: true`) pour anti-triche (bloque toute nouvelle application).
+  - **Activation PRO** : `subscription_tier="pro"`, `plan_type` lu depuis `subscription.metadata.plan_type`, `subscription_status="active"`, `subscription_end_date` recalculé.
+  - **Alias URL** : router alias `router_plural` avec prefix `/webhooks` (pluriel) monté en plus du historique `/webhook` (singulier). Les 2 URLs répondent : `POST /api/webhook/stripe` ET `POST /api/webhooks/stripe`.
+  - **Variables `.env` déjà en place** : `STRIPE_SECRET_KEY`, `STRIPE_API_KEY`, `STRIPE_WEBHOOK_SECRET` (whsec_ipa4aCdZBHq5ZbQNmvioWp3GYnxf9uJ1).
+  - **Testé** : les 2 endpoints répondent HTTP 400 sur signature invalide (attendu — la vérification de signature Stripe fonctionne). Lint Python clean.
+  - **Action user** : dans Stripe Dashboard → Developers → Webhooks, ajouter `invoice.payment_succeeded` à la liste des événements écoutés (`checkout.session.completed` et `customer.subscription.deleted` déjà en place).

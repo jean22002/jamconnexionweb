@@ -53,7 +53,7 @@ export default function PromoCounter({ variant = 'banner', type = 'venue' }) {
   }
 
   const { remaining_slots } = promoData;
-  const limit = type === 'musician' ? 200 : 100;
+  const limit = type === 'musician' ? 200 : 200;
   
   // Couleur selon l'urgence
   const getUrgencyColor = () => {

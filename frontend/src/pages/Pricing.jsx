@@ -5,11 +5,11 @@ import { Music, Check, ArrowRight, Guitar, Mic2, Music2, Loader2 } from "lucide-
 import { useAuth } from "../context/AuthContext";
 import PromoCounter from "../components/PromoCounter";
 
-// Build 95.9 — Liens Stripe (mensuel + annuel)
-const STRIPE_PAYMENT_LINK_VENUE_MONTHLY = "https://buy.stripe.com/3cI8wOfFj5h68ZKd9vafS03";
-const STRIPE_PAYMENT_LINK_VENUE_YEARLY = "https://buy.stripe.com/3cI9ASbp3eRG4JuglHafS09";
-const STRIPE_PAYMENT_LINK_MUSICIAN_MONTHLY = "https://buy.stripe.com/5kQfZgfFjfVK0te4CZafS04";
-const STRIPE_PAYMENT_LINK_MUSICIAN_YEARLY = "https://buy.stripe.com/cNieVcfFj10Q8ZKfhDafS0a";
+// Build 95.9 — Liens Stripe (mensuel + annuel) — corrigés Build 95.14
+const STRIPE_PAYMENT_LINK_VENUE_MONTHLY = "https://buy.stripe.com/aFaaEWakZ8ti7VG9XjafS06";
+const STRIPE_PAYMENT_LINK_VENUE_YEARLY = "https://buy.stripe.com/cNieVcfFj10Q8ZKfhDafS0a";
+const STRIPE_PAYMENT_LINK_MUSICIAN_MONTHLY = "https://buy.stripe.com/6oU9AS3WB4d2dg09XjafS05";
+const STRIPE_PAYMENT_LINK_MUSICIAN_YEARLY = "https://buy.stripe.com/3cI9ASbp3eRG4JuglHafS09";
 
 export default function Pricing() {
   const { user } = useAuth();
@@ -116,7 +116,7 @@ export default function Pricing() {
           </div>
           {billingCycle === "yearly" && (
             <p className="text-xs text-green-400 mt-3 font-medium">
-              🎉 Économisez 9,98€ + <strong>1 mois d&apos;essai bonus</strong> pour le plan Musicien PRO
+              🎉 Économisez jusqu&apos;à 19,89€ + <strong>1 mois d&apos;essai bonus</strong> sur les plans annuels
             </p>
           )}
         </div>
@@ -302,7 +302,7 @@ export default function Pricing() {
                 ) : (
                   <div>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-primary font-bold text-2xl">99,90€</span>
+                      <span className="text-primary font-bold text-2xl">99,99€</span>
                       <span className="text-muted-foreground">/an</span>
                     </div>
                     <p className="text-xs text-muted-foreground line-through">au lieu de 119,88€</p>
@@ -312,22 +312,38 @@ export default function Pricing() {
             </div>
             
             <div className="bg-gradient-to-r from-orange-500/20 to-pink-500/20 rounded-xl px-4 py-4 mb-4 border border-orange-500/30">
-              <p className="text-orange-400 font-bold text-center text-lg mb-1">
-                🎁 6 mois gratuits
-              </p>
-              <p className="text-xs text-center text-muted-foreground mb-2">
-                pour les 100 premiers établissements !
-              </p>
-              <p className="text-xs text-center text-orange-300 font-medium">
-                Puis 9,99€/mois à partir du 7ᵉ mois
-              </p>
+              {billingCycle === "monthly" ? (
+                <>
+                  <p className="text-orange-400 font-bold text-center text-lg mb-1">
+                    🎁 6 mois gratuits
+                  </p>
+                  <p className="text-xs text-center text-muted-foreground mb-2">
+                    pour les 200 premiers établissements !
+                  </p>
+                  <p className="text-xs text-center text-orange-300 font-medium">
+                    Puis 9,99€/mois à partir du 7ᵉ mois
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-orange-400 font-bold text-center text-lg mb-1">
+                    🎁 7 mois d&apos;essai gratuits
+                  </p>
+                  <p className="text-xs text-center text-muted-foreground mb-2">
+                    6 mois + 1 mois bonus annuel • 200 premiers établissements
+                  </p>
+                  <p className="text-xs text-center text-orange-300 font-medium">
+                    Puis 99,99€/an (au lieu de 119,88€)
+                  </p>
+                </>
+              )}
               <p className="text-xs text-center text-muted-foreground mt-2">
                 Annulable à tout moment sans frais
               </p>
             </div>
             
             <div className="text-xs text-center text-muted-foreground mb-4 px-2">
-              <span className="opacity-70">Après les 100 premiers : 3 mois gratuits puis 9,99€/mois</span>
+              <span className="opacity-70">Après les 200 premiers : 3 mois gratuits puis 9,99€/mois</span>
             </div>
             
             {/* Compteur temps réel */}

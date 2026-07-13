@@ -120,7 +120,7 @@ export default function Tarifs() {
           </div>
           {billingCycle === "yearly" && (
             <p className="text-xs text-green-400 mt-3 font-medium" data-testid="billing-yearly-savings">
-              🎉 Économisez 9,98€ + <strong>1 mois d&apos;essai bonus</strong> pour le plan Musicien PRO
+              🎉 Économisez jusqu&apos;à 19,89€ + <strong>1 mois d&apos;essai bonus</strong> sur les plans annuels
             </p>
           )}
         </div>
@@ -268,7 +268,7 @@ export default function Tarifs() {
                 ) : (
                   <div data-testid="venue-price">
                     <p className="text-2xl font-bold text-primary">
-                      99,90€ <span className="text-base text-muted-foreground">/an</span>
+                      99,99€ <span className="text-base text-muted-foreground">/an</span>
                     </p>
                     <p className="text-xs text-muted-foreground line-through">
                       au lieu de 119,88€
@@ -278,11 +278,27 @@ export default function Tarifs() {
               </div>
             </div>
 
-            {/* Essai gratuit */}
+            {/* Essai gratuit — Build 95.14 : 6 mois mensuel / 7 mois annuel (6 + 1 bonus) */}
             <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-2xl p-4 mb-6">
-              <p className="text-center text-cyan-400 font-semibold">
-                2 mois d&apos;essai gratuit inclus
-              </p>
+              {billingCycle === "monthly" ? (
+                <>
+                  <p className="text-center text-cyan-400 font-semibold mb-1">
+                    6 mois gratuits
+                  </p>
+                  <p className="text-center text-xs text-muted-foreground">
+                    pour les 200 premiers établissements !
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-center text-cyan-400 font-semibold mb-1">
+                    🎁 7 mois d&apos;essai gratuits
+                  </p>
+                  <p className="text-center text-xs text-muted-foreground">
+                    6 mois + 1 mois bonus annuel • 200 premiers établissements
+                  </p>
+                </>
+              )}
             </div>
 
             <p className="text-muted-foreground mb-8">

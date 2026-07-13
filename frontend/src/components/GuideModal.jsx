@@ -191,7 +191,7 @@ const GuideModal = ({ isOpen, onClose, userRole }) => {
             <div className="bg-primary/10 p-4 rounded-lg">
               <p className="font-semibold text-primary mb-2">🎁 Offre de lancement</p>
               <p className="text-sm text-muted-foreground">
-                Les 200 premiers établissements bénéficient de 6 mois gratuits !
+                Les 200 premiers établissements bénéficient de 6 mois gratuits en mensuel (ou 7 mois en annuel) !
               </p>
             </div>
           </div>

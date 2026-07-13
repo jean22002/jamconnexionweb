@@ -99,7 +99,7 @@ export default function Landing() {
         <div className="fixed top-16 left-0 right-0 z-40 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white py-3 px-4 shadow-lg">
           <div className="max-w-7xl mx-auto text-center">
             <p className="font-semibold text-sm sm:text-base flex items-center justify-center gap-2 flex-wrap">
-              <span>🎁 <span className="font-bold">OFFRE DE LANCEMENT</span> • Les 200 premiers établissements : <span className="underline">6 mois gratuits</span> •</span>
+              <span>🎁 <span className="font-bold">OFFRE DE LANCEMENT</span> • Les 200 premiers établissements : <span className="underline">6 mois gratuits</span> (mensuel) ou <span className="underline">7 mois</span> (annuel) •</span>
               <PromoCounter variant="banner" />
             </p>
           </div>
@@ -367,13 +367,13 @@ export default function Landing() {
                 </div>
                 <div className="mt-3 space-y-1">
                   <p className="text-orange-400 font-bold text-lg">
-                    🎁 6 mois gratuits
+                    🎁 6 mois gratuits (mensuel)
                   </p>
                   <p className="text-xs text-muted-foreground">
                     pour les 200 premiers établissements
                   </p>
                   <p className="text-secondary text-sm font-medium">
-                    puis 3 mois gratuits ensuite
+                    ou 7 mois gratuits en annuel • puis 3 mois ensuite
                   </p>
                 </div>
               </div>
@@ -504,7 +504,7 @@ export default function Landing() {
             {[
               {
                 question: "L'inscription est-elle payante ?",
-                answer: "🎸 Musiciens : Les 200 premiers obtiennent 2 mois PRO gratuits, puis 4,99€/mois (annulable à tout moment). Un accès gratuit de base reste toujours disponible. 🎤 Établissements : • Les 200 premiers : 6 mois gratuits, puis 9,99€/mois à partir du 7ᵉ mois. • Après les 200 premiers : 3 mois gratuits, puis 9,99€/mois à partir du 4ᵉ mois. Tous les abonnements sont annulables sans frais."
+                answer: "🎸 Musiciens : Les 200 premiers obtiennent 2 mois PRO gratuits (mensuel) ou 3 mois (annuel, 2 mois + 1 mois bonus), puis 4,99€/mois — 49,90€/an (annulable à tout moment). Un accès gratuit de base reste toujours disponible. 🎤 Établissements : • Les 200 premiers : 6 mois gratuits (mensuel) ou 7 mois (annuel, 6 mois + 1 mois bonus), puis 9,99€/mois — 99,99€/an. • Après les 200 premiers : 3 mois gratuits, puis 9,99€/mois à partir du 4ᵉ mois. Tous les abonnements sont annulables sans frais."
               },
               {
                 question: "Comment fonctionne la mise en relation ?",

@@ -74,8 +74,11 @@ class MusicianProfile(BaseModel):
     experience_years: Optional[int] = None
     experience_level: Optional[str] = None
     city: Optional[str] = None
+    postal_code: Optional[str] = None
     department: Optional[str] = None
     region: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     phone: Optional[str] = None
     website: Optional[str] = None
     facebook: Optional[str] = None
@@ -116,8 +119,11 @@ class MusicianProfileResponse(BaseModel):
     experience_years: Optional[int] = None
     experience_level: Optional[str] = None
     city: Optional[str] = None
+    postal_code: Optional[str] = None
     department: Optional[str] = None
     region: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     phone: Optional[str] = None
     website: Optional[str] = None
     facebook: Optional[str] = None

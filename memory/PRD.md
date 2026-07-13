@@ -257,6 +257,16 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - **Backend aligné 100 → 200 premiers établissements** :
     - `routes/auth.py` : seuil venue passé de 100 → 200 pour l'offre 6 mois (180 jours)
     - `routes/payments.py` : seuil `venue_pro_count < 100` → `< 200`
+- **🐛 Bug fix : PUT /api/musicians/me dropait postal_code/latitude/longitude (Build 95.15)** (2026-02-11) :
+  - **Root cause** : Le schéma Pydantic `MusicianProfile` (utilisé par `PUT /musicians` et `PUT /musicians/me`) n'exposait pas les champs `postal_code`, `latitude`, `longitude`. Pydantic les droppait silencieusement du `data.model_dump()` → `update_data` → non persistés.
+  - **Fix** : ajout de `postal_code: Optional[str]`, `latitude: Optional[float]`, `longitude: Optional[float]` dans `MusicianProfile` **et** `MusicianProfileResponse` (`/app/backend/models/musician.py`).
+  - **Auto-géocodage** : déjà en place (`routes/musicians.py` L379-394) via `utils/geocoding.py` — se déclenche si `city` est fourni sans lat/lng.
+  - `MelomaneUpdate` était déjà correct (les 3 champs y étaient déjà présents).
+  - **Vérifié** avec curl sur `test@gmail.com` :
+    - `PUT {city:"Lyon",postal_code:"69001",latitude:45.767,longitude:4.8357}` → `GET` retourne bien les 3 valeurs
+    - `PUT {city:"Marseille",postal_code:"13001"}` sans lat/lng → auto-géocodage retourne `(43.2803, 5.3806)` ✅
+  - **Impact** : feature "Musiciens à proximité" à nouveau opérationnelle pour les musiciens qui se géolocalisent depuis mobile Build 129+.
+
     - `server.py` GET `/api/stats/promo` : `promo_limit: 200` (vérifié : `remaining_slots: 147` pour 53 venues actuelles)
   - **PromoCounter.jsx** : limite venue passée de 100 → 200 côté display
   - Nouveau briefing agent mobile : `/app/memory/MESSAGE_MOBILE_BUILD_95.14_STRIPE_YEARLY_CORRIGE.md`

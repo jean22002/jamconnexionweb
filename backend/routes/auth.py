@@ -40,15 +40,15 @@ async def register(request: Request, data: UserRegister):
     trial_end = None
     subscription_status = None
     if data.role == "venue":
-        # 🎁 Offre de lancement : 6 mois gratuits pour les 100 premiers, 3 mois ensuite
+        # 🎁 Offre de lancement : 6 mois gratuits pour les 200 premiers, 3 mois ensuite
         venue_count = await db.venues.count_documents({})
         
-        if venue_count < 100:
-            # Les 100 premiers : 6 mois gratuits (180 jours)
+        if venue_count < 200:
+            # Les 200 premiers : 6 mois gratuits (180 jours)
             trial_days = 180
-            logger.info(f"🎁 OFFRE LANCEMENT: Établissement #{venue_count + 1}/100 - 6 mois gratuits attribués")
+            logger.info(f"🎁 OFFRE LANCEMENT: Établissement #{venue_count + 1}/200 - 6 mois gratuits attribués")
         else:
-            # Après les 100 premiers : 3 mois gratuits (90 jours)
+            # Après les 200 premiers : 3 mois gratuits (90 jours)
             trial_days = 90
             logger.info(f"📅 Établissement #{venue_count + 1} - 3 mois gratuits standard")
         

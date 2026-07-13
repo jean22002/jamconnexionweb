@@ -36,12 +36,12 @@ async def create_checkout(data: CheckoutRequest, request: Request, current_user:
         cancel_url = f"{data.origin_url}/payment/cancel"
         
         # ✨ Compter les venues PRO actuelles pour déterminer la durée du trial
-        # 100 premiers : 180 jours (6 mois) — au-delà : 90 jours (3 mois)
+        # 200 premiers : 180 jours (6 mois) — au-delà : 90 jours (3 mois)
         venue_pro_count = await db.venues.count_documents({
             "subscription_tier": "pro",
             "subscription_status": {"$in": ["active", "trialing"]}
         })
-        trial_days = 180 if venue_pro_count < 100 else 90
+        trial_days = 180 if venue_pro_count < 200 else 90
         
         # Create Stripe checkout session for subscription
         session = stripe.checkout.Session.create(

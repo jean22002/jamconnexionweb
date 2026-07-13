@@ -259,12 +259,12 @@ async def get_stats_counts():
 async def get_promo_stats():
     """Return promo offer stats (venues count for 6-month offer)"""
     venues_count = await db.venues.count_documents({})
-    remaining = max(0, 100 - venues_count)
-    is_available = venues_count < 100
+    remaining = max(0, 200 - venues_count)
+    is_available = venues_count < 200
     
     return {
         "total_venues": venues_count,
-        "promo_limit": 100,
+        "promo_limit": 200,
         "remaining_slots": remaining,
         "is_promo_available": is_available,
         "current_offer_months": 6 if is_available else 3

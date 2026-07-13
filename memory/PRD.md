@@ -249,6 +249,18 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - Deep-link supporté : `/pricing?cycle=yearly` pré-sélectionne le cycle annuel (utile pour préserver le choix depuis `/tarifs`).
   - `Tarifs.jsx` : le bouton `tarifs-musician-pro-btn` propage désormais `?cycle=${billingCycle}` vers `/pricing`.
   - Briefing agent mobile rédigé : `/app/memory/MESSAGE_MOBILE_BUILD_95.13_STRIPE_YEARLY.md` (à copier-coller pour l'agent mobile).
+- **🛠️ Correctif Build 95.14 — Stripe Yearly Links inversés + Prix Étab. + Wording 200 premiers** (2026-02-11) :
+  - **Liens Stripe corrigés** (validés dashboard Stripe) : Musicien Mensuel `6oU9AS3WB...`, Musicien Annuel `3cI9ASbp3...`, Étab. Mensuel `aFaaEWakZ...`, Étab. Annuel `cNieVcfFj...`
+  - **Prix Étab. Annuel** : 99,90€ → **99,99€/an** (au lieu de 119,88€)
+  - **Wording essais** aligné mobile Build 126 : Étab. Mensuel = "6 mois gratuits pour les 200 premiers", Étab. Annuel = "🎁 7 mois d'essai gratuits (6 mois + 1 mois bonus annuel) — 200 premiers"
+  - **Message toggle annuel** : "🎉 Économisez jusqu'à 19,89€ + 1 mois d'essai bonus sur les plans annuels"
+  - **Backend aligné 100 → 200 premiers établissements** :
+    - `routes/auth.py` : seuil venue passé de 100 → 200 pour l'offre 6 mois (180 jours)
+    - `routes/payments.py` : seuil `venue_pro_count < 100` → `< 200`
+    - `server.py` GET `/api/stats/promo` : `promo_limit: 200` (vérifié : `remaining_slots: 147` pour 53 venues actuelles)
+  - **PromoCounter.jsx** : limite venue passée de 100 → 200 côté display
+  - Nouveau briefing agent mobile : `/app/memory/MESSAGE_MOBILE_BUILD_95.14_STRIPE_YEARLY_CORRIGE.md`
+
 
 ## Next Tasks (Priorisé)
 - **P1** — Agent mobile met à jour `mobile/app/tarifs.tsx` avec les 4 liens Stripe (mensuel + annuel Musicien PRO / Établissement) et le toggle billingCycle.

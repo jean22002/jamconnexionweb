@@ -99,7 +99,7 @@ export default function Landing() {
         <div className="fixed top-16 left-0 right-0 z-40 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white py-3 px-4 shadow-lg">
           <div className="max-w-7xl mx-auto text-center">
             <p className="font-semibold text-sm sm:text-base flex items-center justify-center gap-2 flex-wrap">
-              <span>🎁 <span className="font-bold">OFFRE DE LANCEMENT</span> • Les 100 premiers établissements : <span className="underline">6 mois gratuits</span> •</span>
+              <span>🎁 <span className="font-bold">OFFRE DE LANCEMENT</span> • Les 200 premiers établissements : <span className="underline">6 mois gratuits</span> •</span>
               <PromoCounter variant="banner" />
             </p>
           </div>
@@ -370,7 +370,7 @@ export default function Landing() {
                     🎁 6 mois gratuits
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    pour les 100 premiers établissements
+                    pour les 200 premiers établissements
                   </p>
                   <p className="text-secondary text-sm font-medium">
                     puis 3 mois gratuits ensuite
@@ -504,7 +504,7 @@ export default function Landing() {
             {[
               {
                 question: "L'inscription est-elle payante ?",
-                answer: "🎸 Musiciens : Les 200 premiers obtiennent 2 mois PRO gratuits, puis 4,99€/mois (annulable à tout moment). Un accès gratuit de base reste toujours disponible. 🎤 Établissements : • Les 100 premiers : 6 mois gratuits, puis 9,99€/mois à partir du 7ᵉ mois. • Après les 100 premiers : 3 mois gratuits, puis 9,99€/mois à partir du 4ᵉ mois. Tous les abonnements sont annulables sans frais."
+                answer: "🎸 Musiciens : Les 200 premiers obtiennent 2 mois PRO gratuits, puis 4,99€/mois (annulable à tout moment). Un accès gratuit de base reste toujours disponible. 🎤 Établissements : • Les 200 premiers : 6 mois gratuits, puis 9,99€/mois à partir du 7ᵉ mois. • Après les 200 premiers : 3 mois gratuits, puis 9,99€/mois à partir du 4ᵉ mois. Tous les abonnements sont annulables sans frais."
               },
               {
                 question: "Comment fonctionne la mise en relation ?",

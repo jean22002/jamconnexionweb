@@ -19,6 +19,15 @@ export default function AdConsentPreferences() {
   const { token } = useAuth() || {};
   const { consent, acceptConsent, refuseConsent } = useAdConsent(token);
 
+  // Build 95.11+ : masquer tant qu'aucune régie pub web n'est active.
+  // Le backend continue de sync le consentement (utile pour AdMob mobile).
+  const adsEnabled = !!(
+    process.env.REACT_APP_ADSENSE_SLOT_BANNER ||
+    process.env.REACT_APP_ADSENSE_SLOT_INTERSTITIAL_APPLY ||
+    process.env.REACT_APP_EZOIC_PUBLISHER_ID
+  );
+  if (!adsEnabled) return null;
+
   const isAccepted = consent === true;
   const isRefused = consent === false;
   const isUndefined = consent === null;

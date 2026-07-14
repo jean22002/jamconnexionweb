@@ -270,10 +270,23 @@ Application de mise en relation entre cafés-concerts et musiciens.
     - `server.py` GET `/api/stats/promo` : `promo_limit: 200` (vérifié : `remaining_slots: 147` pour 53 venues actuelles)
   - **PromoCounter.jsx** : limite venue passée de 100 → 200 côté display
   - Nouveau briefing agent mobile : `/app/memory/MESSAGE_MOBILE_BUILD_95.14_STRIPE_YEARLY_CORRIGE.md`
+- **✅ Sync Mobile Build 130 — Stripe 100% VALIDÉ** (2026-02-13) :
+  - Config finale Stripe (LIVE) validée via API dashboard :
+    - `musician_monthly` : 4,99€/mois • 60j trial • **plan_type=musician_monthly** ✅
+    - `musician_yearly` : 49,90€/an • 60j trial • +30j webhook = 90j = 3 mois ✅
+    - `venue_monthly` : 9,99€/mois • 180j trial • = 6 mois ✅
+    - `venue_yearly` : 99,99€/an • 180j trial • +30j webhook = 210j = 7 mois ✅
+  - **2 bugs Stripe corrigés côté dashboard (aucun code touché)** :
+    - #1 musician_yearly n'avait 0 trial → fixé à 60j
+    - #2 venue_yearly avait 210j trial → réduit à 180j (pour que 180 + 30 bonus = 210j = 7 mois)
+  - Wording 100% cohérent Stripe ↔ Backend ↔ Mobile Build 130 ↔ Web Build 95.16.
+  - Mobile Build 130 prêt pour Publish TestFlight + Play Store.
+  - Aucune action code côté web requise pour cette validation.
+
 
 
 ## Next Tasks (Priorisé)
-- **P1** — Agent mobile met à jour `mobile/app/tarifs.tsx` avec les 4 liens Stripe (mensuel + annuel Musicien PRO / Établissement) et le toggle billingCycle.
+- **P1** — Publier Mobile Build 130 (TestFlight + Play Store) — sync Stripe 100% validé.
 - **P2** — Refactoring des gros composants (`VenueDashboard.jsx` 4400+ lignes, `MusicianDashboard.jsx` 3200+ lignes, `Calendar.jsx`, `MapTab.jsx`) pour lever les warnings ESLint `react-hooks/exhaustive-deps` et retirer `CI=false` du build.
 - **P2** — Reprise intégration Facebook Events (attente credentials FB Developer).
 - **P3** — Exposer `bonus_available: bool` dans le payload `/api/auth/me` pour affichage dynamique de l'offre bonus (utile côté mobile).

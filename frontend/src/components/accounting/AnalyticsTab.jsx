@@ -72,11 +72,11 @@ const AnalyticsTab = ({ token }) => {
             Analytics PRO
           </h2>
           <Select value={year.toString()} onValueChange={(val) => setYear(parseInt(val))}>
-            <SelectTrigger className="w-32 rounded-full">
+            <SelectTrigger className="w-32 rounded-full" data-testid="analytics-year-select">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {[2025, 2024, 2023, 2022].map(y => (
+              {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(y => (
                 <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
               ))}
             </SelectContent>

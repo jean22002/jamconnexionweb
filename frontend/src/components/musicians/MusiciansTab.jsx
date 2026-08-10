@@ -125,6 +125,8 @@ export default function MusiciansTab({
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  // Build 152.2 — filtre "GUSO déclaré uniquement" pour les venues qui préparent une déclaration
+  const [gusoOnly, setGusoOnly] = useState(false);
 
   // Filtrer le musicien connecté - Optimisé avec useMemo
   const otherMusicians = useMemo(() => 
@@ -132,12 +134,19 @@ export default function MusiciansTab({
     [musicians, currentUserId]
   );
 
-  // Fonction de recherche
+  // Fonction de recherche + filtre GUSO
   const searchMusicians = useMemo(() => {
-    if (!searchQuery.trim()) return otherMusicians;
+    let list = otherMusicians;
+
+    // Filtre GUSO déclaré uniquement (Build 152.2)
+    if (gusoOnly) {
+      list = list.filter(m => !!m.guso_number);
+    }
+
+    if (!searchQuery.trim()) return list;
 
     const query = searchQuery.toLowerCase();
-    return otherMusicians.filter(m => {
+    return list.filter(m => {
       // Recherche dans le pseudo
       if (m.pseudo?.toLowerCase().includes(query)) return true;
       
@@ -155,7 +164,13 @@ export default function MusiciansTab({
       
       return false;
     });
-  }, [otherMusicians, searchQuery]);
+  }, [otherMusicians, searchQuery, gusoOnly]);
+
+  // Compteur toujours calculé sur otherMusicians (avant filtre GUSO) pour label du toggle
+  const gusoCount = useMemo(
+    () => otherMusicians.filter(m => !!m.guso_number).length,
+    [otherMusicians]
+  );
 
   // Pré-calculer les listes filtrées pour éviter les recalculs dans le JSX
   const franceMusicians = useMemo(() => 
@@ -199,6 +214,33 @@ export default function MusiciansTab({
             {searchMusicians.length} résultat{searchMusicians.length > 1 ? 's' : ''} trouvé{searchMusicians.length > 1 ? 's' : ''}
           </p>
         )}
+
+        {/* Toggle "GUSO déclaré uniquement" — Build 152.2 */}
+        <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setGusoOnly(v => !v)}
+            data-testid="filter-guso-only-toggle"
+            aria-pressed={gusoOnly}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all border ${
+              gusoOnly
+                ? "bg-gradient-to-r from-emerald-500/30 to-teal-500/30 border-emerald-500/60 text-emerald-200 shadow-[0_0_20px_rgba(16,185,129,0.25)]"
+                : "bg-black/20 border-white/10 text-muted-foreground hover:border-emerald-500/40 hover:text-emerald-300"
+            }`}
+          >
+            <span className="text-base leading-none">🎫</span>
+            Musiciens GUSO uniquement
+            <span className={`text-xs px-2 py-0.5 rounded-full ${gusoOnly ? "bg-emerald-500/40 text-emerald-100" : "bg-white/10"}`}>
+              {gusoCount}
+            </span>
+            {gusoOnly && <Check className="w-3.5 h-3.5" />}
+          </button>
+          {gusoOnly && (
+            <p className="text-xs text-emerald-300/80 italic">
+              Idéal pour préparer une déclaration GUSO en un clic
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Filtres de localisation */}

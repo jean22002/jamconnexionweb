@@ -307,6 +307,14 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - Vérifié via screenshot : Marc Acoustique affiche bien "🎫 GUSO déclaré ✓" en vert émeraude sur `/musician/{id}`.
 
 ## Next Tasks (Priorisé)
+- **🎫 Filtre "Musiciens GUSO uniquement" sur MusiciansTab (Build 152.2)** (2026-08-10) :
+  - Nouveau state `gusoOnly` + toggle stylé (bouton pill emerald→teal avec badge count `X` et icône `Check` quand actif) dans `components/musicians/MusiciansTab.jsx`.
+  - Le filtre cascade correctement à travers `searchMusicians` → `franceMusicians` → `countryMusicians` (compatible avec les tabs par région/département/pays existants).
+  - Hint italique "Idéal pour préparer une déclaration GUSO en un clic" affiché quand le filtre est actif.
+  - `data-testid="filter-guso-only-toggle"` pour testabilité.
+  - Compteur temps réel : `gusoCount` calculé via `useMemo` sur `otherMusicians` (avant filtres) pour un feedback immédiat.
+  - Testé UI : bouton change bien de style (gris → emerald+shadow), compteur mis à jour, filtrage effectif (49 → 0 musiciens dans la démo car seul Marc Acoustique a un guso_number et il est auto-exclu de sa propre liste).
+
 - **P1** — Publier Mobile Build 130 (TestFlight + Play Store) — sync Stripe 100% validé.
 - **P2** — Refactoring des gros composants (`VenueDashboard.jsx` 4400+ lignes, `MusicianDashboard.jsx` 3200+ lignes, `Calendar.jsx`, `MapTab.jsx`) pour lever les warnings ESLint `react-hooks/exhaustive-deps` et retirer `CI=false` du build.
 - **P2** — Reprise intégration Facebook Events (attente credentials FB Developer).

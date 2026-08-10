@@ -68,6 +68,7 @@ import ReviewsTab from "../features/venue-dashboard/tabs/ReviewsTab";
 import GalleryTab from "../features/venue-dashboard/tabs/GalleryTab";
 import JacksTab from "../features/venue-dashboard/tabs/JacksTab";
 import CandidaturesTab from "../features/venue-dashboard/tabs/CandidaturesTab";
+import GusoMusiciansSection from "../components/venue/GusoMusiciansSection";
 import SettingsTab from "../features/venue-dashboard/tabs/SettingsTab";
 import AccountingTab from "../features/venue-dashboard/tabs/AccountingTab";
 import PlanningTab from "../features/venue-dashboard/tabs/PlanningTab";
@@ -3583,6 +3584,9 @@ export default function VenueDashboard() {
 
           {/* Candidatures Tab - Créneaux ouverts aux groupes */}
           <TabsContent value="candidatures">
+            {/* Build 152.3 — Section GUSO déclarés en haut de Candidatures (recrutement) */}
+            <GusoMusiciansSection />
+
             {/* Cleanup Button */}
             <div className="mb-6 flex justify-end">
               <Button

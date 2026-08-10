@@ -316,6 +316,17 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - Testé UI : bouton change bien de style (gris → emerald+shadow), compteur mis à jour, filtrage effectif (49 → 0 musiciens dans la démo car seul Marc Acoustique a un guso_number et il est auto-exclu de sa propre liste).
 
 - **P1** — Publier Mobile Build 130 (TestFlight + Play Store) — sync Stripe 100% validé.
+- **🎫 Section "Musiciens GUSO déclarés" en haut du VenueDashboard/Candidatures (Build 152.3)** (2026-08-10) :
+  - Nouveau composant standalone `components/venue/GusoMusiciansSection.jsx` injecté en haut de la tab `Candidatures` du VenueDashboard.
+  - Design accordéon (repliable par défaut) avec bandeau emerald→teal, badge count temps réel, hint "préparez vos déclarations en 1 clic".
+  - Fetch `GET /api/musicians` puis filtre client-side `guso_number != null`.
+  - Search par pseudo / ville / instrument (input `data-testid="venue-guso-search"`).
+  - Chaque carte musicien : photo profil, pseudo, ville + département, **numéro GUSO en font mono**, bouton **Copy** (copie n° dans presse-papier avec toast confirmation) + bouton **Voir la fiche** (lien vers `/musician/{id}`).
+  - Vide state : "Aucun musicien n'a encore déclaré son numéro GUSO" + explication du badge 🎫.
+  - Cleanup auto sur unmount via `cancelled` flag.
+  - `data-testid` : `venue-guso-musicians-section`, `venue-guso-toggle`, `venue-guso-search`, `venue-guso-musician-card`, `venue-guso-copy-btn`.
+  - Testé UI : Le Bar Test → tab Candidatures → section repliée avec count "1" → clic → dépliée avec la carte Marc Acoustique (n° GUSO 987654321012 visible + boutons Copy/Voir).
+
 - **P2** — Refactoring des gros composants (`VenueDashboard.jsx` 4400+ lignes, `MusicianDashboard.jsx` 3200+ lignes, `Calendar.jsx`, `MapTab.jsx`) pour lever les warnings ESLint `react-hooks/exhaustive-deps` et retirer `CI=false` du build.
 - **P2** — Reprise intégration Facebook Events (attente credentials FB Developer).
 - **P3** — Exposer `bonus_available: bool` dans le payload `/api/auth/me` pour affichage dynamique de l'offre bonus (utile côté mobile).

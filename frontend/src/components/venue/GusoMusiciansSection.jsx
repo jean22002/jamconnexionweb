@@ -28,8 +28,9 @@ export default function GusoMusiciansSection() {
   const [expanded, setExpanded] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [maxRadius, setMaxRadius] = useState(null); // null = illimité
 
-  // Fetch when expanded (lazy) OR when page/search change
+  // Fetch when expanded (lazy) OR when page/search/radius change
   useEffect(() => {
     if (!token) return;
     let cancelled = false;
@@ -37,9 +38,12 @@ export default function GusoMusiciansSection() {
     (async () => {
       setLoading(true);
       try {
+        const params = { page, limit: PAGE_SIZE };
+        if (search) params.search = search;
+        if (maxRadius !== null) params.max_radius_km = maxRadius;
         const res = await axios.get(`${API}/venues/me/gusotools/musicians`, {
           headers: { Authorization: `Bearer ${token}` },
-          params: { page, limit: PAGE_SIZE, search: search || undefined },
+          params,
         });
         if (cancelled) return;
         setMusicians(res.data.musicians || []);
@@ -55,12 +59,12 @@ export default function GusoMusiciansSection() {
     return () => {
       cancelled = true;
     };
-  }, [token, page, search]);
+  }, [token, page, search, maxRadius]);
 
-  // Debounce reset to page 1 when search changes
+  // Reset to page 1 when search or radius changes
   useEffect(() => {
     setPage(1);
-  }, [search]);
+  }, [search, maxRadius]);
 
   const copyGuso = async (number, pseudo) => {
     try {
@@ -135,6 +139,41 @@ export default function GusoMusiciansSection() {
             )}
           </div>
 
+          {/* Filtre "Rayon max" (Build 152.5) — désactivé si la venue n'a pas de coordonnées GPS */}
+          {venueLocation.has_geo && (
+            <div className="flex items-center gap-2 flex-wrap" data-testid="venue-guso-radius-filter">
+              <span className="text-xs text-emerald-300/80 font-medium flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                Rayon max :
+              </span>
+              {[
+                { value: 10, label: "10 km" },
+                { value: 25, label: "25 km" },
+                { value: 50, label: "50 km" },
+                { value: 100, label: "100 km" },
+                { value: 200, label: "200 km" },
+                { value: null, label: "Illimité" },
+              ].map((opt) => {
+                const active = maxRadius === opt.value;
+                return (
+                  <button
+                    key={opt.label}
+                    type="button"
+                    onClick={() => setMaxRadius(opt.value)}
+                    data-testid={`venue-guso-radius-${opt.value ?? "none"}`}
+                    className={`text-xs px-3 py-1 rounded-full border transition-all ${
+                      active
+                        ? "bg-emerald-500/30 border-emerald-400/60 text-emerald-100 font-semibold"
+                        : "bg-black/20 border-white/10 text-muted-foreground hover:border-emerald-500/40 hover:text-emerald-300"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           {!venueLocation.has_geo && (
             <p className="text-xs text-yellow-300/80 italic text-center">
               ⚠️ Votre établissement n&apos;a pas de coordonnées GPS — le tri par proximité est désactivé.
@@ -147,7 +186,7 @@ export default function GusoMusiciansSection() {
             </p>
           )}
 
-          {!loading && total === 0 && !search && (
+          {!loading && total === 0 && !search && maxRadius === null && (
             <div className="text-center py-6 space-y-2">
               <p className="text-sm text-emerald-300/80">
                 Aucun musicien n&apos;a encore déclaré son numéro GUSO.
@@ -158,9 +197,24 @@ export default function GusoMusiciansSection() {
             </div>
           )}
 
+          {!loading && total === 0 && !search && maxRadius !== null && (
+            <div className="text-center py-6 space-y-2">
+              <p className="text-sm text-yellow-300/80">
+                Aucun musicien GUSO dans un rayon de {maxRadius} km.
+              </p>
+              <button
+                type="button"
+                onClick={() => setMaxRadius(null)}
+                className="text-xs underline text-emerald-300 hover:text-emerald-200"
+              >
+                Élargir la recherche à toutes les distances
+              </button>
+            </div>
+          )}
+
           {!loading && total === 0 && search && (
             <p className="text-sm text-muted-foreground italic text-center py-4">
-              Aucun résultat pour « {search} ».
+              Aucun résultat pour « {search} »{maxRadius !== null ? ` dans un rayon de ${maxRadius} km` : ""}.
             </p>
           )}
 

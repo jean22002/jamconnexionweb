@@ -351,3 +351,12 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - **UI validée** : screenshot montre bien le badge "📍 1.2 km" dans la carte Marc Acoustique.
 
 
+
+- **📍 Filtre "Rayon max" dans la section GUSO Venue (Build 152.5)** (2026-08-10) :
+  - 6 pills sélectionnables : `10 km / 25 km / 50 km / 100 km / 200 km / Illimité` (défaut : Illimité).
+  - Envoie `max_radius_km` au nouvel endpoint qui filtre côté serveur via `haversine_distance`.
+  - Auto-hidden si la venue n'a pas de coordonnées GPS (`venue_location.has_geo === false`).
+  - Empty state contextuel : "Aucun musicien GUSO dans un rayon de X km" + bouton "Élargir la recherche" qui remet le rayon à `null`.
+  - `data-testid="venue-guso-radius-filter"` + individuel `venue-guso-radius-{10|25|50|100|200|none}`.
+  - **Tests curl** : `max_radius_km=1` → 0 résultats (Marc à 1.2km exclu) ✅ / `max_radius_km=2` → 1 résultat (Marc inclus) ✅.
+  - **UI validée** : screenshot montre les 6 pills bien alignés, pill actif en emerald, filtrage effectif.

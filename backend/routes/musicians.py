@@ -660,7 +660,12 @@ async def list_musicians(
         "available_for_gigs": 1,
         "bands": 1,
         "concerts": 1,
-        "created_at": 1
+        "created_at": 1,
+        # Build 152 — champs nécessaires aux badges PRO / GUSO côté liste
+        "subscription_tier": 1,
+        "subscription_status": 1,
+        "guso_number": 1,
+        "is_guso_member": 1,
     }
     
     # Get paginated musicians

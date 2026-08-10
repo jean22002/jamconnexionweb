@@ -44,6 +44,16 @@ function MusicianCard({ musician, onSendFriendRequest, onCancelRequest, sentRequ
                 🎸 Solo
               </span>
             )}
+            {/* Badge GUSO déclaré (Build 152) — signale aux venues les musiciens PRO prêts à être déclarés */}
+            {musician.guso_number && (
+              <span
+                data-testid="guso-declared-badge-compact"
+                title="Musicien PRO avec numéro GUSO déclaré"
+                className="inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/40 text-emerald-300 text-xs rounded-full font-medium"
+              >
+                🎫 GUSO ✓
+              </span>
+            )}
           </div>
           {/* Nom du projet solo */}
           {musician.solo_profile?.has_solo && musician.solo_profile?.solo_project_name && (

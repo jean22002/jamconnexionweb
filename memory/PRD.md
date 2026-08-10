@@ -300,6 +300,12 @@ Application de mise en relation entre cafés-concerts et musiciens.
     - PUT `""` → stocké `null` ✅
     - GET renvoie bien `guso_number` + `is_guso_member` ✅
 
+- **🎫 Badge "GUSO déclaré ✓" visible aux venues (Build 152.1)** (2026-08-10) :
+  - Ajouté dans `pages/MusicianDetail.jsx` (grand badge à côté du nom) et `components/musicians/MusiciansTab.jsx` (badge compact `🎫 GUSO ✓` dans la carte de liste).
+  - Style : gradient emerald→teal (distinct des badges PRO/Solo violet), tooltip "Musicien PRO avec numéro GUSO déclaré".
+  - Backend `routes/musicians.py` L646-666 : projection MongoDB étendue avec `subscription_tier`, `subscription_status`, `guso_number`, `is_guso_member` (indispensable pour que le badge apparaisse dans la liste et pas seulement sur la fiche détaillée — les badges `hasProBadge`/`isGusoMember` existants du composant `ProBadge` fonctionnent maintenant aussi côté liste).
+  - Vérifié via screenshot : Marc Acoustique affiche bien "🎫 GUSO déclaré ✓" en vert émeraude sur `/musician/{id}`.
+
 ## Next Tasks (Priorisé)
 - **P1** — Publier Mobile Build 130 (TestFlight + Play Store) — sync Stripe 100% validé.
 - **P2** — Refactoring des gros composants (`VenueDashboard.jsx` 4400+ lignes, `MusicianDashboard.jsx` 3200+ lignes, `Calendar.jsx`, `MapTab.jsx`) pour lever les warnings ESLint `react-hooks/exhaustive-deps` et retirer `CI=false` du build.

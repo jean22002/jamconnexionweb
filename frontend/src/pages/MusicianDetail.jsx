@@ -143,6 +143,16 @@ export default function MusicianDetail() {
                     🎸 Projet Solo
                   </span>
                 )}
+                {/* Badge GUSO déclaré — Build 152 : signalé aux venues pour déclarations GUSO */}
+                {musician.guso_number && (
+                  <span
+                    data-testid="guso-declared-badge"
+                    title="Ce musicien PRO a renseigné son numéro GUSO, prêt à être déclaré par l'établissement."
+                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/40 text-emerald-300 text-sm rounded-full font-medium"
+                  >
+                    🎫 GUSO déclaré <span className="text-emerald-400 font-bold">✓</span>
+                  </span>
+                )}
               </div>
               
               {/* Nom du projet solo */}

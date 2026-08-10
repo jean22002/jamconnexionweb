@@ -119,6 +119,7 @@ export default function ProfileEditModal({
 
           <TabsContent value="info" className="space-y-4 mt-4">
             <InfoTab
+              profile={profile}
               profileForm={profileForm}
               setProfileForm={setProfileForm}
               token={token}

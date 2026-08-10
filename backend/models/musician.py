@@ -1,5 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import List, Optional, Dict, Any
+import re
 
 class BandInfo(BaseModel):
     name: str
@@ -107,6 +108,17 @@ class MusicianProfile(BaseModel):
     stripe_customer_id: Optional[str] = None
     stripe_subscription_id: Optional[str] = None
 
+    @field_validator("guso_number", mode="before")
+    @classmethod
+    def _validate_guso_number(cls, v):
+        """Autorise None/vide OU exactement 12 chiffres (espaces/tirets/points tolérés)."""
+        if v is None or v == "":
+            return None
+        cleaned = str(v).strip().replace(" ", "").replace("-", "").replace(".", "")
+        if not re.match(r"^\d{12}$", cleaned):
+            raise ValueError("Le numéro GUSO doit contenir exactement 12 chiffres")
+        return cleaned
+
 class MusicianProfileResponse(BaseModel):
     id: str
     user_id: str
@@ -150,6 +162,9 @@ class MusicianProfileResponse(BaseModel):
     subscription_status: str = "inactive"  # "active", "inactive", "canceled", "past_due"
     subscription_started: Optional[str] = None  # ISO datetime
     subscription_expires: Optional[str] = None  # ISO datetime
+    # GUSO
+    guso_number: Optional[str] = None
+    is_guso_member: bool = False
 
 class FriendRequest(BaseModel):
     to_user_id: str

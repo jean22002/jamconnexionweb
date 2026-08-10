@@ -7,12 +7,14 @@ import { CityAutocomplete } from "../../../components/CityAutocomplete";
 import { X } from "lucide-react";
 
 export default function InfoTab({ 
+  profile,
   profileForm, 
   setProfileForm, 
   token,
   addToList,
   removeFromList 
 }) {
+  const isPro = profile?.subscription_tier === "pro";
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -111,6 +113,28 @@ export default function InfoTab({
           className="bg-black/20 border-white/10" 
         />
       </div>
+
+      {isPro && (
+        <div className="space-y-2" data-testid="guso-number-field">
+          <Label className="flex items-center gap-2">
+            🎫 Numéro GUSO
+            <span className="text-[10px] font-bold bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-2 py-0.5 rounded-full">PRO</span>
+          </Label>
+          <Input
+            type="text"
+            inputMode="numeric"
+            value={profileForm.guso_number || ""}
+            onChange={(e) => setProfileForm({ ...profileForm, guso_number: e.target.value.replace(/[^\d]/g, "").slice(0, 12) })}
+            placeholder="12 chiffres — ex : 123456789012"
+            maxLength={12}
+            className="bg-black/20 border-white/10"
+            data-testid="guso-number-input"
+          />
+          <p className="text-xs text-muted-foreground">
+            Utilisé pour les déclarations GUSO automatiques par les établissements.
+          </p>
+        </div>
+      )}
       
       <div className="space-y-2">
         <Label>Ville</Label>

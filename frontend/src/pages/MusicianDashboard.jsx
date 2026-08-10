@@ -373,7 +373,8 @@ export default function MusicianDashboard() {
     has_band: false,
     band: { name: "", photo: "", facebook: "", instagram: "", youtube: "", website: "", bandcamp: "" },
     bands: [], // Multiple bands support
-    concerts: []
+    concerts: [],
+    guso_number: "",
   });
 
   const [newConcert, setNewConcert] = useState({ date: "", venue_id: "", venue_name: "", city: "", description: "" });
@@ -545,7 +546,8 @@ export default function MusicianDashboard() {
         has_band: profileData.has_band || false,
         band: profileData.band || { name: "", photo: "", facebook: "", instagram: "", youtube: "", website: "", bandcamp: "" },
         bands: bandsArray,
-        concerts: profileData.concerts || []
+        concerts: profileData.concerts || [],
+        guso_number: profileData.guso_number || "",
       });
       
       // Charger le profil solo s'il existe

@@ -285,6 +285,21 @@ Application de mise en relation entre cafés-concerts et musiciens.
 
 
 
+- **🎫 Sync Mobile Build 152 — Champ `guso_number` musicien PRO** (2026-08-10) :
+  - Backend `models/musician.py` :
+    - `guso_number: Optional[str] = None` déjà présent dans `MusicianProfile` (utilisé par PUT).
+    - Ajout du même champ à `MusicianProfileResponse` (utilisé par GET) — **corrige** le fait que le mobile ne pouvait pas lire la valeur après sauvegarde.
+    - Ajout d'un `@field_validator("guso_number", mode="before")` : autorise `None`/vide OU exactement 12 chiffres (espaces/tirets/points automatiquement nettoyés).
+    - Ajout de `is_guso_member: bool = False` dans la réponse GET.
+  - Frontend web : ajout du champ dans `features/musician-dashboard/profile/InfoTab.jsx` (visible uniquement si `profile.subscription_tier === "pro"`, badge PRO gradient cyan→bleu, sanitisation client `.replace(/[^\d]/g,"").slice(0,12)`, `maxLength={12}`, `inputMode="numeric"`).
+  - `profileForm` initial state + `fetchProfile` mis à jour dans `MusicianDashboard.jsx` pour propager `guso_number`.
+  - **Tests curl validés** :
+    - PUT 12 chiffres → OK ✅
+    - PUT `"1234-5678 9012"` → cleaned to `123456789012` ✅
+    - PUT `"123"` → HTTP 422 "Le numéro GUSO doit contenir exactement 12 chiffres" ✅
+    - PUT `""` → stocké `null` ✅
+    - GET renvoie bien `guso_number` + `is_guso_member` ✅
+
 ## Next Tasks (Priorisé)
 - **P1** — Publier Mobile Build 130 (TestFlight + Play Store) — sync Stripe 100% validé.
 - **P2** — Refactoring des gros composants (`VenueDashboard.jsx` 4400+ lignes, `MusicianDashboard.jsx` 3200+ lignes, `Calendar.jsx`, `MapTab.jsx`) pour lever les warnings ESLint `react-hooks/exhaustive-deps` et retirer `CI=false` du build.

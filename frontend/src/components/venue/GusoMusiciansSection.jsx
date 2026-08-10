@@ -6,58 +6,61 @@ import { Button } from "../ui/button";
 import LazyImage from "../LazyImage";
 import { ChevronDown, ChevronRight, Copy, Eye, MapPin, Search, User, X } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "../../context/AuthContext";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const PAGE_SIZE = 20;
 
 /**
- * Section "🎫 Musiciens GUSO déclarés" — Build 152.3
+ * Section "🎫 Musiciens GUSO déclarés" — Build 152.4
  *
  * Affichée en haut de la tab Candidatures du VenueDashboard.
- * Liste compacte des musiciens PRO ayant renseigné leur numéro GUSO,
- * pour aider le venue à préparer une déclaration GUSO en 1 clic.
- *
- * Features :
- *   - Repliable/dépliable (default: replié pour ne pas polluer la vue)
- *   - Search par pseudo/ville/instrument
- *   - Copier le n° GUSO dans le presse-papier (raccourci gain de temps)
- *   - Voir la fiche complète du musicien
+ * Utilise l'endpoint dédié `GET /api/venues/me/gusotools/musicians` qui
+ * renvoie les musiciens PRO ayant renseigné leur numéro GUSO, triés par
+ * proximité géographique de la venue connectée.
  */
 export default function GusoMusiciansSection() {
+  const { token } = useAuth() || {};
   const [musicians, setMusicians] = useState([]);
+  const [pagination, setPagination] = useState({ page: 1, total: 0, total_pages: 1, has_next: false, has_prev: false });
+  const [venueLocation, setVenueLocation] = useState({ has_geo: false });
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
 
+  // Fetch when expanded (lazy) OR when page/search change
   useEffect(() => {
+    if (!token) return;
     let cancelled = false;
+
     (async () => {
+      setLoading(true);
       try {
-        const res = await axios.get(`${API}/musicians`);
+        const res = await axios.get(`${API}/venues/me/gusotools/musicians`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { page, limit: PAGE_SIZE, search: search || undefined },
+        });
         if (cancelled) return;
-        // Filtre côté client : uniquement ceux avec guso_number
-        const gusoList = (res.data || []).filter((m) => !!m.guso_number);
-        setMusicians(gusoList);
+        setMusicians(res.data.musicians || []);
+        setPagination(res.data.pagination || {});
+        setVenueLocation(res.data.venue_location || { has_geo: false });
       } catch (err) {
         if (!cancelled) console.error("GusoMusiciansSection fetch error:", err);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
+
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [token, page, search]);
 
-  const filtered = useMemo(() => {
-    if (!search.trim()) return musicians;
-    const q = search.toLowerCase();
-    return musicians.filter((m) => {
-      if (m.pseudo?.toLowerCase().includes(q)) return true;
-      if (m.city?.toLowerCase().includes(q)) return true;
-      if (m.instruments?.some((i) => i.toLowerCase().includes(q))) return true;
-      return false;
-    });
-  }, [musicians, search]);
+  // Debounce reset to page 1 when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
 
   const copyGuso = async (number, pseudo) => {
     try {
@@ -68,7 +71,8 @@ export default function GusoMusiciansSection() {
     }
   };
 
-  const count = musicians.length;
+  const total = pagination.total || 0;
+  const showPagination = useMemo(() => (pagination.total_pages || 1) > 1, [pagination.total_pages]);
 
   return (
     <div
@@ -96,7 +100,7 @@ export default function GusoMusiciansSection() {
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
           <span className="px-3 py-1 rounded-full bg-emerald-500/25 text-emerald-100 text-sm font-bold min-w-[2.5rem] text-center">
-            {loading ? "…" : count}
+            {loading && expanded ? "…" : total}
           </span>
           {expanded ? (
             <ChevronDown className="w-5 h-5 text-emerald-300" />
@@ -131,13 +135,19 @@ export default function GusoMusiciansSection() {
             )}
           </div>
 
+          {!venueLocation.has_geo && (
+            <p className="text-xs text-yellow-300/80 italic text-center">
+              ⚠️ Votre établissement n&apos;a pas de coordonnées GPS — le tri par proximité est désactivé.
+            </p>
+          )}
+
           {loading && (
             <p className="text-sm text-emerald-300/60 italic text-center py-4">
               Chargement des musiciens GUSO…
             </p>
           )}
 
-          {!loading && count === 0 && (
+          {!loading && total === 0 && !search && (
             <div className="text-center py-6 space-y-2">
               <p className="text-sm text-emerald-300/80">
                 Aucun musicien n&apos;a encore déclaré son numéro GUSO.
@@ -148,15 +158,15 @@ export default function GusoMusiciansSection() {
             </div>
           )}
 
-          {!loading && count > 0 && filtered.length === 0 && (
+          {!loading && total === 0 && search && (
             <p className="text-sm text-muted-foreground italic text-center py-4">
               Aucun résultat pour « {search} ».
             </p>
           )}
 
-          {!loading && filtered.length > 0 && (
+          {!loading && musicians.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {filtered.map((m) => (
+              {musicians.map((m) => (
                 <div
                   key={m.id}
                   data-testid="venue-guso-musician-card"
@@ -175,7 +185,14 @@ export default function GusoMusiciansSection() {
                   )}
 
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold truncate">{m.pseudo || "Musicien"}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold truncate">{m.pseudo || "Musicien"}</p>
+                      {m.distance_km !== null && m.distance_km !== undefined && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-medium whitespace-nowrap">
+                          📍 {m.distance_km} km
+                        </span>
+                      )}
+                    </div>
                     {m.city && (
                       <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
                         <MapPin className="w-3 h-3 flex-shrink-0" />
@@ -217,6 +234,37 @@ export default function GusoMusiciansSection() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {showPagination && !loading && (
+            <div className="flex items-center justify-between pt-2 border-t border-emerald-500/10">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={!pagination.has_prev}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                data-testid="venue-guso-prev-page"
+                className="rounded-full border-emerald-500/30 disabled:opacity-40"
+              >
+                ← Précédent
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                Page {pagination.page} / {pagination.total_pages} · {total} musicien{total > 1 ? "s" : ""}
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={!pagination.has_next}
+                onClick={() => setPage((p) => p + 1)}
+                data-testid="venue-guso-next-page"
+                className="rounded-full border-emerald-500/30 disabled:opacity-40"
+              >
+                Suivant →
+              </Button>
             </div>
           )}
         </div>

@@ -689,6 +689,121 @@ async def get_nearby_musicians_count(request: Request, radius_km: float = 50, cu
     return {"count": count, "radius_km": radius_km}
 
 
+# ============= GUSO TOOLS (Build 152.4) =============
+
+@router.get("/venues/me/gusotools/musicians")
+async def list_guso_musicians_for_venue(
+    request: Request,
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(20, ge=1, le=100, description="Items per page"),
+    search: Optional[str] = Query(None, description="Search by pseudo / city / instrument"),
+    max_radius_km: Optional[float] = Query(None, ge=0, description="Optional radius filter (km)"),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    List all musicians who declared their GUSO number, sorted by proximity
+    to the venue's location. Only accessible by venue accounts.
+
+    Returns pagination metadata + list of musicians with computed `distance_km`.
+    """
+    if current_user["role"] not in ["venue", "admin"]:
+        raise HTTPException(status_code=403, detail="Only venues can access GUSO tools")
+
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue and current_user["role"] != "admin":
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+
+    venue_lat = venue.get("latitude") if venue else None
+    venue_lon = venue.get("longitude") if venue else None
+
+    # Base Mongo query: only PRO musicians with a non-empty guso_number
+    query = {
+        "guso_number": {"$exists": True, "$nin": [None, ""]},
+        "pseudo": {"$exists": True, "$ne": ""},
+    }
+
+    # Server-side search on pseudo / city (regex case-insensitive)
+    if search:
+        query["$or"] = [
+            {"pseudo": {"$regex": search, "$options": "i"}},
+            {"city": {"$regex": search, "$options": "i"}},
+            {"instruments": {"$regex": search, "$options": "i"}},
+        ]
+
+    projection = {
+        "_id": 0,
+        "id": 1,
+        "user_id": 1,
+        "pseudo": 1,
+        "profile_image": 1,
+        "city": 1,
+        "department": 1,
+        "postal_code": 1,
+        "latitude": 1,
+        "longitude": 1,
+        "instruments": 1,
+        "music_styles": 1,
+        "guso_number": 1,
+        "is_guso_member": 1,
+        "subscription_tier": 1,
+        "subscription_status": 1,
+    }
+
+    # Fetch all matching musicians (cap at 2000 for safety), compute distance in Python
+    all_musicians = await db.musicians.find(query, projection).to_list(2000)
+
+    # Compute distance to venue when possible
+    venue_has_geo = bool(venue_lat) and bool(venue_lon)
+    for m in all_musicians:
+        m_lat = m.get("latitude")
+        m_lon = m.get("longitude")
+        if venue_has_geo and m_lat and m_lon:
+            m["distance_km"] = round(
+                haversine_distance(venue_lat, venue_lon, m_lat, m_lon), 1
+            )
+        else:
+            m["distance_km"] = None
+
+    # Optional radius filter
+    if max_radius_km is not None and venue_has_geo:
+        all_musicians = [
+            m for m in all_musicians
+            if m.get("distance_km") is not None and m["distance_km"] <= max_radius_km
+        ]
+
+    # Sort: known distance ascending first, then unknown distance last (by pseudo)
+    all_musicians.sort(
+        key=lambda m: (
+            m.get("distance_km") is None,
+            m.get("distance_km") if m.get("distance_km") is not None else 0,
+            (m.get("pseudo") or "").lower(),
+        )
+    )
+
+    total = len(all_musicians)
+    total_pages = (total + limit - 1) // limit if limit else 1
+    start = (page - 1) * limit
+    end = start + limit
+    page_items = all_musicians[start:end]
+
+    return {
+        "musicians": page_items,
+        "pagination": {
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "total_pages": max(total_pages, 1),
+            "has_next": page < total_pages,
+            "has_prev": page > 1,
+        },
+        "venue_location": {
+            "latitude": venue_lat,
+            "longitude": venue_lon,
+            "has_geo": venue_has_geo,
+        },
+    }
+
+
 # ============= VENUE ACTIVE EVENTS =============
 
 @router.get("/venues/{venue_id}/active-events")

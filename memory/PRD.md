@@ -330,4 +330,24 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - **P2** — Refactoring des gros composants (`VenueDashboard.jsx` 4400+ lignes, `MusicianDashboard.jsx` 3200+ lignes, `Calendar.jsx`, `MapTab.jsx`) pour lever les warnings ESLint `react-hooks/exhaustive-deps` et retirer `CI=false` du build.
 - **P2** — Reprise intégration Facebook Events (attente credentials FB Developer).
 - **P3** — Exposer `bonus_available: bool` dans le payload `/api/auth/me` pour affichage dynamique de l'offre bonus (utile côté mobile).
+- **⚙️ Endpoint dédié `GET /api/venues/me/gusotools/musicians` (Build 152.4)** (2026-08-10) :
+  - Nouveau endpoint dans `routes/venues.py` :
+    - **Auth** : venue role obligatoire (403 pour musician/mélomane) — testé ✅
+    - **Query params** : `page`, `limit` (default 20, max 100), `search` (regex insensible sur pseudo/city/instruments), `max_radius_km` (filtre optionnel)
+    - **Tri** : par `distance_km` ascendante (calculée via `haversine_distance`), fallback pseudo alpha si venue sans GPS
+    - **Response** : `{ musicians: [...], pagination: { page, limit, total, total_pages, has_next, has_prev }, venue_location: { latitude, longitude, has_geo } }`
+    - Filtre serveur `guso_number: {$nin: [null, ""]}` → aucun fetch inutile côté client.
+  - Frontend `GusoMusiciansSection.jsx` refactorisé :
+    - Utilise `useAuth()` pour envoyer le token
+    - Fetch avec `page` + `search` en query params
+    - Affiche un **badge distance `📍 X km`** à côté du pseudo quand disponible
+    - Warning "⚠️ Votre établissement n'a pas de coordonnées GPS" affiché si `venue_location.has_geo === false`
+    - Contrôles de pagination `← Précédent` / `Suivant →` en bas, désactivés selon `has_prev`/`has_next`
+    - Search débounce implicite (déclenche re-fetch + reset à page 1)
+  - **Tests curl validés** :
+    - Default page : 1 résultat (Marc Acoustique, distance_km=1.2) ✅
+    - Search=Marc : 1 résultat ✅
+    - Musician role → HTTP 403 ✅
+  - **UI validée** : screenshot montre bien le badge "📍 1.2 km" dans la carte Marc Acoustique.
+
 

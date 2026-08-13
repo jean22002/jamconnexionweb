@@ -371,3 +371,16 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - Idempotence : 2ᵉ appel POST /cancel sur candidature déjà en `cancellation_requested` → HTTP 400.
   - RBAC strict : musicien peut annuler UNIQUEMENT ses candidatures / venue peut valider UNIQUEMENT ses candidatures.
   - **testing_agent (iteration_7.json)** : 14/14 tests passent au premier run ✅, test file persistant à `/app/backend/tests/test_cancellation_flow.py`.
+- **📢📋 Onglet "Candidatures" du profil bar (musicien) — 2 sections (Build 152.7)** (2026-08-13) :
+  - `pages/VenueDetail.jsx` refactorisé avec 2 sections claires dans la tab Candidatures :
+    - **📢 Créneaux ouverts** (haut) : filtres `type='application'` + `is_open` + date ≥ today + non déjà candidaté, tri par date croissante. Bouton "Postuler" par card.
+    - **📋 Mes candidatures** (bas) : liste toutes les candidatures envoyées à ce bar avec statuts colorés (En attente/Acceptée/Refusée/Annulée), band_name, message, bandeaux annulation (🟠 en attente / ✅ validée / ❌ refusée avec message du bar).
+  - Tab count hybride : `Candidatures (N + M)` où N=créneaux ouverts, M=mes candidatures.
+  - **Bugs collatéraux corrigés** :
+    - Filtre `myApplications` utilisait `app.venue_id === id` (jamais match car venue_id absent du payload GET /applications/my) → passé à `app.slot_venue_name === venue.name`.
+    - `hasApplied` utilisait `app.slot_id === slot.id` (champ inexistant) → passé à `app.planning_slot_id === slot.id`.
+    - Filtrage initial des slots retirait `is_open=false` trop tôt → maintenant on garde tout dans `planningSlots` et on filtre dans un memo `openSlots`.
+  - Empty state unifié : "Cet établissement n'a pas de créneau ouvert pour le moment." quand N=0 et M=0.
+  - `data-testid` : `my-applications-section`, `my-application-card`.
+  - **Validé UI** : screenshot Le Bar Test → tab "Candidatures (1 + 19)" avec section haut (1 créneau Jazz test 15/09 + bouton Postuler) et section bas (19 cards Acceptée/En attente).
+

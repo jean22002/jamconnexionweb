@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "../components/ui/button";
@@ -43,6 +43,27 @@ export default function VenueDetail() {
   const [spectacles, setSpectacles] = useState([]);
   const [planningSlots, setPlanningSlots] = useState([]);
   const [myApplications, setMyApplications] = useState([]);
+
+  // Build 152.7 — filtres dérivés pour la tab Candidatures (musicien sur profil bar)
+  const openSlots = useMemo(() => {
+    const todayISO = new Date().toISOString().slice(0, 10);
+    const appliedIds = new Set(myApplications.map(a => a.planning_slot_id));
+    return planningSlots
+      .filter(s => s.type === 'application' || !s.type) // 'application' explicit, ou legacy sans type
+      .filter(s => s.is_open !== false)
+      .filter(s => s.date && s.date >= todayISO)
+      .filter(s => !appliedIds.has(s.id))
+      .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  }, [planningSlots, myApplications]);
+
+  const myApplicationsSorted = useMemo(() => {
+    // Tri : date du slot croissante, puis created_at desc
+    return [...myApplications].sort((a, b) => {
+      const cmp = (a.slot_date || '').localeCompare(b.slot_date || '');
+      if (cmp !== 0) return cmp;
+      return (b.created_at || '').localeCompare(a.created_at || '');
+    });
+  }, [myApplications]);
   const [showApplyDialog, setShowApplyDialog] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
   // Build 95.2 — PRO check musicien + consentement RGPD pour interstitiel pub
@@ -157,7 +178,7 @@ export default function VenueDetail() {
       setConcerts(Array.isArray(concertsRes.data) ? concertsRes.data : []);
       setKaraokes(Array.isArray(karaokeRes.data) ? karaokeRes.data : []);
       setSpectacles(Array.isArray(spectacleRes.data) ? spectacleRes.data : []);
-      setPlanningSlots(Array.isArray(planningRes.data) ? planningRes.data.filter(s => s.is_open) : []);
+      setPlanningSlots(Array.isArray(planningRes.data) ? planningRes.data : []);
     } catch (error) {
       console.error("Error fetching events:", error);
       // Ensure arrays stay as empty arrays even on error
@@ -234,15 +255,17 @@ export default function VenueDetail() {
       const response = await axios.get(`${API}/applications/my`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // Filter applications for this venue only
+      // Build 152.7 — filter by slot_venue_name (venue_id absent from response payload)
       const allApps = Array.isArray(response.data) ? response.data : [];
-      const venueApplications = allApps.filter(app => app.venue_id === id);
+      const venueApplications = venue?.name
+        ? allApps.filter(app => app.slot_venue_name === venue.name)
+        : allApps;
       setMyApplications(venueApplications);
     } catch (error) {
       console.error("Error fetching applications:", error);
       setMyApplications([]);
     }
-  }, [id, token, user]);
+  }, [token, user, venue?.name]);
 
 
   const handleSubscribe = async () => {
@@ -720,7 +743,7 @@ export default function VenueDetail() {
             <TabsTrigger value="concerts" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Concerts ({concerts?.length || 0})</TabsTrigger>
             {/* Candidatures tab only for musicians */}
             {user?.role === "musician" && (
-              <TabsTrigger value="planning" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Candidatures ({planningSlots?.length || 0})</TabsTrigger>
+              <TabsTrigger value="planning" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Candidatures ({openSlots?.length || 0}{myApplicationsSorted.length > 0 ? ` + ${myApplicationsSorted.length}` : ''})</TabsTrigger>
             )}
             <TabsTrigger value="bands" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Groupes ({bandsPlayed?.length || 0})</TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-full whitespace-nowrap flex-shrink-0 px-4">Avis ({totalReviews})</TabsTrigger>
@@ -1039,27 +1062,36 @@ export default function VenueDetail() {
 
           {/* Planning/Applications Tab */}
           <TabsContent value="planning">
-            {planningSlots.length === 0 ? (
+            {(openSlots.length === 0 && myApplicationsSorted.length === 0) ? (
               <div className="text-center py-12 text-muted-foreground glassmorphism rounded-2xl">
                 <Send className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Aucune date ouverte aux candidatures</p>
+                <p>Cet établissement n&apos;a pas de créneau ouvert pour le moment.</p>
               </div>
             ) : (
               <div className="space-y-4">
                 {/* Toggle View Button */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-heading font-semibold text-lg">Créneaux de candidature</h3>
-                    <p className="text-sm text-muted-foreground">{planningSlots.length} créneau{planningSlots.length > 1 ? 'x' : ''} disponible{planningSlots.length > 1 ? 's' : ''}</p>
+                    <h3 className="font-heading font-semibold text-lg flex items-center gap-2">
+                      📢 Créneaux ouverts
+                      <span className="px-2.5 py-0.5 rounded-xl bg-primary text-white text-sm font-semibold">
+                        {openSlots.length}
+                      </span>
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      L&apos;établissement recherche des musiciens sur ces créneaux. Postulez directement !
+                    </p>
                   </div>
-                  <Button 
-                    onClick={() => setShowCalendarView(!showCalendarView)}
-                    variant="outline"
-                    className="rounded-full gap-2"
-                  >
-                    <CalendarIcon className="w-4 h-4" />
-                    {showCalendarView ? "Vue liste" : "Vue calendrier"}
-                  </Button>
+                  {openSlots.length > 0 && (
+                    <Button 
+                      onClick={() => setShowCalendarView(!showCalendarView)}
+                      variant="outline"
+                      className="rounded-full gap-2"
+                    >
+                      <CalendarIcon className="w-4 h-4" />
+                      {showCalendarView ? "Vue liste" : "Vue calendrier"}
+                    </Button>
+                  )}
                 </div>
 
                 {/* Legend */}
@@ -1128,7 +1160,7 @@ export default function VenueDetail() {
                             <div>
                               <div className="flex items-center justify-between mb-2">
                                 <p className="font-heading font-semibold text-2xl">{selectedSlotForPreview.date}</p>
-                                {myApplications.some(app => app.slot_id === selectedSlotForPreview.id) && (
+                                {myApplications.some(app => app.planning_slot_id === selectedSlotForPreview.id) && (
                                   <span className="px-3 py-1 bg-green-500/20 text-green-500 text-sm rounded-full">
                                     ✓ Candidaté
                                   </span>
@@ -1185,10 +1217,10 @@ export default function VenueDetail() {
                                   setSelectedSlotForPreview(null);
                                 }}
                                 className="flex-1 bg-secondary hover:bg-secondary/90 rounded-full gap-2"
-                                disabled={myApplications.some(app => app.slot_id === selectedSlotForPreview.id)}
+                                disabled={myApplications.some(app => app.planning_slot_id === selectedSlotForPreview.id)}
                               >
                                 <Send className="w-4 h-4" />
-                                {myApplications.some(app => app.slot_id === selectedSlotForPreview.id) ? "Déjà candidaté" : "Postuler"}
+                                {myApplications.some(app => app.planning_slot_id === selectedSlotForPreview.id) ? "Déjà candidaté" : "Postuler"}
                               </Button>
                             </div>
                           </div>
@@ -1199,8 +1231,12 @@ export default function VenueDetail() {
                 ) : (
                   /* List View */
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {planningSlots.map((slot) => {
-                      const hasApplied = myApplications.some(app => app.slot_id === slot.id);
+                    {openSlots.length === 0 ? (
+                      <div className="col-span-full text-center py-8 text-muted-foreground italic">
+                        Aucun créneau ouvert pour le moment.
+                      </div>
+                    ) : openSlots.map((slot) => {
+                      const hasApplied = false; // Already filtered out from openSlots
                       const isBooked = [
                         ...jams.map(j => j.date),
                         ...concerts.map(c => c.date),
@@ -1273,6 +1309,84 @@ export default function VenueDetail() {
                     })}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Build 152.7 — Section "Mes candidatures" (sous les créneaux ouverts) */}
+            {myApplicationsSorted.length > 0 && (
+              <div className="mt-8 space-y-3" data-testid="my-applications-section">
+                <div>
+                  <h3 className="font-heading font-semibold text-lg flex items-center gap-2">
+                    📋 Mes candidatures
+                    <span className="px-2.5 py-0.5 rounded-xl bg-white/10 text-white text-sm font-semibold">
+                      {myApplicationsSorted.length}
+                    </span>
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Suivi de vos candidatures envoyées à cet établissement.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {myApplicationsSorted.map((app) => {
+                    const statusMeta = {
+                      pending:   { label: "En attente", cls: "bg-yellow-500/20 text-yellow-300 border-yellow-500/40" },
+                      accepted:  { label: "Acceptée",   cls: "bg-green-500/20 text-green-300 border-green-500/40" },
+                      refused:   { label: "Refusée",    cls: "bg-red-500/20 text-red-300 border-red-500/40" },
+                      cancelled: { label: "Annulée",    cls: "bg-gray-500/20 text-gray-300 border-gray-500/40" },
+                    }[app.status] || { label: app.status || "—", cls: "bg-white/10 text-white/70 border-white/20" };
+
+                    const cxlStatus = app.cancellation_status;
+                    return (
+                      <div
+                        key={app.id}
+                        data-testid="my-application-card"
+                        className="glassmorphism rounded-xl p-4 space-y-2 border border-white/5"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold truncate">
+                              {app.slot_date}
+                              {app.slot_start_time && (
+                                <span className="text-primary text-sm ml-2">🕐 {app.slot_start_time}</span>
+                              )}
+                            </p>
+                            {app.band_name && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                🎸 {app.band_name}{app.band_type ? ` (${app.band_type})` : ''}
+                              </p>
+                            )}
+                          </div>
+                          <span className={`text-xs px-2 py-0.5 rounded-full border whitespace-nowrap ${statusMeta.cls}`}>
+                            {statusMeta.label}
+                          </span>
+                        </div>
+
+                        {/* Bandeau demande d'annulation en cours */}
+                        {cxlStatus === "requested" && (
+                          <div className="text-xs px-2 py-1 rounded-md bg-orange-500/10 border border-orange-500/30 text-orange-300">
+                            🟠 Demande d&apos;annulation en attente de validation
+                          </div>
+                        )}
+                        {cxlStatus === "refused" && app.cancellation_message && (
+                          <div className="text-xs px-2 py-1 rounded-md bg-red-500/10 border border-red-500/30 text-red-300">
+                            ❌ Annulation refusée — « {app.cancellation_message} »
+                          </div>
+                        )}
+                        {cxlStatus === "approved" && app.cancellation_message && (
+                          <div className="text-xs px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
+                            ✅ Annulation validée — « {app.cancellation_message} »
+                          </div>
+                        )}
+
+                        {app.message && (
+                          <p className="text-xs text-muted-foreground italic truncate" title={app.message}>
+                            💬 {app.message}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
 

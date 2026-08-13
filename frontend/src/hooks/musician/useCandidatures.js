@@ -71,10 +71,18 @@ export const useCandidatures = (token) => {
       return;
     }
     try {
-      await axios.delete(`${API}/applications/my/${appId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      toast.success("Candidature annulée");
+      // Build 152.11 — Utilise le nouveau endpoint qui gère pending → delete / accepted → cancellation_requested
+      const res = await axios.post(
+        `${API}/applications/${appId}/cancel`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const action = res?.data?.action;
+      if (action === "cancellation_requested") {
+        toast.success("Demande d'annulation envoyée à l'établissement");
+      } else {
+        toast.success("Candidature annulée");
+      }
       fetchMyApplications();
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur lors de l'annulation");

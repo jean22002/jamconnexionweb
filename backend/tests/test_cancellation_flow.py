@@ -174,6 +174,18 @@ class TestCancellationFlow:
         pytest.shared_accepted_app_id = app_id
         pytest.shared_accepted_slot_id = slot["id"]
 
+    def test_03b_get_applications_my_exposes_cancellation_fields(self, musician_auth):
+        app_id = pytest.shared_accepted_app_id
+        r = requests.get(f"{API}/applications/my", headers=musician_auth["headers"], timeout=30)
+        assert r.status_code == 200, r.text
+        apps = r.json()
+        assert isinstance(apps, list)
+        target = next((a for a in apps if a["id"] == app_id), None)
+        assert target is not None, "cancelled-requested app not returned by /applications/my"
+        assert target.get("cancellation_status") == "requested"
+        assert target.get("cancellation_reason") == "Empêchement"
+        assert target.get("cancellation_requested_at") is not None
+
     def test_04_cancel_already_requested_returns_400(self, musician_auth):
         app_id = getattr(pytest, "shared_accepted_app_id", None)
         assert app_id is not None

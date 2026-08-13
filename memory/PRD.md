@@ -425,3 +425,16 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - Try/except : jamais bloquant pour l'envoi du message.
   - **Testé en preview avec placeholder** : POST /messages musicien→musicien → HTTP 200, log Emergent : `POST integrations.emergentagent.com/api/v1/push/trigger "HTTP/1.1 401 Unauthorized"` (attendu, swallowed).
 
+- **🔧 Migration legacy `DELETE /applications/my/{id}` → nouveau contrat `POST /applications/{id}/cancel` (Build 152.11)** (2026-08-13) :
+  - Bug reporté par l'agent mobile Build 175 : 3 vues web utilisaient encore le legacy `DELETE /applications/my/{id}` → suppression immédiate pour les candidatures 'accepted' au lieu de créer une demande d'annulation à valider (flow 152.6 cassé sur ces vues).
+  - **3 fichiers migrés** vers `POST /api/applications/{id}/cancel` :
+    - `hooks/musician/useCandidatures.js` — toast contextuel selon `action`
+    - `pages/MusicianDashboard.jsx` (ligne 1237) — même comportement
+    - `features/musician-dashboard/hooks/useMusicianApplications.js` — state update intelligent :
+      - `action='deleted'` → retire de la liste
+      - `action='cancellation_requested'` → met à jour `cancellation_status` sans retirer
+  - **VenueDetail.jsx:280** utilisait déjà le nouveau endpoint depuis Build 152.8 (rien à toucher).
+  - **Grep vérifié** : 0 référence à `DELETE.*applications/my` dans les .js/.jsx frontend.
+  - Backend legacy `DELETE /applications/my/{id}` conservé pour rétro-compat.
+  - **testing_agent (iteration_8.json)** : **15/15 tests ✅** — endpoint validé + nouveau `test_03b` ajouté qui vérifie l'exposition de `cancellation_status`, `cancellation_requested_at`, `cancellation_reason` via `GET /applications/my` (utile pour les hooks frontend musicien).
+

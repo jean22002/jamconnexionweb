@@ -68,21 +68,33 @@ export function useMusicianApplications(token) {
     }
   }, [token]);
 
-  // Cancel an application
+  // Cancel an application — Build 152.11 : utilise le nouveau endpoint (pending → delete / accepted → cancellation_requested)
   const cancelApplication = useCallback(async (applicationId) => {
     if (!token) return false;
-    
+
     try {
-      await axios.delete(`${API}/planning/applications/${applicationId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setMyApplications(prev => prev.filter(app => app.id !== applicationId));
-      toast.success('Candidature annulée');
+      const res = await axios.post(
+        `${API}/applications/${applicationId}/cancel`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const action = res?.data?.action;
+      if (action === "cancellation_requested") {
+        // Statut mis à jour côté state — on rafraîchit plutôt que de retirer
+        setMyApplications(prev => prev.map(app =>
+          app.id === applicationId
+            ? { ...app, cancellation_status: "requested", cancellation_requested_at: new Date().toISOString() }
+            : app
+        ));
+        toast.success("Demande d'annulation envoyée à l'établissement");
+      } else {
+        setMyApplications(prev => prev.filter(app => app.id !== applicationId));
+        toast.success("Candidature annulée");
+      }
       return true;
     } catch (error) {
       console.error('Error canceling application:', error);
-      toast.error('Erreur lors de l\'annulation');
+      toast.error(error.response?.data?.detail || "Erreur lors de l'annulation");
       return false;
     }
   }, [token]);

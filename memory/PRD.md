@@ -418,3 +418,10 @@ Application de mise en relation entre cafés-concerts et musiciens.
     - POST /applications/{id}/cancel accepted → HTTP 200 `cancellation_requested` + log `WARNING - Push failed (cancellation_requested): 500` ✅ (main flow OK, push safe-failed)
   - Payload `data` supporte : `title` (req), `message` (req), `action_url`, `type`, `application_id`, `subtext`, `image_url`.
 
+- **💬 Push notif "Nouveau message" via Emergent SuprSend (Build 152.10)** (2026-08-13) :
+  - `routes/messages.py` `POST /messages` : ajout d'un appel `send_push` juste après le `send_push_notification` legacy (webpush).
+  - Payload : `{title: "💬 {sender_name}", message: preview[:120], action_url: "/(tabs)/messages", type: "new_message", message_id, sender_id}` avec `idempotency_key=msg-{id}`.
+  - Legacy webpush + nouveau SuprSend cohabitent (browser + mobile).
+  - Try/except : jamais bloquant pour l'envoi du message.
+  - **Testé en preview avec placeholder** : POST /messages musicien→musicien → HTTP 200, log Emergent : `POST integrations.emergentagent.com/api/v1/push/trigger "HTTP/1.1 401 Unauthorized"` (attendu, swallowed).
+

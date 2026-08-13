@@ -151,6 +151,25 @@ async def send_message(request: Request, data: MessageCreate, current_user: dict
         except Exception as e:
             # Don't fail the request if push notification fails
             print(f"Failed to send push notification: {e}")
+
+        # Build 152.10 — Emergent-managed mobile push (SuprSend) — never blocks
+        try:
+            from routes.push import send_push
+            preview = (data.content or data.subject or "Nouveau message")[:120]
+            await send_push(
+                recipients=[data.recipient_id],
+                data={
+                    "title": f"💬 {current_user['name']}",
+                    "message": preview,
+                    "action_url": "/(tabs)/messages",
+                    "type": "new_message",
+                    "message_id": message_doc["id"],
+                    "sender_id": current_user["id"],
+                },
+                idempotency_key=f"msg-{message_doc['id']}",
+            )
+        except Exception as e:
+            print(f"Push failed (new_message): {e}")
     
     return MessageResponse(**message_doc)
 

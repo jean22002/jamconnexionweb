@@ -360,3 +360,14 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - `data-testid="venue-guso-radius-filter"` + individuel `venue-guso-radius-{10|25|50|100|200|none}`.
   - **Tests curl** : `max_radius_km=1` → 0 résultats (Marc à 1.2km exclu) ✅ / `max_radius_km=2` → 1 résultat (Marc inclus) ✅.
   - **UI validée** : screenshot montre les 6 pills bien alignés, pill actif en emerald, filtrage effectif.
+
+- **🔔 Flow d'annulation avec validation par l'établissement (Build 152.6)** (2026-08-13) :
+  - 3 endpoints ajoutés dans `/app/backend/routes/planning.py` (~ligne 1069-1326) :
+    - `POST /api/applications/{id}/cancel` (musician) — pending → suppression / accepted → cancellation_status='requested' + notif venue / autre → 400
+    - `POST /api/applications/{id}/cancellation/validate` (venue, body `{approve: bool, message?: str≤500}`) — approve → status='cancelled' + ré-ouverture slot si besoin + notif musicien / refuse → cancellation_status='refused' + status reste 'accepted' + notif musicien
+    - `GET /api/applications/received/cancellation-requests` (venue) — liste enrichie (slot_date/pseudo/photo) des demandes en attente
+  - Nouveaux champs stockés en DB sur les applications : `cancellation_status ∈ {None,'requested','approved','refused'}`, `cancellation_requested_at`, `cancellation_resolved_at`, `cancellation_reason`, `cancellation_message` (max 500 chars).
+  - Notifications DB créées avec types : `cancellation_requested`, `cancellation_approved`, `cancellation_refused`, `application_cancelled` (compat existant).
+  - Idempotence : 2ᵉ appel POST /cancel sur candidature déjà en `cancellation_requested` → HTTP 400.
+  - RBAC strict : musicien peut annuler UNIQUEMENT ses candidatures / venue peut valider UNIQUEMENT ses candidatures.
+  - **testing_agent (iteration_7.json)** : 14/14 tests passent au premier run ✅, test file persistant à `/app/backend/tests/test_cancellation_flow.py`.

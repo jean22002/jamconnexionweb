@@ -399,3 +399,22 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - `data-testid` : `cancel-my-application-btn`, `cancel-application-dialog`, `cancel-reason-textarea`, `confirm-cancel-application-btn`.
   - **Validé UI** : screenshot du bouton visible sur les cards Acceptée + En attente, modal avec bandeau orange et flow correct.
 
+- **🔔 Push notifications Emergent-managed (SuprSend relay) (Build 152.9)** (2026-08-13) :
+  - Nouveau fichier `routes/push.py` avec :
+    - Client `httpx.AsyncClient` singleton (`base_url=https://integrations.emergentagent.com`, header `X-Push-Key: EMERGENT_PUSH_KEY`)
+    - Endpoint `POST /api/register-push` (payload `{user_id, platform, device_token}`) → relaie vers `POST /api/v1/push/users/register` d'Emergent
+    - Helper `async send_push(recipients, data, idempotency_key?)` → relaie vers `POST /api/v1/push/trigger`
+    - Validation : max 100 recipients, title+message obligatoires, 401 → 500 clair, 5xx → 502
+  - Var d'env `EMERGENT_PUSH_KEY=placeholder` ajoutée à `.env` (⚠️ à ne pas modifier — remplacée automatiquement au deploy prod)
+  - Router enregistré dans `server.py` (import + `api_router.include_router`)
+  - Push intégrés dans 3 endpoints (tous wrappés try/except pour ne JAMAIS bloquer le flow principal) :
+    - `POST /applications/{id}/accept` → push musicien "🎉 Candidature acceptée !" (idempotency_key `app-accept-{id}`)
+    - `POST /applications/{id}/cancel` (case accepted) → push venue "🟠 Demande d'annulation" (`cancel-req-{id}`)
+    - `POST /applications/{id}/cancellation/validate` approve → push musicien "✅ Annulation validée" (`cancel-val-approve-{id}`)
+    - `POST /applications/{id}/cancellation/validate` refuse → push musicien "❌ Annulation refusée" (`cancel-val-refuse-{id}`)
+  - **Testé en preview avec placeholder key** :
+    - POST /register-push valide → 500 "EMERGENT_PUSH_KEY missing or invalid" (attendu)
+    - POST /register-push invalide → 422 (Pydantic OK)
+    - POST /applications/{id}/cancel accepted → HTTP 200 `cancellation_requested` + log `WARNING - Push failed (cancellation_requested): 500` ✅ (main flow OK, push safe-failed)
+  - Payload `data` supporte : `title` (req), `message` (req), `action_url`, `type`, `application_id`, `subtext`, `image_url`.
+

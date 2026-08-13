@@ -10,6 +10,9 @@ import jwt
 import os
 import logging
 
+# Build 152.9 — Emergent push helper (safe: never blocks main flow)
+from routes.push import send_push
+
 from models import (
     PlanningSlot, PlanningSlotResponse,
     ConcertApplication, ConcertApplicationResponse
@@ -818,6 +821,22 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
             f"Votre candidature pour le {slot['date']} chez {venue['name']} a été acceptée!",
             f"/venue/{venue['id']}"
         )
+
+        # Build 152.9 — Push notif (never block main flow)
+        try:
+            await send_push(
+                recipients=[musician["user_id"]],
+                data={
+                    "title": "🎉 Candidature acceptée !",
+                    "message": f"{venue['name']} a accepté votre candidature du {slot['date']}",
+                    "action_url": "/(tabs)/applications",
+                    "type": "application_accepted",
+                    "application_id": app_id,
+                },
+                idempotency_key=f"app-accept-{app_id}",
+            )
+        except Exception as e:
+            logger.warning(f"Push failed (application_accepted): {e}")
         
         # 🎵 ADD CONCERT TO MUSICIAN'S PLANNING
         # Create concert entry for the accepted application
@@ -1157,6 +1176,21 @@ async def cancel_application_v2(
                     f"{musician_display} demande à annuler sa candidature pour le {slot.get('date', 'TBD')}",
                     None,
                 )
+                # Build 152.9 — Push notif (never block main flow)
+                try:
+                    await send_push(
+                        recipients=[venue["user_id"]],
+                        data={
+                            "title": "🟠 Demande d'annulation",
+                            "message": f"{musician_display} demande à annuler sa candidature du {slot.get('date', 'TBD')}",
+                            "action_url": "/(tabs)/index",
+                            "type": "cancellation_requested",
+                            "application_id": app_id,
+                        },
+                        idempotency_key=f"cancel-req-{app_id}",
+                    )
+                except Exception as e:
+                    logger.warning(f"Push failed (cancellation_requested): {e}")
 
         return {"success": True, "action": "cancellation_requested"}
 
@@ -1243,6 +1277,21 @@ async def validate_cancellation(
                 body_text,
                 None,
             )
+            # Build 152.9 — Push notif
+            try:
+                await send_push(
+                    recipients=[musician_user_id],
+                    data={
+                        "title": "✅ Annulation validée",
+                        "message": body_text,
+                        "action_url": "/(tabs)/applications",
+                        "type": "cancellation_approved",
+                        "application_id": app_id,
+                    },
+                    idempotency_key=f"cancel-val-approve-{app_id}",
+                )
+            except Exception as e:
+                logger.warning(f"Push failed (cancellation_approved): {e}")
 
         return {"success": True, "action": "approved"}
 
@@ -1268,6 +1317,21 @@ async def validate_cancellation(
             body_text,
             None,
         )
+        # Build 152.9 — Push notif
+        try:
+            await send_push(
+                recipients=[musician_user_id],
+                data={
+                    "title": "❌ Annulation refusée",
+                    "message": body_text,
+                    "action_url": "/(tabs)/applications",
+                    "type": "cancellation_refused",
+                    "application_id": app_id,
+                },
+                idempotency_key=f"cancel-val-refuse-{app_id}",
+            )
+        except Exception as e:
+            logger.warning(f"Push failed (cancellation_refused): {e}")
 
     return {"success": True, "action": "refused"}
 

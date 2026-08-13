@@ -11,7 +11,7 @@ import {
 } from "../components/ui/dialog";
 import { 
   Music, MapPin, Globe, Instagram, Facebook, Phone, ArrowLeft, Loader2, 
-  Check, Clock, Guitar, Bell, BellOff, CalendarIcon, Send, Users, User, AlertCircle, Heart, Navigation, Flag
+  Check, Clock, Guitar, Bell, BellOff, CalendarIcon, Send, Users, User, AlertCircle, Heart, Navigation, Flag, X
 } from "lucide-react";
 import LazyImage from "../components/LazyImage";
 import { useAuth } from "../context/AuthContext";
@@ -43,6 +43,10 @@ export default function VenueDetail() {
   const [spectacles, setSpectacles] = useState([]);
   const [planningSlots, setPlanningSlots] = useState([]);
   const [myApplications, setMyApplications] = useState([]);
+  // Build 152.8 — Modal d'annulation de candidature (utilise flow validation Build 152.6)
+  const [cancelDialogApp, setCancelDialogApp] = useState(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelling, setCancelling] = useState(false);
 
   // Build 152.7 — filtres dérivés pour la tab Candidatures (musicien sur profil bar)
   const openSlots = useMemo(() => {
@@ -266,6 +270,35 @@ export default function VenueDetail() {
       setMyApplications([]);
     }
   }, [token, user, venue?.name]);
+
+  // Build 152.8 — Handler d'annulation de candidature (pending → suppression, accepted → demande validation)
+  const handleCancelMyApplication = async () => {
+    if (!cancelDialogApp || !token) return;
+    setCancelling(true);
+    try {
+      const res = await axios.post(
+        `${API}/applications/${cancelDialogApp.id}/cancel`,
+        { reason: cancelReason.slice(0, 500) },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const action = res?.data?.action;
+      if (action === "deleted") {
+        toast.success("Candidature annulée.");
+      } else if (action === "cancellation_requested") {
+        toast.success("Demande d'annulation envoyée à l'établissement.");
+      } else {
+        toast.success("Annulation prise en compte.");
+      }
+      setCancelDialogApp(null);
+      setCancelReason("");
+      await fetchMyApplications();
+    } catch (err) {
+      const detail = err?.response?.data?.detail || "Impossible d'annuler cette candidature.";
+      toast.error(detail);
+    } finally {
+      setCancelling(false);
+    }
+  };
 
 
   const handleSubscribe = async () => {
@@ -1383,12 +1416,104 @@ export default function VenueDetail() {
                             💬 {app.message}
                           </p>
                         )}
+
+                        {/* Bouton "Annuler ma candidature" — Build 152.8 */}
+                        {(app.status === "pending" || app.status === "accepted") &&
+                          app.cancellation_status !== "requested" &&
+                          app.cancellation_status !== "approved" && (
+                            <div className="pt-1 flex justify-end">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setCancelDialogApp(app);
+                                  setCancelReason("");
+                                }}
+                                data-testid="cancel-my-application-btn"
+                                className="text-xs rounded-full border-red-500/40 text-red-300 hover:bg-red-500/10 hover:text-red-200"
+                              >
+                                <X className="w-3 h-3 mr-1" />
+                                {app.status === "pending" ? "Annuler ma candidature" : "Demander l'annulation"}
+                              </Button>
+                            </div>
+                          )}
                       </div>
                     );
                   })}
                 </div>
               </div>
             )}
+
+            {/* Build 152.8 — Modal d'annulation de candidature */}
+            <Dialog open={!!cancelDialogApp} onOpenChange={(open) => { if (!open) { setCancelDialogApp(null); setCancelReason(""); } }}>
+              <DialogContent className="glassmorphism border-white/10 max-w-md" data-testid="cancel-application-dialog">
+                <DialogHeader>
+                  <DialogTitle>
+                    {cancelDialogApp?.status === "pending"
+                      ? "Annuler ma candidature"
+                      : "Demander l'annulation"}
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 mt-2">
+                  {cancelDialogApp && (
+                    <div className="p-3 rounded-xl bg-black/30 border-l-4 border-primary text-sm">
+                      <p className="font-semibold">{cancelDialogApp.slot_date}
+                        {cancelDialogApp.slot_start_time && <span className="text-primary ml-2">🕐 {cancelDialogApp.slot_start_time}</span>}
+                      </p>
+                      {cancelDialogApp.band_name && (
+                        <p className="text-xs text-muted-foreground mt-1">🎸 {cancelDialogApp.band_name}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {cancelDialogApp?.status === "accepted" && (
+                    <div className="text-xs px-3 py-2 rounded-md bg-orange-500/10 border border-orange-500/30 text-orange-300">
+                      🟠 L&apos;établissement devra valider votre demande d&apos;annulation. Vous serez notifié de sa réponse.
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Raison (optionnel)
+                    </label>
+                    <Textarea
+                      value={cancelReason}
+                      onChange={(e) => setCancelReason(e.target.value.slice(0, 500))}
+                      placeholder="Expliquez brièvement pourquoi vous souhaitez annuler…"
+                      rows={4}
+                      maxLength={500}
+                      className="bg-black/30 border-white/10 resize-none"
+                      data-testid="cancel-reason-textarea"
+                    />
+                    <p className="text-xs text-muted-foreground text-right">
+                      {cancelReason.length}/500
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2 justify-end pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => { setCancelDialogApp(null); setCancelReason(""); }}
+                      disabled={cancelling}
+                      className="rounded-full"
+                    >
+                      Annuler
+                    </Button>
+                    <Button
+                      onClick={handleCancelMyApplication}
+                      disabled={cancelling}
+                      data-testid="confirm-cancel-application-btn"
+                      className="rounded-full bg-red-500 hover:bg-red-600 text-white"
+                    >
+                      {cancelling ? "Envoi…" :
+                        (cancelDialogApp?.status === "pending" ? "Confirmer l'annulation" : "Envoyer la demande")}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
 
             {/* Application Dialog */}
             <Dialog open={showApplyDialog} onOpenChange={setShowApplyDialog}>

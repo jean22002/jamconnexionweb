@@ -384,3 +384,18 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - `data-testid` : `my-applications-section`, `my-application-card`.
   - **Validé UI** : screenshot Le Bar Test → tab "Candidatures (1 + 19)" avec section haut (1 créneau Jazz test 15/09 + bouton Postuler) et section bas (19 cards Acceptée/En attente).
 
+- **✂️ Bouton "Annuler ma candidature" sur chaque card + modal (Build 152.8)** (2026-08-13) :
+  - Bouton contextuel affiché sur chaque card de "Mes candidatures" dans `pages/VenueDetail.jsx` :
+    - Visible uniquement si `status ∈ {pending, accepted}` ET `cancellation_status ∉ {requested, approved}`
+    - Label adaptatif : *"Annuler ma candidature"* (pending) / *"Demander l'annulation"* (accepted)
+    - Style outline rouge discret
+  - Modal complet avec :
+    - Aperçu du créneau (bordure gauche cyan) : date, heure, band_name
+    - **Info orange** *"🟠 L'établissement devra valider votre demande d'annulation. Vous serez notifié de sa réponse."* affichée uniquement si status=accepted (le flow validation Build 152.6 s'applique)
+    - Champ raison optionnel (Textarea multiline, sanitisation `.slice(0, 500)`, compteur temps réel)
+    - Bouton confirmation rouge, label dynamique ("Confirmer l'annulation" / "Envoyer la demande" selon statut)
+  - Appelle `POST /api/applications/{id}/cancel` avec `{reason}` → toast contextuel selon `response.data.action` (`deleted` / `cancellation_requested`), puis refetch `fetchMyApplications()`.
+  - Gestion erreurs : toast avec `err.response.data.detail`.
+  - `data-testid` : `cancel-my-application-btn`, `cancel-application-dialog`, `cancel-reason-textarea`, `confirm-cancel-application-btn`.
+  - **Validé UI** : screenshot du bouton visible sur les cards Acceptée + En attente, modal avec bandeau orange et flow correct.
+

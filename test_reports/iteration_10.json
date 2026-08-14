@@ -1,0 +1,37 @@
+{
+  "summary": "Regression test of Build 152.13 refactor (split cancellation flow from planning.py + extra='ignore' on ConcertApplicationResponse). Ran the 15 tests in test_cancellation_flow.py + 8 tests in test_application_create_duplicate.py = 23/23 PASSED after fixing a critical import-time db binding bug in the new routes/cancellation.py.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/applications/{id}/cancel, POST /api/applications/{id}/cancellation/validate, GET /api/applications/received/cancellation-requests",
+        "issue": "All 3 endpoints in the new /app/backend/routes/cancellation.py returned HTTP 500 with 'AttributeError: NoneType has no attribute .venues/.applications/...'. Root cause: `from routes.planning import ..., db` captures the value of planning.db (None) at import time; server.py later calls planning.set_db(db) which mutates planning.db but the local `db` symbol in cancellation.py stayed None. This broke 11/15 cancellation tests initially. FIXED by testing agent — replaced the plain `db` import with a late-binding `_DBProxy` in /app/backend/routes/cancellation.py that resolves attribute access against routes.planning.db at call-time.",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_cancellation_flow.py",
+    "/app/backend/tests/test_application_create_duplicate.py",
+    "/app/test_reports/pytest/iter10_results.xml"
+  ],
+  "action_items": [
+    "Review the _DBProxy fix applied in /app/backend/routes/cancellation.py. Alternative (cleaner) options for main agent to consider: (a) add a `set_db(database)` function in cancellation.py and call `cancellation.set_db(db)` in server.py alongside planning.set_db(db); or (b) refactor `db` into a shared /app/backend/routes/_shared_db.py module imported by both planning.py and cancellation.py. Current proxy solution works but couples cancellation.py tightly to planning.py's global."
+  ],
+  "critical_code_review_comments": [
+    "routes/cancellation.py: importing mutable module globals (`from routes.planning import db`) is fragile — any future module split will re-hit the same bug. Recommend a shared db module.",
+    "server.py: no `cancellation.set_db(db)` call was added when the module was extracted — this is the direct cause of the bug (silent because set_db is not required by the interface, planning.db was assumed as source of truth but wasn't wired).",
+    "models/event.py line 411 — extra='ignore' correctly applied on ConcertApplicationResponse; 3 other Config classes (lines 301/344/371) still use extra='allow' — evaluate if the same _id leak risk exists on those response models (BandResponse, EventResponse, etc.)."
+  ],
+  "updated_files": [
+    "/app/backend/routes/cancellation.py — replaced `from routes.planning import ..., db` with `from routes import planning as _planning` + `_DBProxy` class exposed as `db` for late-binding attribute resolution."
+  ],
+  "success_rate": {"backend": "100% (23/23 after fix)", "frontend": "not tested (skipped per request)"},
+  "test_credentials": "Musicien: test@gmail.com/test — Venue: bar@gmail.com/test (both used in the two test files, working)",
+  "seed_data_creation": "Tests self-seed applications via the API and clean up. No manual seed created.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Build 152.13 cancellation refactor is now green (23/23). The critical import-time db-binding bug was fixed by the testing agent with a _DBProxy in routes/cancellation.py. Main agent should decide if this proxy pattern stays or if a cleaner shared-db-module refactor is preferred. All 3 extracted endpoints and the ConcertApplicationResponse extra='ignore' _id leak fix are verified working.",
+  "rca of the issue": "RCA — When routes/cancellation.py was extracted from routes/planning.py, the line `from routes.planning import ..., db` was added. In Python, `from module import name` binds the CURRENT value of `module.name` into the local namespace. At import time (server.py line 167), routes.planning.db was still None (set_db is called on line 201, ~30 lines later). So cancellation.py's local `db` symbol remained None for the entire process lifetime. Repro: any POST /api/applications/{id}/cancel returned 500 with `AttributeError: 'NoneType' object has no attribute 'applications'`. Mitigation: use late-binding — either (i) `_DBProxy` class delegating to `routes.planning.db` at call-time (applied), (ii) add `cancellation.set_db(db)` in server.py, or (iii) centralize db in a shared module."
+}

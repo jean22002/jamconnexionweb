@@ -399,8 +399,15 @@ class ConcertApplicationResponse(BaseModel):
     has_accommodation: Optional[bool] = None
     accommodation_capacity: Optional[int] = None
     accommodation_tbd: Optional[bool] = None
+    # Cancellation flow (Build 152.6)
+    cancellation_status: Optional[str] = None
+    cancellation_requested_at: Optional[str] = None
+    cancellation_resolved_at: Optional[str] = None
+    cancellation_reason: Optional[str] = None
+    cancellation_message: Optional[str] = None
     
     class Config:
-        extra = "allow"
+        # Build 152.13 — extra='ignore' évite les leaks DB (ObjectId, etc.) → response
+        extra = "ignore"
 
 

@@ -452,3 +452,14 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - Test file : `/app/backend/tests/test_application_create_duplicate.py`
   - Recommandation testing_agent (P2) : retirer `extra='allow'` de `ConcertApplicationResponse` pour éviter le pattern dangereux de leak DB → response.
 
+- **♻️ Refactor : split cancellation flow + suppression `extra='allow'` (Build 152.13)** (2026-08-14) :
+  - **Nouveau fichier** `/app/backend/routes/cancellation.py` (331 lignes) : 3 endpoints extraits (POST /cancel, POST /cancellation/validate, GET /received/cancellation-requests) avec leur propre `APIRouter`.
+  - `planning.py` réduit de **1565 → 1257 lignes** (–307 lignes).
+  - Router enregistré dans `server.py` : `api_router.include_router(cancellation.router)`.
+  - **`ConcertApplicationResponse` (models/event.py)** : `extra='allow'` remplacé par `extra='ignore'` + ajout explicite des 5 champs `cancellation_*` → évite le leak `_id: ObjectId` détecté en Build 152.12.
+  - **Bug critique détecté et fixé par testing_agent** : import `from routes.planning import db` capture `None` au moment de l'import (avant `planning.set_db(db)` dans server.py). Fix appliqué : `_DBProxy` class avec `__getattr__` qui résout late-binding vers `routes.planning.db` au call-time. Pattern propre, aucune modification server.py nécessaire.
+  - **testing_agent (iteration_10.json)** : **23/23 tests ✅** après fix proxy (15 tests cancellation + 8 tests create+duplicate rejoués → aucune régression).
+  - Recommandations testing_agent (P3, non bloquantes) :
+    - Envisager un module partagé `routes/_shared_db.py` si d'autres splits ont lieu (pour éviter le pattern proxy à chaque fois)
+    - 3 autres modèles Response (`BandResponse`, `EventResponse`, ~lignes 301/344/371) ont encore `extra='allow'` → à auditer pour même risque de leak `_id`
+

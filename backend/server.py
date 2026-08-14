@@ -164,6 +164,7 @@ import routes.band_invitations as band_invitations  # NEW: Band member invitatio
 import routes.badges as badges
 import routes.push_notifications as push_notifications
 import routes.push as push  # Build 152.9 — Emergent-managed push via SuprSend
+import routes.cancellation as cancellation  # Build 152.13 — Cancellation flow extracted from planning
 import routes.friends as friends
 import routes.reports as reports
 import routes.analytics as analytics
@@ -227,6 +228,7 @@ api_router.include_router(band_invitations.router)  # NEW: Band invitations
 api_router.include_router(badges.router)
 api_router.include_router(push_notifications.router)
 api_router.include_router(push.router)  # Build 152.9 — Emergent push (register + send helper)
+api_router.include_router(cancellation.router)  # Build 152.13 — Cancellation flow (POST /cancel, /validate, GET /received/cancellation-requests)
 api_router.include_router(friends.router)
 api_router.include_router(reports.router)
 api_router.include_router(analytics.router)

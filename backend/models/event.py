@@ -298,7 +298,8 @@ class PlanningSlot(BaseModel):
     max_musicians: Optional[int] = None  # 1, 2, 3, 4, 5, 8 ou None
 
     class Config:
-        extra = "allow"
+        # Build 152.14 — extra='ignore' : rejette silencieusement les champs inconnus (client input)
+        extra = "ignore"
 
 class PlanningSlotResponse(BaseModel):
     id: str
@@ -341,7 +342,8 @@ class PlanningSlotResponse(BaseModel):
     created_at: str
     
     class Config:
-        extra = "allow"
+        # Build 152.14 — extra='ignore' : évite le leak DB (_id ObjectId, etc.) → response
+        extra = "ignore"
 
 # Modèle pour les candidatures de concerts
 class ConcertApplication(BaseModel):
@@ -368,7 +370,8 @@ class ConcertApplication(BaseModel):
     accommodation_tbd: Optional[bool] = None
 
     class Config:
-        extra = "allow"
+        # Build 152.14 — extra='ignore' : rejette silencieusement les champs inconnus du client
+        extra = "ignore"
 
 
 class ConcertApplicationResponse(BaseModel):

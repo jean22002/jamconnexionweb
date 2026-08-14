@@ -463,3 +463,15 @@ Application de mise en relation entre cafés-concerts et musiciens.
     - Envisager un module partagé `routes/_shared_db.py` si d'autres splits ont lieu (pour éviter le pattern proxy à chaque fois)
     - 3 autres modèles Response (`BandResponse`, `EventResponse`, ~lignes 301/344/371) ont encore `extra='allow'` → à auditer pour même risque de leak `_id`
 
+- **🛡️ Audit sécurité Pydantic : suppression des 3 derniers `extra='allow'` (Build 152.14)** (2026-08-14) :
+  - Suite à la recommandation testing_agent iteration_10, audit exhaustif de `models/event.py` → 3 modèles restants avec `extra='allow'` :
+    1. **`PlanningSlot` (input, L300)** — risque input pollution → `extra='ignore'`
+    2. **`PlanningSlotResponse` (RESPONSE, L343)** — 🔥 même risque de leak `_id ObjectId` que Build 152.12 (utilisé comme `response_model` sur POST/PUT /planning + spread `PlanningSlotResponse(**slot_doc)` post-insert lignes 159/278/356 de planning.py) → `extra='ignore'`
+    3. **`ConcertApplication` (input, L370)** → `extra='ignore'`
+  - Grep confirme : **0 `extra='allow'` restant** dans tous les modèles `/app/backend/models/`.
+  - **testing_agent (iteration_11.json)** : **29/29 tests ✅** (23 tests précédents + 6 nouveaux dans `test_planning_slot_no_leak.py`)
+    - Confirme absence de `_id` sur POST/PUT /planning et GET /venues/{id}/planning
+    - Valide silent-ignore des champs injectés (ex: `hacker_field`) → jamais persistés en DB, jamais dans la response
+    - Aucune régression sur les flows connus (catering/meals/accommodation/formation)
+  - Warning testing_agent : le pattern `_DBProxy` dans `routes/cancellation.py` fonctionne mais reste un "smell" → à considérer un module `routes/_shared_db.py` si d'autres splits ont lieu.
+

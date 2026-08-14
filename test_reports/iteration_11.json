@@ -1,0 +1,32 @@
+{
+  "summary": "Build 152.14 regression + no-leak validation. Full re-run of 23 previous tests (test_cancellation_flow.py 15 + test_application_create_duplicate.py 8) + 6 new tests (test_planning_slot_no_leak.py) = 29/29 PASSED. Confirms extra='ignore' on PlanningSlot, PlanningSlotResponse and ConcertApplication does NOT break any existing flow, blocks _id leak on POST/PUT/GET /planning, and silently ignores unknown fields on both /planning and /applications inputs (neither in response nor persisted in DB).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_cancellation_flow.py",
+    "/app/backend/tests/test_application_create_duplicate.py",
+    "/app/backend/tests/test_planning_slot_no_leak.py",
+    "/app/test_reports/pytest/iter11_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "models/event.py — all 3 Pydantic config changes correctly applied (PlanningSlot L300-302, PlanningSlotResponse L344-346, ConcertApplication L372-374). No side effects observed on known-field flows (has_meals, meals_count, formation_type, max_musicians, catering/accommodation all continue to persist and echo correctly).",
+    "Verified no _id leak on POST /api/planning, PUT /api/planning/{id}, GET /api/venues/{id}/planning responses — the previous risk identified in Build 152.12/13 is now closed on PlanningSlotResponse too.",
+    "Silent-ignore semantics validated: injected_field/hacker_field/nested evil payloads on both /planning and /applications never reach the DB and never appear in the response (Pydantic strips them before **model_dump() → insert).",
+    "Note (unchanged from iter10): the _DBProxy pattern in routes/cancellation.py still works but remains a smell — main agent should still consider a shared db module refactor at some point."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_planning_slot_no_leak.py — NEW, 6 tests validating no _id leak + extra='ignore' semantics",
+    "/app/test_reports/pytest/iter11_results.xml — junit output of full 29-test regression"
+  ],
+  "success_rate": {"backend": "100% (29/29)", "frontend": "not tested (backend-only per request)"},
+  "test_credentials": "Musicien: test@gmail.com/test — Venue: bar@gmail.com/test",
+  "seed_data_creation": "Self-seeded slots & applications via API with TEST_ prefix, cleaned up via _cleanup fixture.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Build 152.14 (extra='ignore' on the 3 remaining Pydantic models) is fully green. 29/29 tests pass across 3 test files. If additional Pydantic models are hardened in future builds, follow the same pattern: (a) rerun test_planning_slot_no_leak.py for regression, (b) add a targeted no-leak test with unknown field injection + DB check via pymongo. Warning in original request about mobile-sent fields (duration_minutes, min_bands_needed) is NOT triggered — mobile payloads observed in tests contain only fields defined on PlanningSlot / ConcertApplication so the switch from extra='allow' to extra='ignore' is safe.",
+  "rca of the issue": "No issue found. All 3 Pydantic config changes behave as designed. The mobile compat risk flagged by main agent (unknown fields silently dropped) did not surface in any tested flow — all mobile fields (catering/meals/accommodation/formation) are already declared explicitly on the models."
+}

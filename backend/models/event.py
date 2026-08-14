@@ -345,12 +345,30 @@ class PlanningSlotResponse(BaseModel):
 
 # Modèle pour les candidatures de concerts
 class ConcertApplication(BaseModel):
-    concert_id: str
+    # Build 152.12 — Accepte concert_id OU planning_slot_id (rétro-compat mobile)
+    concert_id: Optional[str] = None
+    planning_slot_id: Optional[str] = None
     band_name: str
+    band_id: Optional[str] = None
+    band_type: Optional[str] = None  # 'Solo' | 'Groupe'
     band_members: List[str] = []
-    contact_email: str
+    members_count: Optional[int] = None
+    contact_email: Optional[str] = None
     contact_phone: Optional[str] = None
     message: Optional[str] = None
+    # Fields sometimes sent by mobile — accept them silently
+    has_catering: Optional[bool] = None
+    catering_drinks: Optional[int] = None
+    catering_tbd: Optional[bool] = None
+    has_meals: Optional[bool] = None
+    meals_count: Optional[int] = None
+    meals_tbd: Optional[bool] = None
+    has_accommodation: Optional[bool] = None
+    accommodation_capacity: Optional[int] = None
+    accommodation_tbd: Optional[bool] = None
+
+    class Config:
+        extra = "allow"
 
 
 class ConcertApplicationResponse(BaseModel):

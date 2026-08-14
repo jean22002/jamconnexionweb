@@ -1,0 +1,42 @@
+{
+  "summary": "Backend testing for POST /api/applications (Build 175 / 152.12) — create + duplicate 409 structured. Wrote /app/backend/tests/test_application_create_duplicate.py (8 tests). Uncovered a 500 bug in the newly applied fix due to MongoDB ObjectId leaking into the Pydantic response (extra='allow' in ConcertApplicationResponse + insert_one mutating app_doc with _id). Applied minimal one-line fix (pop _id after insert). All 8 new tests PASS + all 15 previous cancellation_flow tests still PASS (no regression).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "POST /api/applications",
+        "issue": "Initial fix returned HTTP 500 on first create because MongoDB's ObjectId (_id) was added to app_doc by insert_one, then propagated into ConcertApplicationResponse (extra='allow') causing PydanticSerializationError. Fixed by adding app_doc.pop('_id', None) after insert."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_application_create_duplicate.py",
+    "/app/test_reports/pytest/application_create_duplicate.xml",
+    "/app/test_reports/pytest/cancellation_flow_regression.xml"
+  ],
+  "action_items": [
+    "Fix already applied by testing agent in /app/backend/routes/planning.py (pop _id after insert_one). Main agent should review the fix and consider a more defensive pattern: either (a) use model_dump() to build response, (b) remove extra='allow' from ConcertApplicationResponse, or (c) systematically strip _id in a helper — to prevent future recurrences."
+  ],
+  "critical_code_review_comments": [
+    "ConcertApplicationResponse uses `extra='allow'` (models/event.py:403) — this is dangerous as it lets any DB field (including ObjectId _id) pollute the response and cause 500s. Recommend removing extra='allow' or explicitly popping _id in each handler.",
+    "create_application spreads **payload_dump into app_doc which then goes through insert_one — insert_one MUTATES the input dict adding _id. Any code that later spreads that dict into a Pydantic response will hit this ObjectId serialization bug. Consider building the response dict from a copy or from explicit fields.",
+    "planning.py is 1563 lines — should be split (create/apply/cancel/validate) into smaller modules for maintainability.",
+    "The 409 detail payload structure {message, code, existing_application_id} is not documented in a Pydantic model — consider defining an ErrorDetail model for OpenAPI clarity."
+  ],
+  "updated_files": [
+    "/app/backend/routes/planning.py (added app_doc.pop('_id', None) after insert_one in create_application)",
+    "/app/backend/tests/test_application_create_duplicate.py (new test file, 8 tests)"
+  ],
+  "success_rate": {"backend": "100% (23/23)", "frontend": "not tested (skipped per request)"},
+  "test_credentials": "Musician: test@gmail.com/test | Venue: bar@gmail.com/test",
+  "seed_data_creation": "Test slots created with title='TEST_CreateDuplicate' on future dates (offset 501-503 days). All slots + applications cleaned up in test_08_cleanup.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "The fix now covers: (1) planning_slot_id-only payload → 200/201, (2) mobile Build 175 payload (concert_id + band_id + members_count) → 200/201 with response normalized to planning_slot_id, (3) duplicate on same slot (both field variants) → HTTP 409 with detail={message, code:'APPLICATION_ALREADY_EXISTS', existing_application_id:<uuid>}, (4) missing both slot fields → 422, (5) RBAC venue → 403. IMPORTANT: read response.json()['detail']['code'] (dict), NOT as string. The Concert/Application response uses extra='allow' which is a footgun — any future handler that spreads a dict returned from Mongo insert_one/find_one will risk ObjectId 500s.",
+  "rca of the issue": "RCA: In /app/backend/routes/planning.py::create_application (Build 152.12), after `await db.applications.insert_one(app_doc)`, the pymongo driver mutates app_doc in-place adding `_id: ObjectId`. The next line `ConcertApplicationResponse(**app_doc)` accepts _id (because ConcertApplicationResponse.Config.extra='allow' in models/event.py:403), and FastAPI then fails to JSON-serialize ObjectId → HTTP 500 with `PydanticSerializationError: Unable to serialize unknown type: <class 'bson.objectid.ObjectId'>`. Reproduction: POST /api/applications with a valid payload as musician → 500. Mitigation applied: pop '_id' from app_doc immediately after insert. Long-term recommendation: remove extra='allow' from response models or systematically use projection {'_id': 0} + explicit field building."
+}

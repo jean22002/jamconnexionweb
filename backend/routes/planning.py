@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 import jwt
 import os
 import logging
+from pymongo.errors import DuplicateKeyError
 
 # Build 152.9 — Emergent push helper (safe: never blocks main flow)
 from routes.push import send_push
@@ -462,64 +463,92 @@ async def create_application(data: ConcertApplication, request: Request, current
     """Create an application to a planning slot (musician only)"""
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can apply")
-    
+
     musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
     if not musician:
         raise HTTPException(status_code=404, detail="Musician profile not found")
-    
+
+    # Build 152.12 — Normalisation slot_id (accepte concert_id OU planning_slot_id)
+    slot_id = data.planning_slot_id or data.concert_id
+    if not slot_id:
+        raise HTTPException(status_code=422, detail="Missing planning_slot_id or concert_id")
+
     # Validate that the band belongs to the musician or is their solo profile
     band_name = data.band_name
     is_solo = band_name == musician.get("pseudo") or "solo" in band_name.lower()
-    
+
     if not is_solo:
         # Check if band exists in musician's bands
         musician_bands = musician.get("bands", [])
         band_exists = any(band.get("name") == band_name for band in musician_bands)
-        
+
         if not band_exists:
             raise HTTPException(
-                status_code=403, 
+                status_code=403,
                 detail="Vous ne pouvez postuler qu'avec vos propres groupes ou votre profil solo"
             )
-    
-    slot = await db.planning_slots.find_one({"id": data.planning_slot_id}, {"_id": 0})
+
+    slot = await db.planning_slots.find_one({"id": slot_id}, {"_id": 0})
     if not slot or not slot.get("is_open", True):
         raise HTTPException(status_code=404, detail="Planning slot not found or closed")
-    
-    # Check if already applied
+
+    # Build 152.12 — Check if already applied → HTTP 409 avec detail structuré
     existing = await db.applications.find_one({
-        "planning_slot_id": data.planning_slot_id,
+        "planning_slot_id": slot_id,
         "musician_id": musician["id"]
     })
     if existing:
-        raise HTTPException(status_code=400, detail="Already applied to this slot")
-    
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Vous avez déjà postulé sur ce créneau",
+                "code": "APPLICATION_ALREADY_EXISTS",
+                "existing_application_id": existing.get("id"),
+            }
+        )
+
     app_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
-    
+
+    # Build 152.12 — dump only known fields, force planning_slot_id normalisé
+    payload_dump = data.model_dump()
+    payload_dump.pop("concert_id", None)  # évite le doublon avec planning_slot_id normalisé
+    payload_dump["planning_slot_id"] = slot_id
+
     app_doc = {
         "id": app_id,
-        "planning_slot_id": data.planning_slot_id,
         "musician_id": musician["id"],
-        "musician_name": musician.get("pseudo", current_user["name"]),
-        **data.model_dump(),
+        "musician_name": musician.get("pseudo") or current_user.get("name") or "Musicien",
+        **payload_dump,
         "status": "pending",
         "created_at": now
     }
-    
-    await db.applications.insert_one(app_doc)
-    
+
+    try:
+        await db.applications.insert_one(app_doc)
+        # Remove MongoDB _id (ObjectId not JSON-serializable) before Pydantic response
+        app_doc.pop("_id", None)
+    except DuplicateKeyError:
+        # Filet de sécurité si un unique index existe côté DB
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Vous avez déjà postulé sur ce créneau",
+                "code": "APPLICATION_ALREADY_EXISTS",
+            }
+        )
+
     # Notify venue owner
     venue = await db.venues.find_one({"id": slot["venue_id"]}, {"_id": 0})
     if venue:
         await create_notification(
-            venue["user_id"], 
+            venue["user_id"],
             "application_received",
             "Nouvelle candidature",
             f"{data.band_name} a postulé pour le {slot['date']}",
             "/venue"
         )
-    
+
     return ConcertApplicationResponse(**app_doc)
 
 

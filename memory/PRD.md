@@ -438,3 +438,17 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - Backend legacy `DELETE /applications/my/{id}` conservé pour rétro-compat.
   - **testing_agent (iteration_8.json)** : **15/15 tests ✅** — endpoint validé + nouveau `test_03b` ajouté qui vérifie l'exposition de `cancellation_status`, `cancellation_requested_at`, `cancellation_reason` via `GET /applications/my` (utile pour les hooks frontend musicien).
 
+- **🐛 Fix HTTP 500 → 409 sur POST /api/applications (Build 152.12)** (2026-08-14) :
+  - Bug reporté par mobile Build 175 : POST /applications renvoyait HTTP 500 au lieu de 409 en cas de candidature dupliquée.
+  - **2 root causes identifiées et corrigées** :
+    1. Modèle Pydantic `ConcertApplication` ne contenait que `concert_id` mais le handler accédait à `data.planning_slot_id` → AttributeError → 500. Fix : ajout de `planning_slot_id` (optionnel) + `band_id` + `band_type` + `members_count` + tous les champs mobile (catering/meals/accommodation) + `extra='allow'`.
+    2. Duplication renvoyait 400 avec string au lieu de 409 structuré. Fix : `HTTPException(status_code=409, detail={message, code:'APPLICATION_ALREADY_EXISTS', existing_application_id})`.
+  - **Bug additionnel trouvé par testing_agent** : `insert_one` mutait `app_doc` en ajoutant `_id: ObjectId`, provoquant un `PydanticSerializationError` (extra='allow' sur `ConcertApplicationResponse` acceptait le champ). Fix 1-ligne : `app_doc.pop('_id', None)` après insert.
+  - Autres améliorations :
+    - Normalisation `slot_id = data.planning_slot_id or data.concert_id` (rétro-compat mobile Build 175)
+    - `pop concert_id` du dump avant insert pour éviter le doublon
+    - `try/except DuplicateKeyError` en filet de sécurité si un unique index existe côté DB
+  - **testing_agent (iteration_9.json)** : **23/23 tests ✅** (8 nouveaux tests POST + 15 tests cancellation flow conservés)
+  - Test file : `/app/backend/tests/test_application_create_duplicate.py`
+  - Recommandation testing_agent (P2) : retirer `extra='allow'` de `ConcertApplicationResponse` pour éviter le pattern dangereux de leak DB → response.
+

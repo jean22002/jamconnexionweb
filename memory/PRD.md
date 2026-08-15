@@ -475,3 +475,16 @@ Application de mise en relation entre cafés-concerts et musiciens.
     - Aucune régression sur les flows connus (catering/meals/accommodation/formation)
   - Warning testing_agent : le pattern `_DBProxy` dans `routes/cancellation.py` fonctionne mais reste un "smell" → à considérer un module `routes/_shared_db.py` si d'autres splits ont lieu.
 
+- **📱 Mobile ↔ Web sync : 3 gaps backend E2E (Build 152.15)** (2026-08-15) :
+  Suite à l'audit end-to-end du mobile (Build 184) sur `https://jamconnexion.com/api`, correction de 3 gaps mineurs de cohérence de contrat :
+  1. **Gap 1 — `GET /musicians/me` n'exposait pas `upcoming_concerts`** : les concerts issus d'une acceptation de candidature étaient bien persistés en DB (`musicians.upcoming_concerts` via `$push`), mais le modèle `MusicianProfileResponse` ne déclarait pas le champ → Pydantic v2 (default `extra='ignore'`) le supprimait de la response. **Fix** : ajout de `upcoming_concerts: List[Dict[str, Any]] = []` dans `models/musician.py`.
+  2. **Gap 2 — `POST /applications` : `band_name` obligatoire vs doc** : le contrat documenté annonçait `{concert_id, contact_email}` minimal, mais le modèle requérait `band_name`. **Fix** : `band_name: Optional[str] = None` + fallback automatique vers `musician.pseudo` (mode Solo) dans `create_application()` → mobile peut désormais poster sans `band_name`, l'API remplit automatiquement avec le pseudo. Cohérence garantie sur la notification et le doc DB.
+  3. **Gap 3 — `GET /applications/my` n'exposait pas `venue_id`** : le filtrage mobile "mes candidatures sur telle venue" passait par `venue_name` (fragile). **Fix** : ajout de `venue_id` et `slot_venue_id` dans l'enrichissement (variable `venue` déjà chargée dans la boucle).
+  - **Tests curl validés en Preview** :
+    - `/musicians/me` → `upcoming_concerts` = 35 entrées peuplées
+    - `POST /applications {concert_id, contact_email}` → HTTP 200, `band_name` = pseudo auto
+    - `/applications/my` → `venue_id` + `slot_venue_id` présents
+  - Déploiement production requis pour propager sur `jamconnexion.com`.
+
+
+

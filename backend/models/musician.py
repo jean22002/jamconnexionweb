@@ -147,6 +147,8 @@ class MusicianProfileResponse(BaseModel):
     bands: List[Dict[str, Any]] = []
     solo_profile: Optional[Dict[str, Any]] = None
     concerts: List[Dict[str, Any]] = []
+    # Build 152.15 — expose upcoming concerts (populés lors de l'acceptation d'une candidature)
+    upcoming_concerts: List[Dict[str, Any]] = []
     friends_count: int = 0
     created_at: str
     # Temporary location (hybrid geolocation system)

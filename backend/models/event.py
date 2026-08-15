@@ -350,7 +350,8 @@ class ConcertApplication(BaseModel):
     # Build 152.12 — Accepte concert_id OU planning_slot_id (rétro-compat mobile)
     concert_id: Optional[str] = None
     planning_slot_id: Optional[str] = None
-    band_name: str
+    # Build 152.15 — band_name optionnel (fallback vers musician.pseudo côté route si absent)
+    band_name: Optional[str] = None
     band_id: Optional[str] = None
     band_type: Optional[str] = None  # 'Solo' | 'Groupe'
     band_members: List[str] = []

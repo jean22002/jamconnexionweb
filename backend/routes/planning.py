@@ -473,8 +473,8 @@ async def create_application(data: ConcertApplication, request: Request, current
     if not slot_id:
         raise HTTPException(status_code=422, detail="Missing planning_slot_id or concert_id")
 
-    # Validate that the band belongs to the musician or is their solo profile
-    band_name = data.band_name
+    # Build 152.15 — Fallback band_name → pseudo du musicien (mode Solo par défaut)
+    band_name = data.band_name or musician.get("pseudo") or "Solo"
     is_solo = band_name == musician.get("pseudo") or "solo" in band_name.lower()
 
     if not is_solo:
@@ -514,6 +514,8 @@ async def create_application(data: ConcertApplication, request: Request, current
     payload_dump = data.model_dump()
     payload_dump.pop("concert_id", None)  # évite le doublon avec planning_slot_id normalisé
     payload_dump["planning_slot_id"] = slot_id
+    # Build 152.15 — force band_name résolu (fallback solo si absent)
+    payload_dump["band_name"] = band_name
 
     app_doc = {
         "id": app_id,
@@ -545,7 +547,7 @@ async def create_application(data: ConcertApplication, request: Request, current
             venue["user_id"],
             "application_received",
             "Nouvelle candidature",
-            f"{data.band_name} a postulé pour le {slot['date']}",
+            f"{band_name} a postulé pour le {slot['date']}",
             "/venue"
         )
 
@@ -589,6 +591,11 @@ async def get_my_applications(request: Request, current_user: dict = Depends(get
 
             # Légacy
             app["venue_name"] = slot.get("venue_name")
+
+            # Build 152.15 — expose venue_id (et slot_venue_id) pour permettre au mobile
+            # de rebrancher la candidature vers /venues/{id} sans passer par le nom.
+            app["venue_id"] = slot.get("venue_id")
+            app["slot_venue_id"] = slot.get("venue_id")
 
         # Résolution band_type (groupe vs Solo)
         bid = app.get("band_id")

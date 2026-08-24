@@ -488,3 +488,19 @@ Application de mise en relation entre cafés-concerts et musiciens.
 
 
 
+
+- **🐛 Fix : slot ne se rouvrait pas après validation d'annulation (Build 152.16)** (2026-08-15) :
+  Bug remonté par l'agent mobile (Build 184 E2E). Root cause identifiée précisément :
+  - Certains slots ont `num_bands_needed=0` (créneaux type karaoké/jam ouverte historiques)
+  - Logique de fermeture : `if accepted_count >= num_bands_needed` → dès 1 acceptation, `1 >= 0` → slot fermé
+  - Logique de réouverture (routes/cancellation.py L208) : `if accepted_count < num_bands_needed` → `0 < 0 = False` → **le slot ne se rouvrait JAMAIS**
+  - Impact : chaque acceptation-puis-annulation "brûle" définitivement un créneau
+  - **Fix** : normalisation `num_bands_needed = max(int(slot.get("num_bands_needed") or 1), 1)` appliquée dans les 2 endroits (routes/planning.py `accept_application` + routes/cancellation.py `validate_cancellation`)
+  - **Migration one-shot** : slot historique `2ff9a4e7-…` (Le Bar Test, Karaoké Disney 2026-08-16) rouvert manuellement en DB
+  - **Test E2E curl live validé en Preview** :
+    1. Slot avec `num_bands_needed=0` initial → is_open=true
+    2. Postulation musicien → app pending
+    3. Acceptation venue → is_open=false, accepted=1
+    4. Demande annulation musicien → cancellation_status=requested
+    5. Validation annulation venue (approve=true) → **is_open=TRUE**, accepted=0 ✅
+

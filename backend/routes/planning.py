@@ -761,7 +761,9 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
     })
     
     # Get number of bands needed (default to 1 if not set)
-    num_bands_needed = slot.get("num_bands_needed", 1)
+    # Build 152.16 — normalisation `max(..., 1)` pour rester cohérent avec la logique de
+    # réouverture dans routes/cancellation.py (évite le cas num_bands_needed=0).
+    num_bands_needed = max(int(slot.get("num_bands_needed") or 1), 1)
     
     # Close slot only if we have enough accepted bands
     if accepted_count >= num_bands_needed:

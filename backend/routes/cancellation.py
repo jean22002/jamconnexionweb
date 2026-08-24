@@ -201,11 +201,16 @@ async def validate_cancellation(
         )
 
         # Reopen slot if needed
+        # Build 152.16 — Fix : un slot avec num_bands_needed=0 (karaoké, jam ouverte…) ne
+        # se rouvrait jamais après validation d'une annulation. On normalise en `max(..., 1)`
+        # pour garantir qu'un slot fermé après acceptation se rouvre systématiquement dès
+        # que l'application acceptée est effectivement annulée.
         accepted_count = await db.applications.count_documents({
             "planning_slot_id": slot["id"],
             "status": "accepted",
         })
-        if accepted_count < slot.get("num_bands_needed", 1):
+        num_bands_needed = max(int(slot.get("num_bands_needed") or 1), 1)
+        if accepted_count < num_bands_needed:
             await db.planning_slots.update_one(
                 {"id": slot["id"]},
                 {"$set": {"is_open": True}},

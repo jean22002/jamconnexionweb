@@ -504,3 +504,18 @@ Application de mise en relation entre cafés-concerts et musiciens.
     4. Demande annulation musicien → cancellation_status=requested
     5. Validation annulation venue (approve=true) → **is_open=TRUE**, accepted=0 ✅
 
+
+- **🐛 Fix : GET/PUT /musicians/bands/{id} 404 avec ID inline (Build 152.17)** (2026-08-15) :
+  Bug remonté par l'agent mobile. Root cause :
+  - Les endpoints CRUD `GET/PUT/DELETE /musicians/bands/{band_id}` + `/leave` n'acceptaient qu'un ID composite `{musician_uuid}-{band_name}` (38+ chars)
+  - Les groupes inline stockés dans `musicians.bands[].id` ont un format legacy `band_<timestamp>_<hex>` (28 chars)
+  - `_parse_band_id()` retournait `(None, None)` → 404 systématique pour ces IDs
+  - Impact : le mobile devait faire un aller-retour supplémentaire pour reconstruire l'ID composite
+  - **Fix** : nouvelle fonction async `_resolve_band()` dans `routes/bands.py` qui essaie d'abord le parse composite puis fallback sur un lookup direct `db.musicians.find_one({"bands.id": band_id})`. Les 4 endpoints (GET, PUT, DELETE, leave) refactorés pour l'utiliser.
+  - Rétro-compat 100% : l'ID composite continue de fonctionner comme avant.
+  - **Test curl live validé** :
+    - GET avec ID inline (`band_1787748115549_5f04ff68b`) → HTTP 200 ✅
+    - GET avec ID composite (`{uuid}-rock ky` URL-encoded) → HTTP 200 ✅
+    - GET avec ID inconnu → HTTP 404 ✅
+    - PUT avec ID inline (patch description) → HTTP 200, persistance OK ✅
+

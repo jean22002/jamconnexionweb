@@ -704,6 +704,36 @@ def _parse_band_id(band_id: str):
     return band_id[:36], band_id[37:]
 
 
+async def _resolve_band(band_id: str):
+    """
+    Resolve a band_id to (musician_doc, band_dict).
+
+    Build 152.17 — accepte deux formats d'ID pour rétro-compat mobile :
+      1) Composite `{musician_uuid}-{band_name}` (format legacy web)
+      2) ID direct du band (`band.id`) stocké dans `musicians.bands[].id`
+         (format legacy mobile : `band_<timestamp>_<hex>` ou UUID pur)
+
+    Returns (musician_doc, band_dict) or (None, None) si introuvable.
+    """
+    # Format 1 : composite {uuid}-{name}
+    musician_id, band_name = _parse_band_id(band_id)
+    if musician_id:
+        musician = await db.musicians.find_one({"id": musician_id}, {"_id": 0})
+        if musician:
+            band = next((b for b in musician.get("bands", []) if b.get("name") == band_name), None)
+            if band:
+                return musician, band
+
+    # Format 2 : id direct — chercher via db.musicians dont bands.id matche
+    musician = await db.musicians.find_one({"bands.id": band_id}, {"_id": 0})
+    if musician:
+        band = next((b for b in musician.get("bands", []) if b.get("id") == band_id), None)
+        if band:
+            return musician, band
+
+    return None, None
+
+
 def _build_band_payload(data: dict) -> dict:
     """Whitelist of fields a user can set on a band, with defaults."""
     return {
@@ -876,17 +906,9 @@ async def ensure_solo_band(current_user: dict = Depends(get_current_user)):
 
 @router.get("/musicians/bands/{band_id}")
 async def get_band_by_id(band_id: str):
-    """Retrieve a single band by its composite id '{musician_id}-{band_name}'."""
-    musician_id, band_name = _parse_band_id(band_id)
-    if not musician_id:
-        raise HTTPException(status_code=404, detail="Groupe non trouvé")
-
-    musician = await db.musicians.find_one({"id": musician_id}, {"_id": 0})
-    if not musician:
-        raise HTTPException(status_code=404, detail="Groupe non trouvé")
-
-    band = next((b for b in musician.get("bands", []) if b.get("name") == band_name), None)
-    if not band:
+    """Retrieve a single band by composite id '{musician_id}-{band_name}' OR inline `band.id`."""
+    musician, band = await _resolve_band(band_id)
+    if not musician or not band:
         raise HTTPException(status_code=404, detail="Groupe non trouvé")
 
     return _serialize_band(musician, band)
@@ -895,17 +917,12 @@ async def get_band_by_id(band_id: str):
 @router.put("/musicians/bands/{band_id}")
 async def update_band(band_id: str, payload: dict, current_user: dict = Depends(get_current_user)):
     """Update a band. Only the band admin can update."""
-    musician_id, band_name = _parse_band_id(band_id)
-    if not musician_id:
+    musician, band = await _resolve_band(band_id)
+    if not musician or not band:
         raise HTTPException(status_code=404, detail="Groupe non trouvé")
 
-    musician = await db.musicians.find_one({"id": musician_id}, {"_id": 0})
-    if not musician:
-        raise HTTPException(status_code=404, detail="Groupe non trouvé")
-
-    band = next((b for b in musician.get("bands", []) if b.get("name") == band_name), None)
-    if not band:
-        raise HTTPException(status_code=404, detail="Groupe non trouvé")
+    musician_id = musician["id"]
+    band_name = band.get("name")
 
     if band.get("admin_id") != current_user["id"]:
         raise HTTPException(status_code=403, detail="Seul l'administrateur du groupe peut le modifier")
@@ -915,7 +932,7 @@ async def update_band(band_id: str, payload: dict, current_user: dict = Depends(
     update_fields = {k: v for k, v in allowed.items() if k in payload}
 
     # Handle band rename: name change requires new array entry placement
-    new_name = update_fields.get("name", band.get("name"))
+    new_name = update_fields.get("name", band_name)
 
     set_ops = {f"bands.$.{k}": v for k, v in update_fields.items()}
     if set_ops:
@@ -936,17 +953,12 @@ async def update_band(band_id: str, payload: dict, current_user: dict = Depends(
 @router.delete("/musicians/bands/{band_id}")
 async def delete_band(band_id: str, current_user: dict = Depends(get_current_user)):
     """Delete a band. Only the band admin can delete."""
-    musician_id, band_name = _parse_band_id(band_id)
-    if not musician_id:
+    musician, band = await _resolve_band(band_id)
+    if not musician or not band:
         raise HTTPException(status_code=404, detail="Groupe non trouvé")
 
-    musician = await db.musicians.find_one({"id": musician_id}, {"_id": 0})
-    if not musician:
-        raise HTTPException(status_code=404, detail="Groupe non trouvé")
-
-    band = next((b for b in musician.get("bands", []) if b.get("name") == band_name), None)
-    if not band:
-        raise HTTPException(status_code=404, detail="Groupe non trouvé")
+    musician_id = musician["id"]
+    band_name = band.get("name")
 
     if band.get("admin_id") != current_user["id"]:
         raise HTTPException(status_code=403, detail="Seul l'administrateur du groupe peut le supprimer")
@@ -966,11 +978,14 @@ async def leave_band(band_id: str, current_user: dict = Depends(get_current_user
 
     Removes the band entry from the current user's `db.musicians.bands[]` array.
     The admin cannot leave their own band — they must DELETE /musicians/bands/{band_id}
-    instead. The band_id format is '{musician_creator_id}-{band_name}'.
+    instead. Accepts composite id '{musician_creator_id}-{band_name}' OR inline `band.id`.
     """
-    musician_id, band_name = _parse_band_id(band_id)
-    if not musician_id:
+    creator, band = await _resolve_band(band_id)
+    if not creator or not band:
         raise HTTPException(status_code=404, detail="Groupe non trouvé")
+
+    musician_id = creator["id"]
+    band_name = band.get("name")
 
     # Find the current user's own musician profile
     me = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})

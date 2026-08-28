@@ -86,6 +86,9 @@ async def send_push(
     if idempotency_key:
         payload["$idempotency_key"] = idempotency_key
 
+    # Build 152.18 — trace observabilité : deeplink envoyé à SuprSend
+    logger.info(f"[push] send type={data.get('type')} deeplink={data.get('deeplink')} action_url={data.get('action_url')} idem={idempotency_key}")
+
     try:
         resp = await _push_client.post("/api/v1/push/trigger", json=payload)
     except httpx.RequestError as e:

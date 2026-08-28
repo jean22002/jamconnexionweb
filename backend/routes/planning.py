@@ -868,8 +868,8 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
                     "title": "🎉 Candidature acceptée !",
                     "message": f"{venue['name']} a accepté votre candidature du {slot['date']}",
                     "action_url": "/(tabs)/applications",
-                    # Build 152.18 — deeplink explicite pour SuprSend
-                    "deeplink": f"jamconnexion:///applications/{app_id}",
+                    # Build 152.18 — deeplink explicite pour SuprSend (route liste mobile)
+                    "deeplink": "jamconnexion:///(tabs)/applications",
                     "type": "application_accepted",
                     "application_id": app_id,
                 },

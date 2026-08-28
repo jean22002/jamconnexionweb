@@ -162,6 +162,8 @@ async def send_message(request: Request, data: MessageCreate, current_user: dict
                     "title": f"💬 {current_user['name']}",
                     "message": preview,
                     "action_url": "/(tabs)/messages",
+                    # Build 152.18 — deeplink explicite pour SuprSend (évite jamconnexion:/// vide)
+                    "deeplink": f"jamconnexion:///messages/{current_user['id']}",
                     "type": "new_message",
                     "message_id": message_doc["id"],
                     "sender_id": current_user["id"],

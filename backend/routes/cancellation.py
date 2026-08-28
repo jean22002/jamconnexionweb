@@ -134,6 +134,8 @@ async def cancel_application_v2(
                             "title": "🟠 Demande d'annulation",
                             "message": f"{musician_display} demande à annuler sa candidature du {slot.get('date', 'TBD')}",
                             "action_url": "/(tabs)/index",
+                            # Build 152.18 — deeplink explicite pour SuprSend
+                            "deeplink": f"jamconnexion:///applications/{app_id}",
                             "type": "cancellation_requested",
                             "application_id": app_id,
                         },
@@ -235,6 +237,8 @@ async def validate_cancellation(
                         "title": "✅ Annulation validée",
                         "message": body_text,
                         "action_url": "/(tabs)/applications",
+                        # Build 152.18 — deeplink explicite pour SuprSend
+                        "deeplink": f"jamconnexion:///applications/{app_id}",
                         "type": "cancellation_approved",
                         "application_id": app_id,
                     },
@@ -274,6 +278,8 @@ async def validate_cancellation(
                     "title": "❌ Annulation refusée",
                     "message": body_text,
                     "action_url": "/(tabs)/applications",
+                    # Build 152.18 — deeplink explicite pour SuprSend
+                    "deeplink": f"jamconnexion:///applications/{app_id}",
                     "type": "cancellation_refused",
                     "application_id": app_id,
                 },

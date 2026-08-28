@@ -519,3 +519,12 @@ Application de mise en relation entre cafés-concerts et musiciens.
     - GET avec ID inconnu → HTTP 404 ✅
     - PUT avec ID inline (patch description) → HTTP 200, persistance OK ✅
 
+
+- **📱 Fix : deeplink push notifications vide (Build 152.18)** (2026-08-15) :
+  Signalé par l'agent mobile : `data.deeplink = "jamconnexion:///"` (path vide) sur toutes les push notifs Emergent/SuprSend. Root cause : le backend n'envoyait qu'un champ `action_url` (path expo-router type `/(tabs)/messages`) sans `deeplink` explicite — SuprSend générait donc un deeplink vide côté client.
+  - **Fix** : ajout d'un champ `deeplink` complet à chaque appel `send_push` :
+    - `messages.py` (new_message) → `jamconnexion:///messages/{sender_id}`
+    - `planning.py` (application_accepted) → `jamconnexion:///applications/{app_id}`
+    - `cancellation.py` × 3 (requested, approved, refused) → `jamconnexion:///applications/{app_id}`
+  - Aucun impact sur les autres canaux (WebSocket via `websocket.notify_*` inchangé, notifications DB inchangées).
+

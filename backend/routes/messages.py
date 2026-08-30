@@ -94,11 +94,19 @@ async def send_message(request: Request, data: MessageCreate, current_user: dict
     elif current_user["role"] == "venue":
         sender_profile = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
         sender_image = sender_profile.get("profile_image") if sender_profile else None
-    
+
+    # Build 152.19 — sender_name résilient : profil (pseudo/name) → user.name → fallback
+    sender_display = (
+        (sender_profile or {}).get("pseudo")
+        or (sender_profile or {}).get("name")
+        or current_user.get("name")
+        or "Utilisateur"
+    )
+
     message_doc = {
         "id": str(uuid.uuid4()),
         "sender_id": current_user["id"],
-        "sender_name": current_user.get("name", "Unknown"),
+        "sender_name": sender_display,
         "sender_image": sender_image,
         "recipient_id": data.recipient_id,
         "recipient_name": recipient.get("name", "Unknown"),
@@ -118,7 +126,7 @@ async def send_message(request: Request, data: MessageCreate, current_user: dict
         "sender_id": current_user["id"],
         "sender_role": current_user.get("role", "user"),
         "type": "new_message",
-        "title": f"Nouveau message de {current_user['name']}",
+        "title": f"Nouveau message de {sender_display}",
         "message": data.subject if data.subject else "Nouveau message",
         "link": "/messages-improved",
         "read": False,
@@ -140,7 +148,7 @@ async def send_message(request: Request, data: MessageCreate, current_user: dict
             await send_push_notification(
                 user_id=data.recipient_id,
                 notification_data={
-                    "title": f"💬 {current_user['name']}",
+                    "title": f"💬 {sender_display}",
                     "message": data.subject[:100] if data.subject else "Nouveau message",
                     "link": "/messages-improved",
                     "type": "message",
@@ -159,7 +167,7 @@ async def send_message(request: Request, data: MessageCreate, current_user: dict
             await send_push(
                 recipients=[data.recipient_id],
                 data={
-                    "title": f"💬 {current_user['name']}",
+                    "title": f"💬 {sender_display}",
                     "message": preview,
                     "action_url": "/(tabs)/messages",
                     # Build 152.18 — deeplink explicite pour SuprSend

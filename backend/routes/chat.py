@@ -202,6 +202,8 @@ async def create_conversation(
         }
         
         await db.conversations.insert_one(conversation)
+        # Build 152.19 — retire l'`_id` ObjectId muté par insert_one (non-JSON-serializable)
+        conversation.pop("_id", None)
         logger.info(f"Created conversation {conversation_id}")
         
         # Envoyer message initial si fourni
@@ -517,6 +519,8 @@ async def send_message_internal(
         }
         
         await db.messages.insert_one(message)
+        # Build 152.19 — retire l'`_id` ObjectId muté par insert_one (non-JSON-serializable)
+        message.pop("_id", None)
         
         # Mettre à jour la conversation
         conversation = await db.conversations.find_one(

@@ -528,3 +528,14 @@ Application de mise en relation entre cafés-concerts et musiciens.
     - `cancellation.py` × 3 (requested, approved, refused) → `jamconnexion:///applications/{app_id}`
   - Aucun impact sur les autres canaux (WebSocket via `websocket.notify_*` inchangé, notifications DB inchangées).
 
+
+- **🐛 Fix critique : POST /messages et /chat/messages → HTTP 500 (Build 152.19)** (2026-08-30) :
+  Bug bloquant remonté par l'agent mobile (iPhone Build 191) : impossible de répondre à un message côté venue ni via `/api/chat/messages` (mobile) ni via `/api/messages` (legacy web).
+  - **Bug #1 (chat.py L204, L519)** : Motor `insert_one` mute le dict passé en argument avec `_id: ObjectId`. Les fonctions `create_conversation` et `send_message_internal` renvoyaient directement ce dict → sérialisation JSON impossible → 500 générique. **Fix** : `.pop("_id", None)` juste après chaque `insert_one`.
+  - **Bug #2 (messages.py L121)** : `current_user['name']` levait `KeyError` pour les comptes venue qui n'ont pas de `name` en session. **Fix** : nouvelle variable `sender_display` avec cascade `sender_profile.pseudo → sender_profile.name → current_user.get('name') → "Utilisateur"`, utilisée sur les 3 places (title notification DB, push legacy, push SuprSend).
+  - **Test curl live Preview** : 3/3 endpoints OK
+    - POST /api/chat/messages (venue→musician) → HTTP 200, sender_name="Le Bar Test"
+    - POST /api/messages (venue→musician legacy) → HTTP 200, sender_name="Le Bar Test"
+    - POST /api/messages (musician→venue) → HTTP 200, sender_name="Marc Acoustique"
+  - Le flow chat bidirectionnel iOS Build 191 est désormais opérationnel.
+

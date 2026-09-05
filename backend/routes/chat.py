@@ -365,6 +365,19 @@ async def mark_conversation_read(
         if result.modified_count > 0:
             logger.info(f"Marked conversation {conversation_id} as read for user {user['id']}")
 
+            # Build 152.21 — Marquer la notification message associée comme lue dans db.notifications
+            try:
+                await db.notifications.update_many(
+                    {
+                        "user_id": user["id"],
+                        "type": "new_message",
+                        "data.conversation_id": conversation_id,
+                    },
+                    {"$set": {"read": True, "read_at": now.isoformat()}},
+                )
+            except Exception as e:
+                logger.warning(f"[chat] Failed to mark notifications read for {conversation_id}: {e}")
+
             # Build 152.20 — Émettre Socket.IO 'messages_read' dans la room de la conv
             # pour que les ticks passent au bleu côté clients connectés.
             try:
@@ -605,6 +618,43 @@ async def send_message_internal(
                 {"id": conversation_id},
                 update_ops
             )
+
+            # Build 152.21 — Persister une notification dans db.notifications pour peupler
+            # l'écran /notifications du mobile. Dédupliqué par (conv, recipient) via un id
+            # déterministe → 1 seule entrée par conv qui se rafraîchit à chaque nouveau msg.
+            content_preview = (content or "")[:120]
+            now_iso = now.isoformat() if hasattr(now, "isoformat") else str(now)
+            for participant in conversation["participants"]:
+                recipient_id = participant["user_id"]
+                if recipient_id == sender_id:
+                    continue
+                notif_id = f"msg_notif_{conversation_id}_{recipient_id}"
+                try:
+                    await db.notifications.update_one(
+                        {"id": notif_id},
+                        {
+                            "$set": {
+                                "id": notif_id,
+                                "user_id": recipient_id,
+                                "type": "new_message",
+                                "title": f"💬 Nouveau message de {sender_name}",
+                                "message": content_preview,
+                                "link": f"/messages/{conversation_id}",
+                                "data": {
+                                    "conversation_id": conversation_id,
+                                    "sender_id": sender_id,
+                                    "sender_name": sender_name,
+                                    "message_id": message_id,
+                                },
+                                "read": False,
+                                "updated_at": now_iso,
+                            },
+                            "$setOnInsert": {"created_at": now_iso},
+                        },
+                        upsert=True,
+                    )
+                except Exception as e:
+                    logger.warning(f"[chat] Failed to persist notification for {recipient_id}: {e}")
         
         logger.info(f"Message {message_id} created in conversation {conversation_id}")
         return message

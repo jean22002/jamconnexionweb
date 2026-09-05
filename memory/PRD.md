@@ -549,3 +549,19 @@ Application de mise en relation entre cafés-concerts et musiciens.
   5. **Fix collatéral** : `create_conversation` levait `KeyError: 'name'` (venues) sur `user["name"]` ligne 215. Passé à `current_name` (déjà résolu via `resolve_display_name`).
   - **Test curl live Preview** : E2E complet 6/6 OK (create conv V→M avec initial_msg, POST message, PUT read + emit logs, DELETE conv, GET → [], DELETE inexistant → 404, sync rename musicien).
 
+
+- **📱 Chat notifications persistence (Build 152.21)** (2026-09-05) :
+  Demande agent mobile pour peupler l'écran `/notifications` iOS/Android quand un message chat est reçu. Le backend ne persistait rien dans `db.notifications` pour les messages chat → l'écran restait vide.
+  - **Fix `send_message_internal`** : après chaque `insert_one(message)` + `update_one(conversation)`, on upsert une entrée `db.notifications` pour chaque participant (sauf sender) avec :
+    - `id` = `msg_notif_{conv_id}_{recipient_id}` (déterministe → dedupe naturel)
+    - `type` = `"new_message"`, `title`, `message`, `link` = `/messages/{conv_id}`
+    - `data` = `{conversation_id, sender_id, sender_name, message_id}`
+    - `read=false`, upsert via `$set` + `$setOnInsert.created_at`
+  - **Fix `mark_conversation_read`** : sur PUT `/chat/conversations/{id}/read`, `update_many` sur `notifications` where `type=new_message` + `data.conversation_id=id` → `read=true` + `read_at`.
+  - **Modèle `NotificationResponse`** : ajout de `data: Optional[Dict[str, Any]] = None` pour exposer le payload structuré au mobile (deeplink `/messages/{conv_id}` + IDs).
+  - **Test E2E curl live Preview** 6/6 OK :
+    1. Venue crée conv+initial_msg → Marc GET /notifications = 1 entrée new_message avec `data` complet
+    2. 3 msgs supplémentaires → toujours 1 seule notif (dedupe validé), preview actualisée
+    3. PUT /read côté musicien → notif `read=true`
+    4. Cleanup 4 msgs + 1 conv + 1 notif supprimés
+

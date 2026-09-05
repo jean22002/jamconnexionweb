@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict, Any
 
 class NotificationResponse(BaseModel):
     id: str
@@ -14,3 +14,5 @@ class NotificationResponse(BaseModel):
     link: Optional[str] = None
     read: bool = False
     created_at: str
+    # Build 152.21 — payload structuré (utilisé notamment par new_message pour deeplinker vers /messages/{conv_id})
+    data: Optional[Dict[str, Any]] = None

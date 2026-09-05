@@ -419,6 +419,18 @@ async def update_musician_profile(data: MusicianProfile, request: Request, curre
     except Exception as e:
         logger.warning(f"Solo band sync failed for musician {musician['id']}: {e}")
 
+    # Build 152.20 — Sync du nom dans toutes les conversations si le pseudo a changé
+    try:
+        new_pseudo = update_data.get("pseudo")
+        if new_pseudo and new_pseudo != musician.get("pseudo"):
+            await db.conversations.update_many(
+                {"participants.user_id": current_user["id"]},
+                {"$set": {"participants.$[p].name": new_pseudo}},
+                array_filters=[{"p.user_id": current_user["id"]}],
+            )
+    except Exception as e:
+        logger.warning(f"Conversations name sync failed for musician {musician['id']}: {e}")
+
     updated = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
     friends_count = await db.friends.count_documents({
         "$or": [{"from_user_id": current_user["id"]}, {"to_user_id": current_user["id"]}],

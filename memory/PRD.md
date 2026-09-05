@@ -539,3 +539,13 @@ Application de mise en relation entre cafés-concerts et musiciens.
     - POST /api/messages (musician→venue) → HTTP 200, sender_name="Marc Acoustique"
   - Le flow chat bidirectionnel iOS Build 191 est désormais opérationnel.
 
+
+- **📱 Chat mobile : purge + DELETE conv + sync bonus (Build 152.20)** (2026-09-05) :
+  Demande de l'agent mobile pour finaliser les tests iOS Build 191. 3 chantiers :
+  1. **Purge messagerie** : `db.messages.delete_many({})` + `db.conversations.delete_many({})` — 52 msgs + 4 convs supprimés, `GET /api/chat/conversations` renvoie `[]` pour tous les users.
+  2. **`DELETE /api/chat/conversations/{id}`** : remplacement du stub 501 par un hard delete (conv + messages liés). Vérification participation → 404 si l'utilisateur n'est pas dans la conv, sinon suppression complète des 2 côtés + retour `{success, deleted_messages, deleted_conversation}`.
+  3. **Bonus a — Sync des noms dans les conversations** : quand un musicien change son `pseudo` (PUT /musicians[/me]) ou un venue son `name` (PUT /venues[/me]), tous les `conversations.participants[].name` sont mis à jour via `array_filters` — validé E2E : Marc→"Marc TEST 152.20" reflété instantanément des 2 côtés.
+  4. **Bonus b — Émission Socket.IO `messages_read`** : sur `PUT /chat/conversations/{id}/read`, émet dans la room `{conversation_id}` un event contenant `{conversation_id, reader_id, read_at, message_ids}` + mise à jour `messages.$.read_by` + `is_read=true` (idempotent). Ticks bleus instantanés côté mobile.
+  5. **Fix collatéral** : `create_conversation` levait `KeyError: 'name'` (venues) sur `user["name"]` ligne 215. Passé à `current_name` (déjà résolu via `resolve_display_name`).
+  - **Test curl live Preview** : E2E complet 6/6 OK (create conv V→M avec initial_msg, POST message, PUT read + emit logs, DELETE conv, GET → [], DELETE inexistant → 404, sync rename musicien).
+

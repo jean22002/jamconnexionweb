@@ -139,7 +139,19 @@ async def update_venue_profile(data: VenueProfile, request: Request, current_use
     
     updated = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
     logger.info(f"✅ VENUE UPDATED - Images in DB: profile={updated.get('profile_image')}, cover={updated.get('cover_image')}")
-    
+
+    # Build 152.20 — Sync du nom dans toutes les conversations si le nom a changé
+    try:
+        new_name = update_data.get("name")
+        if new_name and new_name != venue.get("name"):
+            await db.conversations.update_many(
+                {"participants.user_id": current_user["id"]},
+                {"$set": {"participants.$[p].name": new_name}},
+                array_filters=[{"p.user_id": current_user["id"]}],
+            )
+    except Exception as e:
+        logger.warning(f"Conversations name sync failed for venue {venue['id']}: {e}")
+
     subscribers_count = await db.venue_subscriptions.count_documents({"venue_id": venue["id"]})
     
     # Update the dict

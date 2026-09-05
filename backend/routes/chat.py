@@ -212,7 +212,7 @@ async def create_conversation(
                 db=db,
                 conversation_id=conversation_id,
                 sender_id=user["id"],
-                sender_name=user["name"],
+                sender_name=current_name,
                 sender_avatar=avatar_current,
                 content=request.initial_message
             )
@@ -364,6 +364,42 @@ async def mark_conversation_read(
         
         if result.modified_count > 0:
             logger.info(f"Marked conversation {conversation_id} as read for user {user['id']}")
+
+            # Build 152.20 — Émettre Socket.IO 'messages_read' dans la room de la conv
+            # pour que les ticks passent au bleu côté clients connectés.
+            try:
+                from websocket import sio
+                # Récupérer les IDs des messages marqués comme lus (ceux non envoyés par l'utilisateur courant)
+                unread_msgs = await db.messages.find(
+                    {
+                        "conversation_id": conversation_id,
+                        "sender_id": {"$ne": user["id"]},
+                        "read_by": {"$nin": [user["id"]]},
+                    },
+                    {"_id": 0, "id": 1},
+                ).to_list(500)
+                message_ids = [m["id"] for m in unread_msgs]
+
+                # Marquer chaque message comme lu par cet utilisateur (idempotent)
+                if message_ids:
+                    await db.messages.update_many(
+                        {"conversation_id": conversation_id, "id": {"$in": message_ids}},
+                        {"$addToSet": {"read_by": user["id"]}, "$set": {"is_read": True}},
+                    )
+
+                await sio.emit(
+                    "messages_read",
+                    {
+                        "conversation_id": conversation_id,
+                        "reader_id": user["id"],
+                        "read_at": now.isoformat(),
+                        "message_ids": message_ids,
+                    },
+                    room=conversation_id,
+                )
+            except Exception as e:
+                logger.warning(f"[chat] failed to emit messages_read for {conversation_id}: {e}")
+
             return {"success": True}
         else:
             raise HTTPException(status_code=404, detail="Conversation non trouvée")
@@ -381,17 +417,35 @@ async def delete_conversation(
     user: dict = Depends(get_current_user_local)
 ):
     """
-    Supprime une conversation (seulement pour l'utilisateur, pas pour les autres participants).
-    
-    En réalité, on pourrait ajouter un champ `deleted_by` pour soft delete.
+    Supprime une conversation ET tous ses messages (hard delete).
+
+    Build 152.20 — Implémentation demandée par le mobile. L'utilisateur doit être
+    participant de la conversation. La suppression est totale (pas de soft delete)
+    pour les 2 côtés de la conv, car un chat 1:1 sans l'autre n'a pas de sens.
     """
     try:
-        # Pour l'instant, on empêche la suppression (fonctionnalité future)
-        raise HTTPException(
-            status_code=501,
-            detail="La suppression de conversations n'est pas encore implémentée"
+        conv = await db.conversations.find_one({
+            "id": conversation_id,
+            "participants.user_id": user["id"],
+        }, {"_id": 0, "id": 1})
+        if not conv:
+            raise HTTPException(status_code=404, detail="Conversation introuvable")
+
+        msg_res = await db.messages.delete_many({"conversation_id": conversation_id})
+        conv_res = await db.conversations.delete_one({"id": conversation_id})
+
+        logger.info(
+            f"[chat] Deleted conversation {conversation_id} by user {user['id']} "
+            f"({msg_res.deleted_count} messages)"
         )
-        
+        return {
+            "success": True,
+            "deleted_messages": msg_res.deleted_count,
+            "deleted_conversation": conv_res.deleted_count,
+        }
+
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error deleting conversation: {e}")
         raise HTTPException(status_code=500, detail=str(e))

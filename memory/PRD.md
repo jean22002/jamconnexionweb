@@ -565,3 +565,21 @@ Application de mise en relation entre cafés-concerts et musiciens.
     3. PUT /read côté musicien → notif `read=true`
     4. Cleanup 4 msgs + 1 conv + 1 notif supprimés
 
+
+- **🎵 Fix : planning groupe vide malgré concerts acceptés (Build 152.22)** (2026-09-06) :
+  Bug remonté par l'agent mobile : `GET /bands/{band_id}/events` renvoyait `[]` pour tous les groupes de Marc alors que 10 candidatures étaient acceptées.
+  - **Root cause identifiée** : le resolver `accept_application` interrogait d'abord `db.bands` (Solo) qui contient 15 doublons legacy pour Marc (`a0f9d7c7-…`, `band_1784055270077_…`, etc.), alors que mobile identifie les bands via l'`id` inline dans `musicians.bands[]` (`band_1788622139835_e4f949091` = jejeje courant). Résultat : les `concert.band_id` pointaient vers des IDs orphelins jamais utilisés côté client.
+  - **Fix resolver `accept_application`** (routes/planning.py) : nouvelle chaîne de résolution ordonnée par priorité :
+    1. `app.band_id` s'il matche un inline `musicians.bands[]` → OK
+    2. Sinon fallback par NAME (`band_name` → inline band de même nom)
+    3. Sinon Solo → premier inline `band_type=Solo`
+    4. Dernier recours : `db.bands` Solo (rétro-compat)
+    → Chaque nouvelle acceptation écrit un `concert.band_id` qui matche l'inline id mobile.
+  - **Migration one-shot** : script Python qui a remappé 10/10 concerts historiques de la collection `concerts` (source=`application_accepted`) vers l'inline id courant en utilisant la même chaîne name→Solo. `db.concerts.band_id=band_1788622139835_e4f949091` (jejeje) passe de 0 à 10.
+  - **Test E2E curl live Preview** validé :
+    - `GET /bands/band_1788622139835_e4f949091/events?month=9&year=2026` → 4 événements ✅ (au lieu de `[]`)
+    - `GET /bands/band_1788622139835_e4f949091/events` (all) → 10 événements ✅
+    - Nouvelle postulation avec `band_id=rock_ky_inline` + acceptation → `concert.band_id` = rock_ky inline id, visible immédiatement dans `/bands/rock_ky/events`
+  - Note : le cas symétrique (venue publie un concert avec band retenu direct sans passer par candidature) utilise déjà la même collection `db.concerts` — pas de flow séparé à câbler.
+  - Dette technique restante : les 15 doublons `db.bands` pour Marc (créés à chaque PUT /musicians via sync legacy) mériteraient un cleanup dédié. Actuellement le mobile n'en dépend plus grâce à ce fix.
+

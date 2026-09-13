@@ -770,17 +770,53 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
         await db.planning_slots.update_one({"id": slot["id"]}, {"$set": {"is_open": False}})
 
     # 🎵 INSERT INTO db.concerts (single source of truth pour /api/bands/{band_id}/events)
-    # On résout le band_id de manière déterministe :
-    #   - Si application.band_id existe → on l'utilise
-    #   - Sinon (cas Solo), on cherche le band Solo du musicien dans db.bands (band_type="Solo", leader_id=musician_id)
-    #   - Sinon, on cherche dans musicians.bands[band_type="Solo"]
+    #
+    # Build 152.22 — Résolution du band_id fiable pour le mobile :
+    #   • On donne PRIORITÉ à l'inline `musicians.bands[]` (source de vérité mobile)
+    #   • Si app.band_id matche un inline band → on le garde
+    #   • Sinon on cherche l'inline band ayant le même NAME que app.band_name
+    #     (utile pour app.band_id vide ou pointant vers un doublon db.bands legacy)
+    #   • En dernier recours, fallback sur db.bands + Solo comme avant
     resolved_band_id = app.get("band_id")
     resolved_band_type = None
 
     musician_for_band = await db.musicians.find_one({"id": app["musician_id"]}, {"_id": 0}) if app.get("musician_id") else None
+    inline_bands = (musician_for_band or {}).get("bands") or []
 
+    def _find_inline_by_id(bid):
+        for b in inline_bands:
+            if b.get("id") == bid or b.get("band_id") == bid:
+                return b
+        return None
+
+    def _find_inline_by_name(name):
+        if not name:
+            return None
+        target = name.strip().lower()
+        for b in inline_bands:
+            if (b.get("name") or "").strip().lower() == target:
+                return b
+        return None
+
+    if musician_for_band:
+        # 1) L'app pointe déjà vers un inline band → OK
+        inline_match = _find_inline_by_id(resolved_band_id) if resolved_band_id else None
+        # 2) Sinon fallback par NAME (band_id vide OU pointe vers un doublon legacy db.bands)
+        if not inline_match:
+            inline_match = _find_inline_by_name(app.get("band_name"))
+        # 3) Sinon (Solo sans band_name explicite) : premier inline band Solo
+        if not inline_match:
+            for b in inline_bands:
+                if b.get("band_type") == "Solo":
+                    inline_match = b
+                    break
+
+        if inline_match:
+            resolved_band_id = inline_match.get("id") or inline_match.get("band_id")
+            resolved_band_type = inline_match.get("band_type") or resolved_band_type
+
+    # 4) Dernier recours : db.bands Solo (rétrocompat)
     if not resolved_band_id and musician_for_band:
-        # 1) collection db.bands avec band_type=Solo
         solo_band = await db.bands.find_one(
             {"leader_id": musician_for_band["id"], "band_type": "Solo"},
             {"_id": 0, "id": 1}
@@ -788,13 +824,6 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
         if solo_band:
             resolved_band_id = solo_band["id"]
             resolved_band_type = "Solo"
-        else:
-            # 2) musicians.bands[] embedded avec band_type=Solo
-            for b in (musician_for_band.get("bands") or []):
-                if b.get("band_type") == "Solo":
-                    resolved_band_id = b.get("id") or b.get("band_id")
-                    resolved_band_type = "Solo"
-                    break
 
     if not resolved_band_type and resolved_band_id:
         # Lookup band_type pour info

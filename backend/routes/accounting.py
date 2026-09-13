@@ -5,9 +5,9 @@ Accounting router - Système de comptabilité pour les établissements
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
 from typing import List, Optional
 from datetime import datetime, timezone
-import os
-import shutil
 from uuid import uuid4
+
+from utils.storage import upload_document
 
 router = APIRouter()
 
@@ -41,30 +41,22 @@ async def upload_invoice(
         raise HTTPException(status_code=400, detail="Only PDF and images (JPG, PNG) are allowed")
     
     # Vérifier la taille (max 5 Mo)
-    file_size = 0
-    chunk_size = 1024 * 1024  # 1 Mo
     temp_file = await file.read()
     file_size = len(temp_file)
     
     if file_size > 5 * 1024 * 1024:  # 5 Mo
         raise HTTPException(status_code=400, detail="File too large (max 5 Mo)")
-    
-    # Générer un nom unique
-    file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'pdf'
-    unique_filename = f"{uuid4()}.{file_extension}"
-    
-    # Créer le dossier si nécessaire
-    upload_dir = "/app/backend/uploads/invoices"
-    os.makedirs(upload_dir, exist_ok=True)
-    
-    # Sauvegarder le fichier
-    file_path = f"{upload_dir}/{unique_filename}"
-    with open(file_path, "wb") as f:
-        f.write(temp_file)
-    
-    # Chemin relatif pour stockage en DB
-    relative_path = f"/api/uploads/invoices/{unique_filename}"
-    
+
+    # Build 152.23 — Upload dans Emergent Object Storage (pod filesystem éphémère en prod)
+    result = upload_document(
+        file_data=temp_file,
+        user_id=current_user["id"],
+        filename=file.filename or f"invoice.{('pdf' if file.content_type == 'application/pdf' else 'jpg')}",
+        content_type=file.content_type,
+        folder="invoices",
+    )
+    relative_path = result["url"]  # ex: "/api/files/jamconnexion/invoices/<user_id>/<file_id>.pdf"
+
     # Mettre à jour l'événement
     collection_map = {
         "jam": "jams",

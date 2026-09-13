@@ -1442,16 +1442,49 @@ async def update_spectacle_payment_status(
 
 
 # ============= INVOICE FILE UPLOAD =============
+# Build 152.23 — Uploads factures via Emergent Object Storage (le pod filesystem
+# est éphémère en Production, les fichiers écrits sur disque sont perdus au redémarrage).
+from utils.storage import upload_document
 
-UPLOAD_DIR = Path("/app/backend/uploads/invoices")
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+UPLOAD_DIR = Path("/app/backend/uploads/invoices")  # legacy fallback pour lecture (kept for old files)
 
 ALLOWED_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".gif", ".webp"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
+_CONTENT_TYPES = {
+    ".pdf": "application/pdf",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
+}
+
+
 def get_file_extension(filename: str) -> str:
     """Get file extension in lowercase"""
     return Path(filename).suffix.lower()
+
+
+async def _store_invoice(user_id: str, event_id: str, file: UploadFile) -> str:
+    """Validate + store an invoice in Object Storage. Returns the public URL to persist in DB."""
+    file_ext = get_file_extension(file.filename)
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}",
+        )
+    file_content = await file.read()
+    if len(file_content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Max size: 10MB")
+    result = upload_document(
+        file_data=file_content,
+        user_id=user_id,
+        filename=f"{event_id}{file_ext}",
+        content_type=_CONTENT_TYPES.get(file_ext, "application/octet-stream"),
+        folder="invoices",
+    )
+    return result["url"]
 
 @router.post("/jams/{jam_id}/invoice")
 async def upload_jam_invoice(
@@ -1483,22 +1516,12 @@ async def upload_jam_invoice(
     jam = await db.jams.find_one({"id": jam_id, "venue_id": venue["id"]}, {"_id": 0})
     if not jam:
         raise HTTPException(status_code=404, detail="Jam event not found")
-    
-    # Generate unique filename
-    unique_filename = f"{jam_id}_{uuid.uuid4().hex[:8]}{file_ext}"
-    file_path = UPLOAD_DIR / unique_filename
-    
-    # Save file
-    with open(file_path, "wb") as f:
-        f.write(file_content)
-    
-    # Update database
-    await db.jams.update_one(
-        {"id": jam_id},
-        {"$set": {"invoice_file": unique_filename}}
-    )
-    
-    return {"success": True, "filename": unique_filename}
+
+    # Build 152.23 — Object Storage
+    invoice_url = await _store_invoice(current_user["id"], jam_id, file)
+    await db.jams.update_one({"id": jam_id}, {"$set": {"invoice_file": invoice_url}})
+
+    return {"success": True, "invoice_url": invoice_url}
 
 
 @router.post("/concerts/{concert_id}/invoice")
@@ -1510,43 +1533,20 @@ async def upload_concert_invoice(
     """Upload invoice file for a concert event"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can upload invoices")
-    
-    # Validate file extension
-    file_ext = get_file_extension(file.filename)
-    if file_ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(
-            status_code=400, 
-            detail=f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
-        )
-    
-    # Validate file size
-    file_content = await file.read()
-    if len(file_content) > MAX_FILE_SIZE:
-        raise HTTPException(status_code=400, detail="File too large. Max size: 10MB")
-    
+
     venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
     if not venue:
         raise HTTPException(status_code=404, detail="Venue profile not found")
-    
+
     concert = await db.concerts.find_one({"id": concert_id, "venue_id": venue["id"]}, {"_id": 0})
     if not concert:
         raise HTTPException(status_code=404, detail="Concert not found")
-    
-    # Generate unique filename
-    unique_filename = f"{concert_id}_{uuid.uuid4().hex[:8]}{file_ext}"
-    file_path = UPLOAD_DIR / unique_filename
-    
-    # Save file
-    with open(file_path, "wb") as f:
-        f.write(file_content)
-    
-    # Update database
-    await db.concerts.update_one(
-        {"id": concert_id},
-        {"$set": {"invoice_file": unique_filename}}
-    )
-    
-    return {"success": True, "filename": unique_filename}
+
+    # Build 152.23 — Object Storage
+    invoice_url = await _store_invoice(current_user["id"], concert_id, file)
+    await db.concerts.update_one({"id": concert_id}, {"$set": {"invoice_file": invoice_url}})
+
+    return {"success": True, "invoice_url": invoice_url}
 
 
 @router.post("/karaoke/{karaoke_id}/invoice")
@@ -1558,38 +1558,20 @@ async def upload_karaoke_invoice(
     """Upload invoice file for a karaoke event"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can upload invoices")
-    
-    file_ext = get_file_extension(file.filename)
-    if file_ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(
-            status_code=400, 
-            detail=f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
-        )
-    
-    file_content = await file.read()
-    if len(file_content) > MAX_FILE_SIZE:
-        raise HTTPException(status_code=400, detail="File too large. Max size: 10MB")
-    
+
     venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
     if not venue:
         raise HTTPException(status_code=404, detail="Venue profile not found")
-    
+
     karaoke = await db.karaoke.find_one({"id": karaoke_id, "venue_id": venue["id"]}, {"_id": 0})
     if not karaoke:
         raise HTTPException(status_code=404, detail="Karaoke event not found")
-    
-    unique_filename = f"{karaoke_id}_{uuid.uuid4().hex[:8]}{file_ext}"
-    file_path = UPLOAD_DIR / unique_filename
-    
-    with open(file_path, "wb") as f:
-        f.write(file_content)
-    
-    await db.karaoke.update_one(
-        {"id": karaoke_id},
-        {"$set": {"invoice_file": unique_filename}}
-    )
-    
-    return {"success": True, "filename": unique_filename}
+
+    # Build 152.23 — Object Storage
+    invoice_url = await _store_invoice(current_user["id"], karaoke_id, file)
+    await db.karaoke.update_one({"id": karaoke_id}, {"$set": {"invoice_file": invoice_url}})
+
+    return {"success": True, "invoice_url": invoice_url}
 
 
 @router.post("/spectacle/{spectacle_id}/invoice")
@@ -1601,38 +1583,20 @@ async def upload_spectacle_invoice(
     """Upload invoice file for a spectacle event"""
     if current_user["role"] != "venue":
         raise HTTPException(status_code=403, detail="Only venues can upload invoices")
-    
-    file_ext = get_file_extension(file.filename)
-    if file_ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(
-            status_code=400, 
-            detail=f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
-        )
-    
-    file_content = await file.read()
-    if len(file_content) > MAX_FILE_SIZE:
-        raise HTTPException(status_code=400, detail="File too large. Max size: 10MB")
-    
+
     venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
     if not venue:
         raise HTTPException(status_code=404, detail="Venue profile not found")
-    
+
     spectacle = await db.spectacle.find_one({"id": spectacle_id, "venue_id": venue["id"]}, {"_id": 0})
     if not spectacle:
         raise HTTPException(status_code=404, detail="Spectacle event not found")
-    
-    unique_filename = f"{spectacle_id}_{uuid.uuid4().hex[:8]}{file_ext}"
-    file_path = UPLOAD_DIR / unique_filename
-    
-    with open(file_path, "wb") as f:
-        f.write(file_content)
-    
-    await db.spectacle.update_one(
-        {"id": spectacle_id},
-        {"$set": {"invoice_file": unique_filename}}
-    )
-    
-    return {"success": True, "filename": unique_filename}
+
+    # Build 152.23 — Object Storage
+    invoice_url = await _store_invoice(current_user["id"], spectacle_id, file)
+    await db.spectacle.update_one({"id": spectacle_id}, {"$set": {"invoice_file": invoice_url}})
+
+    return {"success": True, "invoice_url": invoice_url}
 
 
 @router.get("/invoices/{filename}")

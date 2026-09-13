@@ -1,76 +1,43 @@
-import aiofiles
-from pathlib import Path
+"""
+Legacy upload utility — refactored to use Emergent Object Storage.
+Build 152.23 — Local pod filesystem is ephemeral in production, so all uploads
+are now sent to Object Storage. Callers still receive a URL path they can store
+in Mongo (`/api/files/{path}` served by routes/files.py).
+"""
 from fastapi import UploadFile
-import uuid
-import asyncio
-from .image_optimizer import optimize_image
+import mimetypes
 
-ROOT_DIR = Path(__file__).parent.parent
-UPLOADS_DIR = ROOT_DIR / "uploads"
-UPLOADS_DIR.mkdir(exist_ok=True)
+from .storage import upload_image, upload_document
 
-# Extensions d'images à optimiser
-IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.gif'}
+IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.gif', '.webp'}
+
 
 async def save_upload_file(file: UploadFile, folder: str = "", optimize: bool = True) -> str:
     """
-    Save uploaded file and return its URL path
-    
-    Args:
-        file: UploadFile object
-        folder: Subfolder in uploads directory
-        optimize: If True, automatically convert images to WebP
-    
-    Returns:
-        URL path to the saved file
-    """
-    if folder:
-        target_dir = UPLOADS_DIR / folder
-        target_dir.mkdir(exist_ok=True, parents=True)
-    else:
-        target_dir = UPLOADS_DIR
-    
-    file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
-    unique_filename = f"{uuid.uuid4()}.{file_extension}"
-    file_path = target_dir / unique_filename
-    
-    # Save original file
-    async with aiofiles.open(file_path, 'wb') as out_file:
-        content = await file.read()
-        await out_file.write(content)
-    
-    # Optimize image if it's an image file
-    is_image = f".{file_extension.lower()}" in IMAGE_EXTENSIONS
-    if optimize and is_image:
-        # Run optimization in background to avoid blocking
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(
-            None,
-            _optimize_image_sync,
-            str(file_path)
-        )
-        
-        # Change extension to .webp in the URL
-        unique_filename = unique_filename.rsplit('.', 1)[0] + '.webp'
-    
-    if folder:
-        return f"/api/uploads/{folder}/{unique_filename}"
-    return f"/api/uploads/{unique_filename}"
+    Save an uploaded file to Emergent Object Storage.
 
-def _optimize_image_sync(file_path: str):
-    """Synchronous wrapper for image optimization"""
-    try:
-        result = optimize_image(
-            file_path,
-            convert_to_webp=True,
-            quality=85
-        )
-        if result.get('success'):
-            # Remove original file after successful WebP conversion
-            import os
-            if os.path.exists(file_path):
-                os.remove(file_path)
-        return result
-    except Exception as e:
-        print(f"Error optimizing image {file_path}: {e}")
-        return {'success': False, 'error': str(e)}
+    Args:
+        file: FastAPI UploadFile
+        folder: Storage folder (venue-gallery, events, etc.)
+        optimize: If True and the file is an image → resize + WebP
+
+    Returns:
+        Public-facing URL served by /api/files/{path}
+    """
+    content = await file.read()
+    filename = file.filename or "upload.bin"
+    extension = f".{filename.rsplit('.', 1)[-1].lower()}" if "." in filename else ""
+    is_image = extension in IMAGE_EXTENSIONS
+
+    # `user_id` is only used to shard the storage path — we use the folder name
+    # here since the legacy signature doesn't carry the user context.
+    owner = folder or "generic"
+    storage_folder = folder or "uploads"
+
+    if optimize and is_image:
+        result = upload_image(content, user_id=owner, image_type="standard", folder=storage_folder)
+    else:
+        content_type = file.content_type or mimetypes.guess_type(filename)[0] or "application/octet-stream"
+        result = upload_document(content, user_id=owner, filename=filename, content_type=content_type, folder=storage_folder)
+
+    return result["url"]

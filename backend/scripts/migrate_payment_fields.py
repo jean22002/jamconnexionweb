@@ -29,7 +29,6 @@ NORMALIZE_OLD_VALUE = {
     "espece": "especes",
     "Espèces": "especes",
     "Espèce": "especes",
-    "Espèces": "especes",
     "chèque": "cheque",
     "Chèque": "cheque",
     "virement": "virement",

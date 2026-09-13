@@ -41,7 +41,7 @@ class JamConnexionAPITester:
                 try:
                     data = response.json()
                     details += f", Response: {data.get('status', 'unknown')}"
-                except:
+                except Exception:
                     details += ", Response received (non-JSON)"
             self.log_test("Health Check", success, details)
             return success
@@ -1603,7 +1603,7 @@ class JamConnexionAPITester:
             # 2. Créer un bœuf pour aujourd'hui
             today = datetime.now().strftime("%Y-%m-%d")
             jam_today_data = {
-                "date": test_date,
+                "date": today,
                 "start_time": "21:00",
                 "end_time": "23:59",
                 "music_styles": ["Rock", "Pop"],
@@ -6716,7 +6716,7 @@ class JamConnexionAPITester:
 
     # ============= MESSAGING RESTRICTION TESTS =============
     
-    def test_messaging_restriction_everyone_allowed(self):
+    def test_messaging_restriction_everyone_allowed_v2(self):
         """Test 1: Create venue with allow_messages_from='everyone' → Musician can send message"""
         try:
             # Create a new venue with allow_messages_from = "everyone"
@@ -6780,7 +6780,7 @@ class JamConnexionAPITester:
             self.log_test("Messaging Restriction - Everyone Allowed", False, f"Error: {str(e)}")
             return False
 
-    def test_messaging_restriction_connected_only_blocked(self):
+    def test_messaging_restriction_connected_only_blocked_v2(self):
         """Test 2: Change to allow_messages_from='connected_only' → Same musician CANNOT send message (403)"""
         try:
             # Update venue to allow_messages_from = "connected_only"
@@ -6824,7 +6824,7 @@ class JamConnexionAPITester:
             self.log_test("Messaging Restriction - Connected Only Blocked", False, f"Error: {str(e)}")
             return False
 
-    def test_messaging_restriction_with_accepted_application(self):
+    def test_messaging_restriction_with_accepted_application_v2(self):
         """Test 3: Create accepted application for musician → He can now send message"""
         try:
             # First create a planning slot

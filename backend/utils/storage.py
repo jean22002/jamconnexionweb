@@ -260,3 +260,27 @@ def upload_image(
         response["thumbnail_url"] = f"/api/files/{thumb_path}"
     
     return response
+
+
+def upload_document(
+    file_data: bytes,
+    user_id: str,
+    filename: str,
+    content_type: str = "application/octet-stream",
+    folder: str = "invoices",
+) -> dict:
+    """
+    Upload a raw document (PDF, ICS, etc.) to Object Storage without optimization.
+
+    Returns:
+        {"url": "/api/files/{path}", "path": "jamconnexion/{folder}/...", "size": N}
+    """
+    extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else "bin"
+    file_id = f"{uuid.uuid4().hex[:12]}"
+    path = generate_storage_path(user_id, file_id, extension, folder)
+    result = put_object(path, file_data, content_type)
+    return {
+        "url": f"/api/files/{path}",
+        "path": path,
+        "size": result.get("size", len(file_data)),
+    }

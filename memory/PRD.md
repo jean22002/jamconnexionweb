@@ -583,3 +583,13 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - Note : le cas symétrique (venue publie un concert avec band retenu direct sans passer par candidature) utilise déjà la même collection `db.concerts` — pas de flow séparé à câbler.
   - Dette technique restante : les 15 doublons `db.bands` pour Marc (créés à chaque PUT /musicians via sync legacy) mériteraient un cleanup dédié. Actuellement le mobile n'en dépend plus grâce à ce fix.
 
+
+- **🧹 Cleanup dette technique lint bloquants (Build 152.23)** (2026-09-06) :
+  Demande de l'agent mobile — 13 erreurs de lint bloquaient les commits de déploiement propre. Nettoyage complet :
+  - **Migration Emergent Object Storage** (fichiers uploads factures) : `utils/upload.py`, `routes/accounting.py`, `routes/events.py` (4 endpoints : jams, concerts, karaoke, spectacle). Nouveau helper `utils.storage.upload_document()` + factorisation via `_store_invoice()`. Les factures sont désormais stockées dans Object Storage (jamconnexion/invoices/{user_id}/{file_id}.pdf) et accessibles via `/api/files/{path}` (route publique existante). Le pod filesystem reste utilisé uniquement en fallback lecture pour les vieilles factures pré-migration.
+  - **Ruff fixes** :
+    - `scripts/migrate_payment_fields.py` : suppression clé dict dupliquée `"Espèces"`
+    - `scripts/migrate_solo_to_bands.py` : remplacement `{$ne: None, $ne: {}}` → `$nin: [None, {}]`
+    - `tests/backend_test.py` : `except:` → `except Exception:`, variable `test_date` non définie → `today`, renommage des 3 méthodes `test_messaging_restriction_*` dupliquées avec suffixe `_v2`
+  - Backend redémarre sans erreur d'import. Endpoint `/api/health` répond OK.
+

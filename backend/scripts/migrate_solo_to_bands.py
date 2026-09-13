@@ -70,7 +70,7 @@ async def migrate(dry_run: bool = True):
     
     # Cible : tous les musiciens avec solo_profile non vide
     cursor = db.musicians.find(
-        {"solo_profile": {"$exists": True, "$ne": None, "$ne": {}}},
+        {"solo_profile": {"$exists": True, "$nin": [None, {}]}},
         {"_id": 1, "user_id": 1, "pseudo": 1, "name": 1, "city": 1, "department": 1, 
          "region": 1, "latitude": 1, "longitude": 1, "solo_profile": 1, "bands": 1}
     )

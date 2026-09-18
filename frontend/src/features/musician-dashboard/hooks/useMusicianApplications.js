@@ -37,7 +37,7 @@ export function useMusicianApplications(token) {
     if (!token) return;
     
     try {
-      const response = await axios.get(`${API}/planning/musician/applications`, {
+      const response = await axios.get(`${API}/applications/my`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMyApplications(response.data || []);
@@ -53,7 +53,7 @@ export function useMusicianApplications(token) {
     
     try {
       const response = await axios.post(
-        `${API}/planning/slots/${slotId}/apply`,
+        `${API}/planning/${slotId}/apply`,
         applicationData,
         { headers: { Authorization: `Bearer ${token}` } }
       );

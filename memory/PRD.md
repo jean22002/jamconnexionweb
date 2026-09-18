@@ -603,3 +603,19 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - **Test curl live Preview** : `/messages/sent` → 4 msgs enrichis, `/messages/inbox` → 4 msgs enrichis, chacun avec `recipient_id` correctement calculé.
   - L'écran web `MessagesImproved.jsx` (legacy) affichera désormais les convs chat sans réécriture frontend.
 
+
+- **🐛 Fix web venue : candidatures 404 + notifs non cliquables (Build 152.25)** (2026-09-08) :
+  L'utilisateur bar@gmail.com voyait "Erreur lors du chargement des candidatures" et les notifs de son tableau de bord ne réagissaient pas au clic. Root causes multiples : 7 URLs frontend cassées + handler onClick manquant.
+  - **URLs corrigées dans `useVenuePlanning.js`** :
+    - GET `/planning/venue/slots` → GET `/planning` (fetchPlanningSlots)
+    - GET `/planning/slots/{id}/applications` → GET `/planning/{id}/applications` (fetchApplications)
+    - POST `/planning/venue/slots` → POST `/planning` (createPlanningSlot)
+    - DELETE `/planning/slots/{id}` → DELETE `/planning/{id}` (deletePlanningSlot)
+    - POST `/planning/applications/{id}/accept` → POST `/applications/{id}/accept`
+    - POST `/planning/applications/{id}/reject` → POST `/applications/{id}/reject`
+  - **URLs corrigées dans `useMusicianApplications.js`** :
+    - GET `/planning/musician/applications` → GET `/applications/my`
+    - POST `/planning/slots/{id}/apply` → POST `/planning/{id}/apply`
+  - **Notifications cliquables** (`VenueDashboard.jsx`) : ajout d'un `onClick` handler qui marque la notif comme lue via `PUT /notifications/{id}/read`, ferme le modal et navigue vers `notif.link`. Ajout aussi `data-testid` pour QA, fix de la classe conditionnelle (utilisait `is_read` → renommé en `read` conformément au modèle backend), fallback `title` si `message` vide.
+  - Testé curl live Prod : `GET /planning` → 3 slots, `GET /planning/{id}/applications` → 200 avec data.
+

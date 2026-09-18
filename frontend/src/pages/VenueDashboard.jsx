@@ -2687,11 +2687,34 @@ export default function VenueDashboard() {
                         {notifications.map((notif) => (
                           <div
                             key={notif.id}
-                            className={`p-3 rounded-lg border ${
-                              notif.is_read ? 'bg-black/20 border-white/5' : 'bg-primary/10 border-primary/30'
+                            role="button"
+                            tabIndex={0}
+                            onClick={async () => {
+                              try {
+                                if (!notif.read) {
+                                  await axios.put(
+                                    `${API}/notifications/${notif.id}/read`,
+                                    {},
+                                    { headers: { Authorization: `Bearer ${token}` } }
+                                  );
+                                  fetchNotifications();
+                                }
+                                setShowNotificationsDialog(false);
+                                const target = notif.link || notif.data?.link;
+                                if (target) {
+                                  const path = target.startsWith('/') ? target : `/${target}`;
+                                  navigate(path);
+                                }
+                              } catch (e) {
+                                console.error('Error handling notification click:', e);
+                              }
+                            }}
+                            className={`p-3 rounded-lg border cursor-pointer transition-colors hover:bg-white/5 ${
+                              notif.read ? 'bg-black/20 border-white/5' : 'bg-primary/10 border-primary/30'
                             }`}
+                            data-testid={`notification-item-${notif.id}`}
                           >
-                            <p className="text-sm">{notif.message}</p>
+                            <p className="text-sm">{notif.message || notif.title}</p>
                             <p className="text-xs text-muted-foreground mt-1">
                               {new Date(notif.created_at).toLocaleDateString('fr-FR', {
                                 day: 'numeric',

@@ -20,7 +20,7 @@ export function useVenuePlanning(token) {
     if (!token) return;
     
     try {
-      const response = await axios.get(`${API}/planning/venue/slots`, {
+      const response = await axios.get(`${API}/planning`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPlanningSlots(response.data || []);
@@ -43,7 +43,7 @@ export function useVenuePlanning(token) {
     if (!token) return;
     
     try {
-      const response = await axios.get(`${API}/planning/slots/${slotId}/applications`, {
+      const response = await axios.get(`${API}/planning/${slotId}/applications`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setApplications(prev => ({
@@ -62,7 +62,7 @@ export function useVenuePlanning(token) {
     
     try {
       const response = await axios.post(
-        `${API}/planning/venue/slots`,
+        `${API}/planning`,
         slotData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -82,7 +82,7 @@ export function useVenuePlanning(token) {
     if (!token) return false;
     
     try {
-      await axios.delete(`${API}/planning/slots/${slotId}`, {
+      await axios.delete(`${API}/planning/${slotId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -102,7 +102,7 @@ export function useVenuePlanning(token) {
     
     try {
       await axios.post(
-        `${API}/planning/applications/${applicationId}/accept`,
+        `${API}/applications/${applicationId}/accept`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -123,7 +123,7 @@ export function useVenuePlanning(token) {
     
     try {
       await axios.post(
-        `${API}/planning/applications/${applicationId}/reject`,
+        `${API}/applications/${applicationId}/reject`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

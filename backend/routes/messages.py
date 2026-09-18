@@ -183,6 +183,43 @@ async def send_message(request: Request, data: MessageCreate, current_user: dict
     
     return MessageResponse(**message_doc)
 
+async def _enrich_legacy_messages(messages: list, current_user_id: str) -> list:
+    """
+    Build 152.24 — Enrichit les messages du nouveau schéma chat (avec `conversation_id`)
+    pour qu'ils exposent aussi `recipient_id`/`recipient_name`/`subject` attendus par
+    l'UI legacy `/messages/inbox` et `/messages/sent`.
+    """
+    # Récupérer toutes les convs référencées en un seul appel
+    conv_ids = list({m["conversation_id"] for m in messages if m.get("conversation_id") and not m.get("recipient_id")})
+    convs = {}
+    if conv_ids:
+        cursor = db.conversations.find({"id": {"$in": conv_ids}}, {"_id": 0, "id": 1, "participants": 1})
+        async for c in cursor:
+            convs[c["id"]] = c
+
+    for m in messages:
+        if m.get("recipient_id"):
+            continue
+        conv = convs.get(m.get("conversation_id"))
+        if not conv:
+            continue
+        other = next(
+            (p for p in conv.get("participants", []) if p.get("user_id") != current_user_id),
+            None,
+        )
+        if other:
+            # Si sender_id = current_user_id → recipient est l'autre.
+            # Sinon (le current_user reçoit) → recipient = current_user, sender = l'autre.
+            if m.get("sender_id") == current_user_id:
+                m["recipient_id"] = other.get("user_id")
+                m["recipient_name"] = other.get("name") or "Utilisateur"
+            else:
+                m["recipient_id"] = current_user_id
+                m["recipient_name"] = None
+        m.setdefault("subject", "")
+    return messages
+
+
 @router.get("/inbox", response_model=List[MessageResponse])
 async def get_inbox(
     limit: int = 100, 
@@ -190,10 +227,28 @@ async def get_inbox(
     current_user: dict = Depends(get_current_user_local)
 ):
     """Get all messages received by current user with pagination"""
+    # Build 152.24 — Inclut les messages du nouveau schéma chat où le user est participant
+    # non-sender de la conv (ie il RECEVAIT). On matche via conversation.participants.
+    convs = await db.conversations.find(
+        {"participants.user_id": current_user["id"]},
+        {"_id": 0, "id": 1},
+    ).to_list(1000)
+    conv_ids = [c["id"] for c in convs]
+
     messages = await db.messages.find(
-        {"recipient_id": current_user["id"]},
+        {
+            "$or": [
+                {"recipient_id": current_user["id"]},
+                {
+                    "conversation_id": {"$in": conv_ids},
+                    "sender_id": {"$ne": current_user["id"]},
+                },
+            ]
+        },
         {"_id": 0}
     ).sort("created_at", -1).skip(offset).limit(limit).to_list(limit)
+
+    messages = await _enrich_legacy_messages(messages, current_user["id"])
     return [MessageResponse(**m) for m in messages]
 
 @router.get("/sent", response_model=List[MessageResponse])
@@ -207,6 +262,7 @@ async def get_sent_messages(
         {"sender_id": current_user["id"]},
         {"_id": 0}
     ).sort("created_at", -1).skip(offset).limit(limit).to_list(limit)
+    messages = await _enrich_legacy_messages(messages, current_user["id"])
     return [MessageResponse(**m) for m in messages]
 
 @router.get("/conversation/{partner_id}", response_model=List[MessageResponse])

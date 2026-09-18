@@ -593,3 +593,13 @@ Application de mise en relation entre cafés-concerts et musiciens.
     - `tests/backend_test.py` : `except:` → `except Exception:`, variable `test_date` non définie → `today`, renommage des 3 méthodes `test_messaging_restriction_*` dupliquées avec suffixe `_v2`
   - Backend redémarre sans erreur d'import. Endpoint `/api/health` répond OK.
 
+
+- **🐛 Fix web : "Erreur lors du chargement des conversations" (Build 152.24)** (2026-09-08) :
+  Bug remonté par l'utilisateur bar@gmail.com sur `jamconnexion.com/messages-improved`. Root cause double :
+  1. **HTTP 500 sur `/api/messages/sent`** : les messages écrits par le nouveau système chat (`/api/chat/messages`) n'ont pas les champs legacy `recipient_id`, `recipient_name`, `subject` et leur `created_at` est un `datetime` — le modèle Pydantic `MessageResponse` levait `ValidationError` sur 4 champs.
+  2. **Frontend groupait par `recipient_id`** vide → conversations invisibles même sans erreur.
+  - **Fix modèle** (`models/message.py`) : `recipient_id/recipient_name/subject` → `Optional`, ajout de `conversation_id: Optional[str]`, `field_validator("created_at", mode="before")` qui coerce `datetime → isoformat`.
+  - **Fix endpoints** (`routes/messages.py`) : nouveau helper `_enrich_legacy_messages()` qui lit `db.conversations` pour dériver `recipient_id/recipient_name` à partir des `participants[]` (l'autre que sender). `/inbox` étend aussi son filtre pour inclure les messages où le user est participant non-sender via `conversation_id`.
+  - **Test curl live Preview** : `/messages/sent` → 4 msgs enrichis, `/messages/inbox` → 4 msgs enrichis, chacun avec `recipient_id` correctement calculé.
+  - L'écran web `MessagesImproved.jsx` (legacy) affichera désormais les convs chat sans réécriture frontend.
+

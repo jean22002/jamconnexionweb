@@ -629,3 +629,7 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - **Fix** : ajout du header `Authorization: Bearer ${token}` sur `PUT /venues/me`.
   - Autre grep exhaustif sur `VenueDashboard.jsx`, `MusicianDashboard.jsx`, `MelomaneDashboard.jsx` — aucun autre appel POST/PUT/DELETE sans header trouvé.
 
+
+- **🐛 Fix : bouton "Candidatures (X)" ne s'ouvrait pas (Build 152.27)** (2026-09-08) :
+  L'utilisateur cliquait sur le bouton `Candidatures (1)` d'un créneau dans l'onglet Candidatures → rien ne se passait. Root cause dans `features/venue-dashboard/tabs/CandidaturesTab.jsx` : le `onClick` du bouton appelait `setViewingApplications` + `fetchApplications` mais oubliait `setShowApplicationsModal(true)`. Le click sur la carte entière fonctionnait car il appelait `handleSlotCardClick` qui fait les 4 actions. **Fix** : le bouton délègue désormais à `handleSlotCardClick(slot)` pour uniformiser le comportement. Ajout du `data-testid` pour QA future.
+

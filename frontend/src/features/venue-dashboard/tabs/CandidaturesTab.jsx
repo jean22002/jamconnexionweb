@@ -79,12 +79,15 @@ export default function CandidaturesTab({
                   
                   <Button
                     onClick={(e) => {
+                      // Build 152.27 — même comportement que le click sur la carte :
+                      // handleSlotCardClick ouvre la modal (setShowApplicationsModal)
+                      // ce que ce bouton ne faisait pas → rien ne se passait au clic
                       e.stopPropagation();
-                      setViewingApplications(slot.id);
-                      fetchApplications(slot.id);
+                      handleSlotCardClick(slot);
                     }}
                     variant="outline"
                     className="rounded-full gap-2"
+                    data-testid={`applications-button-${slot.id}`}
                   >
                     <Users className="w-4 h-4" />
                     Candidatures ({applications[slot.id]?.length || 0})

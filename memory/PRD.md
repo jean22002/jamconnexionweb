@@ -631,5 +631,11 @@ Application de mise en relation entre cafés-concerts et musiciens.
 
 
 - **🐛 Fix : bouton "Candidatures (X)" ne s'ouvrait pas (Build 152.27)** (2026-09-08) :
-  L'utilisateur cliquait sur le bouton `Candidatures (1)` d'un créneau dans l'onglet Candidatures → rien ne se passait. Root cause dans `features/venue-dashboard/tabs/CandidaturesTab.jsx` : le `onClick` du bouton appelait `setViewingApplications` + `fetchApplications` mais oubliait `setShowApplicationsModal(true)`. Le click sur la carte entière fonctionnait car il appelait `handleSlotCardClick` qui fait les 4 actions. **Fix** : le bouton délègue désormais à `handleSlotCardClick(slot)` pour uniformiser le comportement. Ajout du `data-testid` pour QA future.
+  L'utilisateur cliquait sur le bouton `Candidatures (1)` d'un créneau dans l'onglet Candidatures → rien ne se passait. Root cause double :
+  1. Le `onClick` du bouton dans `CandidaturesTab.jsx` oubliait `setShowApplicationsModal(true)`.
+  2. **Root cause principale** : la modal `<Dialog open={showApplicationsModal}>` était uniquement rendue dans `PlanningTab.jsx`. Depuis l'onglet Candidatures, `setShowApplicationsModal(true)` s'activait mais la modal n'existait pas dans le DOM → visuellement rien ne se passe.
+  - **Fix** : extraction de la modal dans un composant partagé `features/venue-dashboard/ApplicationsModal.jsx` (modal principale + convert-to-concert), monté au niveau du `VenueDashboard.jsx` (hors des Tabs) → universellement accessible.
+  - `PlanningTab.jsx` allégé de ~170 lignes (états `selectedApplications`, handlers `toggleApplicationSelection`, `handleValidateSelection`, `handleConfirmConversion` déplacés dans le nouveau composant).
+  - `CandidaturesTab.jsx` : bouton "Candidatures (X)" délègue maintenant à `handleSlotCardClick(slot)` (même comportement que click sur la carte).
+  - Ajout `data-testid` sur les boutons Accepter/Refuser/rangée de candidature.
 

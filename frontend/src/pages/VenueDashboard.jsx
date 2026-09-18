@@ -72,6 +72,7 @@ import GusoMusiciansSection from "../components/venue/GusoMusiciansSection";
 import SettingsTab from "../features/venue-dashboard/tabs/SettingsTab";
 import AccountingTab from "../features/venue-dashboard/tabs/AccountingTab";
 import PlanningTab from "../features/venue-dashboard/tabs/PlanningTab";
+import ApplicationsModal from "../features/venue-dashboard/ApplicationsModal";
 import ConcertsTab from "../features/venue-dashboard/tabs/ConcertsTab";
 import ProfileTab from "../features/venue-dashboard/tabs/ProfileTab";
 import JamsTab from "../features/venue-dashboard/tabs/JamsTab";
@@ -3599,13 +3600,6 @@ export default function VenueDashboard() {
               planningForm={planningForm}
               setPlanningForm={setPlanningForm}
               handleCreatePlanningSlot={handleCreatePlanningSlot}
-              showApplicationsModal={showApplicationsModal}
-              setShowApplicationsModal={setShowApplicationsModal}
-              selectedSlot={selectedSlot}
-              applications={selectedSlot ? (applications[selectedSlot.id] || []) : []}
-              handleAcceptApplication={handleAcceptApplication}
-              handleRejectApplication={handleRejectApplication}
-              onConvertToConcert={handleConvertToConcert}
             />
           </TabsContent>
 
@@ -4327,6 +4321,17 @@ export default function VenueDashboard() {
           </TabsContent>
 
         </Tabs>
+
+        {/* Build 152.27 — Modal des candidatures partagée (accessible depuis tous les onglets) */}
+        <ApplicationsModal
+          open={showApplicationsModal}
+          onOpenChange={setShowApplicationsModal}
+          selectedSlot={selectedSlot}
+          applications={selectedSlot ? (applications[selectedSlot.id] || []) : []}
+          handleAcceptApplication={handleAcceptApplication}
+          handleRejectApplication={handleRejectApplication}
+          onConvertToConcert={handleConvertToConcert}
+        />
 
         {/* Modale de sélection d'événements multiples */}
         <Dialog open={showEventSelectionModal} onOpenChange={setShowEventSelectionModal}>

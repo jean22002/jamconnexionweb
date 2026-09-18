@@ -2146,7 +2146,10 @@ export default function VenueDashboard() {
   // Update venue profile
   const updateProfile = async () => {
     try {
-      await axios.put(`${API}/venues/me`, formData);
+      // Build 152.26 — Ajout du header Authorization manquant (bug: PUT renvoyait 401 silencieux)
+      await axios.put(`${API}/venues/me`, formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success("✅ Profil mis à jour !");
       setEditingProfile(false);
       await fetchProfile(); // Reload profile from MongoDB Atlas

@@ -619,3 +619,13 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - **Notifications cliquables** (`VenueDashboard.jsx`) : ajout d'un `onClick` handler qui marque la notif comme lue via `PUT /notifications/{id}/read`, ferme le modal et navigue vers `notif.link`. Ajout aussi `data-testid` pour QA, fix de la classe conditionnelle (utilisait `is_read` → renommé en `read` conformément au modèle backend), fallback `title` si `message` vide.
   - Testé curl live Prod : `GET /planning` → 3 slots, `GET /planning/{id}/applications` → 200 avec data.
 
+
+- **🐛 Fix critique : profil venue non sauvegardé (Build 152.26)** (2026-09-08) :
+  Root cause identifiée par curl (backend PUT /venues et /venues/me OK en Prod). Le vrai bug était dans `VenueDashboard.jsx` ligne 2149 :
+  ```js
+  await axios.put(`${API}/venues/me`, formData);  // ❌ pas de header Authorization
+  ```
+  L'appel partait sans token JWT → backend renvoyait `401 Unauthorized` → le catch affichait le toast "Erreur lors de la mise à jour du profil" (que l'utilisateur voyait rapidement mais avait tendance à confondre avec "ça n'a rien fait").
+  - **Fix** : ajout du header `Authorization: Bearer ${token}` sur `PUT /venues/me`.
+  - Autre grep exhaustif sur `VenueDashboard.jsx`, `MusicianDashboard.jsx`, `MelomaneDashboard.jsx` — aucun autre appel POST/PUT/DELETE sans header trouvé.
+

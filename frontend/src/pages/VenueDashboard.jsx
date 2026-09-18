@@ -1146,18 +1146,19 @@ export default function VenueDashboard() {
   // Reviews Management
   const fetchMyReviews = async () => {
     try {
-      const [reviewsRes, ratingRes] = await Promise.all([
-        axios.get(`${API}/venues/me/reviews`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API}/venues/${profile.id}/average-rating`)
+      if (!profile?.id) return;
+      // Build 152.25 — endpoints backend réels (routes/reviews.py)
+      const [reviewsRes, statsRes] = await Promise.all([
+        axios.get(`${API}/reviews/venue/${profile.id}`),
+        axios.get(`${API}/reviews/venue/${profile.id}/stats`)
       ]);
-      // Transform image URLs before setting state
       const reviewsWithUrls = (reviewsRes.data || []).map(review => ({
         ...review,
         musician_image: review.musician_image ? buildImageUrl(review.musician_image) : null
       }));
       setReviews(reviewsWithUrls);
-      setAverageRating(ratingRes.data.average_rating);
-      setTotalReviews(ratingRes.data.total_reviews);
+      setAverageRating(statsRes.data.average_overall || 0);
+      setTotalReviews(statsRes.data.total_reviews || 0);
     } catch (error) {
       console.error("Error fetching reviews:", error);
     }

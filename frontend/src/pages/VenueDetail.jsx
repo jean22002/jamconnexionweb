@@ -237,13 +237,14 @@ export default function VenueDetail() {
 
   const fetchReviews = useCallback(async () => {
     try {
-      const [reviewsRes, ratingRes] = await Promise.all([
-        axios.get(`${API}/venues/${id}/reviews`),
-        axios.get(`${API}/venues/${id}/average-rating`)
+      // Build 152.25 — endpoints backend réels (routes/reviews.py)
+      const [reviewsRes, statsRes] = await Promise.all([
+        axios.get(`${API}/reviews/venue/${id}`),
+        axios.get(`${API}/reviews/venue/${id}/stats`)
       ]);
       setReviews(Array.isArray(reviewsRes.data) ? reviewsRes.data : []);
-      setAverageRating(ratingRes.data.average_rating || 0);
-      setTotalReviews(ratingRes.data.total_reviews || 0);
+      setAverageRating(statsRes.data.average_overall || 0);
+      setTotalReviews(statsRes.data.total_reviews || 0);
     } catch (error) {
       console.error("Error fetching reviews:", error);
       setReviews([]);

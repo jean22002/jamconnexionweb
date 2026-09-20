@@ -90,7 +90,9 @@ export default function CandidaturesTab({
                     data-testid={`applications-button-${slot.id}`}
                   >
                     <Users className="w-4 h-4" />
-                    Candidatures ({applications[slot.id]?.length || 0})
+                    {/* Utilise le compteur retourné par /api/planning (instantané)
+                        et fallback sur les applications déjà chargées si dispo. */}
+                    Candidatures ({applications[slot.id]?.length ?? slot.applications_count ?? 0})
                   </Button>
                 </div>
               </div>

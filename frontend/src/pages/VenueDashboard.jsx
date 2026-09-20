@@ -834,13 +834,9 @@ export default function VenueDashboard() {
     if (activeTab === 'candidatures' && profile?.id) {
       // 🆕 Build 94 : refresh candidatures au focus
       fetchAllReceivedApplications();
-      // Build 152.28 — Précharger le compteur de candidatures pour chaque slot ouvert
-      // (sinon "Candidatures (0)" partout jusqu'à ce qu'on clique sur chaque carte)
-      planningSlots.forEach(slot => {
-        if (slot.is_open) {
-          fetchApplications(slot.id);
-        }
-      });
+      // Build 152.29 — Les compteurs "Candidatures (N)" utilisent slot.applications_count
+      // (déjà présent dans la réponse /api/planning), donc pas de préchargement N+1 requis.
+      // Les listes détaillées sont chargées à la demande via le clic sur une carte.
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, profile?.id, planningSlots.length]);

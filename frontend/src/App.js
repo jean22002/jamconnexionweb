@@ -26,7 +26,8 @@ const MessagesImproved = lazy(() => import("./pages/MessagesImproved"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const VenueRegister = lazy(() => import("./pages/VenueRegister"));
 const MusicianRegister = lazy(() => import("./pages/MusicianRegister"));
-const Pricing = lazy(() => import("./pages/Pricing"));
+// Build 212 — Sync mobile : /pricing redirige désormais vers /tarifs (page canonique).
+// L'ancien composant Pricing.jsx est conservé dans le repo mais plus routé.
 const Tarifs = lazy(() => import("./pages/Tarifs"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentCancel = lazy(() => import("./pages/PaymentCancel"));
@@ -119,7 +120,8 @@ function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
             <Route path="/tarifs" element={<Tarifs />} />
-            <Route path="/pricing" element={<Pricing />} />
+            {/* Build 212 — Sync mobile : /pricing devient un alias historique redirigé vers /tarifs (page canonique à jour). */}
+            <Route path="/pricing" element={<Navigate to="/tarifs" replace />} />
             <Route path="/venue/:id" element={<VenueDetail />} />
             <Route path="/musician/:id" element={<MusicianDetail />} />
             <Route path="/melomane/:id" element={<MelomaneDetail />} />

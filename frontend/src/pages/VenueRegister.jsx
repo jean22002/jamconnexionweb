@@ -307,7 +307,7 @@ export default function VenueRegister() {
                       <p>Les présentes CGV encadrent les conditions d'abonnement payant proposé aux établissements via la plateforme Jam Connexion.</p>
 
                       <p className="font-semibold">Article 2 – Période d'essai</p>
-                      <p>Chaque établissement bénéficie d'une période d'essai gratuite de deux (2) mois. À l'issue de l'essai, l'abonnement débute automatiquement sauf résiliation préalable.</p>
+                      <p>Chaque établissement bénéficie d'une période d'essai gratuite : <strong>six (6) mois</strong> pour les 200 premiers inscrits (mensuel) ou <strong>sept (7) mois</strong> en formule annuelle (6 mois + 1 mois bonus). Au-delà des 200 premiers, la période d'essai est de <strong>trois (3) mois</strong>. À l'issue de l'essai, l'abonnement débute automatiquement sauf résiliation préalable.</p>
 
                       <p className="font-semibold">Article 3 – Tarifs</p>
                       <p>Le tarif de l'abonnement est de : <strong>9,99 € TTC par mois</strong></p>

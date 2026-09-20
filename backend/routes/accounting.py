@@ -3,9 +3,8 @@ Accounting router - Système de comptabilité pour les établissements
 """
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
-from typing import List, Optional
+from typing import Optional
 from datetime import datetime, timezone
-from uuid import uuid4
 
 from utils.storage import upload_document
 

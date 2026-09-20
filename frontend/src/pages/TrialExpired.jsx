@@ -40,9 +40,9 @@ export default function TrialExpired() {
             <Clock className="w-10 h-10 text-primary" />
           </div>
 
-          {/* Title */}
+          {/* Title — Build 212 (sync mobile) : durée d'essai Établissement Stripe = 6 mois pour les 200 premiers, sinon 3 mois. */}
           <h1 className="font-heading font-bold text-4xl md:text-5xl mb-4 text-gradient">
-            Ton essai gratuit de 60 jours est terminé 🎉
+            Ton essai gratuit est terminé 🎉
           </h1>
 
           {/* Message */}

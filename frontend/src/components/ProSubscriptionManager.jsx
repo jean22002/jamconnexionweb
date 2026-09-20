@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-const ProSubscriptionManager = ({ token, subscriptionData, onUpdate }) => {
+const ProSubscriptionManager = ({ token, subscriptionData, onUpdate, role = 'musician' }) => {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [canceling, setCanceling] = useState(false);
   
@@ -62,6 +62,13 @@ const ProSubscriptionManager = ({ token, subscriptionData, onUpdate }) => {
       year: 'numeric'
     });
   };
+
+  // Build 212 — Sync mobile : ce composant est destiné aux MUSICIENS uniquement.
+  // Les Venues ont leur propre bloc abonnement dans VenueDashboard (9,99€/mois, features Établissement).
+  // Garde défensive placée APRÈS les hooks (règle React react-hooks/rules-of-hooks).
+  if (role !== 'musician') {
+    return null;
+  }
 
   if (subscriptionData.tier !== 'pro') {
     return null;

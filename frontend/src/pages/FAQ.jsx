@@ -14,7 +14,7 @@ export default function FAQ() {
   const venueFAQ = [
     {
       question: "L'inscription est-elle payante ?",
-      answer: "L'inscription est gratuite et inclut une période d'essai de deux (2) mois. À l'issue de cette période, l'abonnement démarre automatiquement au tarif de 9,99 € TTC par mois, sauf résiliation préalable."
+      answer: "L'inscription est gratuite et inclut une période d'essai : 6 mois pour les 200 premiers établissements inscrits (mensuel) ou 7 mois en annuel (6 mois + 1 mois bonus). Au-delà des 200 premiers : 3 mois d'essai gratuit. À l'issue de cette période, l'abonnement démarre automatiquement au tarif de 9,99 € TTC/mois (ou 99,99 €/an), sauf résiliation préalable."
     },
     {
       question: "Puis-je résilier mon abonnement à tout moment ?",

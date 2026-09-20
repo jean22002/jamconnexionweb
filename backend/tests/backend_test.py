@@ -541,7 +541,7 @@ class JamConnexionAPITester:
                         details = f"❌ MISSING/INCORRECT FIELDS: {', '.join(missing_fields)}"
                         success = False
                     else:
-                        details = f"✅ Tous les champs catering/hébergement récupérés correctement via /venues/me/concerts"
+                        details = "✅ Tous les champs catering/hébergement récupérés correctement via /venues/me/concerts"
                 else:
                     details = f"❌ Concert avec catering non trouvé dans la liste (total: {len(concerts)} concerts)"
                     success = False
@@ -1641,7 +1641,6 @@ class JamConnexionAPITester:
         """Test d'exécution du script de notifications"""
         try:
             import subprocess
-            import os
             
             # Execute the notifications script
             script_path = "/app/backend/notifications_scheduler.py"
@@ -2896,7 +2895,7 @@ class JamConnexionAPITester:
                         if profile_response.status_code == 200:
                             created_bands += 1
                 
-                except Exception as e:
+                except Exception:
                     continue  # Skip failed creations
             
             success = created_bands > 0
@@ -3884,7 +3883,7 @@ class JamConnexionAPITester:
             
             if response.status_code == 200:
                 created_profile = response.json()
-                musician_id = created_profile.get('id')
+                created_profile.get('id')
                 
                 # Verify the looking_for_profiles field was saved
                 bands = created_profile.get('bands', [])
@@ -4996,7 +4995,7 @@ class JamConnexionAPITester:
                 hasattr(self, 'test_bar_profile_id')
             ])
             
-            details = f"Created: Musician A (The Rockers), Musician B (Jazz Masters), Test Bar venue"
+            details = "Created: Musician A (The Rockers), Musician B (Jazz Masters), Test Bar venue"
             self.log_test("Notification System Setup", success, details)
             return success
             
@@ -5438,9 +5437,8 @@ class JamConnexionAPITester:
             
             # Get current notification count
             response = requests.get(f"{self.base_url}/notifications", headers=headers_a, timeout=10)
-            initial_count = 0
             if response.status_code == 200:
-                initial_count = len(response.json())
+                len(response.json())
             
             # Delete application WITHOUT accepting it first
             response = requests.delete(f"{self.base_url}/applications/{application_id}", headers=headers_venue, timeout=10)
@@ -6048,7 +6046,7 @@ class JamConnexionAPITester:
                 
             venue_data = response.json()
             venue_token = venue_data.get('token')
-            venue_user = venue_data.get('user')
+            venue_data.get('user')
             
             # Step 2: Create venue profile with all required fields
             venue_profile_data = {
@@ -6129,32 +6127,32 @@ class JamConnexionAPITester:
                     break
             
             if not our_concert:
-                details = f"❌ CONCERT NOT FOUND in venue concerts list"
+                details = "❌ CONCERT NOT FOUND in venue concerts list"
                 self.log_test("Concert Date Bug - Concert Not Found", False, details)
                 return False
             
             # Step 6: Check the date field specifically
             retrieved_date = our_concert.get('date')
-            print(f"\n🔍 CRITICAL CHECK - Date field analysis:")
+            print("\n🔍 CRITICAL CHECK - Date field analysis:")
             print(f"   Expected date: {test_date}")
             print(f"   Retrieved date: {retrieved_date}")
             print(f"   Date field present: {'date' in our_concert}")
             print(f"   Date field type: {type(retrieved_date)}")
             
             # Print full concert object for debugging
-            print(f"\n📋 Full concert object:")
+            print("\n📋 Full concert object:")
             for key, value in our_concert.items():
                 print(f"   {key}: {value}")
             
             # Determine if this is a backend bug
             if 'date' not in our_concert:
-                details = f"🚨 BACKEND BUG CONFIRMED: 'date' field is MISSING from concert response"
+                details = "🚨 BACKEND BUG CONFIRMED: 'date' field is MISSING from concert response"
                 success = False
             elif retrieved_date != test_date:
                 details = f"🚨 BACKEND BUG CONFIRMED: 'date' field is INCORRECT. Expected: {test_date}, Got: {retrieved_date}"
                 success = False
             elif retrieved_date is None:
-                details = f"🚨 BACKEND BUG CONFIRMED: 'date' field is NULL/None"
+                details = "🚨 BACKEND BUG CONFIRMED: 'date' field is NULL/None"
                 success = False
             else:
                 details = f"✅ BACKEND WORKING CORRECTLY: 'date' field present and correct ({retrieved_date}). Bug is likely FRONTEND."
@@ -6204,7 +6202,7 @@ class JamConnexionAPITester:
                 
             bug_musician = response.json()
             bug_musician_token = bug_musician.get('token')
-            bug_musician_user = bug_musician.get('user')
+            bug_musician.get('user')
             
             # Create musician profile
             profile_data = {
@@ -6365,7 +6363,7 @@ class JamConnexionAPITester:
                 participants = response.json()
                 participant_count = len(participants)
                 if participant_count == 1:
-                    print(f"✅ Database integrity verified: exactly 1 participant found")
+                    print("✅ Database integrity verified: exactly 1 participant found")
                     participant = participants[0]
                     if participant.get('musician_id') == bug_musician_profile_id:
                         print(f"   Participant: {participant.get('pseudo')} (correct musician)")
@@ -6600,7 +6598,7 @@ class JamConnexionAPITester:
                 return False
                 
             musician_data = musician_login_response.json()
-            test_musician_token = musician_data.get('token')
+            musician_data.get('token')
             
             # Get the specific planning slot and application from review request
             planning_slot_id = "42c310c4-9abd-4a80-b396-71871d756fb6"
@@ -6767,7 +6765,7 @@ class JamConnexionAPITester:
                 success = response.status_code == 200
                 
                 if success:
-                    details = f"✅ Musician can send message to venue with allow_messages_from='everyone'"
+                    details = "✅ Musician can send message to venue with allow_messages_from='everyone'"
                 else:
                     details = f"❌ Status: {response.status_code}, Error: {response.text[:100]}"
             else:
@@ -6811,7 +6809,7 @@ class JamConnexionAPITester:
                 success = response.status_code == 403
                 
                 if success:
-                    details = f"✅ Musician correctly blocked from sending message (403) when venue has allow_messages_from='connected_only'"
+                    details = "✅ Musician correctly blocked from sending message (403) when venue has allow_messages_from='connected_only'"
                 else:
                     details = f"❌ Expected 403, got {response.status_code}. Error: {response.text[:100]}"
             else:
@@ -6876,7 +6874,7 @@ class JamConnexionAPITester:
                         success = response.status_code == 200
                         
                         if success:
-                            details = f"✅ Musician can send message after having accepted application"
+                            details = "✅ Musician can send message after having accepted application"
                         else:
                             details = f"❌ Status: {response.status_code}, Error: {response.text[:100]}"
                     else:
@@ -6947,7 +6945,7 @@ class JamConnexionAPITester:
                 success = response.status_code == 403
                 
                 if success:
-                    details = f"✅ Musician correctly blocked from messaging second venue (403) - venue isolation working"
+                    details = "✅ Musician correctly blocked from messaging second venue (403) - venue isolation working"
                 else:
                     details = f"❌ Expected 403, got {response.status_code}. Venue isolation not working! Error: {response.text[:100]}"
             else:
@@ -7716,7 +7714,7 @@ class JamConnexionAPITester:
                         details += f" ❌ FIELD ERRORS: {', '.join(field_errors)}"
                         success = False
                     else:
-                        details += f" ✅ ALL FIELDS CORRECT"
+                        details += " ✅ ALL FIELDS CORRECT"
                         
                     # Check favorite_styles array
                     expected_styles = ["Metal symphonique", "Rock"]
@@ -7727,7 +7725,7 @@ class JamConnexionAPITester:
                         details += f" ❌ favorite_styles wrong (expected: {expected_styles}, got: {actual_styles})"
                         success = False
                 else:
-                    details += f" ❌ profile_picture field MISSING - BUG NOT FIXED!"
+                    details += " ❌ profile_picture field MISSING - BUG NOT FIXED!"
                     success = False
                     
             else:
@@ -7775,9 +7773,9 @@ class JamConnexionAPITester:
                         details += f" ❌ PERSISTENCE ERRORS: {', '.join(persistence_errors)}"
                         success = False
                     else:
-                        details += f" ✅ ALL DATA PERSISTED CORRECTLY"
+                        details += " ✅ ALL DATA PERSISTED CORRECTLY"
                 else:
-                    details += f" ❌ profile_picture field LOST IN DATABASE - BUG NOT FIXED!"
+                    details += " ❌ profile_picture field LOST IN DATABASE - BUG NOT FIXED!"
                     success = False
                     
             else:
@@ -7824,13 +7822,13 @@ class JamConnexionAPITester:
                     details += f" ❌ UPDATE ERRORS: {', '.join(update_errors)}"
                     success = False
                 else:
-                    details += f" ✅ UPDATES APPLIED CORRECTLY"
+                    details += " ✅ UPDATES APPLIED CORRECTLY"
                     
                 # CRITICAL: Verify profile_picture field is preserved during update
                 if 'profile_picture' in data:
                     details += f" ✅ profile_picture PRESERVED during update: '{data.get('profile_picture')}'"
                 else:
-                    details += f" ❌ profile_picture field LOST during update - BUG NOT FULLY FIXED!"
+                    details += " ❌ profile_picture field LOST during update - BUG NOT FULLY FIXED!"
                     success = False
                     
                 # Verify favorite_styles update
@@ -7883,13 +7881,13 @@ class JamConnexionAPITester:
                     details += f" ❌ FINAL STATE ERRORS: {', '.join(final_errors)}"
                     success = False
                 else:
-                    details += f" ✅ FINAL STATE PERFECT"
+                    details += " ✅ FINAL STATE PERFECT"
                     
                 # Final verification of profile_picture field
                 if 'profile_picture' in data:
                     details += f" ✅ profile_picture CONFIRMED in final state: '{data.get('profile_picture')}'"
                 else:
-                    details += f" ❌ profile_picture MISSING in final state - BUG NOT FIXED!"
+                    details += " ❌ profile_picture MISSING in final state - BUG NOT FIXED!"
                     success = False
                     
                 # Final verification of favorite_styles
@@ -8382,7 +8380,7 @@ class JamConnexionAPITester:
                 
             bug_musician_data = response.json()
             bug_musician_token = bug_musician_data.get('token')
-            bug_musician_user = bug_musician_data.get('user')
+            bug_musician_data.get('user')
             
             # Create musician profile
             profile_data = {"pseudo": "BugTester", "instruments": ["Guitar"], "music_styles": ["Rock"]}

@@ -639,3 +639,9 @@ Application de mise en relation entre cafés-concerts et musiciens.
   - `CandidaturesTab.jsx` : bouton "Candidatures (X)" délègue maintenant à `handleSlotCardClick(slot)` (même comportement que click sur la carte).
   - Ajout `data-testid` sur les boutons Accepter/Refuser/rangée de candidature.
 
+
+- **🐛 Fix 2 bugs UX venue dashboard (Build 152.28)** (2026-09-09) :
+  1. **Calendrier Planning se remet en "chargement" toutes les 15 secondes** : root cause = polling `setInterval(fetchEvents, 15000)` qui déclenche `setLoadingEvents(true)` à chaque cycle → spinner clignote en boucle. **Fix** : `fetchEvents({ silent })` accepte désormais un mode silencieux qui ne touche pas au flag `loadingEvents`. Utilisé pour le polling 15s ET pour le refresh WebSocket `event_participation_changed`.
+  2. **Onglet Candidatures affiche "Candidatures (0)" partout** alors que la BD contient des candidatures : le cache local `applications[slot.id]` n'était rempli qu'au clic sur une carte. **Fix** : au focus de l'onglet Candidatures, précharger automatiquement les candidatures pour chaque slot ouvert (`planningSlots.filter(s => s.is_open).forEach(s => fetchApplications(s.id))`).
+  - **Seed octobre 2026** : 40 événements fictifs répartis sur "Le Bar Test" (Olonzac) et "LE DB" (Narbonne) — 10 bœufs, 12 candidatures ouvertes, 10 concerts, 8 spectacles pour tester les affichages.
+

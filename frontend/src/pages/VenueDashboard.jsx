@@ -563,7 +563,10 @@ export default function VenueDashboard() {
     }
   }, [token, navigate]); // FIXED: Removed 'editing' from dependencies to prevent loop
 
-  const fetchEvents = useCallback(async () => {
+  const fetchEvents = useCallback(async ({ silent = false } = {}) => {
+    // Build 152.28 — Support d'un mode "silent" pour les rafraîchissements en arrière-plan
+    // (polling 15s + WebSocket). Sans ça, le calendrier repassait en état "chargement"
+    // toutes les 15 secondes, donnant l'impression d'un reload en boucle.
     if (!profile?.id) {
       console.log('⚠️ fetchEvents: No profile ID, skipping fetch');
       return; // Guard: Don't fetch if no profile ID yet
@@ -590,7 +593,7 @@ export default function VenueDashboard() {
         payment_status: event.payment_status ? normalizePaymentStatus(event.payment_status) : event.payment_status
       }));
     
-    setLoadingEvents(true);
+    setLoadingEvents(!silent);
     try {
       // 🆕 Build 92/94 : cache-buster + headers no-cache pour bypass Cloudflare
       const ts = Date.now();
@@ -673,7 +676,7 @@ export default function VenueDashboard() {
     } catch (error) {
       console.error("Error fetching events:", error);
     } finally {
-      setLoadingEvents(false);
+      if (!silent) setLoadingEvents(false);
     }
   }, [profile?.id]); // FIXED: Only depend on profile.id
 
@@ -780,7 +783,8 @@ export default function VenueDashboard() {
   useEffect(() => {
     if (!profile?.id) return;
     const interval = setInterval(() => {
-      fetchEvents();
+      // Build 152.28 — polling silencieux (pas de spinner "chargement")
+      fetchEvents({ silent: true });
     }, 15000); // 15 secondes pour mises à jour temps réel des participants
     return () => clearInterval(interval);
   }, [profile?.id, fetchEvents]);
@@ -790,7 +794,8 @@ export default function VenueDashboard() {
     if (!profile?.id) return;
     const handler = (payload) => {
       console.log('🔄 event_participation_changed reçu:', payload);
-      fetchEvents();
+      // Build 152.28 — refresh silencieux au push WebSocket
+      fetchEvents({ silent: true });
     };
     window.addEventListener('ws:event_participation_changed', handler);
     return () => window.removeEventListener('ws:event_participation_changed', handler);
@@ -829,9 +834,16 @@ export default function VenueDashboard() {
     if (activeTab === 'candidatures' && profile?.id) {
       // 🆕 Build 94 : refresh candidatures au focus
       fetchAllReceivedApplications();
+      // Build 152.28 — Précharger le compteur de candidatures pour chaque slot ouvert
+      // (sinon "Candidatures (0)" partout jusqu'à ce qu'on clique sur chaque carte)
+      planningSlots.forEach(slot => {
+        if (slot.is_open) {
+          fetchApplications(slot.id);
+        }
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, profile?.id]);
+  }, [activeTab, profile?.id, planningSlots.length]);
 
   const handleSave = async () => {
     setSaving(true);

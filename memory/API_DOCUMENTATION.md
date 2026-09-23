@@ -714,3 +714,24 @@ Le token JWT est retourné par `/auth/login` et `/auth/register`.
 
 **Date de dernière mise à jour** : 28 mars 2026
 **Version API** : 1.0
+
+---
+
+## Build 213 — Sync Mobile Builds 211-217
+
+### Concerts — auto-confirm & partial update
+
+- `POST /api/concerts` accepte `status` (Optional). Si absent, auto-confirm si `bands` non vide OU `artist_name` renseigné.
+- `PATCH /api/concerts/{concert_id}` : partial update (whitelist de champs incluant `status`).
+- `concerts.status` ∈ `{ "pending", "confirmed", "cancelled" }`.
+
+### Applications — reconsidérer
+
+- `PATCH /api/applications/{id}` body `{ "status": "pending" }` → reset (venue only).
+  - Supprime le concert auto-créé (`id = "{app_id}_concert"` ou `application_id = app_id`).
+  - Rouvre le slot si `accepted_count < num_bands_needed`.
+  - **Pas** de notification au musicien (choix produit).
+- `POST /api/applications/{id}/reset` → alias fonctionnel du PATCH.
+- `applications.status` ∈ `{ "pending", "accepted", "rejected" }`.
+
+Documentation détaillée : `/app/memory/WEB_SYNC_ENDPOINTS_AUDIT_BUILDS_211_217.md`

@@ -1153,6 +1153,111 @@ async def delete_application(app_id: str, request: Request, current_user: dict =
     
     return {"message": "Application deleted"}
 
+# Build 217 (sync mobile) — Reconsidérer une candidature (accepted/rejected → pending).
+# Endpoint canonique : PATCH /applications/{id}
+# Alias historique demandé par le mobile en fallback : POST /applications/{id}/reset
+async def _reset_application_to_pending(app_id: str, current_user: dict):
+    """Repasse une candidature à `pending` (venue only) et nettoie proprement les side-effects
+    créés par accept_application : suppression du concert auto-créé + réouverture du slot si besoin.
+
+    Ne re-notifie pas le musicien (choix produit : l'action reste discrète — le passage à pending
+    déclenche déjà l'affichage "En attente" côté musicien via son écran de candidatures).
+    """
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can reset applications")
+
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    app = await db.applications.find_one({"id": app_id}, {"_id": 0})
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    slot = await db.planning_slots.find_one(
+        {"id": app.get("planning_slot_id"), "venue_id": venue["id"]}, {"_id": 0}
+    )
+    if not slot:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    previous_status = app.get("status")
+    if previous_status == "pending":
+        return {"message": "Application already pending", "status": "pending"}
+
+    # 1) Reset du statut
+    await db.applications.update_one({"id": app_id}, {"$set": {"status": "pending"}})
+
+    # 2) Si l'app était acceptée : supprimer le concert auto-créé + rouvrir le slot si besoin
+    if previous_status == "accepted":
+        # Concert créé par accept_application (id = app_id + "_concert" OU application_id == app_id)
+        await db.concerts.delete_many({
+            "$or": [
+                {"id": f"{app_id}_concert"},
+                {"application_id": app_id},
+            ]
+        })
+
+        # Réouverture du slot si l'acceptation avait rempli les places
+        remaining_accepted = await db.applications.count_documents({
+            "planning_slot_id": slot["id"],
+            "status": "accepted",
+        })
+        num_needed = max(int(slot.get("num_bands_needed") or 1), 1)
+        if remaining_accepted < num_needed:
+            await db.planning_slots.update_one(
+                {"id": slot["id"]}, {"$set": {"is_open": True}}
+            )
+
+    # Audit
+    try:
+        await log_action(
+            user_id=current_user["id"],
+            user_role=current_user["role"],
+            action="reset_application",
+            resource_type="concert_application",
+            resource_id=app_id,
+            details={"previous_status": previous_status, "slot_date": slot.get("date")},
+            status="success",
+        )
+    except Exception as e:
+        logger.warning(f"log_action failed for reset_application {app_id}: {e}")
+
+    return {"message": "Application reset to pending", "status": "pending", "previous_status": previous_status}
+
+
+@router.patch("/applications/{app_id}")
+async def patch_application(app_id: str, payload: dict, current_user: dict = Depends(get_current_user)):
+    """Update partiel d'une candidature (venue only).
+
+    Champ supporté aujourd'hui : `status`.
+      - `status: "pending"`  → reconsidérer (undo accept/reject) — voir _reset_application_to_pending
+      - `status: "accepted"` → rediriger vers l'endpoint dédié /accept
+      - `status: "rejected"` → rediriger vers l'endpoint dédié /reject
+    """
+    status_value = (payload or {}).get("status")
+    if not status_value:
+        raise HTTPException(status_code=400, detail="Field 'status' is required")
+
+    if status_value == "pending":
+        return await _reset_application_to_pending(app_id, current_user)
+
+    # Pour accepted/rejected, on redirige vers les endpoints dédiés qui gèrent les side-effects.
+    raise HTTPException(
+        status_code=400,
+        detail=(
+            "Pour passer à 'accepted' ou 'rejected', utiliser respectivement "
+            "POST /applications/{id}/accept ou POST /applications/{id}/reject. "
+            "Le PATCH n'accepte que status='pending' (reconsidérer)."
+        ),
+    )
+
+
+@router.post("/applications/{app_id}/reset")
+async def reset_application(app_id: str, current_user: dict = Depends(get_current_user)):
+    """Alias explicite du PATCH → { status: 'pending' } (mobile fallback)."""
+    return await _reset_application_to_pending(app_id, current_user)
+
+
 @router.get("/musician/calendar-events")
 async def get_musician_calendar_events(request: Request, current_user: dict = Depends(get_current_user)):
     """Get all calendar events for a musician (accepted applications + confirmed concerts)"""

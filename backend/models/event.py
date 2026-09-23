@@ -118,6 +118,10 @@ class ConcertEvent(BaseModel, PaymentValidationMixin):
     is_guso: bool = False
     cachet_type: Optional[str] = None  # "isolé" or "groupé"
     guso_contract_type: Optional[str] = None  # "CDDU", "CDD", etc.
+    # Build 216 (sync mobile) — status du concert : "pending" | "confirmed" | "cancelled"
+    # Auto-confirm côté serveur si bands non vide ou artist_name renseigné (voir routes/events.py).
+    status: Optional[str] = None
+    artist_name: Optional[str] = None
 
 class ConcertEventResponse(BaseModel):
     id: str
@@ -159,6 +163,8 @@ class ConcertEventResponse(BaseModel):
     is_guso: bool = False
     cachet_type: Optional[str] = None
     guso_contract_type: Optional[str] = None
+    # Build 216 (sync mobile) — status renvoyé dans la réponse (pending / confirmed / cancelled).
+    status: Optional[str] = "pending"
 
 class KaraokeEvent(BaseModel, PaymentValidationMixin):
     date: str

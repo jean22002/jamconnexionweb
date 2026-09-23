@@ -417,11 +417,20 @@ async def create_concert_event(data: ConcertEvent, request: Request, current_use
     # DEBUG: Log what we're receiving
     logger.info(f"🔍 Creating concert with data: {data.model_dump()}")
     
+    # Build 216 (sync mobile) — Auto-confirm quand un artiste est déjà assigné.
+    # Si le mobile envoie explicitement `status`, on le respecte ; sinon on déduit :
+    #   - bands non vide OU artist_name renseigné → "confirmed"
+    #   - sinon → "pending"
+    payload = data.model_dump()
+    if not payload.get("status"):
+        has_artist = bool(payload.get("bands")) or bool((payload.get("artist_name") or "").strip())
+        payload["status"] = "confirmed" if has_artist else "pending"
+
     concert_doc = {
         "id": concert_id,
         "venue_id": venue["id"],
         "venue_name": venue["name"],
-        **data.model_dump(),
+        **payload,
         "created_at": now
     }
     
@@ -720,6 +729,49 @@ async def update_concert(concert_id: str, data: ConcertEvent, request: Request, 
         "active": True
     })
     
+    return ConcertEventResponse(**updated, participants_count=participants_count)
+
+
+# Build 216 (sync mobile) — PATCH partiel : le mobile envoie parfois seulement { status: "confirmed" }.
+# Le PUT ci-dessus exige un ConcertEvent complet (date, start_time…) → on ajoute un PATCH tolérant.
+@router.patch("/concerts/{concert_id}", response_model=ConcertEventResponse)
+async def patch_concert(concert_id: str, payload: dict, request: Request, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update concerts")
+
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+
+    concert = await db.concerts.find_one({"id": concert_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not concert:
+        raise HTTPException(status_code=404, detail="Concert not found")
+
+    # Whitelist des champs modifiables via PATCH (protège des injections)
+    allowed = {
+        "status", "title", "description", "artist_name", "bands",
+        "price", "music_styles", "start_time", "end_time",
+        "payment_method", "payment_mode", "amount", "payment_status", "invoice_file",
+        "has_catering", "catering_drinks", "catering_respect", "catering_tbd",
+        "has_accommodation", "accommodation_capacity", "accommodation_tbd",
+        "is_guso", "cachet_type", "guso_contract_type",
+    }
+    updates = {k: v for k, v in (payload or {}).items() if k in allowed}
+    if not updates:
+        raise HTTPException(status_code=400, detail="No updatable field provided")
+
+    # Validation légère : status doit être une valeur connue
+    if "status" in updates and updates["status"] not in ("pending", "confirmed", "cancelled"):
+        raise HTTPException(status_code=400, detail="Invalid status (pending | confirmed | cancelled)")
+
+    await db.concerts.update_one({"id": concert_id}, {"$set": updates})
+
+    updated = await db.concerts.find_one({"id": concert_id}, {"_id": 0})
+    participants_count = await db.event_participations.count_documents({
+        "event_id": concert_id,
+        "event_type": "concert",
+        "active": True,
+    })
     return ConcertEventResponse(**updated, participants_count=participants_count)
 
 

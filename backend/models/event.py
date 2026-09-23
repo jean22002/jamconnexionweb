@@ -362,6 +362,12 @@ class PlanningSlotResponse(BaseModel):
     formation_type: Optional[str] = None
     max_musicians: Optional[int] = None
     created_at: str
+    # Build 215 (sync mobile) — Champs additionnels acceptés en PATCH partial.
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    max_participants: Optional[int] = None
+    payment_type: Optional[str] = None
+    type: Optional[str] = None  # jam | concert | spectacle | karaoke (si polymorphe)
     
     class Config:
         # Build 152.14 — extra='ignore' : évite le leak DB (_id ObjectId, etc.) → response

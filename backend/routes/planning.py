@@ -356,6 +356,67 @@ async def update_planning_slot(slot_id: str, data: PlanningSlot, request: Reques
     return PlanningSlotResponse(**updated_slot, applications_count=apps_count, accepted_bands_count=accepted_count)
 
 
+# =============================================================================
+# Build 215 (sync mobile) — PATCH partial /planning/{slot_id}.
+# Résout le silent-fail des PUT complets pour les clients qui n'envoient que quelques champs.
+# =============================================================================
+_PLANNING_PATCH_WHITELIST = {
+    # Temporel
+    "type", "date", "time", "start_time", "end_time",
+    # Contenu
+    "title", "description",
+    # Musical
+    "music_styles", "expected_band_style",
+    # Configuration
+    "max_participants", "expected_attendance", "artist_categories",
+    "num_bands_needed", "application_type", "is_guso",
+    "formation_type", "max_musicians",
+    # Paiement
+    "payment", "payment_type",
+    # Catering (boissons)
+    "has_catering", "catering_drinks", "catering_respect", "catering_tbd",
+    "has_meals", "meals_count", "meals_tbd",
+    # Hébergement
+    "has_accommodation", "accommodation_capacity", "accommodation_tbd",
+    # Statut du slot (toggle manuel côté venue)
+    "is_open",
+}
+
+
+@router.patch("/planning/{slot_id}", response_model=PlanningSlotResponse)
+async def patch_planning_slot(slot_id: str, payload: dict, current_user: dict = Depends(get_current_user)):
+    """Partial update d'un créneau de planning (venue only). Whitelist stricte."""
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can update planning slots")
+
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+
+    existing_slot = await db.planning_slots.find_one(
+        {"id": slot_id, "venue_id": venue["id"]}, {"_id": 0}
+    )
+    if not existing_slot:
+        raise HTTPException(status_code=404, detail="Planning slot not found")
+
+    updates = {k: v for k, v in (payload or {}).items() if k in _PLANNING_PATCH_WHITELIST}
+    if not updates:
+        raise HTTPException(status_code=400, detail="No updatable field provided")
+
+    await db.planning_slots.update_one({"id": slot_id, "venue_id": venue["id"]}, {"$set": updates})
+
+    updated_slot = await db.planning_slots.find_one({"id": slot_id}, {"_id": 0})
+    apps_count = await db.applications.count_documents({"planning_slot_id": slot_id})
+    accepted_count = await db.applications.count_documents(
+        {"planning_slot_id": slot_id, "status": "accepted"}
+    )
+    return PlanningSlotResponse(
+        **updated_slot,
+        applications_count=apps_count,
+        accepted_bands_count=accepted_count,
+    )
+
+
 @router.delete("/planning/{slot_id}")
 async def delete_planning_slot(slot_id: str, request: Request, current_user: dict = Depends(get_current_user)):
     """Delete a planning slot (venue only)"""

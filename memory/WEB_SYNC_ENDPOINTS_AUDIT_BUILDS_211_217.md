@@ -172,3 +172,65 @@ Compta : `payment_method`, `payment_mode`, `amount`, `payment_status`, `invoice_
 - `JamEventResponse` : + `max_participants`, `has_catering`, `catering_drinks`, `catering_meals`
 - `KaraokeEventResponse` : + `has_catering`, `catering_drinks`, `catering_meals`
 - `SpectacleEventResponse` : + `music_styles`, `is_free`, `has_catering`, `has_accommodation`
+
+---
+
+## Build 215 — PATCH partial profils & planning
+
+### PATCH /api/musicians/me (26 champs whitelistés)
+Identité : `pseudo`, `bio`, `age`
+Localisation : `city`, `postal_code`, `department`, `region`, `latitude`, `longitude`
+Contact : `phone`
+GUSO : `guso_number`, `is_guso_member`
+Musical : `instruments`, `music_styles`
+Photos : `profile_image`, `banner_image`
+Réseaux : `facebook`, `instagram`, `youtube`, `website`, `bandcamp`
+Groupes : `bands` (array complet)
+
+Note : `notification_preferences` **exclu** (endpoint dédié).
+
+### PATCH /api/venues/me (whitelist étendue)
+Identité : `name`, `description`
+Localisation : `city`, `postal_code`, `department`, `region`, `address`, `latitude`, `longitude`
+Contact : `phone`, `website`
+Musical : `music_styles`
+Réseaux : `facebook`, `instagram`
+Photos : `profile_image`, `banner_image`, `cover_image`, `gallery`
+Équipements : `capacity`, `amenities`, `equipment`, `has_stage`, `has_sound_engineer`, `has_pa_system`, `has_lights`, `stage_size`, `pa_mixer_name`, `pa_speakers_name`, `pa_power`, `has_auto_light`, `has_light_table`
+Autres : `opening_hours`, `show_reviews`, `allow_messages_from`, `is_guso`
+
+Note : `is_verified` **exclu** (admin only). `notification_preferences` **exclu** (endpoint dédié).
+
+### PATCH /api/melomanes/me (13 champs + alias mobile)
+Alias mobile → canoniques DB :
+- `profile_image` → `profile_picture`
+- `banner_image` / `cover_image` → `cover_photo`
+- `notification_radius` → `notification_radius_km`
+- `music_styles` → `favorite_styles`
+
+Whitelist canonique : `pseudo`, `bio`, `city`, `postal_code`, `department`, `region`, `country`, `latitude`, `longitude`, `phone`, `favorite_styles`, `favorite_venues`, `notification_radius_km`, `notifications_enabled`, `profile_picture`, `cover_photo`, `facebook`, `instagram`, `twitter`
+
+Note : `notification_preferences` **exclu** (endpoint dédié).
+
+### PATCH /api/planning/{slot_id} (whitelist complète)
+Temporel : `type`, `date`, `time`, `start_time`, `end_time`
+Contenu : `title`, `description`
+Musical : `music_styles`, `expected_band_style`
+Config : `max_participants`, `expected_attendance`, `artist_categories`, `num_bands_needed`, `application_type`, `is_guso`, `formation_type`, `max_musicians`
+Paiement : `payment`, `payment_type`
+Catering : `has_catering`, `catering_drinks`, `catering_respect`, `catering_tbd`, `has_meals`, `meals_count`, `meals_tbd`
+Hébergement : `has_accommodation`, `accommodation_capacity`, `accommodation_tbd`
+Statut : `is_open` (toggle manuel côté venue supporté)
+
+### Règles communes (identiques aux PATCH précédents)
+- Auth stricte : rôle correspondant obligatoire (403 sinon)
+- Clés hors whitelist silencieusement ignorées
+- 400 si body vide ou aucune clé valide
+- Retour : `*Response` complet du doc mis à jour
+- PUT existant conservé pour rétrocompat
+
+### Response models étendus
+- `MusicianProfileResponse` : + `banner_image`
+- `VenueProfileResponse` : + `capacity`, `amenities`, `banner_image`
+- `MelomaneResponse` : + `phone`, `department`, `music_styles`, `profile_image`, `banner_image`, `notification_radius` (alias sortie)
+- `PlanningSlotResponse` : + `start_time`, `end_time`, `max_participants`, `payment_type`, `type`

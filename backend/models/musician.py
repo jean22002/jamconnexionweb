@@ -167,6 +167,8 @@ class MusicianProfileResponse(BaseModel):
     # GUSO
     guso_number: Optional[str] = None
     is_guso_member: bool = False
+    # Build 215 (sync mobile) — Champs additionnels acceptés en PATCH partial.
+    banner_image: Optional[str] = None
 
 class FriendRequest(BaseModel):
     to_user_id: str

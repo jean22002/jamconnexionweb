@@ -1958,3 +1958,56 @@ async def update_notification_preferences(
         raise HTTPException(status_code=401, detail="Token invalide")
 
 
+
+
+# =============================================================================
+# Build 215 (sync mobile) — PATCH partial /venues/me (whitelist stricte).
+# Résout le silent-fail des PUT partiels pour les clients qui n'envoient que quelques champs.
+# =============================================================================
+_VENUE_PATCH_WHITELIST = {
+    # Identité
+    "name", "description",
+    # Localisation
+    "city", "postal_code", "department", "region", "address",
+    "latitude", "longitude",
+    # Contact
+    "phone", "website",
+    # Musical
+    "music_styles",
+    # Réseaux sociaux
+    "facebook", "instagram",
+    # Photos
+    "profile_image", "banner_image", "cover_image", "gallery",
+    # Équipements & configuration
+    "capacity", "amenities", "equipment",
+    "has_stage", "has_sound_engineer", "has_pa_system", "has_lights",
+    "stage_size", "pa_mixer_name", "pa_speakers_name", "pa_power",
+    "has_auto_light", "has_light_table",
+    "opening_hours",
+    "show_reviews", "allow_messages_from",
+    "is_guso",
+    # NB : is_verified volontairement absent (admin only).
+    # NB : notification_preferences absent (endpoint dédié /venues/me/notification-preferences).
+}
+
+
+@router.patch("/venues/me", response_model=VenueProfileResponse)
+async def patch_my_venue_profile(payload: dict, current_user: dict = Depends(get_current_user)):
+    """Partial update d'un profil venue (rôle venue uniquement)."""
+    if current_user.get("role") != "venue":
+        raise HTTPException(status_code=403, detail="Only venue accounts can update this profile")
+
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+
+    updates = {k: v for k, v in (payload or {}).items() if k in _VENUE_PATCH_WHITELIST}
+    if not updates:
+        raise HTTPException(status_code=400, detail="No updatable field provided")
+
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    await db.venues.update_one({"user_id": current_user["id"]}, {"$set": updates})
+
+    updated = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    return VenueProfileResponse(**updated)

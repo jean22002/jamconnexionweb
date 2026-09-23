@@ -89,3 +89,10 @@ class MelomaneResponse(BaseModel):
     events_attended: int = 0
     favorite_count: int = 0
     created_at: str
+    # Build 215 (sync mobile) — Champs additionnels acceptés en PATCH partial.
+    phone: Optional[str] = None
+    department: Optional[str] = None
+    music_styles: List[str] = []
+    profile_image: Optional[str] = None      # Alias mobile de profile_picture
+    banner_image: Optional[str] = None       # Alias mobile de cover_photo
+    notification_radius: Optional[float] = None  # Alias mobile de notification_radius_km

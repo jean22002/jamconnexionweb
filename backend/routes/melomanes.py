@@ -426,3 +426,81 @@ async def update_melomane_notification_preferences(
         "message": "Préférences de notifications mises à jour",
         "notification_preferences": notification_preferences,
     }
+
+
+# =============================================================================
+# Build 215 (sync mobile) — PATCH partial /melomanes/me.
+# Whitelist stricte + alias mobile → noms de champs canoniques DB.
+# =============================================================================
+# Alias mobile → nom canonique en DB (les 2 noms sont acceptés en input).
+_MELOMANE_FIELD_ALIASES = {
+    "profile_image": "profile_picture",       # mobile → DB
+    "banner_image": "cover_photo",            # mobile → DB
+    "cover_image": "cover_photo",             # legacy → DB
+    "notification_radius": "notification_radius_km",
+    "music_styles": "favorite_styles",        # mobile: styles écoutés
+}
+# Noms canoniques acceptés directement.
+_MELOMANE_PATCH_WHITELIST = {
+    # Identité
+    "pseudo", "bio",
+    # Localisation
+    "city", "postal_code", "department", "region", "country",
+    "latitude", "longitude",
+    # Contact
+    "phone",
+    # Musical
+    "favorite_styles", "favorite_venues",
+    # Notifications
+    "notification_radius_km", "notifications_enabled",
+    # Photos
+    "profile_picture", "cover_photo",
+    # Réseaux sociaux
+    "facebook", "instagram", "twitter",
+}
+
+
+@router.patch("/me", response_model=MelomaneResponse)
+async def patch_my_melomane_profile(payload: dict, current_user: dict = Depends(get_current_user_local)):
+    """Partial update d'un profil mélomane (rôle melomane uniquement)."""
+    if current_user.get("role") != "melomane":
+        raise HTTPException(status_code=403, detail="Only melomane accounts can update this profile")
+
+    melomane = await db.melomanes.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not melomane:
+        raise HTTPException(status_code=404, detail="Melomane profile not found")
+
+    # Résolution des alias : mobile envoie profile_image → on stocke sur profile_picture (etc.)
+    updates = {}
+    for key, value in (payload or {}).items():
+        canonical = _MELOMANE_FIELD_ALIASES.get(key, key)
+        if canonical in _MELOMANE_PATCH_WHITELIST:
+            updates[canonical] = value
+
+    if not updates:
+        raise HTTPException(status_code=400, detail="No updatable field provided")
+
+    # Normalisation URL images
+    try:
+        from utils.db import normalize_image_url
+        for k in ("profile_picture", "cover_photo"):
+            if k in updates and updates[k]:
+                updates[k] = normalize_image_url(updates[k])
+    except Exception:
+        pass
+
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    await db.melomanes.update_one({"user_id": current_user["id"]}, {"$set": updates})
+
+    updated = await db.melomanes.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    updated.setdefault("favorite_styles", [])
+    updated.setdefault("favorite_venues", [])
+    updated.setdefault("notifications_enabled", True)
+    updated.setdefault("notification_radius_km", 50.0)
+    updated.setdefault("events_attended", 0)
+    updated.setdefault("favorite_count", 0)
+    if "created_at" in updated and hasattr(updated["created_at"], "isoformat"):
+        updated["created_at"] = updated["created_at"].isoformat()
+
+    return MelomaneResponse(**updated)

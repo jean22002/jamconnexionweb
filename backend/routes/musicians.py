@@ -3280,3 +3280,62 @@ async def update_musician_notification_preferences(
         "message": "Préférences de notifications mises à jour",
         "notification_preferences": notification_preferences,
     }
+
+
+# =============================================================================
+# Build 215 (sync mobile) — PATCH partial /musicians/me (26 champs whitelistés).
+# Résout le silent-fail des PUT complets pour les clients qui n'envoient que quelques champs.
+# Le PUT existant est conservé (avec sa protection anti-écrasement).
+# =============================================================================
+_MUSICIAN_PATCH_WHITELIST = {
+    # Identité
+    "pseudo", "bio", "age",
+    # Localisation
+    "city", "postal_code", "department", "region", "latitude", "longitude",
+    # Contact
+    "phone",
+    # GUSO
+    "guso_number", "is_guso_member",
+    # Musical
+    "instruments", "music_styles",
+    # Photos
+    "profile_image", "banner_image",
+    # Réseaux sociaux
+    "facebook", "instagram", "youtube", "website", "bandcamp",
+    # Groupes/projets (tableau imbriqué complet)
+    "bands",
+}
+
+
+@router.patch("/musicians/me", response_model=MusicianProfileResponse)
+async def patch_my_musician_profile(payload: dict, current_user: dict = Depends(get_current_user)):
+    """Partial update d'un profil musicien (rôle musician uniquement)."""
+    if current_user.get("role") != "musician":
+        raise HTTPException(status_code=403, detail="Only musician accounts can update this profile")
+
+    musician = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musician profile not found")
+
+    updates = {k: v for k, v in (payload or {}).items() if k in _MUSICIAN_PATCH_WHITELIST}
+    if not updates:
+        raise HTTPException(status_code=400, detail="No updatable field provided")
+
+    # Normalisation légère des URL d'images (mêmes conventions que le PUT)
+    try:
+        from utils.db import normalize_image_url
+        for k in ("profile_image", "banner_image"):
+            if k in updates and updates[k]:
+                updates[k] = normalize_image_url(updates[k])
+    except Exception:
+        pass
+
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    await db.musicians.update_one({"user_id": current_user["id"]}, {"$set": updates})
+
+    updated = await db.musicians.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    updated.setdefault("bands", [])
+    updated.setdefault("concerts", [])
+    updated.setdefault("upcoming_concerts", [])
+    return MusicianProfileResponse(**updated)

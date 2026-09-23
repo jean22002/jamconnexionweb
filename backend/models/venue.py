@@ -75,6 +75,10 @@ class VenueProfileResponse(BaseModel):
     allow_messages_from: str = "everyone"
     gallery: List[str] = []
     is_guso: bool = False  # Établissement affilié au GUSO
+    # Build 215 (sync mobile) — Champs additionnels acceptés en PATCH partial.
+    capacity: Optional[int] = None
+    amenities: List[str] = []
+    banner_image: Optional[str] = None
 
 class VenueSubscription(BaseModel):
     venue_id: str

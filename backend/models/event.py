@@ -221,8 +221,10 @@ class SpectacleEventResponse(BaseModel):
     date: str
     start_time: str = ""  # Default for older records
     end_time: Optional[str] = None
-    type: str
-    artist_name: str
+    # Build 213 — Fix HTTP 500 sur GET /api/venues/{venue_id}/spectacle :
+    # certains anciens docs (générés/importés) n'ont pas ces champs → default vide au lieu d'obligatoire.
+    type: str = ""
+    artist_name: str = ""
     description: Optional[str] = None
     price: Optional[str] = None
     participants_count: int = 0

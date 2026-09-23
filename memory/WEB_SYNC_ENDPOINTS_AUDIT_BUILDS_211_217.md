@@ -118,3 +118,24 @@
   - `POST /applications/{id}/accept` → `accepted`
   - `POST /applications/{id}/reject` → `rejected`
   - `PATCH /applications/{id}` `{status: "pending"}` (ou `POST /reset`) → **reconsidérer** (undo).
+
+---
+
+## Build 214 — Notification preferences Musicien & Mélomane
+
+### Musicien — Whitelist 7 clés
+- Route : `GET/PUT /api/musicians/me/notification-preferences`
+- Auth : rôle `musician` obligatoire (403 sinon)
+- Clés : `new_messages`, `friend_requests`, `badges_unlocked`, `upcoming_events`, `application_response`, `new_event_match`, `subscription_expiring`
+- Defaults : tous à `true` si jamais sauvegardés
+- Comportement PUT : whitelist stricte, remplacement complet (clés absentes = supprimées)
+
+### Mélomane — Whitelist 4 clés
+- Route : `GET/PUT /api/melomanes/me/notification-preferences`
+- Auth : rôle `melomane` obligatoire (403 sinon)
+- Clés : `new_messages`, `friend_requests`, `upcoming_events`, `new_event_match`
+- Defaults : tous à `true`
+- Comportement PUT : idem musicien
+
+### Backend filtering
+`utils/notification_preferences.should_send_notification(user_id, type, user_role)` a été étendu pour lire les prefs Musicien et Mélomane. Le backend arrête d'envoyer les push filtrées à la source (économie SuprSend + sync multi-device automatique).

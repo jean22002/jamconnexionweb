@@ -364,3 +364,65 @@ async def get_my_participations(current_user: dict = Depends(get_current_user_lo
             enriched_participations.append(participation)
     
     return enriched_participations
+
+
+# =============================================================================
+# Build 214 — Sync mobile : Notification preferences pour MELOMANES
+# Whitelist réduite (4 clés) : les mélomanes n'ont ni badges, ni candidatures, ni abo PRO.
+# Le router a un prefix "/melomanes" → routes finales : /api/melomanes/me/notification-preferences.
+# =============================================================================
+MELOMANE_NOTIFICATION_KEYS = [
+    "new_messages",       # Nouveaux messages
+    "friend_requests",    # Demandes d'amis
+    "upcoming_events",    # Rappels événements à venir
+    "new_event_match",    # Nouveau bœuf/concert dans ma ville
+]
+_MELOMANE_DEFAULT_PREFS = {k: True for k in MELOMANE_NOTIFICATION_KEYS}
+
+
+@router.get("/me/notification-preferences")
+async def get_melomane_notification_preferences(current_user: dict = Depends(get_current_user_local)):
+    """Get melomane's notification preferences (returns defaults if never saved)."""
+    if current_user.get("role") != "melomane":
+        raise HTTPException(status_code=403, detail="Accès réservé aux mélomanes")
+
+    # Projection avec `id` pour éviter le piège "doc vide → falsy → 404"
+    # quand le champ notification_preferences n'a jamais été initialisé.
+    melomane = await db.melomanes.find_one(
+        {"user_id": current_user["id"]},
+        {"_id": 0, "id": 1, "notification_preferences": 1},
+    )
+    if melomane is None:
+        raise HTTPException(status_code=404, detail="Profil mélomane introuvable")
+
+    stored = melomane.get("notification_preferences") or {}
+    prefs = {k: bool(stored.get(k, True)) for k in MELOMANE_NOTIFICATION_KEYS}
+    return {"notification_preferences": prefs}
+
+
+@router.put("/me/notification-preferences")
+async def update_melomane_notification_preferences(
+    preferences: dict,
+    current_user: dict = Depends(get_current_user_local),
+):
+    """Replace melomane's notification preferences (whitelist stricte, PUT complet)."""
+    if current_user.get("role") != "melomane":
+        raise HTTPException(status_code=403, detail="Accès réservé aux mélomanes")
+
+    notification_preferences = {}
+    for key in MELOMANE_NOTIFICATION_KEYS:
+        if key in (preferences or {}):
+            notification_preferences[key] = bool(preferences[key])
+
+    result = await db.melomanes.update_one(
+        {"user_id": current_user["id"]},
+        {"$set": {"notification_preferences": notification_preferences}},
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Profil mélomane introuvable")
+
+    logger.info(f"✅ Notification preferences updated for melomane {current_user['id']}")
+    return {
+        "message": "Préférences de notifications mises à jour",
+        "notification_preferences": notification_preferences,
+    }

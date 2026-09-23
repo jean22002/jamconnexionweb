@@ -3214,3 +3214,69 @@ async def contact_band(
     except Exception as e:
         logger.error(f"Failed to send contact email: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to send message")
+
+
+# =============================================================================
+# Build 214 — Sync mobile : Notification preferences pour MUSICIENS
+# Miroir de /api/venues/me/notification-preferences (voir routes/venues.py).
+# Whitelist finale mobile-web (7 clés), tous à `True` par défaut.
+# =============================================================================
+MUSICIAN_NOTIFICATION_KEYS = [
+    "new_messages",             # Nouveaux messages
+    "friend_requests",          # Demandes d'amis
+    "badges_unlocked",          # Badges débloqués
+    "upcoming_events",          # Rappels événements à venir
+    "application_response",     # Accept/reject/reset/cancelled_by_venue (regroupé)
+    "new_event_match",          # Nouveau bœuf/concert dans ma ville
+    "subscription_expiring",    # Fin d'essai / abo (Musicien PRO)
+]
+_MUSICIAN_DEFAULT_PREFS = {k: True for k in MUSICIAN_NOTIFICATION_KEYS}
+
+
+@router.get("/musicians/me/notification-preferences")
+async def get_musician_notification_preferences(current_user: dict = Depends(get_current_user)):
+    """Get musician's notification preferences (returns defaults if never saved)."""
+    if current_user.get("role") != "musician":
+        raise HTTPException(status_code=403, detail="Accès réservé aux musiciens")
+
+    # Projection avec `id` pour éviter le piège "doc vide → falsy → 404"
+    # quand le champ notification_preferences n'a jamais été initialisé.
+    musician = await db.musicians.find_one(
+        {"user_id": current_user["id"]},
+        {"_id": 0, "id": 1, "notification_preferences": 1},
+    )
+    if musician is None:
+        raise HTTPException(status_code=404, detail="Profil musicien introuvable")
+
+    stored = musician.get("notification_preferences") or {}
+    # Merge défauts + whitelist stricte (compat avec ajouts futurs de clés)
+    prefs = {k: bool(stored.get(k, True)) for k in MUSICIAN_NOTIFICATION_KEYS}
+    return {"notification_preferences": prefs}
+
+
+@router.put("/musicians/me/notification-preferences")
+async def update_musician_notification_preferences(
+    preferences: dict,
+    current_user: dict = Depends(get_current_user),
+):
+    """Replace musician's notification preferences (venue-style : whitelist stricte, PUT complet)."""
+    if current_user.get("role") != "musician":
+        raise HTTPException(status_code=403, detail="Accès réservé aux musiciens")
+
+    notification_preferences = {}
+    for key in MUSICIAN_NOTIFICATION_KEYS:
+        if key in (preferences or {}):
+            notification_preferences[key] = bool(preferences[key])
+
+    result = await db.musicians.update_one(
+        {"user_id": current_user["id"]},
+        {"$set": {"notification_preferences": notification_preferences}},
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Profil musicien introuvable")
+
+    logger.info(f"✅ Notification preferences updated for musician {current_user['id']}")
+    return {
+        "message": "Préférences de notifications mises à jour",
+        "notification_preferences": notification_preferences,
+    }

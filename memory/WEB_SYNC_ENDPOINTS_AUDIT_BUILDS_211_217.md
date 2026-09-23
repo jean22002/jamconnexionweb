@@ -139,3 +139,36 @@
 
 ### Backend filtering
 `utils/notification_preferences.should_send_notification(user_id, type, user_role)` a été étendu pour lire les prefs Musicien et Mélomane. Le backend arrête d'envoyer les push filtrées à la source (économie SuprSend + sync multi-device automatique).
+
+---
+
+## Build 214 — PATCH partial pour jams / karaoke / spectacle
+
+Résout le bug mobile Build 222 : PUT complet Pydantic rejetait silencieusement quand des champs manquaient → toast "Succès" mais update ignoré.
+
+### PATCH /api/jams/{id} — Whitelist
+Contenu : `title`, `description`, `date`, `start_time`, `end_time`, `music_styles`, `expected_musicians`, `max_participants`, `has_pa_system`, `instruments_available`, `additional_info`
+Restauration : `has_catering`, `catering_drinks`, `catering_meals`
+Compta : `payment_method`, `payment_mode`, `amount`, `payment_status`, `invoice_file`
+
+### PATCH /api/karaoke/{id} — Whitelist
+Contenu : `title`, `description`, `date`, `start_time`, `end_time`, `music_styles`, `host_name`
+Restauration : `has_catering`, `catering_drinks`, `catering_meals`
+Compta : `payment_method`, `payment_mode`, `amount`, `payment_status`, `invoice_file`
+
+### PATCH /api/spectacle/{id} — Whitelist
+Contenu : `title`, `description`, `date`, `start_time`, `end_time`, `type`, `artist_name`, `price` (string legacy), `ticket_price` (float), `is_free`, `music_styles`
+Restauration : `has_catering`, `has_accommodation`
+Compta : `payment_method`, `payment_mode`, `amount`, `payment_status`, `invoice_file`
+
+### Règles communes
+- Auth : rôle `venue` obligatoire → 403 sinon
+- Clés hors whitelist : silencieusement ignorées (compat forward)
+- 400 si body vide ou aucune clé whitelistée
+- Retour : `*EventResponse` avec `participants_count`
+- PUT complet **conservé** pour rétrocompat (clients avant Build 222 mobile)
+
+### Response models étendus (Build 214)
+- `JamEventResponse` : + `max_participants`, `has_catering`, `catering_drinks`, `catering_meals`
+- `KaraokeEventResponse` : + `has_catering`, `catering_drinks`, `catering_meals`
+- `SpectacleEventResponse` : + `music_styles`, `is_free`, `has_catering`, `has_accommodation`

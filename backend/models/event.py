@@ -81,6 +81,11 @@ class JamEventResponse(BaseModel):
     amount: Optional[float] = None
     payment_status: Optional[str] = "pending"
     invoice_file: Optional[str] = None
+    # Build 214 (sync mobile) — Champs additionnels acceptés en PATCH partial.
+    max_participants: Optional[int] = None
+    has_catering: Optional[bool] = None
+    catering_drinks: Optional[int] = None
+    catering_meals: Optional[int] = None
 
 class ConcertBand(BaseModel):
     name: str
@@ -204,6 +209,10 @@ class KaraokeEventResponse(BaseModel):
     amount: Optional[float] = None
     payment_status: Optional[str] = "pending"
     invoice_file: Optional[str] = None
+    # Build 214 (sync mobile) — Champs additionnels acceptés en PATCH partial.
+    has_catering: Optional[bool] = None
+    catering_drinks: Optional[int] = None
+    catering_meals: Optional[int] = None
 
 class SpectacleEvent(BaseModel, PaymentValidationMixin):
     date: str
@@ -247,6 +256,11 @@ class SpectacleEventResponse(BaseModel):
     amount: Optional[float] = None
     payment_status: Optional[str] = "pending"
     invoice_file: Optional[str] = None
+    # Build 214 (sync mobile) — Champs additionnels acceptés en PATCH partial.
+    music_styles: Optional[List[str]] = None
+    is_free: Optional[bool] = None
+    has_catering: Optional[bool] = None
+    has_accommodation: Optional[bool] = None
 
 # Modèles pour les candidatures
 class Application(BaseModel):

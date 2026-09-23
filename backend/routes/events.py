@@ -775,6 +775,119 @@ async def patch_concert(concert_id: str, payload: dict, request: Request, curren
     return ConcertEventResponse(**updated, participants_count=participants_count)
 
 
+# =============================================================================
+# Build 214 (sync mobile) — PATCH partial pour jams / karaoke / spectacle.
+# Même logique que PATCH /concerts/{id} : whitelist stricte, retour EventResponse.
+# Le PUT complet est conservé pour rétrocompat (clients avant Build 222 mobile).
+# =============================================================================
+_JAM_PATCH_WHITELIST = {
+    # Contenu
+    "title", "description", "date", "start_time", "end_time",
+    "music_styles", "expected_musicians", "max_participants",
+    "has_pa_system", "instruments_available", "additional_info",
+    # Restauration (catering)
+    "has_catering", "catering_drinks", "catering_meals",
+    # Comptabilité
+    "payment_method", "payment_mode", "amount",
+    "payment_status", "invoice_file",
+}
+_KARAOKE_PATCH_WHITELIST = {
+    "title", "description", "date", "start_time", "end_time",
+    "music_styles", "host_name",
+    "has_catering", "catering_drinks", "catering_meals",
+    "payment_method", "payment_mode", "amount",
+    "payment_status", "invoice_file",
+}
+_SPECTACLE_PATCH_WHITELIST = {
+    "title", "description", "date", "start_time", "end_time",
+    "type", "artist_name",
+    "price", "ticket_price", "is_free",
+    "music_styles",
+    "has_catering", "has_accommodation",
+    "payment_method", "payment_mode", "amount",
+    "payment_status", "invoice_file",
+}
+
+
+async def _patch_event(collection_name: str, event_type: str, event_id: str, payload: dict,
+                       whitelist: set, response_cls, current_user: dict):
+    """Helper commun pour PATCH partiel d'un événement venue-owned.
+
+    - 403 si rôle != venue
+    - 404 si event non trouvé ou n'appartient pas au venue courant
+    - 400 si aucune clé whitelistée dans le body
+    - Clés hors whitelist : silencieusement ignorées (compat forward)
+    - Retourne l'event mis à jour au format response_cls + participants_count.
+    """
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail=f"Only venues can update {event_type} events")
+
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue profile not found")
+
+    collection = getattr(db, collection_name)
+    event = await collection.find_one({"id": event_id, "venue_id": venue["id"]}, {"_id": 0})
+    if not event:
+        raise HTTPException(status_code=404, detail=f"{event_type.capitalize()} not found")
+
+    updates = {k: v for k, v in (payload or {}).items() if k in whitelist}
+    if not updates:
+        raise HTTPException(status_code=400, detail="No updatable field provided")
+
+    await collection.update_one({"id": event_id}, {"$set": updates})
+
+    updated = await collection.find_one({"id": event_id}, {"_id": 0})
+    participants_count = await db.event_participations.count_documents({
+        "event_id": event_id,
+        "event_type": event_type,
+        "active": True,
+    })
+    return response_cls(**updated, participants_count=participants_count)
+
+
+@router.patch("/jams/{jam_id}", response_model=JamEventResponse)
+async def patch_jam(jam_id: str, payload: dict, current_user: dict = Depends(get_current_user)):
+    """Partial update d'un bœuf (venue only). Whitelist stricte, PUT complet conservé pour rétrocompat."""
+    return await _patch_event(
+        collection_name="jams",
+        event_type="jam",
+        event_id=jam_id,
+        payload=payload,
+        whitelist=_JAM_PATCH_WHITELIST,
+        response_cls=JamEventResponse,
+        current_user=current_user,
+    )
+
+
+@router.patch("/karaoke/{karaoke_id}", response_model=KaraokeEventResponse)
+async def patch_karaoke(karaoke_id: str, payload: dict, current_user: dict = Depends(get_current_user)):
+    """Partial update d'un karaoké (venue only)."""
+    return await _patch_event(
+        collection_name="karaoke",
+        event_type="karaoke",
+        event_id=karaoke_id,
+        payload=payload,
+        whitelist=_KARAOKE_PATCH_WHITELIST,
+        response_cls=KaraokeEventResponse,
+        current_user=current_user,
+    )
+
+
+@router.patch("/spectacle/{spectacle_id}", response_model=SpectacleEventResponse)
+async def patch_spectacle(spectacle_id: str, payload: dict, current_user: dict = Depends(get_current_user)):
+    """Partial update d'un spectacle (venue only)."""
+    return await _patch_event(
+        collection_name="spectacle",
+        event_type="spectacle",
+        event_id=spectacle_id,
+        payload=payload,
+        whitelist=_SPECTACLE_PATCH_WHITELIST,
+        response_cls=SpectacleEventResponse,
+        current_user=current_user,
+    )
+
+
 # ============= KARAOKE EVENTS =============
 
 @router.post("/karaoke", response_model=KaraokeEventResponse)

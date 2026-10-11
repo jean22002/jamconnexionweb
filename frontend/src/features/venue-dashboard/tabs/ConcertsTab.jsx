@@ -529,6 +529,11 @@ export default function ConcertsTab({
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg mb-1">{concert.title || 'Concert'}</h3>
+                  {concert.plateau_id && (
+                    <span className="inline-block mb-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30" data-testid={`concert-plateau-badge-${concert.id}`}>
+                      🎸 Plateau · {concert.plateau_title}
+                    </span>
+                  )}
                   <div className="space-y-1 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />

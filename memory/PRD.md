@@ -661,3 +661,10 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - Push SuprSend pour les 7 types plateau_* (deeplinks jamconnexion:///plateaus/<id>, /messages/<conv>) ; nouvelle préférence musicien `plateaus`.
 - Web : section admin « Demandes d'intégration » dans le détail plateau ; sélecteur créneau « Établissement (ville) — date ».
 - Doc mobile : `/app/memory/MOBILE_SYNC_REPLY_BUILD_227.md`.
+
+## 2026-06 — Build 229 : Plateaux côté établissement
+- `GET /api/plateaus/browse` (venue+musician, q/music_style/region/department/status, 50 max, updated_at desc).
+- Concerts ↔ plateau : `plateau_id` sur POST/PATCH /concerts (doit être active), `plateau_title` stocké ; `book_plateau_concert` idempotent (`plateau_booked_ids`) → planning solo (musician.concerts), groupes (`concert.band_ids`, /bands/{id}/events matche band_ids), notif+push `plateau_concert_booked`, message système chat groupe.
+- `admin_project` sur POST /plateaus (solo | band à moi, 403 sinon).
+- Web : sélecteur « Je participe avec », badges 🎸 Plateau (ConcertsTab, PlanningTab, Calendar) ; calendar-events expose plateau_id/plateau_title/band_name.
+- Doc mobile : `/app/memory/MOBILE_SYNC_REPLY_BUILD_229.md`.

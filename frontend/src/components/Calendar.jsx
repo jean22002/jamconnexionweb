@@ -272,7 +272,7 @@ const Calendar = ({ currentMonth, onMonthChange, onDateClick, bookedDates, event
             <div className="text-[8px] mt-1 leading-tight space-y-0.5">
               {concert.bands.slice(0, 2).map((band, idx) => (
                 <div key={idx} className="truncate font-semibold text-white/90">
-                  🎸 {band.name}
+                  🎸 {band.plateau_id ? `Plateau · ${band.name}` : band.name}
                 </div>
               ))}
               {concert.bands.length > 2 && (

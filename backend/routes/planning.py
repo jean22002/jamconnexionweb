@@ -1450,9 +1450,12 @@ async def get_musician_calendar_events(request: Request, current_user: dict = De
         event = {
             "type": "confirmed_concert",
             "date": date,
-            "time": concert.get("time"),
+            "time": concert.get("time") or concert.get("start_time"),
             "venue_name": concert.get("venue_name"),
             "venue_city": concert.get("city"),
+            "band_name": concert.get("band_name"),
+            "plateau_id": concert.get("plateau_id"),
+            "plateau_title": concert.get("plateau_title"),
             "venue_department": concert.get("department"),
             "venue_id": concert.get("venue_id"),
             "venue_latitude": concert.get("latitude"),

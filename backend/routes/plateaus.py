@@ -22,6 +22,7 @@ import logging
 
 from utils import get_current_user
 from utils.db import db
+import re
 from utils.notification_preferences import should_send_notification
 from routes.push import send_push
 from models.plateau import (
@@ -110,7 +111,7 @@ async def _push(user_id: str, notif_type: str, title: str, message: str, data: d
         if not await should_send_notification(user_id, pref_key, "musician"):
             return
         push_data = {"title": title, "message": message, "type": notif_type}
-        for k in ("plateau_id", "conversation_id", "join_request_id"):
+        for k in ("plateau_id", "conversation_id", "join_request_id", "concert_id"):
             if data.get(k):
                 push_data[k] = data[k]
         if notif_type == "plateau_group_chat_created" and data.get("conversation_id"):
@@ -212,6 +213,91 @@ async def backfill_plateau_conversations() -> int:
     return created
 
 
+async def get_active_plateau_or_400(plateau_id: str) -> dict:
+    plateau = await db.plateaus.find_one({"id": plateau_id}, {"_id": 0})
+    if not plateau:
+        raise HTTPException(status_code=404, detail="Plateau introuvable")
+    if plateau.get("status") != "active":
+        raise HTTPException(status_code=400, detail="Le plateau doit être complet (active) pour être programmé")
+    return plateau
+
+
+async def book_plateau_concert(concert: dict, venue: dict, plateau: dict):
+    """Build 229 — concert rattaché à un plateau : plannings membres + notif/push + message chat groupe."""
+    # Idempotent : 1 seule programmation (notifs / chat) par couple concert ↔ plateau
+    res = await db.concerts.update_one(
+        {"id": concert["id"], "plateau_booked_ids": {"$ne": plateau["id"]}},
+        {"$addToSet": {"plateau_booked_ids": plateau["id"]}},
+    )
+    if res.modified_count == 0:
+        return
+    accepted = [m for m in plateau.get("members", []) if m.get("status") == "accepted"]
+    band_ids = [m["band_id"] for m in accepted if m.get("project_kind") == "band" and m.get("band_id")]
+    if band_ids:
+        await db.concerts.update_one({"id": concert["id"]}, {"$addToSet": {"band_ids": {"$each": band_ids}}})
+
+    title = concert.get("title") or f'Plateau "{plateau.get("title")}" chez {venue.get("name")}'
+    for m in accepted:
+        if m.get("project_kind") == "band" and m.get("band_id"):
+            continue
+        entry = {
+            "id": concert["id"],
+            "venue_name": venue.get("name"),
+            "venue_id": venue.get("id"),
+            "city": venue.get("city", ""),
+            "date": concert.get("date"),
+            "start_time": concert.get("start_time"),
+            "end_time": concert.get("end_time"),
+            "title": title,
+            "band_name": m.get("project_name"),
+            "plateau_id": plateau["id"],
+            "plateau_title": plateau.get("title"),
+            "is_guso": concert.get("is_guso", False),
+            "payment_status": concert.get("payment_status", "pending"),
+            "formation_type": "Solo",
+            "source": "plateau_concert",
+        }
+        await db.musicians.update_one(
+            {"id": m["musician_id"], "concerts.id": {"$ne": concert["id"]}},
+            {"$push": {"concerts": entry}},
+        )
+
+    when = f'{concert.get("date")} {concert.get("start_time") or ""}'.strip()
+    notified = set()
+    for m in accepted:
+        if m["user_id"] in notified:
+            continue
+        notified.add(m["user_id"])
+        await _notify(
+            user_id=m["user_id"],
+            notif_type="plateau_concert_booked",
+            title="📅 Concert programmé pour votre plateau !",
+            message=f'{venue.get("name")} a programmé le plateau "{plateau.get("title")}" le {when}',
+            data={"plateau_id": plateau["id"], "concert_id": concert["id"]},
+            link=_plateau_link(plateau["id"]),
+        )
+
+    try:
+        conv_id = await ensure_plateau_conversation(plateau)
+        if conv_id:
+            from routes.chat import send_message_internal
+            from websocket import emit_to_conversation
+            msg = await send_message_internal(
+                db=db,
+                conversation_id=conv_id,
+                sender_id="system",
+                sender_name="Jam Connexion",
+                sender_avatar=None,
+                content=f'📅 Concert confirmé : {venue.get("name")} — {when}',
+                msg_type="system",
+            )
+            conv = await db.conversations.find_one({"id": conv_id}, {"_id": 0, "id": 1, "participants": 1})
+            if conv:
+                await emit_to_conversation(conv, "new_message", msg)
+    except Exception as e:
+        logger.warning(f"Plateau chat system message failed: {e}")
+
+
 def _recompute_status(plateau: dict) -> str:
     """Recalcule le statut global :
     - pending   : au moins un membre pending (pas encore répondu)
@@ -264,15 +350,24 @@ async def create_plateau(payload: PlateauCreateInput, current_user: dict = Depen
             detail="Le nombre d'invités doit être inférieur à max_members (vous comptez comme 1 membre)",
         )
 
-    # L'admin est automatiquement accepté comme premier membre
+    # L'admin est automatiquement accepté comme premier membre (Build 229 : solo OU un de ses groupes)
+    ap = payload.admin_project
+    if ap and ap.project_kind == "band":
+        if not ap.band_id:
+            raise HTTPException(status_code=400, detail="band_id requis pour un projet de type groupe")
+        try:
+            resolved_admin = await _resolve_project(PlateauMemberInput(
+                musician_id=admin_musician["id"], project_kind="band", band_id=ap.band_id,
+            ))
+        except HTTPException:
+            raise HTTPException(status_code=403, detail="Ce groupe ne vous appartient pas")
+    else:
+        resolved_admin = await _resolve_project(PlateauMemberInput(
+            musician_id=admin_musician["id"], project_kind="solo", band_id=None,
+        ))
     admin_member = {
+        **resolved_admin,
         "user_id": current_user["id"],
-        "musician_id": admin_musician["id"],
-        "project_kind": "solo",
-        "band_id": None,
-        "project_name": admin_musician.get("pseudo") or "Admin",
-        "music_styles": admin_musician.get("music_styles") or [],
-        "photo": admin_musician.get("profile_image"),
         "status": "accepted",
         "invited_at": now_iso(),
         "responded_at": now_iso(),
@@ -280,7 +375,7 @@ async def create_plateau(payload: PlateauCreateInput, current_user: dict = Depen
 
     # Résout chaque projet invité → doc PlateauMember
     now = now_iso()
-    seen_keys = set()
+    seen_keys = {(admin_musician["id"], admin_member.get("band_id"))}
     members = [admin_member]
     for mi in payload.invited_members:
         key = (mi.musician_id, mi.band_id)
@@ -370,6 +465,38 @@ async def open_plateaus(
         # Compte places vacantes pour l'UI
         accepted = len([m for m in p.get("members", []) if m.get("status") == "accepted"])
         p["vacant_slots"] = max(p.get("max_members", 4) - accepted, 0)
+        results.append(p)
+    return results
+
+
+@router.get("/browse")
+async def browse_plateaus(
+    status: str = "active",
+    q: Optional[str] = None,
+    music_style: Optional[str] = None,
+    region: Optional[str] = None,
+    department: Optional[str] = None,
+    current_user: dict = Depends(get_current_user),
+):
+    """Build 229 — Recherche de plateaux (venues + musiciens). 50 max, tri updated_at desc."""
+    if current_user.get("role") not in ("venue", "musician"):
+        raise HTTPException(status_code=403, detail="Réservé aux établissements et musiciens")
+    query = {"status": status} if status and status != "all" else {}
+    if q and q.strip():
+        rx = {"$regex": re.escape(q.strip()), "$options": "i"}
+        query["$or"] = [{"title": rx}, {"members.project_name": rx}]
+    if music_style:
+        query["members.music_styles"] = {"$regex": f"^{re.escape(music_style)}$", "$options": "i"}
+    if region:
+        query["region"] = region
+    if department:
+        query["department"] = department
+
+    results = []
+    async for p in db.plateaus.find(query, {"_id": 0}).sort("updated_at", -1).limit(50):
+        accepted = len([m for m in p.get("members", []) if m.get("status") == "accepted"])
+        p["vacant_slots"] = max(p.get("max_members", 4) - accepted, 0)
+        p["conversation_id"] = plateau_conversation_id(p["id"]) if p.get("status") == "active" else None
         results.append(p)
     return results
 

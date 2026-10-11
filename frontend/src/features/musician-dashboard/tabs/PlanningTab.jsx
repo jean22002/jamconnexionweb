@@ -69,6 +69,11 @@ export default function PlanningTab({
                               Concert Confirmé
                             </span>
                           )}
+                          {event.plateau_id && (
+                            <span className="px-3 py-1 bg-amber-500/20 text-amber-400 text-xs rounded-full" data-testid={`planning-plateau-badge-${event.concert_id}`}>
+                              🎸 Plateau · {event.plateau_title}
+                            </span>
+                          )}
                         </div>
                         
                         <h3 className="font-heading font-semibold text-lg">{event.venue_name}</h3>

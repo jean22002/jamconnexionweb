@@ -426,6 +426,13 @@ async def create_concert_event(data: ConcertEvent, request: Request, current_use
         has_artist = bool(payload.get("bands")) or bool((payload.get("artist_name") or "").strip())
         payload["status"] = "confirmed" if has_artist else "pending"
 
+    # Build 229 — concert rattaché à un plateau (doit être active)
+    plateau = None
+    if payload.get("plateau_id"):
+        from routes.plateaus import get_active_plateau_or_400
+        plateau = await get_active_plateau_or_400(payload["plateau_id"])
+        payload["plateau_title"] = plateau.get("title")
+
     concert_doc = {
         "id": concert_id,
         "venue_id": venue["id"],
@@ -437,6 +444,11 @@ async def create_concert_event(data: ConcertEvent, request: Request, current_use
     logger.info(f"🔍 Concert doc to insert: payment_method={concert_doc.get('payment_method')}, amount={concert_doc.get('amount')}, payment_status={concert_doc.get('payment_status')}")
     
     await db.concerts.insert_one(concert_doc)
+    concert_doc.pop("_id", None)
+
+    if plateau:
+        from routes.plateaus import book_plateau_concert
+        await book_plateau_concert(concert_doc, venue, plateau)
     
     # 🔔 Broadcast temps réel : Nouveau concert créé
     try:
@@ -755,10 +767,31 @@ async def patch_concert(concert_id: str, payload: dict, request: Request, curren
         "has_catering", "catering_drinks", "catering_respect", "catering_tbd",
         "has_accommodation", "accommodation_capacity", "accommodation_tbd",
         "is_guso", "cachet_type", "guso_contract_type",
+        "plateau_id",
     }
     updates = {k: v for k, v in (payload or {}).items() if k in allowed}
     if not updates:
         raise HTTPException(status_code=400, detail="No updatable field provided")
+
+    # Build 229 — rattachement / détachement plateau
+    plateau = None
+    if "plateau_id" in updates:
+        if updates["plateau_id"]:
+            if updates["plateau_id"] != concert.get("plateau_id"):
+                from routes.plateaus import get_active_plateau_or_400
+                plateau = await get_active_plateau_or_400(updates["plateau_id"])
+                updates["plateau_title"] = plateau.get("title")
+            else:
+                updates.pop("plateau_id")
+        else:
+            updates["plateau_id"] = None
+            updates["plateau_title"] = None
+        if not updates:
+            updated = concert
+            participants_count = await db.event_participations.count_documents({
+                "event_id": concert_id, "event_type": "concert", "active": True,
+            })
+            return ConcertEventResponse(**updated, participants_count=participants_count)
 
     # Validation légère : status doit être une valeur connue
     if "status" in updates and updates["status"] not in ("pending", "confirmed", "cancelled"):
@@ -767,6 +800,9 @@ async def patch_concert(concert_id: str, payload: dict, request: Request, curren
     await db.concerts.update_one({"id": concert_id}, {"$set": updates})
 
     updated = await db.concerts.find_one({"id": concert_id}, {"_id": 0})
+    if plateau:
+        from routes.plateaus import book_plateau_concert
+        await book_plateau_concert(updated, venue, plateau)
     participants_count = await db.event_participations.count_documents({
         "event_id": concert_id,
         "event_type": "concert",

@@ -58,11 +58,18 @@ class PlateauMemberInput(BaseModel):
     band_id: Optional[str] = None
 
 
+class AdminProjectInput(BaseModel):
+    """Build 229 — projet avec lequel l'admin entre dans le plateau (défaut : solo)."""
+    project_kind: ProjectKind = "solo"
+    band_id: Optional[str] = None
+
+
 class PlateauCreateInput(BaseModel):
     title: str
     description: Optional[str] = ""
     max_members: int = Field(default=4, ge=2, le=6)
     invited_members: List[PlateauMemberInput] = []
+    admin_project: Optional[AdminProjectInput] = None
 
 
 class PlateauUpdateInput(BaseModel):

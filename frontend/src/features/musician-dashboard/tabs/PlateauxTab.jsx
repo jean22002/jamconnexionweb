@@ -353,6 +353,12 @@ function CreatePlateauForm({ profile, onCreated }) {
   const [selected, setSelected] = useState([]); // [{ musician_id, band_id?, project_kind, label }]
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [adminProject, setAdminProject] = useState("solo"); // Build 229 — "solo" ou band_id
+
+  const myBands = useMemo(
+    () => (profile?.bands || []).filter((b) => b.id || b.band_id).map((b) => ({ id: b.id || b.band_id, name: b.name || "Groupe" })),
+    [profile]
+  );
 
   useEffect(() => {
     (async () => {
@@ -430,6 +436,9 @@ function CreatePlateauForm({ profile, onCreated }) {
         title: title.trim(),
         description: description.trim(),
         max_members: maxMembers,
+        admin_project: adminProject === "solo"
+          ? { project_kind: "solo", band_id: null }
+          : { project_kind: "band", band_id: adminProject },
         invited_members: selected.map((s) => ({
           musician_id: s.musician_id,
           project_kind: s.project_kind,
@@ -438,10 +447,11 @@ function CreatePlateauForm({ profile, onCreated }) {
       };
       await axios.post(`${API}/plateaus`, payload, { headers: authHeader() });
       toast.success("Plateau créé ! Invitations envoyées 🎸");
-      setTitle(""); setDescription(""); setSelected([]); setSearch("");
+      setTitle(""); setDescription(""); setSelected([]); setSearch(""); setAdminProject("solo");
       onCreated && onCreated();
     } catch (e) {
-      toast.error(e.response?.data?.detail || "Erreur à la création");
+      const d = e.response?.data?.detail;
+      toast.error(typeof d === "string" ? d : d?.message || "Erreur à la création");
     }
     setSaving(false);
   };
@@ -467,6 +477,19 @@ function CreatePlateauForm({ profile, onCreated }) {
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      <div>
+        <Label>Je participe avec</Label>
+        <Select value={adminProject} onValueChange={setAdminProject}>
+          <SelectTrigger data-testid="plateau-admin-project-select"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="solo" data-testid="plateau-admin-project-solo">{profile?.pseudo || "Moi"} (solo)</SelectItem>
+            {myBands.map((b) => (
+              <SelectItem key={b.id} value={b.id} data-testid={`plateau-admin-project-${b.id}`}>🎸 {b.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div>

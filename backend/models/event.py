@@ -89,6 +89,8 @@ class JamEventResponse(BaseModel):
 
 class ConcertBand(BaseModel):
     name: str
+    id: Optional[str] = None
+    plateau_id: Optional[str] = None
     musician_id: Optional[str] = None
     members_count: Optional[int] = None
     photo: Optional[str] = None
@@ -127,6 +129,8 @@ class ConcertEvent(BaseModel, PaymentValidationMixin):
     # Auto-confirm côté serveur si bands non vide ou artist_name renseigné (voir routes/events.py).
     status: Optional[str] = None
     artist_name: Optional[str] = None
+    # Build 229 — concert rattaché à un plateau (doit être "active")
+    plateau_id: Optional[str] = None
 
 class ConcertEventResponse(BaseModel):
     id: str
@@ -170,6 +174,9 @@ class ConcertEventResponse(BaseModel):
     guso_contract_type: Optional[str] = None
     # Build 216 (sync mobile) — status renvoyé dans la réponse (pending / confirmed / cancelled).
     status: Optional[str] = "pending"
+    # Build 229 — plateau
+    plateau_id: Optional[str] = None
+    plateau_title: Optional[str] = None
 
 class KaraokeEvent(BaseModel, PaymentValidationMixin):
     date: str

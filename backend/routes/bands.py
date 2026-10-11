@@ -134,7 +134,7 @@ async def get_band_events(
     # Récupérer les concerts du groupe
     concerts = await db.concerts.find(
         {
-            "band_id": band_id,
+            "$or": [{"band_id": band_id}, {"band_ids": band_id}],
             **date_filter
         },
         {"_id": 0}

@@ -3188,6 +3188,15 @@ export default function VenueDashboard() {
             >
               💰 Comptabilité {isSubscriptionExpired && '🔒'}
             </TabsTrigger>
+            {/* Build 216 — Onglet dédié "Artistes GUSO" (déplacé depuis Candidatures pour accès rapide) */}
+            <TabsTrigger 
+              value="guso" 
+              disabled={isSubscriptionExpired}
+              className={`rounded-full whitespace-nowrap flex-shrink-0 px-4 ${isSubscriptionExpired ? 'opacity-50 cursor-not-allowed' : ''}`}
+              data-testid="venue-tab-guso"
+            >
+              🎫 Artistes GUSO {isSubscriptionExpired && '🔒'}
+            </TabsTrigger>
             <TabsTrigger 
               value="reviews" 
               disabled={isSubscriptionExpired}
@@ -3613,9 +3622,6 @@ export default function VenueDashboard() {
 
           {/* Candidatures Tab - Créneaux ouverts aux groupes */}
           <TabsContent value="candidatures">
-            {/* Build 152.3 — Section GUSO déclarés en haut de Candidatures (recrutement) */}
-            <GusoMusiciansSection />
-
             {/* Cleanup Button */}
             <div className="mb-6 flex justify-end">
               <Button
@@ -3636,6 +3642,17 @@ export default function VenueDashboard() {
               setViewingApplications={setViewingApplications}
               fetchApplications={fetchApplications}
             />
+          </TabsContent>
+
+          {/* Build 216 — Onglet dédié "Artistes GUSO" (déplacé depuis Candidatures pour accès rapide) */}
+          <TabsContent value="guso" data-testid="venue-content-guso">
+            <div className="mb-4">
+              <h2 className="text-2xl font-heading font-bold mb-1">🎫 Artistes GUSO déclarés</h2>
+              <p className="text-sm text-muted-foreground">
+                Musiciens PRO prêts à être déclarés GUSO — préparez vos déclarations en 1 clic.
+              </p>
+            </div>
+            <GusoMusiciansSection />
           </TabsContent>
 
           {/* Jacks (Subscribers) Tab */}

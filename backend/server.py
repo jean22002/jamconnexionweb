@@ -169,6 +169,7 @@ import routes.friends as friends
 import routes.reports as reports
 import routes.analytics as analytics
 import routes.audit as audit  # NEW: Audit logging
+import routes.plateaus as plateaus  # Build 217 — Plateaux musicaux
 import routes.online_status as online_status
 import routes.accounting as accounting
 import routes.firebase_push as firebase_push
@@ -230,6 +231,7 @@ api_router.include_router(push_notifications.router)
 api_router.include_router(push.router)  # Build 152.9 — Emergent push (register + send helper)
 api_router.include_router(cancellation.router)  # Build 152.13 — Cancellation flow (POST /cancel, /validate, GET /received/cancellation-requests)
 api_router.include_router(friends.router)
+api_router.include_router(plateaus.router)  # Build 217 — Plateaux musicaux
 api_router.include_router(reports.router)
 api_router.include_router(analytics.router)
 api_router.include_router(audit.router)  # NEW: Audit logging

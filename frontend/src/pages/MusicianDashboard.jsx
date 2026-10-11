@@ -67,6 +67,7 @@ import MusiciansTab from "../components/musicians/MusiciansTab";
 import FriendsTab from "../components/friends/FriendsTab";
 import Calendar from "../components/Calendar";
 import AccountingTab from "../components/accounting/AccountingTab";
+import PlateauxTab from "../features/musician-dashboard/tabs/PlateauxTab";
 import WebSocketIndicator from "../components/WebSocketIndicator";
 import { useWebSocket } from "../hooks/useWebSocket";
 // NEW: Import custom hooks for refactored logic
@@ -2652,6 +2653,8 @@ export default function MusicianDashboard() {
             </TabsTrigger>
             <TabsTrigger value="subscriptions" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[90px] sm:min-w-auto">Connexions</TabsTrigger>
             <TabsTrigger value="bands" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[75px] sm:min-w-auto">Groupes</TabsTrigger>
+            {/* Build 217 — Nouvel onglet "Plateaux" (organiser des soirées multi-artistes) */}
+            <TabsTrigger value="plateaus" className="rounded-full whitespace-nowrap flex-shrink-0 px-3 sm:px-4 text-xs sm:text-sm snap-center min-w-[80px] sm:min-w-auto" data-testid="musician-tab-plateaus">🎸 Plateaux</TabsTrigger>
           </TabsList>
 
           <TabsContent value="map">
@@ -3063,6 +3066,11 @@ export default function MusicianDashboard() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          </TabsContent>
+
+          {/* Build 217 — Onglet Plateaux musicaux */}
+          <TabsContent value="plateaus" data-testid="musician-content-plateaus">
+            <PlateauxTab profile={profile} />
           </TabsContent>
         </Tabs>
       </main>

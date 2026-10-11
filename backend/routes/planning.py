@@ -160,13 +160,20 @@ async def create_planning_slot(data: PlanningSlot, request: Request, current_use
 
 
 @router.get("/planning", response_model=List[PlanningSlotResponse])
-async def list_planning_slots(venue_id: Optional[str] = None, is_open: bool = True, include_past: bool = False):
+async def list_planning_slots(
+    venue_id: Optional[str] = None,
+    is_open: bool = True,
+    include_past: bool = False,
+    accepts_plateaus: Optional[bool] = None,
+):
     """List planning slots (only future slots by default)"""
     from datetime import datetime, timezone
     
     query = {"is_open": is_open}
     if venue_id:
         query["venue_id"] = venue_id
+    if accepts_plateaus is not None:
+        query["accepts_plateaus"] = True if accepts_plateaus else {"$ne": True}
     
     # By default, only show future slots
     if not include_past:
@@ -337,6 +344,44 @@ async def get_venue_planning(venue_id: str, include_past: bool = False):
     return result
 
 
+@router.get("/planning/{slot_id}", response_model=PlanningSlotResponse)
+async def get_planning_slot(slot_id: str):
+    """Build 233 — Détail d'un créneau."""
+    slot = await db.planning_slots.find_one({"id": slot_id}, {"_id": 0})
+    if not slot:
+        raise HTTPException(status_code=404, detail="Planning slot not found")
+    normalize_event_dates([slot], fields=['date'])
+    v = await db.venues.find_one(
+        {"id": slot.get("venue_id")}, {"_id": 0, "name": 1, "city": 1, "region": 1, "department": 1}
+    ) or {}
+    slot["venue_name"] = slot.get("venue_name") or v.get("name")
+    slot["venue_city"] = slot.get("venue_city") or v.get("city")
+    slot["venue_region"] = slot.get("venue_region") or v.get("region")
+    slot["venue_department"] = slot.get("venue_department") or v.get("department")
+    return PlanningSlotResponse(
+        **slot,
+        applications_count=await db.applications.count_documents({"planning_slot_id": slot_id}),
+        accepted_bands_count=await db.applications.count_documents({"planning_slot_id": slot_id, "status": "accepted"}),
+        plateau_count=await db.applications.count_documents({
+            "planning_slot_id": slot_id,
+            "$or": [{"band_type": "plateau"}, {"plateau_id": {"$ne": None}}],
+        }),
+    )
+
+
+async def backfill_accepts_plateaus() -> int:
+    """Build 233 — Migration idempotente : accepts_plateaus=true sur les créneaux ayant déjà une candidature plateau."""
+    slot_ids = await db.applications.distinct(
+        "planning_slot_id", {"$or": [{"band_type": "plateau"}, {"plateau_id": {"$ne": None}}]}
+    )
+    if not slot_ids:
+        return 0
+    res = await db.planning_slots.update_many(
+        {"id": {"$in": slot_ids}, "accepts_plateaus": {"$ne": True}}, {"$set": {"accepts_plateaus": True}}
+    )
+    return res.modified_count
+
+
 @router.put("/planning/{slot_id}", response_model=PlanningSlotResponse)
 async def update_planning_slot(slot_id: str, data: PlanningSlot, request: Request, current_user: dict = Depends(get_current_user)):
     """Update a planning slot (venue only)"""
@@ -401,6 +446,8 @@ _PLANNING_PATCH_WHITELIST = {
     "has_accommodation", "accommodation_capacity", "accommodation_tbd",
     # Statut du slot (toggle manuel côté venue)
     "is_open",
+    # Build 233 — ouvert aux plateaux
+    "accepts_plateaus",
 }
 
 
@@ -605,6 +652,8 @@ async def create_application(data: ConcertApplication, request: Request, current
     slot = await db.planning_slots.find_one({"id": slot_id}, {"_id": 0})
     if not slot or not slot.get("is_open", True):
         raise HTTPException(status_code=404, detail="Planning slot not found or closed")
+    if data.plateau_id and not slot.get("accepts_plateaus"):
+        raise HTTPException(status_code=400, detail="Ce créneau n'est pas ouvert aux plateaux")
 
     # Build 152.12 — Check if already applied → HTTP 409 avec detail structuré
     # Pour les plateaux : on dédoublonne par (slot, plateau_id) au lieu de (slot, musician_id)

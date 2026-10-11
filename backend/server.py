@@ -360,6 +360,14 @@ async def startup_db_client():
     except Exception as e:
         logger.error(f"❌ Plateau chats backfill failed: {e}")
 
+    # Build 233 — accepts_plateaus sur créneaux ayant déjà des candidatures plateau
+    try:
+        from routes.planning import backfill_accepts_plateaus
+        n = await backfill_accepts_plateaus()
+        logger.info(f"✅ accepts_plateaus backfill: {n} slots updated")
+    except Exception as e:
+        logger.error(f"❌ accepts_plateaus backfill failed: {e}")
+
     # Launch the health monitor daemon (pings critical endpoints every 5 min)
     try:
         import asyncio

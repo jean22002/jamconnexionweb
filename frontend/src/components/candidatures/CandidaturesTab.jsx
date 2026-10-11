@@ -15,6 +15,11 @@ function CandidatureCard({ slot, onApply }) {
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <h3 className="font-heading font-semibold text-lg">{slot.venue_name}</h3>
+          {slot.accepts_plateaus && (
+            <span className="inline-block mt-1 mb-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30" data-testid={`slot-accepts-plateaus-badge-${slot.id}`}>
+              🎸 Ouvert aux plateaux
+            </span>
+          )}
           <p className="text-sm text-muted-foreground flex items-center gap-1">
             <MapPin className="w-3 h-3" />
             {slot.venue_city}

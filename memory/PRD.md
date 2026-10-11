@@ -668,3 +668,11 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - `admin_project` sur POST /plateaus (solo | band à moi, 403 sinon).
 - Web : sélecteur « Je participe avec », badges 🎸 Plateau (ConcertsTab, PlanningTab, Calendar) ; calendar-events expose plateau_id/plateau_title/band_name.
 - Doc mobile : `/app/memory/MOBILE_SYNC_REPLY_BUILD_229.md`.
+
+## 2026-06 — Build 233 : Créneaux ouverts aux plateaux
+- `accepts_plateaus` (bool, défaut false) sur PlanningSlot (POST/PUT/PATCH whitelist) + réponses ; nouvelle route `GET /api/planning/{slot_id}` ; filtre `?accepts_plateaus=` sur GET /planning.
+- POST /applications avec plateau_id → 400 « Ce créneau n'est pas ouvert aux plateaux » si false.
+- Migration startup `backfill_accepts_plateaus` (créneaux ayant déjà une candidature plateau → true).
+- Web : switch dans le formulaire créneau venue (create + edit PUT), badges « 🎸 Ouvert aux plateaux » (venue CandidaturesTab + liste musicien), sélecteur plateau filtré.
+- Test e2e `backend/tests/test_plateaus_e2e.py` mis à jour (ne supprime plus les conversations plateau_group).
+- Doc mobile : `/app/memory/MOBILE_SYNC_REPLY_BUILD_233.md`.

@@ -1774,7 +1774,9 @@ export default function VenueDashboard() {
           catering_tbd: planningSlot.catering_tbd || false,
           has_accommodation: planningSlot.has_accommodation || false,
           accommodation_capacity: planningSlot.accommodation_capacity || 0,
-          accommodation_tbd: planningSlot.accommodation_tbd || false
+          accommodation_tbd: planningSlot.accommodation_tbd || false,
+          is_guso: planningSlot.is_guso || false,
+          accepts_plateaus: planningSlot.accepts_plateaus || false
         });
         setSelectedDate(dateObj);
         setShowPlanningModal(true);
@@ -1817,6 +1819,7 @@ export default function VenueDashboard() {
           num_bands_needed: planningForm.num_bands_needed || 1,
           application_type: planningForm.application_type || 'bands',
           is_guso: planningForm.is_guso || false,
+          accepts_plateaus: planningForm.accepts_plateaus || false,
           has_catering: planningForm.has_catering || false,
           catering_drinks: planningForm.catering_drinks || 0,
           catering_respect: planningForm.catering_respect || false,
@@ -1940,7 +1943,9 @@ export default function VenueDashboard() {
           catering_tbd: planningForm.catering_tbd || false,
           has_accommodation: planningForm.has_accommodation || false,
           accommodation_capacity: planningForm.accommodation_capacity || 0,
-          accommodation_tbd: planningForm.accommodation_tbd || false
+          accommodation_tbd: planningForm.accommodation_tbd || false,
+          is_guso: planningForm.is_guso || false,
+          accepts_plateaus: planningForm.accepts_plateaus || false
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );

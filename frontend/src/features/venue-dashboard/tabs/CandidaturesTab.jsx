@@ -91,6 +91,11 @@ export default function CandidaturesTab({
                       <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">
                         {slot.accepted_bands_count || 0}/{slot.num_bands_needed || 1} groupe{(slot.num_bands_needed || 1) > 1 ? 's' : ''}
                       </span>
+                      {slot.accepts_plateaus && (
+                        <span className="px-2 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs rounded-full font-semibold" data-testid={`slot-accepts-plateaus-badge-${slot.id}`}>
+                          🎸 Ouvert aux plateaux
+                        </span>
+                      )}
                       {/* Build 220 — Badge si le slot a reçu au moins 1 candidature plateau */}
                       {(slot.plateau_count ?? 0) > 0 && (
                         <span

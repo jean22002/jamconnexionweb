@@ -19,7 +19,6 @@ async def login(email, pwd):
 async def main():
     c = AsyncIOMotorClient(os.environ["MONGO_URL"])[os.environ["DB_NAME"]]
     await c.plateaus.delete_many({"title": {"$regex": "^Test"}})
-    await c.conversations.delete_many({"type": "plateau_group"})
 
     # Admin
     tok1 = await login("test@gmail.com", "test")
@@ -62,6 +61,11 @@ async def main():
         slot_id = slots[0]["id"] if slots else None
         print(f"  4️⃣  slot cible: {slot_id[:8] if slot_id else None}...")
         if slot_id:
+            prev = (await c.planning_slots.find_one({"id": slot_id})).get("accepts_plateaus")
+            await c.planning_slots.update_one({"id": slot_id}, {"$set": {"accepts_plateaus": False}})
+            r0 = await cl.post(f"{API}/applications", headers=H1, json={"planning_slot_id": slot_id, "plateau_id": pid})
+            print(f"  4️⃣bis slot fermé aux plateaux HTTP={r0.status_code} (attendu 400) detail={r0.json().get('detail')}")
+            await c.planning_slots.update_one({"id": slot_id}, {"$set": {"accepts_plateaus": True}})
             r = await cl.post(f"{API}/applications", headers=H1, json={
                 "planning_slot_id": slot_id, "plateau_id": pid,
             })
@@ -83,6 +87,7 @@ async def main():
         await cl.delete(f"{API}/plateaus/{pid}", headers=H1)
         if slot_id:
             await c.applications.delete_many({"plateau_id": pid})
+            await c.planning_slots.update_one({"id": slot_id}, {"$set": {"accepts_plateaus": bool(prev)}})
         print("  🧹 cleanup done")
 
 asyncio.run(main())

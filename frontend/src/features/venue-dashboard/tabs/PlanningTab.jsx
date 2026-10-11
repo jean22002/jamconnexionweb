@@ -6,6 +6,7 @@ import { Input } from "../../../components/ui/input";
 import { Button } from "../../../components/ui/button";
 import { Textarea } from "../../../components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
+import { Switch } from "../../../components/ui/switch";
 import { Checkbox } from "../../../components/ui/checkbox";
 import TimeSelect from "../../../components/TimeSelect";
 
@@ -326,6 +327,20 @@ export default function PlanningTab({
                   <span className="text-xs text-muted-foreground font-normal">(affiché sur la carte)</span>
                 </label>
               </div>
+            </div>
+
+            {/* Build 233 — Appel à candidatures ouvert aux plateaux */}
+            <div className="flex items-center justify-between gap-3 p-4 bg-amber-500/5 rounded-lg border border-amber-500/30">
+              <label htmlFor="accepts_plateaus" className="text-sm font-semibold cursor-pointer">
+                🎸 Ouvert aux plateaux
+                <span className="block text-xs text-muted-foreground font-normal">Les plateaux multi-artistes pourront candidater sur ce créneau</span>
+              </label>
+              <Switch
+                id="accepts_plateaus"
+                checked={planningForm.accepts_plateaus || false}
+                onCheckedChange={(checked) => setPlanningForm({ ...planningForm, accepts_plateaus: checked })}
+                data-testid="planning-accepts-plateaus-switch"
+              />
             </div>
 
             {/* Restauration (Catering) */}

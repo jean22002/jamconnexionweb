@@ -177,8 +177,11 @@ function PlateauDetailModal({ plateau: initialPlateau, open, onClose, currentUse
 
   const loadOpenSlots = async () => {
     try {
-      const r = await axios.get(`${API}/planning`, { headers: authHeader() });
-      const list = (Array.isArray(r.data) ? r.data : []).filter((s) => s.is_open);
+      const r = await axios.get(`${API}/planning`, {
+        headers: authHeader(),
+        params: { is_open: true, accepts_plateaus: true },
+      });
+      const list = (Array.isArray(r.data) ? r.data : []).filter((s) => s.is_open && s.accepts_plateaus);
       setSlots(list);
       setSelectedSlotId(list[0]?.id || "");
     } catch {
@@ -310,7 +313,7 @@ function PlateauDetailModal({ plateau: initialPlateau, open, onClose, currentUse
           </DialogHeader>
           {slots.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">
-              Aucun créneau ouvert actuellement.
+              Aucun créneau ouvert aux plateaux actuellement.
             </p>
           ) : (
             <div>

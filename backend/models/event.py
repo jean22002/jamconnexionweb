@@ -309,6 +309,7 @@ class PlanningSlot(BaseModel):
     application_type: str = "bands"  # "bands" or "solo"
     is_guso: bool = False  # GUSO contract
     is_open: bool = True  # Slot ouvert aux candidatures par défaut
+    accepts_plateaus: bool = False  # Build 233 — appel à candidatures ouvert aux plateaux
     # Catering (boissons)
     has_catering: bool = False
     catering_drinks: int = 0
@@ -351,6 +352,7 @@ class PlanningSlotResponse(BaseModel):
     applications_count: int = 0
     accepted_bands_count: int = 0
     is_open: bool = True
+    accepts_plateaus: bool = False
     # Catering (boissons)
     has_catering: bool = False
     catering_drinks: int = 0

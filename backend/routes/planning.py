@@ -185,10 +185,16 @@ async def list_planning_slots(venue_id: Optional[str] = None, is_open: bool = Tr
             "planning_slot_id": s["id"],
             "status": "accepted"
         })
+        # Build 220 — nb candidatures de type "plateau" pour filtre dashboard venue
+        plateau_count = await db.applications.count_documents({
+            "planning_slot_id": s["id"],
+            "$or": [{"band_type": "plateau"}, {"plateau_id": {"$ne": None}}],
+        })
         result.append(PlanningSlotResponse(
             **s, 
             applications_count=apps_count,
-            accepted_bands_count=accepted_count
+            accepted_bands_count=accepted_count,
+            plateau_count=plateau_count,
         ))
     
     return result

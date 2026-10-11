@@ -368,6 +368,8 @@ class PlanningSlotResponse(BaseModel):
     max_participants: Optional[int] = None
     payment_type: Optional[str] = None
     type: Optional[str] = None  # jam | concert | spectacle | karaoke (si polymorphe)
+    # Build 220 — compteur de candidatures de type "plateau" pour filtre venue
+    plateau_count: Optional[int] = 0
     
     class Config:
         # Build 152.14 — extra='ignore' : évite le leak DB (_id ObjectId, etc.) → response

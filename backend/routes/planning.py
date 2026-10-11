@@ -521,7 +521,13 @@ async def apply_to_slot(slot_id: str, band_id: Optional[str] = None, request: Re
 
 @router.post("/applications", response_model=ConcertApplicationResponse)
 async def create_application(data: ConcertApplication, request: Request, current_user: dict = Depends(get_current_user)):
-    """Create an application to a planning slot (musician only)"""
+    """Create an application to a planning slot (musician only).
+
+    Build 218 — Support de la candidature en tant que plateau :
+      - Si `plateau_id` est fourni → l'utilisateur doit être admin du plateau
+        ET le plateau doit être `active`. La candidature est enregistrée comme
+        une entité unique avec `plateau_id`, `plateau_title`, `plateau_members[]`.
+    """
     if current_user["role"] != "musician":
         raise HTTPException(status_code=403, detail="Only musicians can apply")
 
@@ -534,35 +540,64 @@ async def create_application(data: ConcertApplication, request: Request, current
     if not slot_id:
         raise HTTPException(status_code=422, detail="Missing planning_slot_id or concert_id")
 
-    # Build 152.15 — Fallback band_name → pseudo du musicien (mode Solo par défaut)
-    band_name = data.band_name or musician.get("pseudo") or "Solo"
-    is_solo = band_name == musician.get("pseudo") or "solo" in band_name.lower()
+    # Build 218 — Branche "candidature de plateau"
+    plateau = None
+    plateau_title = None
+    plateau_members = []
+    if data.plateau_id:
+        plateau = await db.plateaus.find_one({"id": data.plateau_id}, {"_id": 0})
+        if not plateau:
+            raise HTTPException(status_code=404, detail="Plateau introuvable")
+        if plateau.get("admin_user_id") != current_user["id"]:
+            raise HTTPException(status_code=403, detail="Seul l'admin du plateau peut le proposer à un créneau")
+        if plateau.get("status") != "active":
+            raise HTTPException(status_code=400, detail="Le plateau doit être complet et validé pour candidater")
+        plateau_title = plateau.get("title")
+        plateau_members = [
+            {
+                "musician_id": m.get("musician_id"),
+                "project_name": m.get("project_name"),
+                "music_styles": m.get("music_styles", []),
+                "band_id": m.get("band_id"),
+                "project_kind": m.get("project_kind"),
+            }
+            for m in (plateau.get("members") or []) if m.get("status") == "accepted"
+        ]
+        # band_name et band_id du doc candidature = titre + id du plateau (affichage côté venue)
+        band_name = plateau_title
+    else:
+        # Build 152.15 — Fallback band_name → pseudo du musicien (mode Solo par défaut)
+        band_name = data.band_name or musician.get("pseudo") or "Solo"
+        is_solo = band_name == musician.get("pseudo") or "solo" in band_name.lower()
 
-    if not is_solo:
-        # Check if band exists in musician's bands
-        musician_bands = musician.get("bands", [])
-        band_exists = any(band.get("name") == band_name for band in musician_bands)
+        if not is_solo:
+            # Check if band exists in musician's bands
+            musician_bands = musician.get("bands", [])
+            band_exists = any(band.get("name") == band_name for band in musician_bands)
 
-        if not band_exists:
-            raise HTTPException(
-                status_code=403,
-                detail="Vous ne pouvez postuler qu'avec vos propres groupes ou votre profil solo"
-            )
+            if not band_exists:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Vous ne pouvez postuler qu'avec vos propres groupes ou votre profil solo"
+                )
 
     slot = await db.planning_slots.find_one({"id": slot_id}, {"_id": 0})
     if not slot or not slot.get("is_open", True):
         raise HTTPException(status_code=404, detail="Planning slot not found or closed")
 
     # Build 152.12 — Check if already applied → HTTP 409 avec detail structuré
-    existing = await db.applications.find_one({
-        "planning_slot_id": slot_id,
-        "musician_id": musician["id"]
-    })
+    # Pour les plateaux : on dédoublonne par (slot, plateau_id) au lieu de (slot, musician_id)
+    duplicate_filter = (
+        {"planning_slot_id": slot_id, "plateau_id": data.plateau_id}
+        if data.plateau_id else
+        {"planning_slot_id": slot_id, "musician_id": musician["id"], "plateau_id": None}
+    )
+    existing = await db.applications.find_one(duplicate_filter)
     if existing:
         raise HTTPException(
             status_code=409,
             detail={
-                "message": "Vous avez déjà postulé sur ce créneau",
+                "message": "Candidature déjà envoyée sur ce créneau",
                 "code": "APPLICATION_ALREADY_EXISTS",
                 "existing_application_id": existing.get("id"),
             }
@@ -573,10 +608,15 @@ async def create_application(data: ConcertApplication, request: Request, current
 
     # Build 152.12 — dump only known fields, force planning_slot_id normalisé
     payload_dump = data.model_dump()
-    payload_dump.pop("concert_id", None)  # évite le doublon avec planning_slot_id normalisé
+    payload_dump.pop("concert_id", None)
     payload_dump["planning_slot_id"] = slot_id
-    # Build 152.15 — force band_name résolu (fallback solo si absent)
     payload_dump["band_name"] = band_name
+    # Build 218 — Enrichissement champs plateau
+    if data.plateau_id:
+        payload_dump["plateau_id"] = data.plateau_id
+        payload_dump["plateau_title"] = plateau_title
+        payload_dump["plateau_members"] = plateau_members
+        payload_dump["band_type"] = "plateau"
 
     app_doc = {
         "id": app_id,
@@ -589,14 +629,12 @@ async def create_application(data: ConcertApplication, request: Request, current
 
     try:
         await db.applications.insert_one(app_doc)
-        # Remove MongoDB _id (ObjectId not JSON-serializable) before Pydantic response
         app_doc.pop("_id", None)
     except DuplicateKeyError:
-        # Filet de sécurité si un unique index existe côté DB
         raise HTTPException(
             status_code=409,
             detail={
-                "message": "Vous avez déjà postulé sur ce créneau",
+                "message": "Candidature déjà envoyée sur ce créneau",
                 "code": "APPLICATION_ALREADY_EXISTS",
             }
         )
@@ -604,11 +642,16 @@ async def create_application(data: ConcertApplication, request: Request, current
     # Notify venue owner
     venue = await db.venues.find_one({"id": slot["venue_id"]}, {"_id": 0})
     if venue:
+        notif_msg = (
+            f"🎸 Plateau \"{plateau_title}\" ({len(plateau_members)} artistes) a postulé pour le {slot['date']}"
+            if data.plateau_id else
+            f"{band_name} a postulé pour le {slot['date']}"
+        )
         await create_notification(
             venue["user_id"],
             "application_received",
-            "Nouvelle candidature",
-            f"{band_name} a postulé pour le {slot['date']}",
+            "Nouvelle candidature" + (" (Plateau)" if data.plateau_id else ""),
+            notif_msg,
             "/venue"
         )
 

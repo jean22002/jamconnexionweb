@@ -16,6 +16,7 @@ Notifications persistées dans db.notifications (collection existante).
 """
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Optional
+from datetime import datetime, timezone
 import uuid
 import logging
 
@@ -78,21 +79,84 @@ async def _resolve_project(member_input: PlateauMemberInput) -> dict:
     }
 
 
-async def _notify(user_id: str, notif_type: str, title: str, message: str, data: dict):
+async def _notify(user_id: str, notif_type: str, title: str, message: str, data: dict, link: Optional[str] = None):
     """Insère une notification dans db.notifications (collection existante)."""
     try:
-        await db.notifications.insert_one({
+        doc = {
             "id": str(uuid.uuid4()),
             "user_id": user_id,
             "type": notif_type,
             "title": title,
             "message": message,
             "data": data,
+            # Build 218 — link cliquable (frontend route) pour "Clic notif → bon onglet"
+            "link": link or data.get("link"),
             "read": False,
             "created_at": now_iso(),
-        })
+        }
+        await db.notifications.insert_one(doc)
     except Exception as e:
         logger.warning(f"Failed to persist notification: {e}")
+
+
+def _plateau_link(plateau_id: str) -> str:
+    """Deep link vers l'onglet Plateaux du dashboard musicien, plateau pré-ouvert."""
+    return f"/dashboard-musician?tab=plateaus&plateau_id={plateau_id}"
+
+
+async def _create_group_conversation_if_needed(plateau: dict):
+    """Build 218 — Message groupe plateau.
+
+    Crée automatiquement une conversation de groupe (type="plateau_group") quand
+    tous les membres actifs ont accepté. Idempotent : ne crée qu'une seule fois.
+    """
+    members_accepted = [m for m in plateau.get("members", []) if m.get("status") == "accepted"]
+    if len(members_accepted) < 2:
+        return
+
+    existing = await db.conversations.find_one(
+        {"type": "plateau_group", "plateau_id": plateau["id"]}, {"_id": 0}
+    )
+    if existing:
+        # Déjà créée — on pourrait synchroniser les participants ici si besoin
+        return
+
+    now = datetime.now(timezone.utc)
+    participants = []
+    unread_count = {}
+    for m in members_accepted:
+        participants.append({
+            "user_id": m["user_id"],
+            "role": "musician",
+            "name": m.get("project_name", "Musicien"),
+            "avatar": m.get("photo"),
+            "last_read_at": None,
+        })
+        unread_count[m["user_id"]] = 0
+
+    conv_id = f"conv_plateau_{plateau['id'][:12]}"
+    await db.conversations.insert_one({
+        "id": conv_id,
+        "type": "plateau_group",
+        "plateau_id": plateau["id"],
+        "name": plateau.get("title", "Plateau"),
+        "participants": participants,
+        "last_message": None,
+        "unread_count": unread_count,
+        "created_at": now,
+        "updated_at": now,
+    })
+
+    # Notifier tous les membres de la nouvelle discussion de groupe
+    for m in members_accepted:
+        await _notify(
+            user_id=m["user_id"],
+            notif_type="plateau_group_chat_created",
+            title="💬 Discussion de groupe du plateau",
+            message=f'La discussion du plateau "{plateau["title"]}" est ouverte',
+            data={"plateau_id": plateau["id"], "conversation_id": conv_id},
+            link=f"/dashboard-musician?tab=messages&conv={conv_id}",
+        )
 
 
 def _recompute_status(plateau: dict) -> str:
@@ -208,6 +272,7 @@ async def create_plateau(payload: PlateauCreateInput, current_user: dict = Depen
                 title="🎸 Invitation à un plateau",
                 message=f'{admin_member["project_name"]} vous invite au plateau "{payload.title}"',
                 data={"plateau_id": plateau_doc["id"], "musician_id": m["musician_id"]},
+                link=_plateau_link(plateau_doc["id"]),
             )
 
     plateau_doc.pop("_id", None)
@@ -285,6 +350,7 @@ async def update_plateau(plateau_id: str, payload: PlateauUpdateInput, current_u
             title="🎸 Plateau mis à jour",
             message=f'Le plateau "{plateau["title"]}" a été modifié par l\'admin',
             data={"plateau_id": plateau_id},
+            link=_plateau_link(plateau_id),
         )
 
     updated = await db.plateaus.find_one({"id": plateau_id}, {"_id": 0})
@@ -360,6 +426,7 @@ async def invite_members(plateau_id: str, payload: PlateauInviteInput, current_u
             title="🎸 Invitation à un plateau",
             message=f'{plateau["admin_name"]} vous invite au plateau "{plateau["title"]}"',
             data={"plateau_id": plateau_id, "musician_id": m["musician_id"]},
+            link=_plateau_link(plateau_id),
         )
     return plateau
 
@@ -393,6 +460,10 @@ async def respond_invitation(plateau_id: str, payload: PlateauRespondInput, curr
         {"$set": {"members": members, "status": new_status, "updated_at": plateau["updated_at"]}},
     )
 
+    # Build 218 — Auto-crée la discussion de groupe si plateau devient "active"
+    if new_status == "active":
+        await _create_group_conversation_if_needed(plateau)
+
     # Notifier l'admin
     await _notify(
         user_id=plateau["admin_user_id"],
@@ -400,6 +471,7 @@ async def respond_invitation(plateau_id: str, payload: PlateauRespondInput, curr
         title="🎸 Réponse à votre plateau",
         message=f'{target["project_name"]} a {"accepté" if payload.accept else "refusé"} le plateau "{plateau["title"]}"',
         data={"plateau_id": plateau_id, "member": target},
+        link=_plateau_link(plateau_id),
     )
 
     return {"message": "Réponse enregistrée", "plateau_status": new_status}
@@ -446,6 +518,7 @@ async def request_join(plateau_id: str, payload: PlateauJoinRequestInput, curren
             "join_request_id": join_request_doc["id"],
             "requester": resolved,
         },
+        link=_plateau_link(plateau_id),
     )
     return {"message": "Demande envoyée à l'admin", "join_request_id": join_request_doc["id"]}
 
@@ -508,6 +581,11 @@ async def respond_join_request(plateau_id: str, join_request_id: str, payload: P
             {"id": plateau_id},
             {"$set": {"members": members, "status": new_status, "updated_at": now}},
         )
+        # Build 218 — Auto-crée la discussion de groupe si le plateau devient "active"
+        if new_status == "active":
+            fresh = await db.plateaus.find_one({"id": plateau_id}, {"_id": 0})
+            if fresh:
+                await _create_group_conversation_if_needed(fresh)
 
     # Notifier le demandeur
     await _notify(
@@ -516,5 +594,6 @@ async def respond_join_request(plateau_id: str, join_request_id: str, payload: P
         title="🎸 Réponse à votre demande d'intégration",
         message=f'Votre demande pour "{plateau["title"]}" a été {"acceptée" if payload.accept else "refusée"}',
         data={"plateau_id": plateau_id, "join_request_id": join_request_id, "accepted": payload.accept},
+        link=_plateau_link(plateau_id) if payload.accept else None,
     )
     return {"message": "Réponse enregistrée"}

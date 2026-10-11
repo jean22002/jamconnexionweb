@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import { Button } from "../components/ui/button";
@@ -184,7 +184,14 @@ export default function MusicianDashboard() {
   const [blockedUsers, setBlockedUsers] = useState([]); // Utilisateurs bloqués
   const [subscriptions, setSubscriptions] = useState([]);
   const [participations, setParticipations] = useState([]); // Participations musicien
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(() => {
+    // Build 218 — Si l'URL contient ?tab=xxx (clic sur notif), on l'applique en priorité.
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const t = params.get("tab");
+      if (t) return t;
+    } catch { /* ignore */ }
     // Restaurer le dernier onglet depuis localStorage
     const savedTab = localStorage.getItem('musician_activeTab');
     return savedTab || "map";
@@ -1680,12 +1687,33 @@ export default function MusicianDashboard() {
                   <div className="space-y-3 mt-4">
                     {notifications.length === 0 ? (
                       <p className="text-muted-foreground text-center py-4">Aucune notification</p>
-                    ) : notifications.map((notif) => (
-                      <div key={notif.id} className={`p-3 rounded-lg ${notif.read ? 'bg-muted/30' : 'bg-primary/10 border border-primary/30'}`}>
-                        <p className="font-medium text-sm">{notif.title}</p>
-                        <p className="text-muted-foreground text-xs mt-1">{notif.message}</p>
-                      </div>
-                    ))}
+                    ) : notifications.map((notif) => {
+                      const target = notif.link || notif.data?.link;
+                      return (
+                        <div
+                          key={notif.id}
+                          onClick={() => {
+                            if (!target) return;
+                            // Build 218 — Clic notif → ouvre le bon onglet (via ?tab=xxx) + ferme le panneau
+                            if (target.startsWith("http")) {
+                              window.location.href = target;
+                            } else {
+                              navigate(target);
+                              try {
+                                const params = new URLSearchParams(target.split("?")[1] || "");
+                                const t = params.get("tab");
+                                if (t) setActiveTab(t);
+                              } catch { /* ignore */ }
+                            }
+                          }}
+                          className={`p-3 rounded-lg ${notif.read ? 'bg-muted/30' : 'bg-primary/10 border border-primary/30'} ${target ? 'cursor-pointer hover:bg-primary/15' : ''}`}
+                          data-testid={`notif-item-${notif.id}`}
+                        >
+                          <p className="font-medium text-sm">{notif.title}</p>
+                          <p className="text-muted-foreground text-xs mt-1">{notif.message}</p>
+                        </div>
+                      );
+                    })}
                   </div>
                 </DialogContent>
               </Dialog>
@@ -2423,13 +2451,33 @@ export default function MusicianDashboard() {
                   <div className="space-y-3 mt-4">
                     {notifications.length === 0 ? (
                       <p className="text-muted-foreground text-center py-4">Aucune notification</p>
-                    ) : notifications.map((notif) => (
-                      <div key={notif.id} className={`p-3 rounded-lg ${notif.read ? 'bg-muted/30' : 'bg-primary/10 border border-primary/30'}`}>
-                        <p className="font-medium text-sm">{notif.title}</p>
-                        <p className="text-muted-foreground text-xs mt-1">{notif.message}</p>
-                        <p className="text-muted-foreground text-xs mt-1">{new Date(notif.created_at).toLocaleString('fr-FR')}</p>
-                      </div>
-                    ))}
+                    ) : notifications.map((notif) => {
+                      const target = notif.link || notif.data?.link;
+                      return (
+                        <div
+                          key={notif.id}
+                          onClick={() => {
+                            if (!target) return;
+                            if (target.startsWith("http")) {
+                              window.location.href = target;
+                            } else {
+                              navigate(target);
+                              try {
+                                const params = new URLSearchParams(target.split("?")[1] || "");
+                                const t = params.get("tab");
+                                if (t) setActiveTab(t);
+                              } catch { /* ignore */ }
+                            }
+                          }}
+                          className={`p-3 rounded-lg ${notif.read ? 'bg-muted/30' : 'bg-primary/10 border border-primary/30'} ${target ? 'cursor-pointer hover:bg-primary/15' : ''}`}
+                          data-testid={`notif-item-mob-${notif.id}`}
+                        >
+                          <p className="font-medium text-sm">{notif.title}</p>
+                          <p className="text-muted-foreground text-xs mt-1">{notif.message}</p>
+                          <p className="text-muted-foreground text-xs mt-1">{new Date(notif.created_at).toLocaleString('fr-FR')}</p>
+                        </div>
+                      );
+                    })}
                   </div>
                 </DialogContent>
               </Dialog>

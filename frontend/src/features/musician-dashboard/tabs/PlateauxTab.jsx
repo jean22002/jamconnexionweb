@@ -91,8 +91,47 @@ function PlateauCard({ plateau, onOpenDetail, onOpenJoin, canJoin = false }) {
 
 function PlateauDetailModal({ plateau, open, onClose, currentUserId, onDeleted }) {
   const navigate = useNavigate();
+  const [slots, setSlots] = useState([]);
+  const [showApply, setShowApply] = useState(false);
+  const [selectedSlotId, setSelectedSlotId] = useState("");
+  const [applying, setApplying] = useState(false);
   if (!plateau) return null;
   const isAdmin = plateau.admin_user_id === currentUserId;
+  const canApply = isAdmin && plateau.status === "active";
+
+  const loadOpenSlots = async () => {
+    try {
+      const r = await axios.get(`${API}/planning`, { headers: authHeader() });
+      const list = (Array.isArray(r.data) ? r.data : []).filter((s) => s.is_open);
+      setSlots(list);
+      setSelectedSlotId(list[0]?.id || "");
+    } catch {
+      setSlots([]);
+    }
+  };
+
+  const openApply = async () => {
+    await loadOpenSlots();
+    setShowApply(true);
+  };
+
+  const submitApply = async () => {
+    if (!selectedSlotId) return;
+    setApplying(true);
+    try {
+      await axios.post(
+        `${API}/applications`,
+        { planning_slot_id: selectedSlotId, plateau_id: plateau.id },
+        { headers: authHeader() }
+      );
+      toast.success("Candidature envoyée au nom du plateau 🎸");
+      setShowApply(false);
+    } catch (e) {
+      const d = e.response?.data?.detail;
+      toast.error(typeof d === "string" ? d : d?.message || "Erreur");
+    }
+    setApplying(false);
+  };
 
   const handleDelete = async () => {
     if (!window.confirm("Supprimer définitivement ce plateau ? Les membres seront notifiés.")) return;
@@ -162,6 +201,15 @@ function PlateauDetailModal({ plateau, open, onClose, currentUserId, onDeleted }
         </div>
 
         <DialogFooter className="mt-4 gap-2">
+          {canApply && (
+            <Button
+              onClick={openApply}
+              data-testid="plateau-apply-slot-btn"
+              className="bg-primary"
+            >
+              📅 Candidater à un créneau
+            </Button>
+          )}
           {isAdmin && (
             <Button variant="destructive" onClick={handleDelete} data-testid="plateau-delete-btn">
               <Trash2 className="w-4 h-4 mr-1" /> Supprimer le plateau
@@ -170,6 +218,48 @@ function PlateauDetailModal({ plateau, open, onClose, currentUserId, onDeleted }
           <Button variant="outline" onClick={onClose}>Fermer</Button>
         </DialogFooter>
       </DialogContent>
+
+      {/* Modal : choisir le créneau pour candidater en tant que plateau */}
+      <Dialog open={showApply} onOpenChange={(o) => !o && setShowApply(false)}>
+        <DialogContent data-testid="plateau-apply-modal">
+          <DialogHeader>
+            <DialogTitle>Candidater avec le plateau</DialogTitle>
+            <DialogDescription>
+              Le plateau "{plateau.title}" postulera en tant qu'entité unique.
+            </DialogDescription>
+          </DialogHeader>
+          {slots.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              Aucun créneau ouvert actuellement.
+            </p>
+          ) : (
+            <div>
+              <Label>Choisis un créneau ouvert</Label>
+              <Select value={selectedSlotId} onValueChange={setSelectedSlotId}>
+                <SelectTrigger data-testid="plateau-apply-slot-select"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {slots.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.date} · {s.title || "Créneau"} · {s.venue_name || ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowApply(false)}>Annuler</Button>
+            <Button
+              onClick={submitApply}
+              disabled={applying || !selectedSlotId}
+              data-testid="plateau-apply-submit"
+            >
+              {applying ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Envoyer la candidature
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }

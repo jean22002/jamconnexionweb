@@ -384,6 +384,8 @@ class ConcertApplication(BaseModel):
     band_type: Optional[str] = None  # 'Solo' | 'Groupe'
     band_members: List[str] = []
     members_count: Optional[int] = None
+    # Build 218 — Candidature en tant que plateau (entité unique multi-artistes)
+    plateau_id: Optional[str] = None
     contact_email: Optional[str] = None
     contact_phone: Optional[str] = None
     message: Optional[str] = None
@@ -419,6 +421,10 @@ class ConcertApplicationResponse(BaseModel):
     message: Optional[str] = None
     status: str = "pending"  # pending, accepted, rejected, cancelled
     created_at: Optional[str] = None
+    # Build 218 — Candidature de plateau (une entité multi-artistes)
+    plateau_id: Optional[str] = None
+    plateau_title: Optional[str] = None
+    plateau_members: List[dict] = []
     # Boissons
     has_catering: Optional[bool] = None
     catering_drinks: Optional[int] = None

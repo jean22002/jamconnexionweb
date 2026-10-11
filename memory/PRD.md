@@ -645,3 +645,10 @@ Application de mise en relation entre cafés-concerts et musiciens.
   2. **Onglet Candidatures affiche "Candidatures (0)" partout** alors que la BD contient des candidatures : le cache local `applications[slot.id]` n'était rempli qu'au clic sur une carte. **Fix** : au focus de l'onglet Candidatures, précharger automatiquement les candidatures pour chaque slot ouvert (`planningSlots.filter(s => s.is_open).forEach(s => fetchApplications(s.id))`).
   - **Seed octobre 2026** : 40 événements fictifs répartis sur "Le Bar Test" (Olonzac) et "LE DB" (Narbonne) — 10 bœufs, 12 candidatures ouvertes, 10 concerts, 8 spectacles pour tester les affichages.
 
+
+## 2026-06 — Build 221 : README Sync Mobile + 2 fixes Web
+- Créé `/app/memory/MOBILE_SYNC_README_BUILDS_211_220.md` (message prêt à copier-coller pour l'agent mobile : Plateaux, candidature plateau, chat groupe, notifs/deep links, badge+filtre venue, PATCH partiels, préférences notifs, reset candidature, code RN + checklist).
+- Fix Web : formulaire "Créer un plateau" appelait `GET /musicians?limit=500` (422, max 100) → pagination limit=100 (liste invités vide auparavant).
+- Fix Backend : liens notifs plateau `/dashboard-musician?...` (route inexistante → redirection accueil) → `/musician?tab=plateaus&plateau_id=X` ; 9 notifs existantes migrées.
+- Constat : le Web n'a pas d'UI `/chat/*` → chat groupe plateau visible uniquement sur mobile (backlog P1 : UI chat web).
+- Backlog P1 : UI admin "Demandes d'intégration" plateau sur le Web (endpoints existants).

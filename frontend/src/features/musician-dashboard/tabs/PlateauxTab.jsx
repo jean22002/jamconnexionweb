@@ -278,8 +278,14 @@ function CreatePlateauForm({ profile, onCreated }) {
     (async () => {
       setLoading(true);
       try {
-        const r = await axios.get(`${API}/musicians`, { headers: authHeader(), params: { limit: 500 } });
-        const list = Array.isArray(r.data) ? r.data : [];
+        // Backend plafonne limit à 100 → pagination (max 5 pages)
+        const list = [];
+        for (let page = 1; page <= 5; page++) {
+          const r = await axios.get(`${API}/musicians`, { headers: authHeader(), params: { limit: 100, page } });
+          const chunk = Array.isArray(r.data) ? r.data : [];
+          list.push(...chunk);
+          if (chunk.length < 100) break;
+        }
         // Exclut l'utilisateur courant (il est déjà admin)
         setMusicians(list.filter((m) => m.user_id !== profile?.user_id));
       } catch {

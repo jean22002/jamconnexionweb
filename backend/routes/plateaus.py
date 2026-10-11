@@ -101,7 +101,7 @@ async def _notify(user_id: str, notif_type: str, title: str, message: str, data:
 
 def _plateau_link(plateau_id: str) -> str:
     """Deep link vers l'onglet Plateaux du dashboard musicien, plateau pré-ouvert."""
-    return f"/dashboard-musician?tab=plateaus&plateau_id={plateau_id}"
+    return f"/musician?tab=plateaus&plateau_id={plateau_id}"
 
 
 async def _create_group_conversation_if_needed(plateau: dict):
@@ -155,7 +155,7 @@ async def _create_group_conversation_if_needed(plateau: dict):
             title="💬 Discussion de groupe du plateau",
             message=f'La discussion du plateau "{plateau["title"]}" est ouverte',
             data={"plateau_id": plateau["id"], "conversation_id": conv_id},
-            link=f"/dashboard-musician?tab=messages&conv={conv_id}",
+            link=_plateau_link(plateau["id"]),
         )
 
 

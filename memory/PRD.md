@@ -676,3 +676,4 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - Web : switch dans le formulaire créneau venue (create + edit PUT), badges « 🎸 Ouvert aux plateaux » (venue CandidaturesTab + liste musicien), sélecteur plateau filtré.
 - Test e2e `backend/tests/test_plateaus_e2e.py` mis à jour (ne supprime plus les conversations plateau_group).
 - Doc mobile : `/app/memory/MOBILE_SYNC_REPLY_BUILD_233.md`.
+- (Build 233b) Web : retrait du bouton « Proposer à un créneau » du détail plateau ; nouvel écran « 📨 Candidature plateau » (`PlateauCandidatureBrowser.jsx`, UI calquée sur Répertoire des Groupes : filtres style/formation/ville/GUSO, onglets Tous/France/Région/Département, dialog choix plateau active admin).

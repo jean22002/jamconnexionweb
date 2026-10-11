@@ -40,3 +40,18 @@ Les créneaux qui avaient **déjà au moins une candidature plateau** passent à
 4. Candidature plateau sur un créneau à `false` → 400 « Ce créneau n'est pas ouvert aux plateaux ».
 
 Merci ! 🎸
+
+---
+
+## ➕ Alignement Web (suite à votre remarque)
+- Le bouton « Proposer à un créneau » a été **retiré** du détail d'un plateau sur le Web. À la place, quand le plateau est complet et que je suis admin, une ligne d'aide renvoie vers l'écran « Candidature plateau ».
+- Nouvel écran Web « 📨 Candidature plateau » (4ᵉ mode de l'onglet Plateaux, même interface que le « Répertoire des Groupes ») :
+  - **Filtres** : Style musical, Formation recherchée, Ville, switch « GUSO uniquement », bouton « Réinitialiser les filtres ».
+  - **Onglets** : Tous (N) / France (N) / Par Région (grille → liste) / Par Département (grille → liste).
+  - **Carte** : établissement, ville (département), région, date et heure, titre, badges (🎸 Ouvert aux plateaux, GUSO, formation, styles), paiement, et le bouton « Postuler avec un plateau ».
+  - **Bouton « Postuler avec un plateau »** :
+    - ouvre le choix parmi **mes plateaux `active` dont je suis l'admin** ;
+    - envoie `POST /applications {planning_slot_id, plateau_id}` ;
+    - succès → « Plateau proposé ✓ » ; un 409 est affiché comme « déjà candidaté » ;
+    - si je n'ai aucun plateau complet → message d'état vide.
+  - **Données** : `GET /api/planning?is_open=true&accepts_plateaus=true` + `GET /api/plateaus/my`.

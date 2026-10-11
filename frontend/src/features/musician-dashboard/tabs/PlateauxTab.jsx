@@ -18,6 +18,7 @@ import { Badge } from "../../../components/ui/badge";
 import { Card } from "../../../components/ui/card";
 import { Users, Plus, Trash2, UserPlus, Eye, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PlateauCandidatureBrowser from "./PlateauCandidatureBrowser";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -155,10 +156,6 @@ function JoinRequestsSection({ plateauId, onChanged }) {
 
 function PlateauDetailModal({ plateau: initialPlateau, open, onClose, currentUserId, onDeleted }) {
   const navigate = useNavigate();
-  const [slots, setSlots] = useState([]);
-  const [showApply, setShowApply] = useState(false);
-  const [selectedSlotId, setSelectedSlotId] = useState("");
-  const [applying, setApplying] = useState(false);
   const [fresh, setFresh] = useState(null);
   const plateau = fresh && fresh.id === initialPlateau?.id ? fresh : initialPlateau;
   if (!plateau) return null;
@@ -174,43 +171,6 @@ function PlateauDetailModal({ plateau: initialPlateau, open, onClose, currentUse
   };
   const isAdmin = plateau.admin_user_id === currentUserId;
   const canApply = isAdmin && plateau.status === "active";
-
-  const loadOpenSlots = async () => {
-    try {
-      const r = await axios.get(`${API}/planning`, {
-        headers: authHeader(),
-        params: { is_open: true, accepts_plateaus: true },
-      });
-      const list = (Array.isArray(r.data) ? r.data : []).filter((s) => s.is_open && s.accepts_plateaus);
-      setSlots(list);
-      setSelectedSlotId(list[0]?.id || "");
-    } catch {
-      setSlots([]);
-    }
-  };
-
-  const openApply = async () => {
-    await loadOpenSlots();
-    setShowApply(true);
-  };
-
-  const submitApply = async () => {
-    if (!selectedSlotId) return;
-    setApplying(true);
-    try {
-      await axios.post(
-        `${API}/applications`,
-        { planning_slot_id: selectedSlotId, plateau_id: plateau.id },
-        { headers: authHeader() }
-      );
-      toast.success("Candidature envoyée au nom du plateau 🎸");
-      setShowApply(false);
-    } catch (e) {
-      const d = e.response?.data?.detail;
-      toast.error(typeof d === "string" ? d : d?.message || "Erreur");
-    }
-    setApplying(false);
-  };
 
   const handleDelete = async () => {
     if (!window.confirm("Supprimer définitivement ce plateau ? Les membres seront notifiés.")) return;
@@ -283,16 +243,13 @@ function PlateauDetailModal({ plateau: initialPlateau, open, onClose, currentUse
           <JoinRequestsSection plateauId={plateau.id} onChanged={refreshPlateau} />
         )}
 
+        {canApply && (
+          <p className="text-xs text-muted-foreground mt-3" data-testid="plateau-apply-hint">
+            📨 Plateau complet : proposez-le à un établissement depuis « Candidature plateau ».
+          </p>
+        )}
+
         <DialogFooter className="mt-4 gap-2">
-          {canApply && (
-            <Button
-              onClick={openApply}
-              data-testid="plateau-apply-slot-btn"
-              className="bg-primary"
-            >
-              📅 Candidater à un créneau
-            </Button>
-          )}
           {isAdmin && (
             <Button variant="destructive" onClick={handleDelete} data-testid="plateau-delete-btn">
               <Trash2 className="w-4 h-4 mr-1" /> Supprimer le plateau
@@ -302,47 +259,6 @@ function PlateauDetailModal({ plateau: initialPlateau, open, onClose, currentUse
         </DialogFooter>
       </DialogContent>
 
-      {/* Modal : choisir le créneau pour candidater en tant que plateau */}
-      <Dialog open={showApply} onOpenChange={(o) => !o && setShowApply(false)}>
-        <DialogContent data-testid="plateau-apply-modal">
-          <DialogHeader>
-            <DialogTitle>Candidater avec le plateau</DialogTitle>
-            <DialogDescription>
-              Le plateau "{plateau.title}" postulera en tant qu'entité unique.
-            </DialogDescription>
-          </DialogHeader>
-          {slots.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">
-              Aucun créneau ouvert aux plateaux actuellement.
-            </p>
-          ) : (
-            <div>
-              <Label>Choisis un créneau ouvert</Label>
-              <Select value={selectedSlotId} onValueChange={setSelectedSlotId}>
-                <SelectTrigger data-testid="plateau-apply-slot-select"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {slots.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.venue_name || "Établissement"}{s.venue_city ? ` (${s.venue_city})` : ""} — {s.date}{s.title ? ` · ${s.title}` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowApply(false)}>Annuler</Button>
-            <Button
-              onClick={submitApply}
-              disabled={applying || !selectedSlotId}
-              data-testid="plateau-apply-submit"
-            >
-              {applying ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Envoyer la candidature
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </Dialog>
   );
 }
@@ -833,7 +749,7 @@ function MyPlateausList({ profile, refreshKey, onDeleted }) {
 }
 
 export default function PlateauxTab({ profile }) {
-  const [mode, setMode] = useState("list"); // list | create | join
+  const [mode, setMode] = useState("list"); // list | create | join | apply
   const [refreshKey, setRefreshKey] = useState(0);
 
   return (
@@ -853,6 +769,7 @@ export default function PlateauxTab({ profile }) {
             <SelectItem value="list">📋 Mes plateaux</SelectItem>
             <SelectItem value="create">➕ Créer un plateau</SelectItem>
             <SelectItem value="join">🔗 Intégrer un plateau</SelectItem>
+            <SelectItem value="apply">📨 Candidature plateau</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -871,6 +788,7 @@ export default function PlateauxTab({ profile }) {
         />
       )}
       {mode === "join" && <JoinPlateauBrowser profile={profile} />}
+      {mode === "apply" && <PlateauCandidatureBrowser profile={profile} />}
     </div>
   );
 }

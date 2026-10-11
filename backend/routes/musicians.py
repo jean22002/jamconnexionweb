@@ -3229,6 +3229,7 @@ MUSICIAN_NOTIFICATION_KEYS = [
     "application_response",     # Accept/reject/reset/cancelled_by_venue (regroupé)
     "new_event_match",          # Nouveau bœuf/concert dans ma ville
     "subscription_expiring",    # Fin d'essai / abo (Musicien PRO)
+    "plateaus",                 # Build 227 — invitations / réponses / demandes plateaux
 ]
 _MUSICIAN_DEFAULT_PREFS = {k: True for k in MUSICIAN_NOTIFICATION_KEYS}
 

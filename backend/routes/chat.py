@@ -39,6 +39,63 @@ class SendMessageRequest(BaseModel):
     type: str = "text"  # "text", "image", "audio"
     attachment: Optional[str] = None
 
+async def _enrich_participant(p: dict, cache: dict) -> dict:
+    uid = p.get("user_id")
+    if not uid:
+        return p
+    need_name = not p.get("name")
+    need_role = not p.get("role")
+    need_avatar = "avatar" not in p or p.get("avatar") is None
+    if not (need_name or need_role or need_avatar):
+        return p
+    if uid not in cache:
+        cache[uid] = await db.users.find_one(
+            {"id": uid}, {"_id": 0, "id": 1, "name": 1, "role": 1, "email": 1}
+        ) or {}
+    u = cache[uid]
+    if need_role and u.get("role"):
+        p["role"] = u["role"]
+    if need_name:
+        resolved = await resolve_display_name(db, u)
+        if resolved:
+            p["name"] = resolved
+    if need_avatar and u.get("role"):
+        p["avatar"] = await get_user_avatar(db, uid, u["role"])
+    return p
+
+
+async def _shape_conversation(conv: dict, user_id: str, cache: dict) -> dict:
+    conv["participants"] = [await _enrich_participant(p, cache) for p in conv.get("participants", [])]
+    conv.setdefault("type", "direct")
+    conv.setdefault("name", None)
+    conv.setdefault("plateau_id", None)
+    conv["my_unread_count"] = (conv.get("unread_count") or {}).get(user_id, 0)
+    return conv
+
+
+async def find_conversation_for_user(conversation_id: str, user_id: str) -> Optional[dict]:
+    """Conversation où user est participant. Build 227 — création à la volée des chats plateau manquants."""
+    query = {"id": conversation_id, "participants.user_id": user_id}
+    conv = await db.conversations.find_one(query, {"_id": 0})
+    if conv or not conversation_id.startswith("conv_plateau_"):
+        return conv
+    import re
+    prefix = conversation_id[len("conv_plateau_"):]
+    plateau = await db.plateaus.find_one({
+        "id": {"$regex": f"^{re.escape(prefix)}"},
+        "status": "active",
+        "members": {"$elemMatch": {"user_id": user_id, "status": "accepted"}},
+    }, {"_id": 0})
+    if not plateau:
+        return None
+    from routes.plateaus import ensure_plateau_conversation
+    await ensure_plateau_conversation(plateau)
+    return await db.conversations.find_one(query, {"_id": 0})
+
+
+def jsonable(doc: dict) -> dict:
+    return {k: (v.isoformat() if isinstance(v, datetime) else v) for k, v in doc.items()}
+
 # ============================================
 # Endpoints
 # ============================================
@@ -57,44 +114,9 @@ async def get_conversations(user: dict = Depends(get_current_user_local)):
             {"_id": 0}
         ).sort("updated_at", -1).to_list(100)
         
-        # Cache pour éviter les requêtes redondantes
-        user_cache = {}
-        
-        async def enrich_participant(p):
-            uid = p.get("user_id")
-            if not uid:
-                return p
-            # Fields déjà présents → on complète seulement les manquants
-            need_name = not p.get("name")
-            need_role = not p.get("role")
-            need_avatar = "avatar" not in p or p.get("avatar") is None
-            if not (need_name or need_role or need_avatar):
-                return p
-            
-            if uid not in user_cache:
-                u = await db.users.find_one(
-                    {"id": uid},
-                    {"_id": 0, "id": 1, "name": 1, "role": 1, "email": 1}
-                )
-                user_cache[uid] = u or {}
-            u = user_cache[uid]
-            if need_role and u.get("role"):
-                p["role"] = u["role"]
-            if need_name:
-                resolved = await resolve_display_name(db, u)
-                if resolved:
-                    p["name"] = resolved
-            if need_avatar and u.get("role"):
-                p["avatar"] = await get_user_avatar(db, uid, u["role"])
-            return p
-        
-        # Enrichir les participants + ajouter unread_count pour l'utilisateur
+        cache = {}
         for conv in conversations:
-            participants = conv.get("participants", [])
-            for i, p in enumerate(participants):
-                participants[i] = await enrich_participant(p)
-            conv["participants"] = participants
-            conv["my_unread_count"] = conv.get("unread_count", {}).get(user["id"], 0)
+            await _shape_conversation(conv, user["id"], cache)
         
         return conversations
         
@@ -226,6 +248,15 @@ async def create_conversation(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/conversations/{conversation_id}")
+async def get_conversation(conversation_id: str, user: dict = Depends(get_current_user_local)):
+    """Build 227 — Détail d'une conversation (direct ou plateau_group)."""
+    conv = await find_conversation_for_user(conversation_id, user["id"])
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation introuvable")
+    return await _shape_conversation(conv, user["id"], {})
+
+
 @router.get("/conversations/{conversation_id}/messages")
 async def get_messages(
     conversation_id: str,
@@ -250,14 +281,10 @@ async def get_messages(
         }
     """
     try:
-        # Vérifier que l'utilisateur est participant
-        conversation = await db.conversations.find_one({
-            "id": conversation_id,
-            "participants.user_id": user["id"]
-        }, {"_id": 0})
-        
+        conversation = await find_conversation_for_user(conversation_id, user["id"])
         if not conversation:
             raise HTTPException(status_code=403, detail="Accès refusé à cette conversation")
+        names = {p.get("user_id"): p.get("name") for p in conversation.get("participants", [])}
         
         # Pagination
         skip = (page - 1) * limit
@@ -269,6 +296,11 @@ async def get_messages(
         
         # Inverser pour affichage chronologique (plus ancien en premier)
         messages.reverse()
+        for m in messages:
+            if not m.get("sender_name"):
+                m["sender_name"] = names.get(m.get("sender_id")) or "Utilisateur"
+            if not m.get("read_by"):
+                m["read_by"] = [m.get("sender_id")] if m.get("sender_id") else []
         
         return {
             "messages": messages,
@@ -296,11 +328,7 @@ async def send_message(
     Cet endpoint REST est un fallback si WebSocket n'est pas disponible.
     """
     try:
-        # Vérifier conversation
-        conversation = await db.conversations.find_one({
-            "id": request.conversation_id,
-            "participants.user_id": user["id"]
-        }, {"_id": 0})
+        conversation = await find_conversation_for_user(request.conversation_id, user["id"])
         
         if not conversation:
             raise HTTPException(status_code=403, detail="Conversation non trouvée")
@@ -321,8 +349,11 @@ async def send_message(
             attachment=request.attachment
         )
         
-        # TODO: Émettre via WebSocket si connecté
-        # TODO: Envoyer notification push si déconnecté
+        try:
+            from websocket import emit_to_conversation
+            await emit_to_conversation(conversation, "new_message", message)
+        except Exception as e:
+            logger.warning(f"[chat] socket emit new_message failed: {e}")
         
         return message
         
@@ -347,6 +378,9 @@ async def mark_conversation_read(
     """
     try:
         now = datetime.now(timezone.utc)
+        conversation = await find_conversation_for_user(conversation_id, user["id"])
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation non trouvée")
         
         # Mettre à jour last_read_at et unread_count
         result = await db.conversations.update_one(
@@ -362,7 +396,7 @@ async def mark_conversation_read(
             }
         )
         
-        if result.modified_count > 0:
+        if result.matched_count > 0:
             logger.info(f"Marked conversation {conversation_id} as read for user {user['id']}")
 
             # Build 152.21 — Marquer la notification message associée comme lue dans db.notifications
@@ -381,7 +415,7 @@ async def mark_conversation_read(
             # Build 152.20 — Émettre Socket.IO 'messages_read' dans la room de la conv
             # pour que les ticks passent au bleu côté clients connectés.
             try:
-                from websocket import sio
+                from websocket import emit_to_conversation
                 # Récupérer les IDs des messages marqués comme lus (ceux non envoyés par l'utilisateur courant)
                 unread_msgs = await db.messages.find(
                     {
@@ -400,7 +434,8 @@ async def mark_conversation_read(
                         {"$addToSet": {"read_by": user["id"]}, "$set": {"is_read": True}},
                     )
 
-                await sio.emit(
+                await emit_to_conversation(
+                    conversation,
                     "messages_read",
                     {
                         "conversation_id": conversation_id,
@@ -408,7 +443,6 @@ async def mark_conversation_read(
                         "read_at": now.isoformat(),
                         "message_ids": message_ids,
                     },
-                    room=conversation_id,
                 )
             except Exception as e:
                 logger.warning(f"[chat] failed to emit messages_read for {conversation_id}: {e}")
@@ -479,9 +513,9 @@ async def get_user_avatar(db, user_id: str, role: str) -> Optional[str]:
         if role == "musician":
             profile = await db.musicians.find_one(
                 {"user_id": user_id},
-                {"_id": 0, "profile_picture": 1}
+                {"_id": 0, "profile_picture": 1, "profile_image": 1}
             )
-            return profile.get("profile_picture") if profile else None
+            return (profile.get("profile_picture") or profile.get("profile_image")) if profile else None
             
         elif role == "venue":
             profile = await db.venues.find_one(
@@ -522,10 +556,10 @@ async def resolve_display_name(db, user: dict) -> str:
         if role == "musician" and user_id:
             profile = await db.musicians.find_one(
                 {"user_id": user_id},
-                {"_id": 0, "name": 1, "stage_name": 1}
+                {"_id": 0, "name": 1, "stage_name": 1, "pseudo": 1}
             )
             if profile:
-                return profile.get("stage_name") or profile.get("name") or user.get("email", "Utilisateur")
+                return profile.get("pseudo") or profile.get("stage_name") or profile.get("name") or user.get("email", "Utilisateur")
         elif role == "venue" and user_id:
             profile = await db.venues.find_one(
                 {"user_id": user_id},

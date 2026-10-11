@@ -26,7 +26,7 @@ async def should_send_notification(user_id: str, notification_type: str, user_ro
     Whitelists (Build 214, sync mobile) :
       venue    → new_participants, new_applications, application_cancellation, new_messages, new_followers
       musician → new_messages, friend_requests, badges_unlocked, upcoming_events,
-                 application_response, new_event_match, subscription_expiring
+                 application_response, new_event_match, subscription_expiring, plateaus
       melomane → new_messages, friend_requests, upcoming_events, new_event_match
     """
     # ─── Venue ─────────────────────────────────────────────────────────────

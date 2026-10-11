@@ -22,6 +22,8 @@ import logging
 
 from utils import get_current_user
 from utils.db import db
+from utils.notification_preferences import should_send_notification
+from routes.push import send_push
 from models.plateau import (
     PlateauCreateInput, PlateauUpdateInput, PlateauInviteInput,
     PlateauRespondInput, PlateauJoinRequestInput,
@@ -97,6 +99,29 @@ async def _notify(user_id: str, notif_type: str, title: str, message: str, data:
         await db.notifications.insert_one(doc)
     except Exception as e:
         logger.warning(f"Failed to persist notification: {e}")
+        return
+    await _push(user_id, notif_type, title, message, data, doc["id"])
+
+
+async def _push(user_id: str, notif_type: str, title: str, message: str, data: dict, notif_id: str):
+    """Build 227 — push SuprSend (respecte les préférences musicien)."""
+    pref_key = "new_messages" if notif_type == "plateau_group_chat_created" else "plateaus"
+    try:
+        if not await should_send_notification(user_id, pref_key, "musician"):
+            return
+        push_data = {"title": title, "message": message, "type": notif_type}
+        for k in ("plateau_id", "conversation_id", "join_request_id"):
+            if data.get(k):
+                push_data[k] = data[k]
+        if notif_type == "plateau_group_chat_created" and data.get("conversation_id"):
+            push_data["deeplink"] = f"jamconnexion:///messages/{data['conversation_id']}"
+        elif data.get("plateau_id") and notif_type != "plateau_deleted":
+            push_data["deeplink"] = f"jamconnexion:///plateaus/{data['plateau_id']}"
+        if push_data.get("deeplink"):
+            push_data["action_url"] = push_data["deeplink"].replace("jamconnexion://", "")
+        await send_push(recipients=[user_id], data=push_data, idempotency_key=f"plateau-{notif_id}")
+    except Exception as e:
+        logger.warning(f"Push failed ({notif_type}): {e}")
 
 
 def _plateau_link(plateau_id: str) -> str:
@@ -104,37 +129,54 @@ def _plateau_link(plateau_id: str) -> str:
     return f"/musician?tab=plateaus&plateau_id={plateau_id}"
 
 
-async def _create_group_conversation_if_needed(plateau: dict):
-    """Build 218 — Message groupe plateau.
+def plateau_conversation_id(plateau_id: str) -> str:
+    return f"conv_plateau_{plateau_id[:12]}"
 
-    Crée automatiquement une conversation de groupe (type="plateau_group") quand
-    tous les membres actifs ont accepté. Idempotent : ne crée qu'une seule fois.
+
+async def ensure_plateau_conversation(plateau: dict, notify: bool = True) -> Optional[str]:
+    """Build 218/227 — Conversation de groupe (type="plateau_group") idempotente.
+
+    Crée la conv si absente (+ notif), sinon ajoute les membres acceptés manquants.
     """
-    members_accepted = [m for m in plateau.get("members", []) if m.get("status") == "accepted"]
+    members_accepted = [m for m in plateau.get("members", []) if m.get("status") == "accepted" and m.get("user_id")]
     if len(members_accepted) < 2:
-        return
+        return None
 
+    conv_id = plateau_conversation_id(plateau["id"])
     existing = await db.conversations.find_one(
-        {"type": "plateau_group", "plateau_id": plateau["id"]}, {"_id": 0}
+        {"$or": [{"id": conv_id}, {"type": "plateau_group", "plateau_id": plateau["id"]}]}, {"_id": 0}
     )
-    if existing:
-        # Déjà créée — on pourrait synchroniser les participants ici si besoin
-        return
 
-    now = datetime.now(timezone.utc)
-    participants = []
-    unread_count = {}
-    for m in members_accepted:
-        participants.append({
+    def _participant(m):
+        return {
             "user_id": m["user_id"],
             "role": "musician",
             "name": m.get("project_name", "Musicien"),
             "avatar": m.get("photo"),
             "last_read_at": None,
-        })
-        unread_count[m["user_id"]] = 0
+        }
 
-    conv_id = f"conv_plateau_{plateau['id'][:12]}"
+    if existing:
+        known = {p.get("user_id") for p in existing.get("participants", [])}
+        missing = [m for m in members_accepted if m["user_id"] not in known]
+        if missing:
+            await db.conversations.update_one(
+                {"id": existing["id"]},
+                {
+                    "$push": {"participants": {"$each": [_participant(m) for m in missing]}},
+                    "$set": {f"unread_count.{m['user_id']}": 0 for m in missing},
+                },
+            )
+        return existing["id"]
+
+    now = datetime.now(timezone.utc)
+    seen = set()
+    participants = []
+    for m in members_accepted:
+        if m["user_id"] in seen:
+            continue
+        seen.add(m["user_id"])
+        participants.append(_participant(m))
     await db.conversations.insert_one({
         "id": conv_id,
         "type": "plateau_group",
@@ -142,21 +184,32 @@ async def _create_group_conversation_if_needed(plateau: dict):
         "name": plateau.get("title", "Plateau"),
         "participants": participants,
         "last_message": None,
-        "unread_count": unread_count,
+        "unread_count": {p["user_id"]: 0 for p in participants},
         "created_at": now,
         "updated_at": now,
     })
 
-    # Notifier tous les membres de la nouvelle discussion de groupe
-    for m in members_accepted:
-        await _notify(
-            user_id=m["user_id"],
-            notif_type="plateau_group_chat_created",
-            title="💬 Discussion de groupe du plateau",
-            message=f'La discussion du plateau "{plateau["title"]}" est ouverte',
-            data={"plateau_id": plateau["id"], "conversation_id": conv_id},
-            link=_plateau_link(plateau["id"]),
-        )
+    if notify:
+        for p in participants:
+            await _notify(
+                user_id=p["user_id"],
+                notif_type="plateau_group_chat_created",
+                title="💬 Discussion de groupe du plateau",
+                message=f'La discussion du plateau "{plateau.get("title", "Plateau")}" est ouverte',
+                data={"plateau_id": plateau["id"], "conversation_id": conv_id},
+                link=_plateau_link(plateau["id"]),
+            )
+    return conv_id
+
+
+async def backfill_plateau_conversations() -> int:
+    """Build 227 — Migration idempotente : chat de groupe pour les plateaux actifs qui n'en ont pas."""
+    created = 0
+    async for p in db.plateaus.find({"status": "active"}, {"_id": 0}):
+        had = await db.conversations.find_one({"id": plateau_conversation_id(p["id"])}, {"_id": 0, "id": 1})
+        if await ensure_plateau_conversation(p) and not had:
+            created += 1
+    return created
 
 
 def _recompute_status(plateau: dict) -> str:
@@ -326,6 +379,9 @@ async def get_plateau(plateau_id: str, current_user: dict = Depends(get_current_
     plateau = await _get_plateau_or_404(plateau_id)
     accepted = len([m for m in plateau.get("members", []) if m.get("status") == "accepted"])
     plateau["vacant_slots"] = max(plateau.get("max_members", 4) - accepted, 0)
+    plateau["conversation_id"] = (
+        await ensure_plateau_conversation(plateau) if plateau.get("status") == "active" else None
+    )
     return plateau
 
 
@@ -462,7 +518,7 @@ async def respond_invitation(plateau_id: str, payload: PlateauRespondInput, curr
 
     # Build 218 — Auto-crée la discussion de groupe si plateau devient "active"
     if new_status == "active":
-        await _create_group_conversation_if_needed(plateau)
+        await ensure_plateau_conversation(plateau)
 
     # Notifier l'admin
     await _notify(
@@ -585,7 +641,7 @@ async def respond_join_request(plateau_id: str, join_request_id: str, payload: P
         if new_status == "active":
             fresh = await db.plateaus.find_one({"id": plateau_id}, {"_id": 0})
             if fresh:
-                await _create_group_conversation_if_needed(fresh)
+                await ensure_plateau_conversation(fresh)
 
     # Notifier le demandeur
     await _notify(

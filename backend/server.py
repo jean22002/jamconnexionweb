@@ -353,6 +353,13 @@ async def startup_db_client():
     except Exception as e:
         logger.error(f"❌ WebSocket DB config failed: {e}")
 
+    # Build 227 — Migration idempotente : chats de groupe des plateaux actifs
+    try:
+        n = await plateaus.backfill_plateau_conversations()
+        logger.info(f"✅ Plateau group chats backfill: {n} created")
+    except Exception as e:
+        logger.error(f"❌ Plateau chats backfill failed: {e}")
+
     # Launch the health monitor daemon (pings critical endpoints every 5 min)
     try:
         import asyncio

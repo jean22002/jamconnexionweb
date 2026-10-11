@@ -89,13 +89,89 @@ function PlateauCard({ plateau, onOpenDetail, onOpenJoin, canJoin = false }) {
   );
 }
 
-function PlateauDetailModal({ plateau, open, onClose, currentUserId, onDeleted }) {
+// Build 227 — Admin : demandes d'intégration en attente (aligné mobile §2.10/2.11)
+function JoinRequestsSection({ plateauId, onChanged }) {
+  const [requests, setRequests] = useState([]);
+  const [busyId, setBusyId] = useState(null);
+
+  const load = async () => {
+    try {
+      const r = await axios.get(`${API}/plateaus/${plateauId}/join-requests`, { headers: authHeader() });
+      setRequests(Array.isArray(r.data) ? r.data : []);
+    } catch {
+      setRequests([]);
+    }
+  };
+
+  useEffect(() => { load(); }, [plateauId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const respond = async (req, accept) => {
+    setBusyId(req.id);
+    try {
+      await axios.post(
+        `${API}/plateaus/${plateauId}/respond-join-request`,
+        { accept },
+        { headers: authHeader(), params: { join_request_id: req.id } }
+      );
+      toast.success(accept ? `${req.project_name} a rejoint le plateau 🎸` : "Demande refusée");
+      await load();
+      onChanged && onChanged();
+    } catch (e) {
+      const d = e.response?.data?.detail;
+      toast.error(typeof d === "string" ? d : d?.message || "Erreur");
+    }
+    setBusyId(null);
+  };
+
+  return (
+    <div className="space-y-2 mt-4" data-testid="plateau-join-requests-section">
+      <h4 className="font-semibold text-sm">Demandes d'intégration ({requests.length})</h4>
+      {requests.length === 0 ? (
+        <p className="text-xs text-muted-foreground" data-testid="plateau-join-requests-empty">Aucune demande en attente</p>
+      ) : (
+        requests.map((req) => (
+          <div key={req.id} className="flex items-center justify-between gap-3 p-3 border border-amber-500/30 rounded-lg" data-testid={`plateau-join-request-${req.id}`}>
+            <div className="min-w-0">
+              <p className="font-medium truncate">{req.project_name}</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {req.project_kind === "band" ? "Groupe" : "Solo"}
+                {req.music_styles?.length > 0 ? ` · ${req.music_styles.slice(0, 2).join(", ")}` : ""}
+              </p>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <Button size="sm" disabled={busyId === req.id} onClick={() => respond(req, true)} data-testid={`plateau-join-accept-${req.id}`}>
+                Accepter
+              </Button>
+              <Button size="sm" variant="outline" disabled={busyId === req.id} onClick={() => respond(req, false)} data-testid={`plateau-join-reject-${req.id}`}>
+                Refuser
+              </Button>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+function PlateauDetailModal({ plateau: initialPlateau, open, onClose, currentUserId, onDeleted }) {
   const navigate = useNavigate();
   const [slots, setSlots] = useState([]);
   const [showApply, setShowApply] = useState(false);
   const [selectedSlotId, setSelectedSlotId] = useState("");
   const [applying, setApplying] = useState(false);
+  const [fresh, setFresh] = useState(null);
+  const plateau = fresh && fresh.id === initialPlateau?.id ? fresh : initialPlateau;
   if (!plateau) return null;
+
+  const refreshPlateau = async () => {
+    try {
+      const r = await axios.get(`${API}/plateaus/${plateau.id}`, { headers: authHeader() });
+      setFresh(r.data);
+    } catch {
+      /* noop */
+    }
+    onDeleted && onDeleted();
+  };
   const isAdmin = plateau.admin_user_id === currentUserId;
   const canApply = isAdmin && plateau.status === "active";
 
@@ -200,6 +276,10 @@ function PlateauDetailModal({ plateau, open, onClose, currentUserId, onDeleted }
           ))}
         </div>
 
+        {isAdmin && plateau.status !== "active" && (
+          <JoinRequestsSection plateauId={plateau.id} onChanged={refreshPlateau} />
+        )}
+
         <DialogFooter className="mt-4 gap-2">
           {canApply && (
             <Button
@@ -240,7 +320,7 @@ function PlateauDetailModal({ plateau, open, onClose, currentUserId, onDeleted }
                 <SelectContent>
                   {slots.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
-                      {s.date} · {s.title || "Créneau"} · {s.venue_name || ""}
+                      {s.venue_name || "Établissement"}{s.venue_city ? ` (${s.venue_city})` : ""} — {s.date}{s.title ? ` · ${s.title}` : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>

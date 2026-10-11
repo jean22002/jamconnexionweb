@@ -90,6 +90,16 @@ async def connect(sid, environ, auth):
             'name': user_email.split('@')[0] if user_email else 'Unknown',
             'role': user_role
         }
+        # Build 227 — vrai nom d'affichage + room personnelle (multi-device, groupes)
+        try:
+            from routes.chat import resolve_display_name
+            db_user = await db.users.find_one({"id": user_id}, {"_id": 0, "id": 1, "name": 1, "role": 1, "email": 1})
+            if db_user:
+                user['role'] = db_user.get('role') or user_role
+                user['name'] = await resolve_display_name(db, db_user) or user['name']
+        except Exception as e:
+            logger.warning(f"Display name resolution failed for {user_id}: {e}")
+        await sio.enter_room(sid, f"user_{user_id}")
         
         logger.info(f"👤 User extracted: {user}")
         
@@ -143,11 +153,8 @@ async def join_conversation(sid, data):
         session = await sio.get_session(sid)
         user_id = session.get('user_id')
         
-        # Vérifier que l'utilisateur est participant de cette conversation
-        conversation = await db.conversations.find_one({
-            "id": conversation_id,
-            "participants.user_id": user_id
-        }, {"_id": 0})
+        from routes.chat import find_conversation_for_user
+        conversation = await find_conversation_for_user(conversation_id, user_id)
         
         if not conversation:
             await sio.emit('error', {'message': 'Conversation non trouvée'}, room=sid)
@@ -208,8 +215,11 @@ async def send_message(sid, data):
         session = await sio.get_session(sid)
         user = session.get('user')
         
-        # Récupérer infos utilisateur
-        from routes.chat import get_user_avatar, send_message_internal
+        from routes.chat import get_user_avatar, send_message_internal, find_conversation_for_user, jsonable
+        conversation = await find_conversation_for_user(conversation_id, user['id'])
+        if not conversation:
+            await sio.emit('error', {'message': 'Conversation non trouvée'}, room=sid)
+            return
         avatar = await get_user_avatar(db, user['id'], user['role'])
         
         # Sauvegarder message dans MongoDB
@@ -222,11 +232,9 @@ async def send_message(sid, data):
             content=content
         )
         
-        # Émettre vers tous les participants (sauf l'expéditeur)
-        await sio.emit('new_message', message, room=conversation_id, skip_sid=sid)
-        
-        # Confirmer à l'expéditeur
-        await sio.emit('message_sent', message, room=sid)
+        # Build 227 — tous les participants (room conv + rooms perso), y compris autres devices de l'expéditeur
+        await emit_to_conversation(conversation, 'new_message', message, skip_sid=sid)
+        await sio.emit('message_sent', jsonable(message), room=sid)
         
         logger.info(f"💬 Message sent in {conversation_id} by {user['id']}")
         
@@ -252,13 +260,13 @@ async def typing(sid, data):
         
         session = await sio.get_session(sid)
         user = session.get('user')
-        
-        # Émettre aux autres participants
-        await sio.emit('user_typing', {
-            'user_id': user['id'],
-            'user_name': user['name'],
-            'conversation_id': conversation_id
-        }, room=conversation_id, skip_sid=sid)
+        conversation = await db.conversations.find_one(
+            {"id": conversation_id, "participants.user_id": user['id']}, {"_id": 0, "id": 1, "participants": 1}
+        )
+        if not conversation:
+            return
+        payload = {'user_id': user['id'], 'user_name': user['name'], 'conversation_id': conversation_id}
+        await emit_to_conversation(conversation, 'user_typing', payload, skip_sid=sid, exclude_user_id=user['id'])
         
     except Exception as e:
         logger.error(f"Error in typing event: {e}")
@@ -267,6 +275,16 @@ async def typing(sid, data):
 # ============================================
 # Helper pour envoyer des événements côté serveur
 # ============================================
+
+async def emit_to_conversation(conversation: dict, event: str, data: dict, skip_sid=None, exclude_user_id=None):
+    """Build 227 — émet à la room de la conv + room perso de chaque participant (dédoublonné par socketio)."""
+    from routes.chat import jsonable
+    rooms = [conversation["id"]] + [
+        f"user_{p['user_id']}" for p in conversation.get("participants", [])
+        if p.get("user_id") and p["user_id"] != exclude_user_id
+    ]
+    await sio.emit(event, jsonable(data), room=rooms, skip_sid=skip_sid)
+
 
 async def emit_to_user(user_id: str, event: str, data: dict):
     """
@@ -285,9 +303,8 @@ async def emit_to_user(user_id: str, event: str, data: dict):
     ```
     """
     try:
-        if user_id in user_connections:
-            sid = user_connections[user_id]
-            await sio.emit(event, data, room=sid)
+        if sio.manager.rooms.get('/', {}).get(f"user_{user_id}"):
+            await sio.emit(event, data, room=f"user_{user_id}")
             return True
         else:
             logger.debug(f"User {user_id} not connected via WebSocket")

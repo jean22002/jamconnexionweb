@@ -177,9 +177,24 @@ async def list_planning_slots(venue_id: Optional[str] = None, is_open: bool = Tr
 
     # 🛡️ Build 95 — normalisation défensive YYYY-MM-DD
     normalize_event_dates(slots, fields=['date'])
+
+    # Build 227 — venue_name / venue_city / region / department (1 seule requête)
+    venue_ids = list({s.get("venue_id") for s in slots if s.get("venue_id")})
+    venues_map = {}
+    if venue_ids:
+        async for v in db.venues.find(
+            {"id": {"$in": venue_ids}},
+            {"_id": 0, "id": 1, "name": 1, "city": 1, "region": 1, "department": 1},
+        ):
+            venues_map[v["id"]] = v
     
     result = []
     for s in slots:
+        v = venues_map.get(s.get("venue_id")) or {}
+        s["venue_name"] = s.get("venue_name") or v.get("name")
+        s["venue_city"] = s.get("venue_city") or v.get("city")
+        s["venue_region"] = s.get("venue_region") or v.get("region")
+        s["venue_department"] = s.get("venue_department") or v.get("department")
         apps_count = await db.applications.count_documents({"planning_slot_id": s["id"]})
         accepted_count = await db.applications.count_documents({
             "planning_slot_id": s["id"],

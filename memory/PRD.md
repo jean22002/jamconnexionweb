@@ -652,3 +652,12 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - Fix Backend : liens notifs plateau `/dashboard-musician?...` (route inexistante → redirection accueil) → `/musician?tab=plateaus&plateau_id=X` ; 9 notifs existantes migrées.
 - Constat : le Web n'a pas d'UI `/chat/*` → chat groupe plateau visible uniquement sur mobile (backlog P1 : UI chat web).
 - Backlog P1 : UI admin "Demandes d'intégration" plateau sur le Web (endpoints existants).
+
+## 2026-06 — Build 227 : Retours mobile Plateaux (Build 226 mobile)
+- Chat plateau : migration idempotente au startup (`backfill_plateau_conversations`) + création à la volée (`find_conversation_for_user` dans routes/chat.py) + synchro participants ; `GET /plateaus/{id}` renvoie `conversation_id`.
+- `GET /api/chat/conversations/{id}` ajouté ; `PUT .../read` utilise matched_count (plus de 404 au 2e appel).
+- Messages : `sender_name` + `read_by` garantis ; REST POST /chat/messages émet `new_message` ; socket : room perso `user_<id>`, `emit_to_conversation` (new_message, user_typing, messages_read → tous les participants), datetimes sérialisés en ISO, vrai nom d'affichage (pseudo).
+- `GET /api/planning` : venue_name/venue_city/venue_region/venue_department remplis (1 requête batch).
+- Push SuprSend pour les 7 types plateau_* (deeplinks jamconnexion:///plateaus/<id>, /messages/<conv>) ; nouvelle préférence musicien `plateaus`.
+- Web : section admin « Demandes d'intégration » dans le détail plateau ; sélecteur créneau « Établissement (ville) — date ».
+- Doc mobile : `/app/memory/MOBILE_SYNC_REPLY_BUILD_227.md`.

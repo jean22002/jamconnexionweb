@@ -83,12 +83,18 @@ export default function ApplicationsModal({
                 </div>
 
                 <div className="space-y-3">
-                  {applications.map((app) => (
+                  {applications.map((app) => {
+                    // Build 218 — Affichage distinct pour les candidatures de plateau
+                    const isPlateau = app.band_type === "plateau" || !!app.plateau_id;
+                    const plateauMembers = Array.isArray(app.plateau_members) ? app.plateau_members : [];
+                    return (
                     <div
                       key={app.id}
                       className={`p-4 rounded-xl border-2 transition-all ${
                         selectedApplications.includes(app.id)
                           ? "bg-primary/10 border-primary"
+                          : isPlateau
+                          ? "bg-gradient-to-br from-purple-500/5 to-pink-500/5 border-purple-500/30 hover:border-purple-500/50"
                           : "bg-black/20 border-white/10 hover:border-white/20"
                       }`}
                       data-testid={`application-row-${app.id}`}
@@ -102,21 +108,62 @@ export default function ApplicationsModal({
 
                         <div className="flex-1">
                           <div className="flex items-start justify-between">
-                            <div>
-                              <h4 className="font-semibold text-lg flex items-center gap-2">
-                                {app.band_name || app.musician_name}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-lg flex items-center gap-2 flex-wrap">
+                                {isPlateau && (
+                                  <span
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40"
+                                    data-testid={`plateau-badge-${app.id}`}
+                                  >
+                                    🎸 Plateau
+                                  </span>
+                                )}
+                                <span className="truncate">{app.plateau_title || app.band_name || app.musician_name}</span>
                                 {selectedApplications.includes(app.id) && (
-                                  <CheckCircle className="w-5 h-5 text-primary" />
+                                  <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
                                 )}
                               </h4>
+
+                              {/* Liste des artistes du plateau */}
+                              {isPlateau && plateauMembers.length > 0 && (
+                                <div className="mt-3 p-3 rounded-lg bg-black/20 border border-purple-500/20">
+                                  <p className="text-xs font-semibold text-purple-300 mb-2">
+                                    {plateauMembers.length} artistes dans ce plateau
+                                  </p>
+                                  <ul className="space-y-1.5">
+                                    {plateauMembers.map((m, idx) => (
+                                      <li
+                                        key={`${m.musician_id}-${m.band_id || idx}`}
+                                        className="flex items-center gap-2 text-sm"
+                                      >
+                                        <span className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center text-[10px]">
+                                          🎸
+                                        </span>
+                                        <span className="font-medium">{m.project_name || "Artiste"}</span>
+                                        {m.music_styles?.length > 0 && (
+                                          <span className="text-xs text-muted-foreground truncate">
+                                            · {m.music_styles.slice(0, 2).join(", ")}
+                                          </span>
+                                        )}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+
                               {app.message && (
                                 <p className="text-sm text-muted-foreground mt-2 italic">
                                   &quot;{app.message}&quot;
                                 </p>
                               )}
-                              {app.band_name && app.musician_name && (
+                              {!isPlateau && app.band_name && app.musician_name && (
                                 <p className="text-xs text-muted-foreground mt-2">
                                   Contact : {app.musician_name}
+                                </p>
+                              )}
+                              {isPlateau && app.musician_name && (
+                                <p className="text-xs text-muted-foreground mt-2">
+                                  Admin du plateau : <b>{app.musician_name}</b>
                                 </p>
                               )}
                             </div>
@@ -130,7 +177,7 @@ export default function ApplicationsModal({
                               className="text-green-400 border-green-400/30 hover:bg-green-400/10"
                               data-testid={`accept-application-${app.id}`}
                             >
-                              ✓ Accepter seul
+                              ✓ {isPlateau ? "Accepter le plateau" : "Accepter seul"}
                             </Button>
                             <Button
                               onClick={() => handleRejectApplication(app.id)}
@@ -145,7 +192,8 @@ export default function ApplicationsModal({
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {selectedApplications.length > 0 && (
@@ -183,12 +231,24 @@ export default function ApplicationsModal({
               <ul className="text-sm space-y-1">
                 {selectedApplications.map((appId) => {
                   const app = applications?.find((a) => a.id === appId);
-                  return app ? (
+                  if (!app) return null;
+                  const isPlateau = app.band_type === "plateau" || !!app.plateau_id;
+                  return (
                     <li key={appId} className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-primary" />
-                      {app.band_name || app.musician_name}
+                      {isPlateau && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                          🎸 Plateau
+                        </span>
+                      )}
+                      {app.plateau_title || app.band_name || app.musician_name}
+                      {isPlateau && Array.isArray(app.plateau_members) && app.plateau_members.length > 0 && (
+                        <span className="text-xs text-muted-foreground">
+                          ({app.plateau_members.length} artistes)
+                        </span>
+                      )}
                     </li>
-                  ) : null;
+                  );
                 })}
               </ul>
             </div>

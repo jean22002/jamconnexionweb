@@ -222,7 +222,7 @@ async def get_active_plateau_or_400(plateau_id: str) -> dict:
     return plateau
 
 
-async def book_plateau_concert(concert: dict, venue: dict, plateau: dict):
+async def book_plateau_concert(concert: dict, venue: dict, plateau: dict, notify: bool = True):
     """Build 229 — concert rattaché à un plateau : plannings membres + notif/push + message chat groupe."""
     # Idempotent : 1 seule programmation (notifs / chat) par couple concert ↔ plateau
     res = await db.concerts.update_one(
@@ -262,6 +262,8 @@ async def book_plateau_concert(concert: dict, venue: dict, plateau: dict):
             {"$push": {"concerts": entry}},
         )
 
+    if not notify:
+        return
     when = f'{concert.get("date")} {concert.get("start_time") or ""}'.strip()
     notified = set()
     for m in accepted:
@@ -296,6 +298,71 @@ async def book_plateau_concert(concert: dict, venue: dict, plateau: dict):
                 await emit_to_conversation(conv, "new_message", msg)
     except Exception as e:
         logger.warning(f"Plateau chat system message failed: {e}")
+
+
+async def purge_concert_copies(concert_ids: List[str]) -> None:
+    """Build 237 — retire les copies d'un concert supprimé des plannings musiciens."""
+    ids = [c for c in concert_ids if c]
+    if not ids:
+        return
+    await db.musicians.update_many({"concerts.id": {"$in": ids}}, {"$pull": {"concerts": {"id": {"$in": ids}}}})
+    await db.musicians.update_many(
+        {"upcoming_concerts.id": {"$in": ids}}, {"$pull": {"upcoming_concerts": {"id": {"$in": ids}}}}
+    )
+
+
+async def backfill_orphan_plateau_concert_copies() -> int:
+    """Build 237 — Migration idempotente : copies plateau_concert dont le concert n'existe plus."""
+    copy_ids = await db.musicians.distinct("concerts.id", {"concerts.source": "plateau_concert"})
+    if not copy_ids:
+        return 0
+    existing = set(await db.concerts.distinct("id", {"id": {"$in": copy_ids}}))
+    orphans = [i for i in copy_ids if i not in existing]
+    if orphans:
+        await db.musicians.update_many(
+            {"concerts.id": {"$in": orphans}},
+            {"$pull": {"concerts": {"id": {"$in": orphans}, "source": "plateau_concert"}}},
+        )
+    return len(orphans)
+
+
+async def notify_plateau_application_response(app: dict, slot: dict, venue: dict, accepted: bool) -> None:
+    """Build 237 — notif + push application_response à l'admin du plateau."""
+    plateau = await db.plateaus.find_one({"id": app.get("plateau_id")}, {"_id": 0, "id": 1, "title": 1, "admin_user_id": 1})
+    if not plateau:
+        return
+    status = "accepted" if accepted else "rejected"
+    title = "🎉 Plateau accepté !" if accepted else "Candidature plateau non retenue"
+    message = (
+        f'{venue.get("name")} a accepté le plateau "{plateau.get("title")}" pour le {slot.get("date")}'
+        if accepted else
+        f'{venue.get("name")} n\'a pas retenu le plateau "{plateau.get("title")}" pour le {slot.get("date")}'
+    )
+    data = {
+        "plateau_id": plateau["id"], "application_id": app["id"], "status": status,
+        "planning_slot_id": slot.get("id"), "venue_id": venue.get("id"),
+    }
+    doc_id = str(uuid.uuid4())
+    await db.notifications.insert_one({
+        "id": doc_id, "user_id": plateau["admin_user_id"], "type": "application_response",
+        "title": title, "message": message, "link": _plateau_link(plateau["id"]), "data": data,
+        "read": False, "created_at": now_iso(),
+    })
+    try:
+        if not await should_send_notification(plateau["admin_user_id"], "application_response", "musician"):
+            return
+        await send_push(
+            recipients=[plateau["admin_user_id"]],
+            data={
+                "title": title, "message": message, "type": "application_response",
+                "plateau_id": plateau["id"], "application_id": app["id"], "status": status,
+                "deeplink": f"jamconnexion:///plateaus/{plateau['id']}",
+                "action_url": f"/plateaus/{plateau['id']}",
+            },
+            idempotency_key=f"plateau-app-{status}-{app['id']}",
+        )
+    except Exception as e:
+        logger.warning(f"Push failed (plateau application_response): {e}")
 
 
 def _recompute_status(plateau: dict) -> str:
@@ -704,6 +771,71 @@ async def request_join(plateau_id: str, payload: PlateauJoinRequestInput, curren
         link=_plateau_link(plateau_id),
     )
     return {"message": "Demande envoyée à l'admin", "join_request_id": join_request_doc["id"]}
+
+
+async def _require_accepted_member(plateau_id: str, user_id: str) -> dict:
+    plateau = await _get_plateau_or_404(plateau_id)
+    if not any(m.get("user_id") == user_id and m.get("status") == "accepted" for m in plateau.get("members", [])):
+        raise HTTPException(status_code=403, detail="Réservé aux membres du plateau")
+    return plateau
+
+
+async def _venues_map(venue_ids) -> dict:
+    ids = list({v for v in venue_ids if v})
+    if not ids:
+        return {}
+    return {v["id"]: v async for v in db.venues.find({"id": {"$in": ids}}, {"_id": 0, "id": 1, "name": 1, "city": 1})}
+
+
+@router.get("/{plateau_id}/applications")
+async def get_plateau_applications(plateau_id: str, current_user: dict = Depends(get_current_user)):
+    """Build 237 — Candidatures du plateau (membres acceptés, admin inclus)."""
+    await _require_accepted_member(plateau_id, current_user["id"])
+    apps = await db.applications.find({"plateau_id": plateau_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    slot_ids = list({a.get("planning_slot_id") for a in apps if a.get("planning_slot_id")})
+    slots = {s["id"]: s async for s in db.planning_slots.find({"id": {"$in": slot_ids}}, {"_id": 0})} if slot_ids else {}
+    venues = await _venues_map(s.get("venue_id") for s in slots.values())
+    result = []
+    for a in apps:
+        s = slots.get(a.get("planning_slot_id"))
+        slot = None
+        if s:
+            v = venues.get(s.get("venue_id"), {})
+            slot = {
+                "date": s.get("date"), "time": s.get("time"), "start_time": s.get("start_time"),
+                "title": s.get("title"), "venue_id": s.get("venue_id"),
+                "venue_name": s.get("venue_name") or v.get("name"), "venue_city": s.get("venue_city") or v.get("city"),
+            }
+        result.append({
+            "id": a["id"], "status": a.get("status", "pending"), "created_at": a.get("created_at"),
+            "planning_slot_id": a.get("planning_slot_id"), "slot": slot,
+        })
+    return result
+
+
+@router.get("/{plateau_id}/concerts")
+async def get_plateau_concerts(plateau_id: str, upcoming: bool = False, current_user: dict = Depends(get_current_user)):
+    """Build 237 — Concerts rattachés au plateau (membres acceptés + établissement organisateur)."""
+    query = {"plateau_id": plateau_id}
+    if current_user.get("role") == "venue":
+        await _get_plateau_or_404(plateau_id)
+        venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0, "id": 1})
+        if not venue or not await db.concerts.find_one({"plateau_id": plateau_id, "venue_id": venue["id"]}, {"_id": 1}):
+            raise HTTPException(status_code=403, detail="Accès refusé")
+        query["venue_id"] = venue["id"]
+    else:
+        await _require_accepted_member(plateau_id, current_user["id"])
+    if upcoming:
+        query["date"] = {"$gte": datetime.now(timezone.utc).strftime("%Y-%m-%d")}
+    concerts = await db.concerts.find(query, {"_id": 0}).sort("date", 1).to_list(200)
+    venues = await _venues_map(c.get("venue_id") for c in concerts)
+    return [{
+        "id": c["id"], "date": c.get("date"), "start_time": c.get("start_time"), "end_time": c.get("end_time"),
+        "title": c.get("title"), "venue_id": c.get("venue_id"),
+        "venue_name": c.get("venue_name") or venues.get(c.get("venue_id"), {}).get("name"),
+        "venue_city": venues.get(c.get("venue_id"), {}).get("city"),
+        "status": c.get("status") or "confirmed",
+    } for c in concerts]
 
 
 @router.get("/{plateau_id}/join-requests")

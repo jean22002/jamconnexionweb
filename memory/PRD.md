@@ -677,3 +677,12 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - Test e2e `backend/tests/test_plateaus_e2e.py` mis à jour (ne supprime plus les conversations plateau_group).
 - Doc mobile : `/app/memory/MOBILE_SYNC_REPLY_BUILD_233.md`.
 - (Build 233b) Web : retrait du bouton « Proposer à un créneau » du détail plateau ; nouvel écran « 📨 Candidature plateau » (`PlateauCandidatureBrowser.jsx`, UI calquée sur Répertoire des Groupes : filtres style/formation/ville/GUSO, onglets Tous/France/Région/Département, dialog choix plateau active admin).
+
+## 2026-06 — Build 237 : Activité plateau + fix suppression concert
+- `GET /plateaus/{id}/applications` (membres acceptés) et `GET /plateaus/{id}/concerts?upcoming=` (membres + venue organisatrice).
+- Acceptation d'une candidature plateau → concert rattaché au plateau (plateau_id/title, band_id null, band_type plateau) + plannings membres (book_plateau_concert notify=False).
+- Notif + push `application_response` (data.plateau_id) à l'admin seul sur accept/reject plateau (remplace les notifs legacy pour ces apps).
+- Fix : DELETE /concerts et reset candidature purgent musician.concerts[]/upcoming_concerts[] (`purge_concert_copies`) ; migration startup `backfill_orphan_plateau_concert_copies` ; PUT /concerts ne détache plus le plateau.
+- `GET /api/concerts/{id}`.
+- Web : sections Candidatures + Concerts à venir dans le détail plateau.
+- Script de test : `backend/tests/test_plateau_b237.sh`. Doc mobile : `/app/memory/MOBILE_SYNC_REPLY_BUILD_237.md`.

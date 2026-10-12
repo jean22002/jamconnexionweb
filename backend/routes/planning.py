@@ -1038,6 +1038,23 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
                 await db.concerts.insert_one(concert_doc)
             except Exception as e:
                 logger.warning(f"Failed to insert concert from accepted application {app_id}: {e}")
+
+    # Build 237 — candidature plateau : concert rattaché au plateau + plannings membres (sans notif membres)
+    if app.get("plateau_id"):
+        try:
+            from routes.plateaus import book_plateau_concert
+            plateau_doc = await db.plateaus.find_one({"id": app["plateau_id"]}, {"_id": 0})
+            if plateau_doc:
+                await db.concerts.update_one(
+                    {"id": concert_doc_id},
+                    {"$set": {"plateau_id": plateau_doc["id"], "plateau_title": plateau_doc.get("title"),
+                              "band_name": plateau_doc.get("title"), "band_id": None, "band_type": "plateau"}},
+                )
+                linked = await db.concerts.find_one({"id": concert_doc_id}, {"_id": 0})
+                if linked:
+                    await book_plateau_concert(linked, venue, plateau_doc, notify=False)
+        except Exception as e:
+            logger.warning(f"Plateau concert link failed for {app_id}: {e}")
     
     # Notify musician
     musician = await db.musicians.find_one({"id": app["musician_id"]}, {"_id": 0})
@@ -1054,32 +1071,35 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
         except Exception as e:
             logger.warning(f"Could not send WebSocket notification: {e}")
         
-        # Legacy notification DB
-        await create_notification(
-            musician["user_id"], 
-            "application_accepted",
-            "Candidature acceptée!",
-            f"Votre candidature pour le {slot['date']} chez {venue['name']} a été acceptée!",
-            f"/venue/{venue['id']}"
-        )
-
-        # Build 152.9 — Push notif (never block main flow)
-        try:
-            await send_push(
-                recipients=[musician["user_id"]],
-                data={
-                    "title": "🎉 Candidature acceptée !",
-                    "message": f"{venue['name']} a accepté votre candidature du {slot['date']}",
-                    "action_url": "/(tabs)/applications",
-                    # Build 152.18 — deeplink explicite pour SuprSend (route liste mobile)
-                    "deeplink": "jamconnexion:///(tabs)/applications",
-                    "type": "application_accepted",
-                    "application_id": app_id,
-                },
-                idempotency_key=f"app-accept-{app_id}",
+        if app.get("plateau_id"):
+            from routes.plateaus import notify_plateau_application_response
+            await notify_plateau_application_response(app, slot, venue, accepted=True)
+        else:
+            # Legacy notification DB
+            await create_notification(
+                musician["user_id"],
+                "application_accepted",
+                "Candidature acceptée!",
+                f"Votre candidature pour le {slot['date']} chez {venue['name']} a été acceptée!",
+                f"/venue/{venue['id']}"
             )
-        except Exception as e:
-            logger.warning(f"Push failed (application_accepted): {e}")
+            # Build 152.9 — Push notif (never block main flow)
+            try:
+                await send_push(
+                    recipients=[musician["user_id"]],
+                    data={
+                        "title": "🎉 Candidature acceptée !",
+                        "message": f"{venue['name']} a accepté votre candidature du {slot['date']}",
+                        "action_url": "/(tabs)/applications",
+                        # Build 152.18 — deeplink explicite pour SuprSend (route liste mobile)
+                        "deeplink": "jamconnexion:///(tabs)/applications",
+                        "type": "application_accepted",
+                        "application_id": app_id,
+                    },
+                    idempotency_key=f"app-accept-{app_id}",
+                )
+            except Exception as e:
+                logger.warning(f"Push failed (application_accepted): {e}")
         
         # 🎵 ADD CONCERT TO MUSICIAN'S PLANNING
         # Create concert entry for the accepted application
@@ -1155,7 +1175,7 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
 
     # Réponse + Cache-Control no-cache (Cloudflare)
     response = FastAPIResponse(
-        content='{"message": "Application accepted", "concert_id": "' + concert_doc_id + '", "band_id": ' + ('"' + resolved_band_id + '"' if resolved_band_id else 'null') + '}',
+        content='{"message": "Application accepted", "concert_id": "' + concert_doc_id + '", "band_id": ' + ('"' + resolved_band_id + '"' if resolved_band_id and not app.get("plateau_id") else 'null') + '}',
         media_type="application/json"
     )
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
@@ -1215,14 +1235,18 @@ async def reject_application(app_id: str, request: Request, current_user: dict =
         except Exception as e:
             logger.warning(f"Could not send WebSocket notification: {e}")
         
-        # Legacy notification DB
-        await create_notification(
-            musician["user_id"], 
-            "application_rejected",
-            "Candidature non retenue",
-            f"Votre candidature pour le {slot['date']} n'a pas été retenue",
-            None
-        )
+        if app.get("plateau_id"):
+            from routes.plateaus import notify_plateau_application_response
+            await notify_plateau_application_response(app, slot, venue, accepted=False)
+        else:
+            # Legacy notification DB
+            await create_notification(
+                musician["user_id"], 
+                "application_rejected",
+                "Candidature non retenue",
+                f"Votre candidature pour le {slot['date']} n'a pas été retenue",
+                None
+            )
     
     return {"message": "Application rejected"}
 
@@ -1364,12 +1388,15 @@ async def _reset_application_to_pending(app_id: str, current_user: dict):
     # 2) Si l'app était acceptée : supprimer le concert auto-créé + rouvrir le slot si besoin
     if previous_status == "accepted":
         # Concert créé par accept_application (id = app_id + "_concert" OU application_id == app_id)
+        removed_ids = await db.concerts.distinct("id", {"$or": [{"id": f"{app_id}_concert"}, {"application_id": app_id}]})
         await db.concerts.delete_many({
             "$or": [
                 {"id": f"{app_id}_concert"},
                 {"application_id": app_id},
             ]
         })
+        from routes.plateaus import purge_concert_copies
+        await purge_concert_copies(removed_ids + [f"{app_id}_concert"])
 
         # Réouverture du slot si l'acceptation avait rempli les places
         remaining_accepted = await db.applications.count_documents({

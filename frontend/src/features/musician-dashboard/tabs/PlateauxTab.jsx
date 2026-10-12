@@ -154,6 +154,68 @@ function JoinRequestsSection({ plateauId, onChanged }) {
   );
 }
 
+const APP_STATUS = {
+  pending: { label: "⏳ En attente", cls: "border-amber-500/50 text-amber-400" },
+  accepted: { label: "✓ Acceptée", cls: "border-emerald-500/50 text-emerald-400" },
+  rejected: { label: "✗ Refusée", cls: "border-red-500/50 text-red-400" },
+};
+
+function usePlateauResource(plateauId, path, enabled) {
+  const [items, setItems] = useState([]);
+  useEffect(() => {
+    if (!enabled) return;
+    axios.get(`${API}/plateaus/${plateauId}/${path}`, { headers: authHeader() })
+      .then((r) => setItems(Array.isArray(r.data) ? r.data : []))
+      .catch(() => setItems([]));
+  }, [plateauId, path, enabled]);
+  return items;
+}
+
+// Build 237 — Candidatures envoyées par le plateau + concerts à venir
+function PlateauActivitySection({ plateauId, enabled }) {
+  const apps = usePlateauResource(plateauId, "applications", enabled);
+  const concerts = usePlateauResource(plateauId, "concerts?upcoming=true", enabled);
+  if (!enabled) return null;
+  return (
+    <div className="grid gap-4 mt-4">
+      <div className="space-y-2" data-testid="plateau-applications-section">
+        <h4 className="font-semibold text-sm">📨 Candidatures ({apps.length})</h4>
+        {apps.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Aucune candidature envoyée</p>
+        ) : apps.map((a) => {
+          const st = APP_STATUS[a.status] || APP_STATUS.pending;
+          return (
+            <div key={a.id} className="flex items-center justify-between gap-3 p-3 border rounded-lg" data-testid={`plateau-application-${a.id}`}>
+              <div className="min-w-0">
+                <p className="font-medium truncate">{a.slot?.venue_name || "Créneau supprimé"}</p>
+                {a.slot && (
+                  <p className="text-xs text-muted-foreground truncate">
+                    {a.slot.venue_city ? `${a.slot.venue_city} · ` : ""}{a.slot.date}{(a.slot.time || a.slot.start_time) ? ` · ${a.slot.time || a.slot.start_time}` : ""}
+                  </p>
+                )}
+              </div>
+              <Badge variant="outline" className={st.cls}>{st.label}</Badge>
+            </div>
+          );
+        })}
+      </div>
+      <div className="space-y-2" data-testid="plateau-concerts-section">
+        <h4 className="font-semibold text-sm">📅 Concerts à venir ({concerts.length})</h4>
+        {concerts.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Aucun concert programmé</p>
+        ) : concerts.map((c) => (
+          <div key={c.id} className="p-3 border border-emerald-500/30 rounded-lg" data-testid={`plateau-concert-${c.id}`}>
+            <p className="font-medium truncate">{c.venue_name}{c.venue_city ? ` (${c.venue_city})` : ""}</p>
+            <p className="text-xs text-muted-foreground">
+              {c.date}{c.start_time ? ` · ${c.start_time}` : ""}{c.end_time ? ` – ${c.end_time}` : ""}{c.title ? ` · ${c.title}` : ""}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function PlateauDetailModal({ plateau: initialPlateau, open, onClose, currentUserId, onDeleted }) {
   const navigate = useNavigate();
   const [fresh, setFresh] = useState(null);
@@ -186,7 +248,7 @@ function PlateauDetailModal({ plateau: initialPlateau, open, onClose, currentUse
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-xl" data-testid="plateau-detail-modal">
+      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto" data-testid="plateau-detail-modal">
         <DialogHeader>
           <DialogTitle>🎸 {plateau.title}</DialogTitle>
           <DialogDescription>
@@ -242,6 +304,11 @@ function PlateauDetailModal({ plateau: initialPlateau, open, onClose, currentUse
         {isAdmin && plateau.status !== "active" && (
           <JoinRequestsSection plateauId={plateau.id} onChanged={refreshPlateau} />
         )}
+
+        <PlateauActivitySection
+          plateauId={plateau.id}
+          enabled={open && (plateau.members || []).some((m) => m.user_id === currentUserId && m.status === "accepted")}
+        />
 
         {canApply && (
           <p className="text-xs text-muted-foreground mt-3" data-testid="plateau-apply-hint">

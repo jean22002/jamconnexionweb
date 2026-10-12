@@ -368,6 +368,13 @@ async def startup_db_client():
     except Exception as e:
         logger.error(f"❌ accepts_plateaus backfill failed: {e}")
 
+    # Build 237 — copies plateau_concert orphelines dans musician.concerts[]
+    try:
+        n = await plateaus.backfill_orphan_plateau_concert_copies()
+        logger.info(f"✅ Orphan plateau concert copies purged: {n}")
+    except Exception as e:
+        logger.error(f"❌ Orphan concert copies purge failed: {e}")
+
     # Launch the health monitor daemon (pings critical endpoints every 5 min)
     try:
         import asyncio

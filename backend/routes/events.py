@@ -679,8 +679,24 @@ async def delete_concert(concert_id: str, request: Request, current_user: dict =
         "event_id": concert_id,
         "event_type": "concert"
     })
+
+    # Build 237 — copies dans musician.concerts[] / upcoming_concerts[] (band_ids partent avec le doc)
+    from routes.plateaus import purge_concert_copies
+    await purge_concert_copies([concert_id])
     
     return {"message": "Concert deleted"}
+
+
+@router.get("/concerts/{concert_id}", response_model=ConcertEventResponse)
+async def get_concert(concert_id: str):
+    """Build 237 — Détail d'un concert."""
+    concert = await db.concerts.find_one({"id": concert_id}, {"_id": 0})
+    if not concert:
+        raise HTTPException(status_code=404, detail="Concert not found")
+    participants_count = await db.event_participations.count_documents({
+        "event_id": concert_id, "event_type": "concert", "active": True,
+    })
+    return ConcertEventResponse(**concert, participants_count=participants_count)
 
 
 @router.put("/concerts/{concert_id}", response_model=ConcertEventResponse)
@@ -698,6 +714,9 @@ async def update_concert(concert_id: str, data: ConcertEvent, request: Request, 
     
     update_data = data.model_dump()
     update_data["venue_name"] = venue["name"]
+    # Build 237 — PUT ne détache pas un plateau (détachement explicite via PATCH)
+    if not update_data.get("plateau_id"):
+        update_data.pop("plateau_id", None)
     
     await db.concerts.update_one(
         {"id": concert_id},

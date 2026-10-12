@@ -686,3 +686,7 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - `GET /api/concerts/{id}`.
 - Web : sections Candidatures + Concerts à venir dans le détail plateau.
 - Script de test : `backend/tests/test_plateau_b237.sh`. Doc mobile : `/app/memory/MOBILE_SYNC_REPLY_BUILD_237.md`.
+
+## 2026-06 — Build 238 : data ciblée sur notifications de candidature
+- `create_notification(..., data=)` + helper `application_notif_data(app_id, slot, plateau_id)` (planning.py) ; renseigné en in-app + push pour application_received/cancelled/accepted/rejected, cancellation_requested/approved/refused, application_response (+date).
+- Test : `backend/tests/test_notif_data_b238.sh`. Doc mobile : `/app/memory/MOBILE_SYNC_REPLY_BUILD_238.md`.

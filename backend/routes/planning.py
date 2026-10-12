@@ -47,7 +47,20 @@ async def get_current_user(authorization: str = Header(None)):
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
 
-async def create_notification(user_id: str, notif_type: str, title: str, message: str, link: Optional[str] = None):
+def application_notif_data(app_id: str, slot: dict, plateau_id: Optional[str] = None) -> dict:
+    """Build 238 — data ciblée pour ouvrir la candidature / le créneau côté mobile."""
+    data = {
+        "application_id": app_id,
+        "planning_slot_id": (slot or {}).get("id"),
+        "date": (slot or {}).get("date"),
+        "venue_id": (slot or {}).get("venue_id"),
+    }
+    if plateau_id:
+        data["plateau_id"] = plateau_id
+    return data
+
+
+async def create_notification(user_id: str, notif_type: str, title: str, message: str, link: Optional[str] = None, data: Optional[dict] = None):
     """Create a notification for a user"""
     notif_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
@@ -59,6 +72,7 @@ async def create_notification(user_id: str, notif_type: str, title: str, message
         "title": title,
         "message": message,
         "link": link,
+        "data": data,
         "read": False,
         "created_at": now
     }
@@ -579,7 +593,8 @@ async def apply_to_slot(slot_id: str, band_id: Optional[str] = None, request: Re
                 "application_received",
                 "Nouvelle candidature",
                 f"{band_name} a postulé pour le {slot.get('date', 'un créneau')}",
-                "/venue"
+                "/venue",
+                data=application_notif_data(app_id, slot),
             )
     except Exception as e:
         logger.warning(f"Could not send WebSocket notification: {e}")
@@ -722,7 +737,8 @@ async def create_application(data: ConcertApplication, request: Request, current
             "application_received",
             "Nouvelle candidature" + (" (Plateau)" if data.plateau_id else ""),
             notif_msg,
-            "/venue"
+            "/venue",
+            data=application_notif_data(app_doc["id"], slot, data.plateau_id),
         )
 
     return ConcertApplicationResponse(**app_doc)
@@ -1081,7 +1097,8 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
                 "application_accepted",
                 "Candidature acceptée!",
                 f"Votre candidature pour le {slot['date']} chez {venue['name']} a été acceptée!",
-                f"/venue/{venue['id']}"
+                f"/venue/{venue['id']}",
+                data=application_notif_data(app_id, slot),
             )
             # Build 152.9 — Push notif (never block main flow)
             try:
@@ -1094,7 +1111,7 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
                         # Build 152.18 — deeplink explicite pour SuprSend (route liste mobile)
                         "deeplink": "jamconnexion:///(tabs)/applications",
                         "type": "application_accepted",
-                        "application_id": app_id,
+                        **application_notif_data(app_id, slot),
                     },
                     idempotency_key=f"app-accept-{app_id}",
                 )
@@ -1245,7 +1262,8 @@ async def reject_application(app_id: str, request: Request, current_user: dict =
                 "application_rejected",
                 "Candidature non retenue",
                 f"Votre candidature pour le {slot['date']} n'a pas été retenue",
-                None
+                None,
+                data=application_notif_data(app_id, slot),
             )
     
     return {"message": "Application rejected"}
@@ -1294,7 +1312,8 @@ async def cancel_my_application(app_id: str, request: Request, current_user: dic
                     "application_cancelled",
                     "Candidature annulée",
                     f"{app.get('musician_name', 'Un musicien')} a annulé sa candidature pour le créneau du {slot.get('date', 'TBD')}",
-                    None
+                    None,
+                    data=application_notif_data(app_id, slot, app.get("plateau_id")),
                 )
                 logger.info(f"✓ Cancellation notification sent to venue {venue['user_id']}")
             else:
@@ -1330,7 +1349,8 @@ async def delete_application(app_id: str, request: Request, current_user: dict =
                 "application_cancelled",
                 "Candidature annulée",
                 f"Votre candidature acceptée pour le {slot['date']} chez {venue['name']} a été annulée par l'établissement.",
-                None
+                None,
+                data=application_notif_data(app_id, slot, app.get("plateau_id")),
             )
         
         # Reopen slot if it was closed due to this application

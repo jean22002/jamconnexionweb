@@ -340,7 +340,7 @@ async def notify_plateau_application_response(app: dict, slot: dict, venue: dict
     )
     data = {
         "plateau_id": plateau["id"], "application_id": app["id"], "status": status,
-        "planning_slot_id": slot.get("id"), "venue_id": venue.get("id"),
+        "planning_slot_id": slot.get("id"), "venue_id": venue.get("id"), "date": slot.get("date"),
     }
     doc_id = str(uuid.uuid4())
     await db.notifications.insert_one({
@@ -355,7 +355,7 @@ async def notify_plateau_application_response(app: dict, slot: dict, venue: dict
             recipients=[plateau["admin_user_id"]],
             data={
                 "title": title, "message": message, "type": "application_response",
-                "plateau_id": plateau["id"], "application_id": app["id"], "status": status,
+                **data,
                 "deeplink": f"jamconnexion:///plateaus/{plateau['id']}",
                 "action_url": f"/plateaus/{plateau['id']}",
             },

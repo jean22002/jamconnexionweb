@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 
 # Reuse shared helpers from planning module to avoid duplication
 from routes import planning as _planning
-from routes.planning import get_current_user, create_notification
+from routes.planning import get_current_user, create_notification, application_notif_data
 from routes.push import send_push
 
 
@@ -95,6 +95,7 @@ async def cancel_application_v2(
                     "Candidature annulée",
                     f"{app.get('musician_name', 'Un musicien')} a annulé sa candidature pour le créneau du {slot.get('date', 'TBD')}",
                     None,
+                    data=application_notif_data(app_id, slot, app.get("plateau_id")),
                 )
         return {"success": True, "action": "deleted"}
 
@@ -125,6 +126,7 @@ async def cancel_application_v2(
                     "🟠 Demande d'annulation",
                     f"{musician_display} demande à annuler sa candidature pour le {slot.get('date', 'TBD')}",
                     None,
+                    data=application_notif_data(app_id, slot, app.get("plateau_id")),
                 )
                 # Emergent push (safe-failed)
                 try:
@@ -137,7 +139,7 @@ async def cancel_application_v2(
                             # Build 152.18 — deeplink explicite pour SuprSend (dashboard venue)
                             "deeplink": "jamconnexion:///(tabs)/index",
                             "type": "cancellation_requested",
-                            "application_id": app_id,
+                            **application_notif_data(app_id, slot, app.get("plateau_id")),
                         },
                         idempotency_key=f"cancel-req-{app_id}",
                     )
@@ -229,6 +231,7 @@ async def validate_cancellation(
                 "✅ Annulation validée",
                 body_text,
                 None,
+                data=application_notif_data(app_id, slot, app.get("plateau_id")),
             )
             try:
                 await send_push(
@@ -240,7 +243,7 @@ async def validate_cancellation(
                         # Build 152.18 — deeplink explicite pour SuprSend (route liste mobile)
                         "deeplink": "jamconnexion:///(tabs)/applications",
                         "type": "cancellation_approved",
-                        "application_id": app_id,
+                        **application_notif_data(app_id, slot, app.get("plateau_id")),
                     },
                     idempotency_key=f"cancel-val-approve-{app_id}",
                 )
@@ -270,6 +273,7 @@ async def validate_cancellation(
             "❌ Annulation refusée",
             body_text,
             None,
+            data=application_notif_data(app_id, slot, app.get("plateau_id")),
         )
         try:
             await send_push(
@@ -281,7 +285,7 @@ async def validate_cancellation(
                     # Build 152.18 — deeplink explicite pour SuprSend (route liste mobile)
                     "deeplink": "jamconnexion:///(tabs)/applications",
                     "type": "cancellation_refused",
-                    "application_id": app_id,
+                    **application_notif_data(app_id, slot, app.get("plateau_id")),
                 },
                 idempotency_key=f"cancel-val-refuse-{app_id}",
             )

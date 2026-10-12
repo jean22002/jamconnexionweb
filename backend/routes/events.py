@@ -434,7 +434,7 @@ async def create_concert_event(data: ConcertEvent, request: Request, current_use
         )
         if existing:
             pc = await db.event_participations.count_documents({"event_id": existing["id"], "event_type": "concert", "active": True})
-            return ConcertEventResponse(**existing, participants_count=pc)
+            return ConcertEventResponse(**sanitize_concert_doc(existing), participants_count=pc)
         app_doc = await db.applications.find_one({"id": application_id}, {"_id": 0, "planning_slot_id": 1})
         if not app_doc:
             raise HTTPException(status_code=404, detail="Application not found")
@@ -709,12 +709,22 @@ async def delete_concert(concert_id: str, request: Request, current_user: dict =
     return {"message": "Concert deleted"}
 
 
+def sanitize_concert_doc(doc: dict) -> dict:
+    """Build 239b — tolère les docs legacy (None, bands en string, participants_count stocké)."""
+    doc = {k: v for k, v in doc.items() if v is not None and k != "participants_count"}
+    doc["bands"] = [({"name": b} if isinstance(b, str) else b) for b in (doc.get("bands") or []) if b]
+    doc.setdefault("start_time", "")
+    doc.setdefault("date", "")
+    return doc
+
+
 @router.get("/concerts/{concert_id}", response_model=ConcertEventResponse)
 async def get_concert(concert_id: str):
     """Build 237 — Détail d'un concert."""
     concert = await db.concerts.find_one({"id": concert_id}, {"_id": 0})
     if not concert:
         raise HTTPException(status_code=404, detail="Concert not found")
+    concert = sanitize_concert_doc(concert)
     participants_count = await db.event_participations.count_documents({
         "event_id": concert_id, "event_type": "concert", "active": True,
     })
@@ -782,7 +792,7 @@ async def update_concert(concert_id: str, data: ConcertEvent, request: Request, 
         "active": True
     })
     
-    return ConcertEventResponse(**updated, participants_count=participants_count)
+    return ConcertEventResponse(**sanitize_concert_doc(updated), participants_count=participants_count)
 
 
 # Build 216 (sync mobile) — PATCH partiel : le mobile envoie parfois seulement { status: "confirmed" }.
@@ -832,7 +842,7 @@ async def patch_concert(concert_id: str, payload: dict, request: Request, curren
             participants_count = await db.event_participations.count_documents({
                 "event_id": concert_id, "event_type": "concert", "active": True,
             })
-            return ConcertEventResponse(**updated, participants_count=participants_count)
+            return ConcertEventResponse(**sanitize_concert_doc(updated), participants_count=participants_count)
 
     # Validation légère : status doit être une valeur connue
     if "status" in updates and updates["status"] not in ("pending", "confirmed", "cancelled"):
@@ -849,7 +859,7 @@ async def patch_concert(concert_id: str, payload: dict, request: Request, curren
         "event_type": "concert",
         "active": True,
     })
-    return ConcertEventResponse(**updated, participants_count=participants_count)
+    return ConcertEventResponse(**sanitize_concert_doc(updated), participants_count=participants_count)
 
 
 # =============================================================================

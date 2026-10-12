@@ -1007,6 +1007,8 @@ async def ensure_application_concert(app: dict, slot: dict, venue: dict):
             "application_id": app_id,
             "created_at": datetime.now(timezone.utc).isoformat()
         }
+        # Build 239b — pas de None (sinon ConcertEventResponse rejette les bool/int non-Optional)
+        concert_doc = {k: v for k, v in concert_doc.items() if v is not None}
         try:
             await db.concerts.insert_one(concert_doc)
         except Exception as e:
@@ -1041,6 +1043,11 @@ async def ensure_application_concert(app: dict, slot: dict, venue: dict):
 async def backfill_missing_application_concerts() -> int:
     """Build 239 — Migration idempotente : concert manquant pour les candidatures acceptées à venir."""
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    # Build 239b — répare les concerts auto-créés contenant des champs null
+    async for c in db.concerts.find({"source": "application_accepted"}, {"_id": 0}):
+        nulls = {k: "" for k, v in c.items() if v is None}
+        if nulls:
+            await db.concerts.update_one({"id": c["id"]}, {"$unset": nulls})
     created = 0
     async for app in db.applications.find({"status": "accepted"}, {"_id": 0}):
         if await db.concerts.find_one({"$or": [{"id": f"{app['id']}_concert"}, {"application_id": app["id"]}]}, {"_id": 1}):

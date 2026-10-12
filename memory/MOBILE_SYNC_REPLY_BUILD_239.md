@@ -52,3 +52,13 @@ Pour chaque candidature `accepted` :
 4. `DELETE /planning/{slot}` avec une candidature acceptée → 200.
 
 Merci ! 🎸
+
+---
+
+## 🐛 Correctif 239b — `GET /api/concerts/{id}` en 500 sur les concerts migrés
+- **Cause** : la migration a écrit des champs à `null` (`has_catering`, `has_meals`, `has_accommodation`, etc.). Or `ConcertEventResponse` les attend en booléen. `/venues/me/concerts` passait quand même, car il ne valide pas avec ce modèle.
+- **Corrigé** :
+  1. les 11 concerts migrés ont été réparés : champs `null` retirés, valeurs par défaut du modèle appliquées ;
+  2. les prochaines créations automatiques n'écrivent plus de `null` ;
+  3. `GET /concerts/{id}` (et les réponses POST/PATCH) tolèrent aussi les vieux documents : `null`, `bands` stockés en simple texte (`["Rock Revolution"]` devient `[{"name": "Rock Revolution"}]`), et `participants_count` enregistré en base.
+- **Vérifié** : les **150 concerts** de la base répondent **200** sur `GET /api/concerts/{id}`, dont `9d7158dc-…_concert` et `aa5f25bb-…_concert`.

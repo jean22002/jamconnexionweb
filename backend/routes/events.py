@@ -426,6 +426,28 @@ async def create_concert_event(data: ConcertEvent, request: Request, current_use
         has_artist = bool(payload.get("bands")) or bool((payload.get("artist_name") or "").strip())
         payload["status"] = "confirmed" if has_artist else "pending"
 
+    # Build 239 — rattachement à une candidature : idempotent, id `<application_id>_concert`
+    application_id = payload.pop("application_id", None)
+    if application_id:
+        existing = await db.concerts.find_one(
+            {"$or": [{"id": f"{application_id}_concert"}, {"application_id": application_id}]}, {"_id": 0}
+        )
+        if existing:
+            pc = await db.event_participations.count_documents({"event_id": existing["id"], "event_type": "concert", "active": True})
+            return ConcertEventResponse(**existing, participants_count=pc)
+        app_doc = await db.applications.find_one({"id": application_id}, {"_id": 0, "planning_slot_id": 1})
+        if not app_doc:
+            raise HTTPException(status_code=404, detail="Application not found")
+        slot_doc = await db.planning_slots.find_one(
+            {"id": app_doc.get("planning_slot_id")}, {"_id": 0, "id": 1, "venue_id": 1}
+        )
+        if slot_doc and slot_doc.get("venue_id") != venue["id"]:
+            raise HTTPException(status_code=403, detail="Not authorized")
+        concert_id = f"{application_id}_concert"
+        payload["application_id"] = application_id
+        if slot_doc:
+            payload["planning_slot_id"] = slot_doc["id"]
+
     # Build 229 — concert rattaché à un plateau (doit être active)
     plateau = None
     if payload.get("plateau_id"):

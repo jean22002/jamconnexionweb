@@ -375,6 +375,14 @@ async def startup_db_client():
     except Exception as e:
         logger.error(f"❌ Orphan concert copies purge failed: {e}")
 
+    # Build 239 — concerts manquants pour candidatures acceptées à venir
+    try:
+        from routes.planning import backfill_missing_application_concerts
+        n = await backfill_missing_application_concerts()
+        logger.info(f"✅ Missing application concerts created: {n}")
+    except Exception as e:
+        logger.error(f"❌ Missing application concerts backfill failed: {e}")
+
     # Launch the health monitor daemon (pings critical endpoints every 5 min)
     try:
         import asyncio

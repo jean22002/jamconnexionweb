@@ -894,71 +894,12 @@ async def get_slot_applications(slot_id: str, request: Request, current_user: di
     return result
 
 
-@router.post("/applications/{app_id}/accept")
-async def accept_application(app_id: str, request: Request, current_user: dict = Depends(get_current_user)):
-    """Accept an application (venue only).
+async def ensure_application_concert(app: dict, slot: dict, venue: dict):
+    """Build 239 — Garantit le concert `<application_id>_concert` d'une candidature acceptée (idempotent).
 
-    Side-effects garantis :
-      1. applications.status = "accepted"
-      2. Si num_bands_needed est atteint → planning_slots.is_open = False
-      3. INSERT db.concerts (band_id rempli — pour Solo, on résout via musicians.bands[band_type=Solo] ou db.bands[band_type=Solo])
-      4. push musicians.upcoming_concerts (legacy mobile)
-      5. WebSocket notify_application_status + DB notification
-      6. Si band_name → notification au band admin
+    Retourne (concert_id, resolved_band_id).
     """
-    from fastapi import Response as FastAPIResponse
-    if current_user["role"] != "venue":
-        raise HTTPException(status_code=403, detail="Only venues can accept applications")
-
-    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
-    if not venue:
-        raise HTTPException(status_code=403, detail="Not authorized")
-
-    app = await db.applications.find_one({"id": app_id}, {"_id": 0})
-    if not app:
-        raise HTTPException(status_code=404, detail="Application not found")
-
-    slot = await db.planning_slots.find_one({"id": app["planning_slot_id"], "venue_id": venue["id"]}, {"_id": 0})
-    if not slot:
-        raise HTTPException(status_code=403, detail="Not authorized")
-
-    # Idempotency : si déjà accepté, on ne rejoue pas les side-effects (évite doublons dans db.concerts)
-    already_accepted = app.get("status") == "accepted"
-
-    # Update application status
-    await db.applications.update_one({"id": app_id}, {"$set": {"status": "accepted"}})
-    
-    # Audit log: Application accepted
-    await log_action(
-        user_id=current_user["id"],
-        user_role=current_user["role"],
-        action="accept_application",
-        resource_type="concert_application",
-        resource_id=app_id,
-        details={
-            "slot_date": slot.get("date"),
-            "musician_id": app.get("musician_id"),
-            "band_name": app.get("band_name")
-        },
-        request=request,
-        status="success"
-    )
-    
-    # Count accepted applications for this slot
-    accepted_count = await db.applications.count_documents({
-        "planning_slot_id": slot["id"],
-        "status": "accepted"
-    })
-    
-    # Get number of bands needed (default to 1 if not set)
-    # Build 152.16 — normalisation `max(..., 1)` pour rester cohérent avec la logique de
-    # réouverture dans routes/cancellation.py (évite le cas num_bands_needed=0).
-    num_bands_needed = max(int(slot.get("num_bands_needed") or 1), 1)
-    
-    # Close slot only if we have enough accepted bands
-    if accepted_count >= num_bands_needed:
-        await db.planning_slots.update_one({"id": slot["id"]}, {"$set": {"is_open": False}})
-
+    app_id = app["id"]
     # 🎵 INSERT INTO db.concerts (single source of truth pour /api/bands/{band_id}/events)
     #
     # Build 152.22 — Résolution du band_id fiable pour le mobile :
@@ -1022,38 +963,173 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
             resolved_band_type = band_doc.get("band_type") or "group"
 
     concert_doc_id = app_id + "_concert"
-    if not already_accepted:
-        # Insert dans db.concerts seulement si pas déjà fait (idempotence)
-        existing_concert = await db.concerts.find_one({"id": concert_doc_id}, {"_id": 0, "id": 1})
-        if not existing_concert:
-            concert_doc = {
-                "id": concert_doc_id,
-                "venue_id": venue.get("id"),
-                "venue_name": venue.get("name"),
-                "band_id": resolved_band_id,  # peut être None si vraiment aucun band trouvé
-                "band_name": app.get("band_name"),
-                "band_type": resolved_band_type,
+    existing_concert = await db.concerts.find_one(
+        {"$or": [{"id": concert_doc_id}, {"application_id": app_id}]}, {"_id": 0, "id": 1}
+    )
+    if existing_concert:
+        concert_doc_id = existing_concert["id"]
+    else:
+        concert_doc = {
+            "id": concert_doc_id,
+            "venue_id": venue.get("id"),
+            "venue_name": venue.get("name"),
+            "band_id": resolved_band_id,  # peut être None si vraiment aucun band trouvé
+            "band_name": app.get("band_name"),
+            "band_type": resolved_band_type,
+            "musician_id": app.get("musician_id"),
+            "date": slot.get("date"),
+            "start_time": slot.get("time") or slot.get("start_time"),
+            "end_time": slot.get("end_time"),
+            "title": slot.get("title") or (f"Concert {app.get('band_name')}" if app.get("band_name") else "Concert"),
+            "description": slot.get("description"),
+            "music_styles": slot.get("music_styles", []),
+            "payment": slot.get("payment"),
+            "is_guso": slot.get("is_guso", False),
+            "has_catering": slot.get("has_catering"),
+            "catering_drinks": slot.get("catering_drinks"),
+            "catering_respect": slot.get("catering_respect"),
+            "catering_tbd": slot.get("catering_tbd"),
+            "has_meals": slot.get("has_meals"),
+            "meals_count": slot.get("meals_count"),
+            "has_accommodation": slot.get("has_accommodation"),
+            "accommodation_capacity": slot.get("accommodation_capacity"),
+            "accommodation_tbd": slot.get("accommodation_tbd"),
+            "payment_type": slot.get("payment_type"),
+            "bands": [{
+                "name": app.get("band_name") or app.get("musician_name") or "Artiste",
+                "id": resolved_band_id,
                 "musician_id": app.get("musician_id"),
+                "members_count": 1,
+            }],
+            "status": "confirmed",
+            "source": "application_accepted",
+            "planning_slot_id": slot["id"],
+            "application_id": app_id,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        try:
+            await db.concerts.insert_one(concert_doc)
+        except Exception as e:
+            logger.warning(f"Failed to insert concert from accepted application {app_id}: {e}")
+
+    # Copie planning musicien (reste visible même si le créneau est supprimé) — hors plateau
+    if musician_for_band and not app.get("plateau_id"):
+        await db.musicians.update_one(
+            {"id": musician_for_band["id"], "concerts.id": {"$ne": concert_doc_id}},
+            {"$push": {"concerts": {
+                "id": concert_doc_id,
+                "venue_name": venue.get("name"),
+                "venue_id": venue.get("id"),
+                "city": venue.get("city", ""),
                 "date": slot.get("date"),
                 "start_time": slot.get("time") or slot.get("start_time"),
                 "end_time": slot.get("end_time"),
-                "title": slot.get("title") or (f"Concert {app.get('band_name')}" if app.get("band_name") else "Concert"),
-                "description": slot.get("description"),
-                "music_styles": slot.get("music_styles", []),
-                "payment": slot.get("payment"),
+                "title": slot.get("title") or f"Concert chez {venue.get('name')}",
+                "band_name": app.get("band_name"),
+                "band_id": resolved_band_id,
                 "is_guso": slot.get("is_guso", False),
-                "has_catering": slot.get("has_catering"),
-                "has_meals": slot.get("has_meals"),
-                "has_accommodation": slot.get("has_accommodation"),
-                "source": "application_accepted",
+                "payment_status": "pending",
                 "planning_slot_id": slot["id"],
                 "application_id": app_id,
-                "created_at": datetime.now(timezone.utc).isoformat()
-            }
-            try:
-                await db.concerts.insert_one(concert_doc)
-            except Exception as e:
-                logger.warning(f"Failed to insert concert from accepted application {app_id}: {e}")
+                "source": "application_accepted",
+            }}},
+        )
+    return concert_doc_id, resolved_band_id
+
+
+
+async def backfill_missing_application_concerts() -> int:
+    """Build 239 — Migration idempotente : concert manquant pour les candidatures acceptées à venir."""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    created = 0
+    async for app in db.applications.find({"status": "accepted"}, {"_id": 0}):
+        if await db.concerts.find_one({"$or": [{"id": f"{app['id']}_concert"}, {"application_id": app["id"]}]}, {"_id": 1}):
+            continue
+        slot = await db.planning_slots.find_one({"id": app.get("planning_slot_id")}, {"_id": 0})
+        if not slot or str(slot.get("date") or "") < today:
+            continue
+        mid = app.get("musician_id")
+        if mid and await db.concerts.find_one({
+            "venue_id": slot.get("venue_id"), "date": slot.get("date"),
+            "$or": [{"musician_id": mid}, {"bands.musician_id": mid}],
+        }, {"_id": 1}):
+            continue
+        venue = await db.venues.find_one({"id": slot.get("venue_id")}, {"_id": 0})
+        if not venue:
+            continue
+        try:
+            await ensure_application_concert(app, slot, venue)
+            created += 1
+        except Exception as e:
+            logger.warning(f"Backfill concert failed for {app['id']}: {e}")
+    return created
+
+
+@router.post("/applications/{app_id}/accept")
+async def accept_application(app_id: str, request: Request, current_user: dict = Depends(get_current_user)):
+    """Accept an application (venue only).
+
+    Side-effects garantis :
+      1. applications.status = "accepted"
+      2. Si num_bands_needed est atteint → planning_slots.is_open = False
+      3. INSERT db.concerts (band_id rempli — pour Solo, on résout via musicians.bands[band_type=Solo] ou db.bands[band_type=Solo])
+      4. push musicians.upcoming_concerts (legacy mobile)
+      5. WebSocket notify_application_status + DB notification
+      6. Si band_name → notification au band admin
+    """
+    from fastapi import Response as FastAPIResponse
+    if current_user["role"] != "venue":
+        raise HTTPException(status_code=403, detail="Only venues can accept applications")
+
+    venue = await db.venues.find_one({"user_id": current_user["id"]}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    app = await db.applications.find_one({"id": app_id}, {"_id": 0})
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    slot = await db.planning_slots.find_one({"id": app["planning_slot_id"], "venue_id": venue["id"]}, {"_id": 0})
+    if not slot:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+
+    # Update application status
+    await db.applications.update_one({"id": app_id}, {"$set": {"status": "accepted"}})
+    
+    # Audit log: Application accepted
+    await log_action(
+        user_id=current_user["id"],
+        user_role=current_user["role"],
+        action="accept_application",
+        resource_type="concert_application",
+        resource_id=app_id,
+        details={
+            "slot_date": slot.get("date"),
+            "musician_id": app.get("musician_id"),
+            "band_name": app.get("band_name")
+        },
+        request=request,
+        status="success"
+    )
+    
+    # Count accepted applications for this slot
+    accepted_count = await db.applications.count_documents({
+        "planning_slot_id": slot["id"],
+        "status": "accepted"
+    })
+    
+    # Get number of bands needed (default to 1 if not set)
+    # Build 152.16 — normalisation `max(..., 1)` pour rester cohérent avec la logique de
+    # réouverture dans routes/cancellation.py (évite le cas num_bands_needed=0).
+    num_bands_needed = max(int(slot.get("num_bands_needed") or 1), 1)
+    
+    # Close slot only if we have enough accepted bands
+    if accepted_count >= num_bands_needed:
+        await db.planning_slots.update_one({"id": slot["id"]}, {"$set": {"is_open": False}})
+
+    # 🎵 Build 239 — concert garanti (idempotent, même si déjà accepté)
+    concert_doc_id, resolved_band_id = await ensure_application_concert(app, slot, venue)
 
     # Build 237 — candidature plateau : concert rattaché au plateau + plannings membres (sans notif membres)
     if app.get("plateau_id"):
@@ -1064,7 +1140,9 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
                 await db.concerts.update_one(
                     {"id": concert_doc_id},
                     {"$set": {"plateau_id": plateau_doc["id"], "plateau_title": plateau_doc.get("title"),
-                              "band_name": plateau_doc.get("title"), "band_id": None, "band_type": "plateau"}},
+                              "band_name": plateau_doc.get("title"), "band_id": None, "band_type": "plateau",
+                              "bands": [{"name": plateau_doc.get("title"), "id": None, "plateau_id": plateau_doc["id"],
+                                         "members_count": len([m for m in plateau_doc.get("members", []) if m.get("status") == "accepted"])}]}},
                 )
                 linked = await db.concerts.find_one({"id": concert_doc_id}, {"_id": 0})
                 if linked:

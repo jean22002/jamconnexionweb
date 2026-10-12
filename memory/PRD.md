@@ -690,3 +690,11 @@ Application de mise en relation entre cafés-concerts et musiciens.
 ## 2026-06 — Build 238 : data ciblée sur notifications de candidature
 - `create_notification(..., data=)` + helper `application_notif_data(app_id, slot, plateau_id)` (planning.py) ; renseigné en in-app + push pour application_received/cancelled/accepted/rejected, cancellation_requested/approved/refused, application_response (+date).
 - Test : `backend/tests/test_notif_data_b238.sh`. Doc mobile : `/app/memory/MOBILE_SYNC_REPLY_BUILD_238.md`.
+
+## 2026-06 — Build 239 : Concert garanti à l'acceptation
+- ⚠️ La preview utilise la MongoDB de PRODUCTION (log « Using PRODUCTION MongoDB ») : migrations/tests touchent la prod → toujours nettoyer les données de test.
+- `ensure_application_concert` (planning.py) idempotent, appelé à chaque accept (même déjà accepted) ; copie slot complète, `bands`, status confirmed, copie musician.concerts (source application_accepted).
+- Migration startup `backfill_missing_application_concerts` (accepted + slot existant + date future + dédoublonnage venue/date/musician) → 11 concerts créés.
+- `POST /concerts` accepte `application_id` (idempotent, id `<app>_concert`).
+- Cause : 7 apps = données fictives insérées en base (2026-09-20), 3 = concerts supprimés après acceptation.
+- Test : `backend/tests/test_accept_concert_b239.sh`. Doc mobile : `/app/memory/MOBILE_SYNC_REPLY_BUILD_239.md`.

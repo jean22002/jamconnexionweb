@@ -131,6 +131,8 @@ class ConcertEvent(BaseModel, PaymentValidationMixin):
     artist_name: Optional[str] = None
     # Build 229 — concert rattaché à un plateau (doit être "active")
     plateau_id: Optional[str] = None
+    # Build 239 — rattachement idempotent à une candidature acceptée
+    application_id: Optional[str] = None
 
 class ConcertEventResponse(BaseModel):
     id: str
@@ -177,6 +179,8 @@ class ConcertEventResponse(BaseModel):
     # Build 229 — plateau
     plateau_id: Optional[str] = None
     plateau_title: Optional[str] = None
+    application_id: Optional[str] = None
+    planning_slot_id: Optional[str] = None
 
 class KaraokeEvent(BaseModel, PaymentValidationMixin):
     date: str

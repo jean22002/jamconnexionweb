@@ -383,6 +383,14 @@ async def startup_db_client():
     except Exception as e:
         logger.error(f"❌ Missing application concerts backfill failed: {e}")
 
+    # Build 240 — titres « Concert <artiste> » pour concerts auto non renommés
+    try:
+        from routes.planning import rename_auto_concert_titles
+        n = await rename_auto_concert_titles()
+        logger.info(f"✅ Auto concert titles renamed: {n}")
+    except Exception as e:
+        logger.error(f"❌ Auto concert titles rename failed: {e}")
+
     # Launch the health monitor daemon (pings critical endpoints every 5 min)
     try:
         import asyncio

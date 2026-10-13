@@ -699,3 +699,4 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - Cause : 7 apps = données fictives insérées en base (2026-09-20), 3 = concerts supprimés après acceptation.
 - Test : `backend/tests/test_accept_concert_b239.sh`. Doc mobile : `/app/memory/MOBILE_SYNC_REPLY_BUILD_239.md`.
 - (239b) Fix 500 GET /concerts/{id} : nulls retirés des concerts migrés + sanitize_concert_doc (events.py) ; 150/150 concerts → 200.
+- (240) Titre concert auto = « Concert <plateau|groupe|musicien> » (auto_concert_title) + migration rename_auto_concert_titles (21 renommés).

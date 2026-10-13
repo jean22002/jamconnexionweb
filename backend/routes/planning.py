@@ -894,6 +894,36 @@ async def get_slot_applications(slot_id: str, request: Request, current_user: di
     return result
 
 
+def auto_concert_title(app: dict, plateau_title: Optional[str] = None) -> str:
+    """Build 240 — « Concert <plateau | groupe | musicien> »."""
+    name = plateau_title or app.get("plateau_title") or app.get("band_name") or app.get("musician_name")
+    return f"Concert {name}" if name else "Concert"
+
+
+async def rename_auto_concert_titles() -> int:
+    """Build 240 — Migration idempotente : concerts auto dont le titre est encore celui du créneau."""
+    renamed = 0
+    async for c in db.concerts.find(
+        {"application_id": {"$exists": True}, "planning_slot_id": {"$exists": True}},
+        {"_id": 0, "id": 1, "title": 1, "planning_slot_id": 1, "application_id": 1, "plateau_title": 1},
+    ):
+        slot = await db.planning_slots.find_one({"id": c["planning_slot_id"]}, {"_id": 0, "title": 1})
+        if not slot or not slot.get("title") or c.get("title") != slot["title"]:
+            continue
+        app = await db.applications.find_one({"id": c["application_id"]}, {"_id": 0}) or {}
+        new_title = auto_concert_title(app, c.get("plateau_title"))
+        if new_title == c.get("title"):
+            continue
+        await db.concerts.update_one({"id": c["id"]}, {"$set": {"title": new_title}})
+        await db.musicians.update_many(
+            {"concerts": {"$elemMatch": {"id": c["id"], "title": slot["title"]}}},
+            {"$set": {"concerts.$[e].title": new_title}},
+            array_filters=[{"e.id": c["id"], "e.title": slot["title"]}],
+        )
+        renamed += 1
+    return renamed
+
+
 async def ensure_application_concert(app: dict, slot: dict, venue: dict):
     """Build 239 — Garantit le concert `<application_id>_concert` d'une candidature acceptée (idempotent).
 
@@ -980,7 +1010,7 @@ async def ensure_application_concert(app: dict, slot: dict, venue: dict):
             "date": slot.get("date"),
             "start_time": slot.get("time") or slot.get("start_time"),
             "end_time": slot.get("end_time"),
-            "title": slot.get("title") or (f"Concert {app.get('band_name')}" if app.get("band_name") else "Concert"),
+            "title": auto_concert_title(app),
             "description": slot.get("description"),
             "music_styles": slot.get("music_styles", []),
             "payment": slot.get("payment"),
@@ -1026,7 +1056,7 @@ async def ensure_application_concert(app: dict, slot: dict, venue: dict):
                 "date": slot.get("date"),
                 "start_time": slot.get("time") or slot.get("start_time"),
                 "end_time": slot.get("end_time"),
-                "title": slot.get("title") or f"Concert chez {venue.get('name')}",
+                "title": auto_concert_title(app),
                 "band_name": app.get("band_name"),
                 "band_id": resolved_band_id,
                 "is_guso": slot.get("is_guso", False),
@@ -1147,6 +1177,7 @@ async def accept_application(app_id: str, request: Request, current_user: dict =
                 await db.concerts.update_one(
                     {"id": concert_doc_id},
                     {"$set": {"plateau_id": plateau_doc["id"], "plateau_title": plateau_doc.get("title"),
+                              "title": auto_concert_title(app, plateau_doc.get("title")),
                               "band_name": plateau_doc.get("title"), "band_id": None, "band_type": "plateau",
                               "bands": [{"name": plateau_doc.get("title"), "id": None, "plateau_id": plateau_doc["id"],
                                          "members_count": len([m for m in plateau_doc.get("members", []) if m.get("status") == "accepted"])}]}},

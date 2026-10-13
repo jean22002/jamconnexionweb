@@ -11,7 +11,7 @@ SID=$(curl -s -X POST "$API/api/planning" -H "$HV" -H "$J" -d '{"date":"2027-08-
 AID=$(curl -s -X POST "$API/api/applications" -H "$HM" -H "$J" -d "{\"planning_slot_id\":\"$SID\"}" | python3 -c "import sys,json;print(json.load(sys.stdin)['id'])")
 C="${AID}_concert"
 curl -s -o /dev/null -X POST "$API/api/applications/$AID/accept" -H "$HV"
-curl -s "$API/api/concerts/$C" | python3 -c "import sys,json;d=json.load(sys.stdin);print('1 accept ->',d.get('id')==\"$C\",d.get('status'),d.get('bands'),d.get('application_id')==\"$AID\")"
+curl -s "$API/api/concerts/$C" | python3 -c "import sys,json;d=json.load(sys.stdin);print('1 accept ->',d.get('id')==\"$C\",d.get('title'),d.get('status'),d.get('bands'),d.get('application_id')==\"$AID\")"
 q "print('  planning copy', db.musicians.count_documents({'concerts.id':'$C'}))"
 curl -s -o /dev/null -X DELETE "$API/api/concerts/$C" -H "$HV"
 curl -s -o /dev/null -w "2 after delete GET -> %{http_code}\n" "$API/api/concerts/$C"

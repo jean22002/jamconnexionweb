@@ -62,3 +62,10 @@ Merci ! 🎸
   2. les prochaines créations automatiques n'écrivent plus de `null` ;
   3. `GET /concerts/{id}` (et les réponses POST/PATCH) tolèrent aussi les vieux documents : `null`, `bands` stockés en simple texte (`["Rock Revolution"]` devient `[{"name": "Rock Revolution"}]`), et `participants_count` enregistré en base.
 - **Vérifié** : les **150 concerts** de la base répondent **200** sur `GET /api/concerts/{id}`, dont `9d7158dc-…_concert` et `aa5f25bb-…_concert`.
+
+---
+
+## ✅ Build 240 — Titre des concerts auto
+- À l'acceptation, le concert `<application_id>_concert` s'appelle maintenant **`Concert <nom>`**. `<nom>` = titre du plateau en priorité, sinon `band_name`, sinon `musician_name`. Ce titre est appliqué au concert et à sa copie dans `musician.concerts[]`.
+- **Migration idempotente au démarrage** : les concerts auto dont le titre était **encore exactement** celui du créneau ont été renommés, ainsi que leurs copies dans le planning. **21 concerts** concernés. Les titres modifiés à la main ne sont pas touchés.
+- 👉 Vous pouvez supprimer le `PATCH /concerts/<app_id>_concert {"title": …}` après « Transformer en concert ». Il reste sans danger si vous le gardez.

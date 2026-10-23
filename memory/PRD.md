@@ -705,3 +705,4 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - Bug : subscribe-pro écrasait `stripe.api_key` global → checkouts venue avec clé expirée. Fix : `utils/stripe_config.get_stripe_key()` partout.
 - `billing_cycle` monthly|yearly sur /payments/checkout (venue 180/210 j, 90/120 au-delà de 200) et /musicians/me/subscribe-pro (60/90 j) ; annuel via price_data 99,99 € / 49,90 €.
 - ⏳ BLOQUANT : STRIPE_SECRET_KEY live expirée — l'utilisateur doit la remplacer via la carte secrets (a collé une clé dans le chat : non utilisée, recommander de la renouveler). STRIPE_WEBHOOK_SECRET non vérifié.
+- (241b) STRIPE_SECRET_KEY : slot live mis à jour le 2026-10-23 15:24 par l'utilisateur (non vérifiable depuis la preview) ; slot test = clé publique pk_live (invalide pour l'API) → paiements KO en preview. Vérifier en prod après Deploy.

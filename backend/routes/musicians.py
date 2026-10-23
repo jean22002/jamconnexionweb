@@ -1857,7 +1857,8 @@ async def create_pro_subscription(request: Request, current_user: dict = Depends
         raise HTTPException(status_code=400, detail="Already subscribed to PRO")
     
     import stripe
-    stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+    from utils.stripe_config import get_stripe_key
+    stripe.api_key = get_stripe_key()
     
     try:
         # Get or create Stripe customer
@@ -1882,7 +1883,16 @@ async def create_pro_subscription(request: Request, current_user: dict = Depends
                 {"$set": {"stripe_customer_id": stripe_customer_id}}
             )
         
-        # Create Checkout Session with 2 MONTHS FREE TRIAL
+        # Build 241 — billing_cycle monthly|yearly (essai 60 / 90 jours)
+        from utils.stripe_config import MUSICIAN_TRIAL_DAYS, MUSICIAN_YEARLY_CENTS
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+        billing_cycle = "yearly" if (body or {}).get("billing_cycle") == "yearly" else "monthly"
+        trial_days = MUSICIAN_TRIAL_DAYS[billing_cycle]
+        yearly = billing_cycle == "yearly"
+
         frontend_url = os.environ.get("FRONTEND_URL", "https://collapsible-map.preview.emergentagent.com")
         
         checkout_session = stripe.checkout.Session.create(
@@ -1893,21 +1903,23 @@ async def create_pro_subscription(request: Request, current_user: dict = Depends
                     'currency': 'eur',
                     'product_data': {
                         'name': 'Musicien PRO',
-                        'description': '7 JOURS GRATUITS puis 4,99€/mois - Annulable à tout moment',
+                        'description': (f'{trial_days} jours gratuits puis 49,90€/an - Annulable à tout moment' if yearly
+                                        else f'{trial_days} jours gratuits puis 4,99€/mois - Annulable à tout moment'),
                         'images': ['https://jamconnexion.com/images/pro-badge.png'],
                     },
-                    'unit_amount': 499,  # 4.99€ in cents
+                    'unit_amount': MUSICIAN_YEARLY_CENTS if yearly else 499,
                     'recurring': {
-                        'interval': 'month',
+                        'interval': 'year' if yearly else 'month',
                     },
                 },
                 'quantity': 1,
             }],
             mode='subscription',
             subscription_data={
-                'trial_period_days': 60,  # 2 MONTHS FREE TRIAL (aligné mobile)
+                'trial_period_days': trial_days,
                 'metadata': {
-                    'trial_duration': '60_days',
+                    'trial_duration': f'{trial_days}_days',
+                    'billing_cycle': billing_cycle,
                     'user_id': current_user["id"]
                 }
             },
@@ -1916,15 +1928,18 @@ async def create_pro_subscription(request: Request, current_user: dict = Depends
             metadata={
                 "user_id": current_user["id"],
                 "musician_id": musician["id"],
-                "subscription_type": "musician_pro"
+                "subscription_type": "musician_pro",
+                "billing_cycle": billing_cycle,
             }
         )
         
         return {
             "checkout_url": checkout_session.url,
+            "url": checkout_session.url,
             "session_id": checkout_session.id,
-            "trial_days": 60,
-            "trial_info": "2 mois gratuits - Premier paiement le " + (datetime.now(timezone.utc) + timedelta(days=60)).strftime("%d/%m/%Y")
+            "billing_cycle": billing_cycle,
+            "trial_days": trial_days,
+            "trial_info": f"{trial_days} jours gratuits - Premier paiement le " + (datetime.now(timezone.utc) + timedelta(days=trial_days)).strftime("%d/%m/%Y")
         }
     
     except Exception as e:
@@ -1991,7 +2006,8 @@ async def cancel_pro_subscription(request: Request, current_user: dict = Depends
         raise HTTPException(status_code=400, detail="No active subscription found")
     
     import stripe
-    stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+    from utils.stripe_config import get_stripe_key
+    stripe.api_key = get_stripe_key()
     
     try:
         # Cancel at period end (user keeps access until then)

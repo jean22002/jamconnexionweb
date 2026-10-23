@@ -24,7 +24,8 @@ STRIPE_PRICE_ID = os.environ.get('STRIPE_PRICE_ID', 'price_1SpH8aBykagrgoTUBAdOU
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
 SUBSCRIPTION_PRICE = 9.99
 
-stripe.api_key = STRIPE_API_KEY
+from utils.stripe_config import get_stripe_key, VENUE_TRIAL_DAYS, VENUE_YEARLY_CENTS
+stripe.api_key = get_stripe_key()
 
 @router.post("/checkout")
 async def create_checkout(data: CheckoutRequest, request: Request, current_user: dict = Depends(get_current_user)):
@@ -41,19 +42,29 @@ async def create_checkout(data: CheckoutRequest, request: Request, current_user:
             "subscription_tier": "pro",
             "subscription_status": {"$in": ["active", "trialing"]}
         })
-        trial_days = 180 if venue_pro_count < 200 else 90
+        billing_cycle = "yearly" if data.billing_cycle == "yearly" else "monthly"
+        early, late = VENUE_TRIAL_DAYS[billing_cycle]
+        trial_days = early if venue_pro_count < 200 else late
+        line_item = {'price': STRIPE_PRICE_ID, 'quantity': 1} if billing_cycle == "monthly" else {
+            'price_data': {
+                'currency': 'eur',
+                'product_data': {'name': 'Établissement PRO — Annuel'},
+                'unit_amount': VENUE_YEARLY_CENTS,
+                'recurring': {'interval': 'year'},
+            },
+            'quantity': 1,
+        }
         
         # Create Stripe checkout session for subscription
         session = stripe.checkout.Session.create(
+            api_key=get_stripe_key(),
             mode='subscription',
-            line_items=[{
-                'price': STRIPE_PRICE_ID,
-                'quantity': 1,
-            }],
+            line_items=[line_item],
             subscription_data={
                 'trial_period_days': trial_days,
                 'metadata': {
                     'trial_days': str(trial_days),
+                    'billing_cycle': billing_cycle,
                     'venue_pro_count_at_subscribe': str(venue_pro_count),
                     'user_id': current_user["id"]
                 }
@@ -66,7 +77,8 @@ async def create_checkout(data: CheckoutRequest, request: Request, current_user:
                 "user_id": current_user["id"],
                 "email": current_user["email"],
                 "type": "venue_subscription",
-                "trial_days": str(trial_days)
+                "trial_days": str(trial_days),
+                "billing_cycle": billing_cycle,
             }
         )
         
@@ -76,7 +88,8 @@ async def create_checkout(data: CheckoutRequest, request: Request, current_user:
             "session_id": session.id,
             "user_id": current_user["id"],
             "email": current_user["email"],
-            "amount": SUBSCRIPTION_PRICE,
+            "amount": SUBSCRIPTION_PRICE if billing_cycle == "monthly" else VENUE_YEARLY_CENTS / 100,
+            "billing_cycle": billing_cycle,
             "currency": "eur",
             "status": "initiated",
             "payment_status": "pending",
@@ -86,7 +99,7 @@ async def create_checkout(data: CheckoutRequest, request: Request, current_user:
         }
         await db.payment_transactions.insert_one(transaction_doc)
         
-        return {"url": session.url, "session_id": session.id, "trial_days": trial_days}
+        return {"url": session.url, "session_id": session.id, "trial_days": trial_days, "billing_cycle": billing_cycle}
     
     except stripe.error.StripeError as e:
         logger.error(f"Stripe error: {str(e)}")

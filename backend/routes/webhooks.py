@@ -17,7 +17,8 @@ logger = logging.getLogger(__name__)
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
 
-stripe.api_key = STRIPE_API_KEY
+from utils.stripe_config import get_stripe_key
+stripe.api_key = get_stripe_key()
 
 @router.post("/stripe")
 async def stripe_webhook(request: Request):

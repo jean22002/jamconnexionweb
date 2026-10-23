@@ -700,3 +700,8 @@ Application de mise en relation entre cafés-concerts et musiciens.
 - Test : `backend/tests/test_accept_concert_b239.sh`. Doc mobile : `/app/memory/MOBILE_SYNC_REPLY_BUILD_239.md`.
 - (239b) Fix 500 GET /concerts/{id} : nulls retirés des concerts migrés + sanitize_concert_doc (events.py) ; 150/150 concerts → 200.
 - (240) Titre concert auto = « Concert <plateau|groupe|musicien> » (auto_concert_title) + migration rename_auto_concert_titles (21 renommés).
+
+## 2026-06 — Build 241 : Stripe
+- Bug : subscribe-pro écrasait `stripe.api_key` global → checkouts venue avec clé expirée. Fix : `utils/stripe_config.get_stripe_key()` partout.
+- `billing_cycle` monthly|yearly sur /payments/checkout (venue 180/210 j, 90/120 au-delà de 200) et /musicians/me/subscribe-pro (60/90 j) ; annuel via price_data 99,99 € / 49,90 €.
+- ⏳ BLOQUANT : STRIPE_SECRET_KEY live expirée — l'utilisateur doit la remplacer via la carte secrets (a collé une clé dans le chat : non utilisée, recommander de la renouveler). STRIPE_WEBHOOK_SECRET non vérifié.
